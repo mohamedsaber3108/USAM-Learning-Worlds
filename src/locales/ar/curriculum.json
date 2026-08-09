@@ -1,0 +1,25 @@
+{
+  "domain": {
+    "title": "المجال",
+    "skills": "المهارات",
+    "worlds": "العوالم"
+  },
+  "skill": {
+    "title": "المهارة",
+    "level": "المستوى {{level}}",
+    "confidence": "الثقة",
+    "evidence": "الأدلة",
+    "practice": "الممارسة",
+    "related": "المهارات ذات الصلة"
+  },
+  "evidence": {
+    "knowledge": "معرفة",
+    "application": "تطبيق",
+    "creation": "إبداع",
+    "explanation": "شرح",
+    "conversation": "محادثة",
+    "problemSolving": "حل المشكلات",
+    "transfer": "نقل المعرفة",
+    "reflection": "تأمل"
+  }
+}

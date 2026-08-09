@@ -1,0 +1,36 @@
+{
+  "main": {
+    "home": "Home",
+    "learn": "Learn",
+    "worlds": "Worlds",
+    "missions": "Missions",
+    "projects": "Projects",
+    "practice": "Practice",
+    "portfolio": "Portfolio",
+    "community": "Community",
+    "progress": "Progress",
+    "achievements": "Achievements",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help"
+  },
+  "worlds": {
+    "english": "English World",
+    "coding": "Coding World",
+    "ai": "AI World",
+    "venture": "Venture World",
+    "studio": "Studio"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "skills": "Skills",
+    "activities": "Activities",
+    "progress": "Progress",
+    "details": "Details"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "separator": "/",
+    "current": "Current page"
+  }
+}

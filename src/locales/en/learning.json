@@ -1,0 +1,49 @@
+{
+  "mission": {
+    "title": "Mission",
+    "start": "Start Mission",
+    "continue": "Continue Mission",
+    "complete": "Complete Mission",
+    "completed": "Completed",
+    "inProgress": "In Progress",
+    "locked": "Locked",
+    "available": "Available",
+    "minutesLeft": "{{count}} minute left",
+    "minutesLeft_plural": "{{count}} minutes left",
+    "progress": "Progress",
+    "guide": "Guide"
+  },
+  "activity": {
+    "title": "Activity",
+    "start": "Start Activity",
+    "submit": "Submit",
+    "retry": "Try Again",
+    "skip": "Skip",
+    "hint": "Get a Hint",
+    "explanation": "Show Explanation",
+    "checkAnswer": "Check Answer",
+    "correct": "Correct!",
+    "incorrect": "Not quite right",
+    "tryAgain": "Try again"
+  },
+  "mastery": {
+    "notStarted": "Not started",
+    "introduced": "Introduced",
+    "exploring": "Exploring",
+    "practicing": "Practicing",
+    "developing": "Developing",
+    "proficient": "Proficient",
+    "mastered": "Mastered",
+    "needsReview": "Needs review",
+    "skillMastered": "You mastered {{skill}}!"
+  },
+  "practice": {
+    "title": "Practice",
+    "dueNow": "Due now",
+    "dueToday": "Due today",
+    "dueSoon": "Due soon",
+    "start": "Start Practice",
+    "itemsLeft": "{{count}} item left",
+    "itemsLeft_plural": "{{count}} items left"
+  }
+}

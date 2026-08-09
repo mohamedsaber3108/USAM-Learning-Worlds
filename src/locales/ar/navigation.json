@@ -1,0 +1,36 @@
+{
+  "main": {
+    "home": "الرئيسية",
+    "learn": "تعلم",
+    "worlds": "العوالم",
+    "missions": "المهمات",
+    "projects": "المشاريع",
+    "practice": "الممارسة",
+    "portfolio": "المعرض",
+    "community": "المجتمع",
+    "progress": "التقدم",
+    "achievements": "الإنجازات",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "help": "المساعدة"
+  },
+  "worlds": {
+    "english": "عالم اللغة الإنجليزية",
+    "coding": "عالم البرمجة",
+    "ai": "عالم الذكاء الاصطناعي",
+    "venture": "عالم ريادة الأعمال",
+    "studio": "الاستوديو"
+  },
+  "tabs": {
+    "overview": "نظرة عامة",
+    "skills": "المهارات",
+    "activities": "الأنشطة",
+    "progress": "التقدم",
+    "details": "التفاصيل"
+  },
+  "breadcrumb": {
+    "home": "الرئيسية",
+    "separator": "/",
+    "current": "الصفحة الحالية"
+  }
+}

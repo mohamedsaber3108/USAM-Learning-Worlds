@@ -1,0 +1,57 @@
+{
+  "mission": {
+    "title": "المهمة",
+    "start": "بدء المهمة",
+    "continue": "متابعة المهمة",
+    "complete": "إكمال المهمة",
+    "completed": "مكتملة",
+    "inProgress": "قيد التنفيذ",
+    "locked": "مقفلة",
+    "available": "متاحة",
+    "minutesLeft_zero": "لا دقائق متبقية",
+    "minutesLeft_one": "دقيقة واحدة متبقية",
+    "minutesLeft_two": "دقيقتان متبقيتان",
+    "minutesLeft_few": "{{count}} دقائق متبقية",
+    "minutesLeft_many": "{{count}} دقيقة متبقية",
+    "minutesLeft_other": "{{count}} دقيقة متبقية",
+    "progress": "التقدم",
+    "guide": "المرشد"
+  },
+  "activity": {
+    "title": "النشاط",
+    "start": "بدء النشاط",
+    "submit": "إرسال",
+    "retry": "حاول مرة أخرى",
+    "skip": "تخطي",
+    "hint": "احصل على تلميح",
+    "explanation": "عرض الشرح",
+    "checkAnswer": "تحقق من الإجابة",
+    "correct": "صحيح!",
+    "incorrect": "ليس صحيحًا تمامًا",
+    "tryAgain": "حاول مرة أخرى"
+  },
+  "mastery": {
+    "notStarted": "لم يبدأ",
+    "introduced": "تم التعريف",
+    "exploring": "استكشاف",
+    "practicing": "ممارسة",
+    "developing": "تطوير",
+    "proficient": "ماهر",
+    "mastered": "متقن",
+    "needsReview": "يحتاج مراجعة",
+    "skillMastered": "لقد أتقنت {{skill}}!"
+  },
+  "practice": {
+    "title": "الممارسة",
+    "dueNow": "مستحق الآن",
+    "dueToday": "مستحق اليوم",
+    "dueSoon": "مستحق قريبًا",
+    "start": "بدء الممارسة",
+    "itemsLeft_zero": "لا عناصر متبقية",
+    "itemsLeft_one": "عنصر واحد متبقي",
+    "itemsLeft_two": "عنصران متبقيان",
+    "itemsLeft_few": "{{count}} عناصر متبقية",
+    "itemsLeft_many": "{{count}} عنصرًا متبقيًا",
+    "itemsLeft_other": "{{count}} عنصر متبقي"
+  }
+}

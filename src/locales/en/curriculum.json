@@ -1,0 +1,25 @@
+{
+  "domain": {
+    "title": "Domain",
+    "skills": "Skills",
+    "worlds": "Worlds"
+  },
+  "skill": {
+    "title": "Skill",
+    "level": "Level {{level}}",
+    "confidence": "Confidence",
+    "evidence": "Evidence",
+    "practice": "Practice",
+    "related": "Related Skills"
+  },
+  "evidence": {
+    "knowledge": "Knowledge",
+    "application": "Application",
+    "creation": "Creation",
+    "explanation": "Explanation",
+    "conversation": "Conversation",
+    "problemSolving": "Problem Solving",
+    "transfer": "Transfer",
+    "reflection": "Reflection"
+  }
+}

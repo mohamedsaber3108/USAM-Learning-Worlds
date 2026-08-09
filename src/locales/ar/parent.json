@@ -1,0 +1,33 @@
+{
+  "dashboard": {
+    "title": "لوحة التحكم الأبوية",
+    "overview": "نظرة عامة",
+    "progress": "التقدم التعليمي",
+    "recommendations": "التوصيات",
+    "safety": "الأمان",
+    "controls": "الضوابط"
+  },
+  "insight": {
+    "strength": "نقطة قوة",
+    "opportunity": "فرصة للممارسة",
+    "milestone": "إنجاز"
+  },
+  "recommendation": {
+    "practice": "ممارسة",
+    "encouragement": "تشجيع",
+    "activity": "نشاط",
+    "conversation": "محادثة",
+    "resource": "مصدر"
+  },
+  "report": {
+    "weekly": "تقرير أسبوعي",
+    "monthly": "تقرير شهري",
+    "milestone": "تقرير الإنجاز"
+  },
+  "controls": {
+    "title": "الضوابط الأبوية",
+    "communityEnabled": "ميزات المجتمع",
+    "approvalRequired": "يتطلب الموافقة",
+    "notifications": "الإشعارات"
+  }
+}

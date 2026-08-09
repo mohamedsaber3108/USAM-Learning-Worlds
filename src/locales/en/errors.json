@@ -1,0 +1,23 @@
+{
+  "network": {
+    "offline": "You're offline. Some features won't work until you're back online.",
+    "timeout": "This is taking longer than usual. Please try again.",
+    "error": "Can't connect right now. Check your internet connection."
+  },
+  "auth": {
+    "required": "You need to sign in to do that.",
+    "expired": "Your session expired. Please sign in again.",
+    "forbidden": "You don't have permission to do that."
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalid": "Please check your input and try again",
+    "tooShort": "Too short",
+    "tooLong": "Too long"
+  },
+  "safety": {
+    "flagged": "This content needs to be reviewed before sharing.",
+    "inappropriate": "This content doesn't follow our safety rules.",
+    "blocked": "You can't interact with this user."
+  }
+}

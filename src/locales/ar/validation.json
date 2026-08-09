@@ -1,0 +1,12 @@
+{
+  "required": "{{field}} مطلوب",
+  "invalid": "{{field}} غير صحيح",
+  "tooShort": "{{field}} قصير جدًا (الحد الأدنى {{min}} حروف)",
+  "tooLong": "{{field}} طويل جدًا (الحد الأقصى {{max}} حروف)",
+  "mustMatch": "{{field}} يجب أن يطابق {{other}}",
+  "invalidEmail": "عنوان البريد الإلكتروني غير صحيح",
+  "invalidUrl": "الرابط غير صحيح",
+  "mustBeNumber": "يجب أن يكون رقمًا",
+  "mustBePositive": "يجب أن يكون رقمًا موجبًا",
+  "outOfRange": "يجب أن يكون بين {{min}} و {{max}}"
+}

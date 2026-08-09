@@ -1,0 +1,37 @@
+{
+  "team": {
+    "title": "Team",
+    "join": "Join Team",
+    "leave": "Leave Team",
+    "members": "{{count}} member",
+    "members_plural": "{{count}} members"
+  },
+  "guild": {
+    "title": "Guild",
+    "join": "Join Guild",
+    "leave": "Leave Guild",
+    "members": "{{count}} member",
+    "members_plural": "{{count}} members"
+  },
+  "message": {
+    "send": "Send Message",
+    "pending": "Message is being reviewed",
+    "approved": "Message sent",
+    "rejected": "Message needs changes"
+  },
+  "moderation": {
+    "draft": "Draft",
+    "pending": "Under review",
+    "approved": "Approved",
+    "rejected": "Needs changes",
+    "flagged": "Extra review needed",
+    "removed": "Removed",
+    "reviewTime": "Usually takes a few minutes"
+  },
+  "safety": {
+    "report": "Report",
+    "block": "Block",
+    "reported": "Reported",
+    "blocked": "Blocked"
+  }
+}

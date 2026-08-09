@@ -1,0 +1,12 @@
+{
+  "required": "{{field}} is required",
+  "invalid": "Invalid {{field}}",
+  "tooShort": "{{field}} is too short (minimum {{min}} characters)",
+  "tooLong": "{{field}} is too long (maximum {{max}} characters)",
+  "mustMatch": "{{field}} must match {{other}}",
+  "invalidEmail": "Invalid email address",
+  "invalidUrl": "Invalid URL",
+  "mustBeNumber": "Must be a number",
+  "mustBePositive": "Must be a positive number",
+  "outOfRange": "Must be between {{min}} and {{max}}"
+}

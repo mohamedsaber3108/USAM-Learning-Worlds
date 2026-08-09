@@ -1,0 +1,34 @@
+{
+  "state": {
+    "idea": "Idea",
+    "planning": "Planning",
+    "building": "Building",
+    "testing": "Testing",
+    "improving": "Improving",
+    "completed": "Completed",
+    "featured": "Featured"
+  },
+  "action": {
+    "create": "Create Project",
+    "edit": "Edit Project",
+    "delete": "Delete Project",
+    "submit": "Submit for Review",
+    "addMilestone": "Add Milestone",
+    "addArtifact": "Add Artifact",
+    "addReflection": "Add Reflection"
+  },
+  "privacy": {
+    "private": "Private",
+    "family": "Family",
+    "community": "Community",
+    "privateDesc": "Only you and your parent can see",
+    "familyDesc": "Shared with your family",
+    "communityDesc": "Everyone can see (needs parent approval)"
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "empty": "No projects yet",
+    "featured": "Featured",
+    "recent": "Recent"
+  }
+}
