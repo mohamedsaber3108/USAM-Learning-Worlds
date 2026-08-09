@@ -1,0 +1,45 @@
+{
+  "team": {
+    "title": "الفريق",
+    "join": "انضم للفريق",
+    "leave": "غادر الفريق",
+    "members_zero": "لا أعضاء",
+    "members_one": "عضو واحد",
+    "members_two": "عضوان",
+    "members_few": "{{count}} أعضاء",
+    "members_many": "{{count}} عضوًا",
+    "members_other": "{{count}} عضو"
+  },
+  "guild": {
+    "title": "النقابة",
+    "join": "انضم للنقابة",
+    "leave": "غادر النقابة",
+    "members_zero": "لا أعضاء",
+    "members_one": "عضو واحد",
+    "members_two": "عضوان",
+    "members_few": "{{count}} أعضاء",
+    "members_many": "{{count}} عضوًا",
+    "members_other": "{{count}} عضو"
+  },
+  "message": {
+    "send": "إرسال رسالة",
+    "pending": "الرسالة قيد المراجعة",
+    "approved": "تم إرسال الرسالة",
+    "rejected": "الرسالة تحتاج تعديلات"
+  },
+  "moderation": {
+    "draft": "مسودة",
+    "pending": "قيد المراجعة",
+    "approved": "تمت الموافقة",
+    "rejected": "يحتاج تعديلات",
+    "flagged": "يحتاج مراجعة إضافية",
+    "removed": "تمت الإزالة",
+    "reviewTime": "عادة ما يستغرق بضع دقائق"
+  },
+  "safety": {
+    "report": "إبلاغ",
+    "block": "حظر",
+    "reported": "تم الإبلاغ",
+    "blocked": "محظور"
+  }
+}

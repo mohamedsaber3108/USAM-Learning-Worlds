@@ -1,0 +1,34 @@
+{
+  "state": {
+    "idea": "فكرة",
+    "planning": "تخطيط",
+    "building": "بناء",
+    "testing": "اختبار",
+    "improving": "تحسين",
+    "completed": "مكتمل",
+    "featured": "مميز"
+  },
+  "action": {
+    "create": "إنشاء مشروع",
+    "edit": "تعديل المشروع",
+    "delete": "حذف المشروع",
+    "submit": "إرسال للمراجعة",
+    "addMilestone": "إضافة معلم",
+    "addArtifact": "إضافة منتج",
+    "addReflection": "إضافة تأمل"
+  },
+  "privacy": {
+    "private": "خاص",
+    "family": "العائلة",
+    "community": "المجتمع",
+    "privateDesc": "أنت ووالدك فقط يمكنهما الرؤية",
+    "familyDesc": "مشترك مع عائلتك",
+    "communityDesc": "الجميع يمكنهم الرؤية (يحتاج موافقة الوالد)"
+  },
+  "portfolio": {
+    "title": "المعرض",
+    "empty": "لا توجد مشاريع بعد",
+    "featured": "مميز",
+    "recent": "حديث"
+  }
+}

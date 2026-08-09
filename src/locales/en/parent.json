@@ -1,0 +1,33 @@
+{
+  "dashboard": {
+    "title": "Parent Dashboard",
+    "overview": "Overview",
+    "progress": "Learning Progress",
+    "recommendations": "Recommendations",
+    "safety": "Safety",
+    "controls": "Controls"
+  },
+  "insight": {
+    "strength": "Strength",
+    "opportunity": "Practice Opportunity",
+    "milestone": "Milestone"
+  },
+  "recommendation": {
+    "practice": "Practice",
+    "encouragement": "Encouragement",
+    "activity": "Activity",
+    "conversation": "Conversation",
+    "resource": "Resource"
+  },
+  "report": {
+    "weekly": "Weekly Report",
+    "monthly": "Monthly Report",
+    "milestone": "Milestone Report"
+  },
+  "controls": {
+    "title": "Parental Controls",
+    "communityEnabled": "Community Features",
+    "approvalRequired": "Require Approval",
+    "notifications": "Notifications"
+  }
+}
