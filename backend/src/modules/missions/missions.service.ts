@@ -27,17 +27,33 @@ export class MissionsService {
   async getMission(missionId: string) {
     const mission = await this.prisma.mission.findUnique({
       where: { id: missionId },
+      include: {
+        missionActivities: {
+          include: {
+            activity: {
+              include: {
+                objective: {
+                  include: {
+                    competency: { select: { id: true, name: true } },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
     });
 
     if (!mission) {
       throw new NotFoundException('Mission not found');
     }
 
-    // Fetch activities for this mission (stored in mission's content or linked via curriculum)
-    const activities = await this.prisma.activity.findMany({
-      orderBy: { order: 'asc' },
-      take: 10,
-    });
+    const activities = mission.missionActivities.map((ma) => ({
+      ...ma.activity,
+      missionOrder: ma.order,
+      isRequired: ma.isRequired,
+    }));
 
     return { ...mission, activities };
   }
@@ -83,7 +99,24 @@ export class MissionsService {
     const run = await this.prisma.missionRun.findUnique({
       where: { id: runId },
       include: {
-        mission: true,
+        mission: {
+          include: {
+            missionActivities: {
+              include: {
+                activity: {
+                  include: {
+                    objective: {
+                      include: {
+                        competency: { select: { id: true, name: true } },
+                      },
+                    },
+                  },
+                },
+              },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
         attempts: {
           include: {
             activity: true,
@@ -97,11 +130,11 @@ export class MissionsService {
       throw new NotFoundException('Mission run not found');
     }
 
-    // Attach available activities to mission
-    const activities = await this.prisma.activity.findMany({
-      orderBy: { order: 'asc' },
-      take: 10,
-    });
+    const activities = run.mission.missionActivities.map((ma) => ({
+      ...ma.activity,
+      missionOrder: ma.order,
+      isRequired: ma.isRequired,
+    }));
 
     return {
       ...run,

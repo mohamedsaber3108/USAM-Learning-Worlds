@@ -1,0 +1,332 @@
+/**
+ * Character & Conversation Controller
+ *
+ * API endpoints for character interaction and conversation management
+ */
+
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CharacterService } from './character.service';
+import { ConversationService } from './services/conversation.service';
+import { ConversationType, ConversationStatus } from '@prisma/client';
+
+@Controller('api/characters')
+@UseGuards(JwtAuthGuard)
+export class CharacterController {
+  constructor(
+    private characterService: CharacterService,
+    private conversationService: ConversationService,
+  ) {}
+
+  // ============================================
+  // CHARACTER ENDPOINTS
+  // ============================================
+
+  /**
+   * List all available characters
+   */
+  @Get()
+  async listCharacters(@Query('role') role?: string) {
+    const characters = await this.characterService.prisma.character.findMany({
+      where: {
+        isActive: true,
+        role: role as any,
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        personality: true,
+        avatarUrl: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    return { characters };
+  }
+
+  /**
+   * Get character details
+   */
+  @Get(':id')
+  async getCharacter(@Param('id') id: string) {
+    const character = await this.characterService.getCharacter(id);
+
+    return {
+      id: character.id,
+      name: character.name,
+      role: character.role,
+      personality: character.personality,
+      avatarUrl: character.avatarUrl,
+    };
+  }
+
+  /**
+   * Get character state for current learner
+   */
+  @Get(':id/state')
+  async getCharacterState(@Param('id') id: string, @Request() req: any) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can access character state');
+    }
+
+    const state = await this.characterService.getCharacterState(id, learnerId);
+
+    return { state };
+  }
+
+  /**
+   * Chat with character (standalone, not in conversation)
+   */
+  @Post(':id/chat')
+  async chatWithCharacter(
+    @Param('id') id: string,
+    @Body() body: { message: string; context?: any },
+    @Request() req: any,
+  ) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can chat with characters');
+    }
+
+    const response = await this.characterService.generateResponse(
+      id,
+      learnerId,
+      body.message,
+      body.context,
+    );
+
+    return { response };
+  }
+
+  // ============================================
+  // CONVERSATION ENDPOINTS
+  // ============================================
+
+  /**
+   * Create new conversation with character
+   */
+  @Post(':id/conversations')
+  async createConversation(
+    @Param('id') characterId: string,
+    @Body()
+    body: {
+      type: ConversationType;
+      sessionId?: string;
+      initialMessage?: string;
+    },
+    @Request() req: any,
+  ) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can create conversations');
+    }
+
+    const conversation = await this.conversationService.createConversation({
+      learnerId,
+      characterId,
+      type: body.type,
+      sessionId: body.sessionId,
+      initialMessage: body.initialMessage,
+    });
+
+    return { conversation };
+  }
+
+  // ============================================
+  // CONVERSATION MANAGEMENT
+  // ============================================
+
+  /**
+   * Get conversation with full history
+   */
+  @Get('conversations/:conversationId')
+  async getConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can access conversations');
+    }
+
+    const conversation = await this.conversationService.getConversation(conversationId);
+
+    // Verify ownership
+    if (conversation.learnerId !== learnerId) {
+      throw new Error('Not your conversation');
+    }
+
+    return { conversation };
+  }
+
+  /**
+   * Send message in conversation
+   */
+  @Post('conversations/:conversationId/messages')
+  async sendMessage(
+    @Param('conversationId') conversationId: string,
+    @Body() body: { content: string; metadata?: any },
+    @Request() req: any,
+  ) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can send messages');
+    }
+
+    const result = await this.conversationService.sendMessage(conversationId, learnerId, {
+      content: body.content,
+      metadata: body.metadata,
+    });
+
+    return result;
+  }
+
+  /**
+   * Get message history
+   */
+  @Get('conversations/:conversationId/messages')
+  async getMessageHistory(
+    @Param('conversationId') conversationId: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+    @Request() req: any,
+  ) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can access message history');
+    }
+
+    const messages = await this.conversationService.getMessageHistory(conversationId, learnerId, {
+      limit: limit ? parseInt(limit) : undefined,
+      offset: offset ? parseInt(offset) : undefined,
+    });
+
+    return { messages };
+  }
+
+  /**
+   * List learner's conversations
+   */
+  @Get('conversations')
+  async listConversations(
+    @Query('status') status?: ConversationStatus,
+    @Query('characterId') characterId?: string,
+    @Query('type') type?: ConversationType,
+    @Query('limit') limit?: string,
+    @Request() req: any,
+  ) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can list conversations');
+    }
+
+    const conversations = await this.conversationService.listConversations(learnerId, {
+      status,
+      characterId,
+      type,
+      limit: limit ? parseInt(limit) : undefined,
+    });
+
+    return { conversations };
+  }
+
+  /**
+   * Pause conversation
+   */
+  @Patch('conversations/:conversationId/pause')
+  async pauseConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can pause conversations');
+    }
+
+    const conversation = await this.conversationService.pauseConversation(conversationId, learnerId);
+
+    return { conversation };
+  }
+
+  /**
+   * Resume conversation
+   */
+  @Patch('conversations/:conversationId/resume')
+  async resumeConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can resume conversations');
+    }
+
+    const conversation = await this.conversationService.resumeConversation(conversationId, learnerId);
+
+    return { conversation };
+  }
+
+  /**
+   * End conversation
+   */
+  @Patch('conversations/:conversationId/end')
+  async endConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can end conversations');
+    }
+
+    const conversation = await this.conversationService.endConversation(conversationId, learnerId);
+
+    return { conversation };
+  }
+
+  /**
+   * Get conversation summary
+   */
+  @Get('conversations/:conversationId/summary')
+  async getConversationSummary(
+    @Param('conversationId') conversationId: string,
+    @Request() req: any,
+  ) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can access conversation summary');
+    }
+
+    const summary = await this.conversationService.getConversationSummary(conversationId, learnerId);
+
+    return { summary };
+  }
+
+  /**
+   * Refresh conversation context
+   */
+  @Post('conversations/:conversationId/refresh-context')
+  async refreshContext(@Param('conversationId') conversationId: string, @Request() req: any) {
+    const learnerId = req.user.learnerId;
+
+    if (!learnerId) {
+      throw new Error('Only learners can refresh context');
+    }
+
+    await this.conversationService.refreshContext(conversationId, learnerId);
+
+    return { success: true };
+  }
+}
