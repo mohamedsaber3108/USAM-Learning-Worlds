@@ -7,6 +7,9 @@ import { MissionDetailPage } from '@/features/missions/pages/MissionDetailPage'
 import { MissionPlayerPage } from '@/features/missions/pages/MissionPlayerPage'
 import { MissionCompletePage } from '@/features/missions/pages/MissionCompletePage'
 import { ProjectsPage } from '@/features/projects/pages/ProjectsPage'
+import { AchievementsPage } from '@/features/gamification/pages/AchievementsPage'
+import { LeaderboardPage } from '@/features/gamification/pages/LeaderboardPage'
+import { ProgressPage } from '@/features/gamification/pages/ProgressPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 
 export function AppRouter() {
@@ -66,6 +69,32 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <ProjectsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Gamification */}
+      <Route
+        path="/achievements"
+        element={
+          <ProtectedRoute>
+            <AchievementsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leaderboard"
+        element={
+          <ProtectedRoute>
+            <LeaderboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/progress"
+        element={
+          <ProtectedRoute>
+            <ProgressPage />
           </ProtectedRoute>
         }
       />
