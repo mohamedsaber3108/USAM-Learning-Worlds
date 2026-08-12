@@ -22,11 +22,11 @@ export function MissionsBrowsePage() {
         .then(res => res.data),
   })
 
-  const difficultyColors: Record<string, string> = {
-    beginner: 'bg-green-100 text-green-800',
-    intermediate: 'bg-blue-100 text-blue-800',
-    advanced: 'bg-purple-100 text-purple-800',
-    expert: 'bg-red-100 text-red-800',
+  const typeColors: Record<string, string> = {
+    GUIDED: 'bg-green-100 text-green-800',
+    EXPLORATION: 'bg-blue-100 text-blue-800',
+    CHALLENGE: 'bg-purple-100 text-purple-800',
+    PROJECT_BASED: 'bg-orange-100 text-orange-800',
   }
 
   return (
@@ -130,21 +130,22 @@ export function MissionsBrowsePage() {
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${
-                      difficultyColors[mission.difficulty] || 'bg-gray-100 text-gray-800'
+                      typeColors[mission.type] || 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {mission.difficulty}
+                    {mission.type?.replace('_', ' ')}
                   </span>
-                  <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                    {mission.domain?.name || 'General'}
-                  </span>
+                  {mission.estimatedMinutes && (
+                    <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                      ⏱️ {mission.estimatedMinutes} min
+                    </span>
+                  )}
                 </div>
 
                 {/* Mission Stats */}
                 <div className="flex items-center justify-between text-sm text-gray-600 border-t pt-3">
                   <div className="flex items-center space-x-4">
-                    <span>⭐ {mission.xpReward || 0} XP</span>
-                    <span>🎯 {mission.activities?.length || 0} activities</span>
+                    <span>🎯 {mission.type}</span>
                   </div>
                 </div>
               </Link>
