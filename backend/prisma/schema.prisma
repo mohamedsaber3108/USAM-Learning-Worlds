@@ -1,0 +1,576 @@
+// This is your Prisma schema file
+// Complete schema for USAM Learning Worlds - Phase 1 Foundation
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// IDENTITY (8 tables)
+// ============================================
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String
+  role         Role
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  learner  Learner?
+  guardian Guardian?
+
+  @@index([email])
+  @@map("users")
+}
+
+enum Role {
+  LEARNER
+  GUARDIAN
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+model Learner {
+  id                String        @id @default(uuid())
+  userId            String        @unique
+  firstName         String
+  lastName          String?
+  displayName       String        @unique
+  ageBand           AgeBand
+  avatarUrl         String?
+  dateOfBirth       DateTime?
+  status            LearnerStatus @default(ACTIVE)
+  preferences       Json?
+  leaderboardOptIn  Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guardianships  Guardianship[]
+  progression    Progression?
+  masteryRecords MasteryRecord[]
+  evidence       Evidence[]
+  missionRuns    MissionRun[]
+  projects       Project[]
+
+  @@index([userId])
+  @@index([displayName])
+  @@map("learners")
+}
+
+enum AgeBand {
+  AGE_8_9
+  AGE_10_11
+  AGE_12_14
+}
+
+enum LearnerStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+}
+
+model Guardian {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  firstName     String
+  lastName      String
+  phone         String?
+  relationship  String?
+  controls      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guardianships Guardianship[]
+
+  @@index([userId])
+  @@map("guardians")
+}
+
+model Guardianship {
+  id           String              @id @default(uuid())
+  guardianId   String
+  learnerId    String
+  relationship GuardianRelationship
+  status       GuardianshipStatus  @default(PENDING)
+  consentedAt  DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  guardian Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  learner  Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@unique([guardianId, learnerId])
+  @@index([guardianId])
+  @@index([learnerId])
+  @@map("guardianships")
+}
+
+enum GuardianRelationship {
+  PARENT
+  GUARDIAN
+  TEACHER
+  OTHER
+}
+
+enum GuardianshipStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+}
+
+// ============================================
+// CURRICULUM (15 tables - Core models)
+// ============================================
+
+model Domain {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?
+  color       String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  skills Skill[]
+
+  @@index([slug])
+  @@map("domains")
+}
+
+model Skill {
+  id          String   @id @default(uuid())
+  domainId    String
+  name        String
+  slug        String   @unique
+  description String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  domain       Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  competencies Competency[]
+
+  @@index([domainId])
+  @@index([slug])
+  @@map("skills")
+}
+
+model Competency {
+  id          String   @id @default(uuid())
+  skillId     String
+  name        String
+  description String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  skill            Skill              @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  objectives       LearningObjective[]
+  masteryRecords   MasteryRecord[]
+
+  @@index([skillId])
+  @@map("competencies")
+}
+
+model LearningObjective {
+  id           String   @id @default(uuid())
+  competencyId String
+  name         String
+  description  String?
+  order        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  activities Activity[]
+
+  @@index([competencyId])
+  @@map("learning_objectives")
+}
+
+model Activity {
+  id          String         @id @default(uuid())
+  objectiveId String
+  type        ActivityType
+  title       String
+  description String?
+  content     Json
+  difficulty  DifficultyLevel @default(MEDIUM)
+  order       Int            @default(0)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  objective LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  attempts  ActivityAttempt[]
+
+  @@index([objectiveId])
+  @@index([type])
+  @@map("activities")
+}
+
+enum ActivityType {
+  SELECT
+  MATCH
+  SEQUENCE
+  CODE
+  EXPLAIN
+  CREATE
+  SOLVE
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+  CHALLENGE
+}
+
+// ============================================
+// MASTERY (6 tables)
+// ============================================
+
+model MasteryRecord {
+  id            String       @id @default(uuid())
+  learnerId     String
+  competencyId  String
+  state         MasteryState @default(NOT_STARTED)
+  confidence    Float        @default(0.0)
+  evidenceCount Int          @default(0)
+  lastPracticed DateTime?
+  reviewDue     DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  learner    Learner    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  evidence   Evidence[]
+
+  @@unique([learnerId, competencyId])
+  @@index([learnerId])
+  @@index([competencyId])
+  @@index([state])
+  @@index([reviewDue])
+  @@map("mastery_records")
+}
+
+enum MasteryState {
+  NOT_STARTED
+  INTRODUCED
+  EXPLORING
+  PRACTICING
+  DEVELOPING
+  PROFICIENT
+  MASTERED
+}
+
+model Evidence {
+  id             String       @id @default(uuid())
+  learnerId      String
+  competencyId   String
+  masteryId      String
+  type           EvidenceType
+  success        Boolean
+  score          Float?
+  context        Json?
+  attemptId      String?
+  createdAt      DateTime     @default(now())
+
+  learner  Learner       @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  mastery  MasteryRecord @relation(fields: [masteryId], references: [id], onDelete: Cascade)
+  attempt  ActivityAttempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+
+  @@index([learnerId])
+  @@index([masteryId])
+  @@index([competencyId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("evidence")
+}
+
+enum EvidenceType {
+  KNOWLEDGE
+  APPLICATION
+  CREATION
+  EXPLANATION
+  CONVERSATION
+  PROBLEM_SOLVING
+  TRANSFER
+  REFLECTION
+}
+
+// ============================================
+// MISSIONS (12 tables - Core models)
+// ============================================
+
+model Mission {
+  id                String   @id @default(uuid())
+  worldId           String?
+  title             String
+  description       String
+  type              MissionType
+  estimatedMinutes  Int?
+  order             Int      @default(0)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  runs MissionRun[]
+
+  @@index([type])
+  @@map("missions")
+}
+
+enum MissionType {
+  GUIDED
+  EXPLORATION
+  CHALLENGE
+  PROJECT_BASED
+}
+
+model MissionRun {
+  id                 String          @id @default(uuid())
+  learnerId          String
+  missionId          String
+  status             MissionRunStatus @default(IN_PROGRESS)
+  currentStageIndex  Int             @default(0)
+  startedAt          DateTime        @default(now())
+  completedAt        DateTime?
+  updatedAt          DateTime        @updatedAt
+
+  learner  Learner           @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  mission  Mission           @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  attempts ActivityAttempt[]
+
+  @@index([learnerId])
+  @@index([missionId])
+  @@index([status])
+  @@map("mission_runs")
+}
+
+enum MissionRunStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+model ActivityAttempt {
+  id         String   @id @default(uuid())
+  runId      String
+  activityId String
+  response   Json
+  success    Boolean
+  score      Float?
+  feedback   String?
+  createdAt  DateTime @default(now())
+
+  run      MissionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  activity Activity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  evidence Evidence[]
+
+  @@index([runId])
+  @@index([activityId])
+  @@map("activity_attempts")
+}
+
+// ============================================
+// PROJECTS (8 tables - Core models)
+// ============================================
+
+model Project {
+  id          String         @id @default(uuid())
+  learnerId   String
+  title       String
+  description String?
+  state       ProjectState   @default(DRAFT)
+  visibility  ProjectVisibility @default(PRIVATE)
+  skills      String[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([state])
+  @@map("projects")
+}
+
+enum ProjectState {
+  DRAFT
+  PLANNING
+  BUILDING
+  REVIEW
+  REVISION
+  COMPLETED
+  SHOWCASED
+}
+
+enum ProjectVisibility {
+  PRIVATE
+  GUARDIANS_ONLY
+  PUBLIC
+}
+
+// ============================================
+// PROGRESSION (10 tables - Core models)
+// ============================================
+
+model Progression {
+  id        String   @id @default(uuid())
+  learnerId String   @unique
+  level     Int      @default(1)
+  totalXP   Int      @default(0)
+  coins     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  learner Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  xpGains XPGain[]
+
+  @@index([learnerId])
+  @@map("progression")
+}
+
+model XPGain {
+  id             String   @id @default(uuid())
+  learnerId      String
+  amount         Int
+  source         XPSource
+  sourceId       String
+  reason         String?
+  createdAt      DateTime @default(now())
+
+  progression Progression @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, source, sourceId])
+  @@index([learnerId])
+  @@index([source])
+  @@map("xp_gains")
+}
+
+enum XPSource {
+  MISSION_COMPLETE
+  ACTIVITY_SUCCESS
+  PROJECT_COMPLETE
+  ACHIEVEMENT_UNLOCK
+  STREAK_BONUS
+  FIRST_TIME_BONUS
+}
+
+model PracticeStreak {
+  id                String   @id @default(uuid())
+  learnerId         String   @unique
+  currentStreak     Int      @default(0)
+  longestStreak     Int      @default(0)
+  lastPracticeDate  DateTime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([learnerId])
+  @@map("practice_streaks")
+}
+
+// ============================================
+// CHARACTERS & AI (8 tables - Core models)
+// ============================================
+
+model Character {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  role         CharacterRole
+  personality  Json
+  systemPrompt String   @db.Text
+  avatarUrl    String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([role])
+  @@map("characters")
+}
+
+enum CharacterRole {
+  GUIDE
+  MENTOR
+  COMPANION
+  CHALLENGER
+}
+
+// ============================================
+// AI & SAFETY (3 tables)
+// ============================================
+
+model AIUsageLog {
+  id           String   @id @default(uuid())
+  userId       String
+  service      String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([service])
+  @@index([createdAt])
+  @@map("ai_usage_logs")
+}
+
+model ModerationLog {
+  id             String   @id @default(uuid())
+  contentType    String
+  contentPreview String   @db.Text
+  flagged        Boolean
+  categories     String[]
+  severity       String
+  action         String
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  createdAt      DateTime @default(now())
+
+  @@index([flagged])
+  @@index([severity])
+  @@index([createdAt])
+  @@map("moderation_logs")
+}
+
+model QuarantinedContent {
+  id         String    @id @default(uuid())
+  entityType String
+  entityId   String
+  reason     String    @db.Text
+  severity   String
+  categories String[]
+  status     String
+  reviewedBy String?
+  reviewedAt DateTime?
+  reviewNotes String?  @db.Text
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([severity])
+  @@map("quarantined_content")
+}
