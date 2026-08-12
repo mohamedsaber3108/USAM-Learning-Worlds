@@ -1,0 +1,128 @@
+// ============================================
+// PHASE 3: AI INTELLIGENCE & CONVERSATIONS
+// ============================================
+
+model Conversation {
+  id              String             @id @default(uuid())
+  learnerId       String
+  characterId     String
+  sessionId       String?
+  type            ConversationType
+  status          ConversationStatus @default(ACTIVE)
+  contextSnapshot Json?
+  startedAt       DateTime           @default(now())
+  endedAt         DateTime?
+
+  learner  Learner              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  character Character            @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  messages ConversationMessage[]
+
+  @@index([learnerId])
+  @@index([characterId])
+  @@index([sessionId])
+  @@index([status])
+  @@map("conversations")
+}
+
+model ConversationMessage {
+  id               String   @id @default(uuid())
+  conversationId   String
+  role             MessageRole
+  content          String   @db.Text
+  metadata         Json?
+  moderationResult Json?
+  createdAt        DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("conversation_messages")
+}
+
+model CharacterInteraction {
+  id              String   @id @default(uuid())
+  learnerId       String
+  characterId     String
+  interactionType String
+  context         Json?
+  request         String?  @db.Text
+  response        String   @db.Text
+  mood            String?
+  createdAt       DateTime @default(now())
+
+  learner   Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([characterId])
+  @@index([createdAt])
+  @@map("character_interactions")
+}
+
+model CharacterState {
+  id                String    @id @default(uuid())
+  learnerId         String
+  characterId       String
+  relationshipLevel Int       @default(1)
+  interactionCount  Int       @default(0)
+  lastInteraction   DateTime?
+  preferences       Json?
+  updatedAt         DateTime  @updatedAt
+
+  learner   Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, characterId])
+  @@index([learnerId])
+  @@index([characterId])
+  @@map("character_states")
+}
+
+model LearnerContext {
+  id                   String   @id @default(uuid())
+  learnerId            String
+  sessionId            String?
+  ageBand              AgeBand
+  currentDomainId      String?
+  currentMissionId     String?
+  currentActivityId    String?
+  masterySnapshot      Json
+  preferencesSnapshot  Json?
+  generatedAt          DateTime @default(now())
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([sessionId])
+  @@index([generatedAt])
+  @@map("learner_contexts")
+}
+
+enum ConversationType {
+  LEARNING_SUPPORT
+  ENGLISH_PRACTICE
+  CODING_HELP
+  PROJECT_GUIDANCE
+  CASUAL
+  ROLEPLAY
+}
+
+enum ConversationStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+  BLOCKED
+}
+
+enum MessageRole {
+  LEARNER
+  CHARACTER
+  SYSTEM
+}
+
+// Also add these relations to Learner model:
+//   conversations        Conversation[]
+//   characterInteractions CharacterInteraction[]
+//   characterStates      CharacterState[]
+//   learnerContexts      LearnerContext[]

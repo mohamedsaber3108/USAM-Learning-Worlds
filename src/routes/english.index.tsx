@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { PageHeader, SectionHeading } from "@/components/layout/PageHeader";
 import { AsyncBoundary } from "@/components/state/AsyncStates";
@@ -8,6 +8,7 @@ import { EnglishWorldMap, VenueCard } from "@/components/english/EnglishWorldMap
 import { StrandBoard, StrandDetail, glyphIcon } from "@/components/english/StrandBoard";
 import { englishKeys, englishService } from "@/services/english";
 import { useExperience } from "@/state/experience";
+import { api } from "@/services/api";
 import type { EnglishStrandId } from "@/types/english";
 
 export const Route = createFileRoute("/english/")({
@@ -39,6 +40,15 @@ function EnglishWorldPage() {
     queryKey: englishKeys.snapshot(ageBand),
     queryFn: () => englishService.snapshot(ageBand),
   });
+
+  // Load real strands from backend (for development testing)
+  useEffect(() => {
+    api.english.listStrands().then((strands) => {
+      console.log('✅ Loaded real English strands from backend:', strands);
+    }).catch((err) => {
+      console.warn('⚠️ Failed to load real strands, using mock data:', err.message);
+    });
+  }, []);
 
   return (
     <div className="space-y-10">

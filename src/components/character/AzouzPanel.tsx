@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useExperience } from "@/state/experience";
+import { useAzouz } from "@/hooks/useAzouz";
 import type { AIMessage, VoiceState } from "@/types/domain";
 
 const voiceCopy: Record<VoiceState, string> = {
@@ -19,23 +20,15 @@ const voiceCopy: Record<VoiceState, string> = {
 };
 
 /**
- * Azouz — the recurring companion surface.
- * All behaviour here is presentational state only; a future AI backend drives
- * `CharacterState`, `AIConversation` and `VoiceSession` through the same props.
+ * Azouz — your AI learning companion with REAL backend integration.
+ * Now connected to actual character service, conversation management, and Arabic support.
  */
-export function AzouzPanel({
-  messages,
-  onSend,
-  compact = false,
-}: {
-  messages: AIMessage[];
-  onSend?: (text: string) => void;
-  compact?: boolean;
-}) {
+export function AzouzPanel({ compact = false }: { compact?: boolean }) {
   const { azouz, setVoiceState, adaptation } = useExperience();
+  const { messages, sendMessage, isLoading, error } = useAzouz();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  const voice = azouz.voiceState;
+  const voice = isLoading ? "thinking" : azouz.voiceState;
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -105,18 +98,18 @@ export function AzouzPanel({
             label="Mute"
           />
         </div>
-        {voice === "error" && (
+        {(voice === "error" || error) && (
           <p className="flex items-center gap-2 text-xs text-destructive">
-            <TriangleAlert className="size-3.5" aria-hidden /> Voice is unavailable — text still
-            works.
+            <TriangleAlert className="size-3.5" aria-hidden />
+            {error || "Voice is unavailable — text still works."}
           </p>
         )}
         <form
           className="flex gap-2"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            if (!draft.trim()) return;
-            onSend?.(draft.trim());
+            if (!draft.trim() || isLoading) return;
+            await sendMessage(draft.trim());
             setDraft("");
           }}
         >
@@ -129,8 +122,15 @@ export function AzouzPanel({
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Ask Azouz anything about your mission"
             className="min-h-11"
+            disabled={isLoading}
           />
-          <Button type="submit" size="icon" className="min-h-11 min-w-11" aria-label="Send message">
+          <Button
+            type="submit"
+            size="icon"
+            className="min-h-11 min-w-11"
+            aria-label="Send message"
+            disabled={isLoading || !draft.trim()}
+          >
             <Send className="size-4" aria-hidden />
           </Button>
         </form>

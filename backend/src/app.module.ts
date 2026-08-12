@@ -13,6 +13,7 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
 import { CommunityModule } from './modules/community/community.module';
 import { ParentsModule } from './modules/parents/parents.module';
+import { LearningModule } from './modules/learning/learning.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ParentsModule } from './modules/parents/parents.module';
     GamificationModule,
     CommunityModule,
     ParentsModule,
+    LearningModule,
   ],
   controllers: [AppController],
   providers: [AppService],

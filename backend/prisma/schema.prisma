@@ -58,13 +58,19 @@ model Learner {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  guardianships  Guardianship[]
-  progression    Progression?
-  masteryRecords MasteryRecord[]
-  evidence       Evidence[]
-  missionRuns    MissionRun[]
-  projects       Project[]
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guardianships         Guardianship[]
+  progression           Progression?
+  masteryRecords        MasteryRecord[]
+  evidence              Evidence[]
+  missionRuns           MissionRun[]
+  projects              Project[]
+  conversations         Conversation[]
+  characterInteractions CharacterInteraction[]
+  characterStates       CharacterState[]
+  learnerContexts       LearnerContext[]
+  pathProgress          LearningPathProgress[]
+  learningEvents        LearningEvent[]
 
   @@index([userId])
   @@index([displayName])
@@ -149,7 +155,9 @@ model Domain {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  skills Skill[]
+  skills         Skill[]
+  learningPaths  LearningPath[]
+  contentItems   ContentItem[]
 
   @@index([slug])
   @@map("domains")
@@ -184,9 +192,12 @@ model Competency {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  skill            Skill              @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skill            Skill                     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  concepts         Concept[]
   objectives       LearningObjective[]
   masteryRecords   MasteryRecord[]
+  prerequisites    CompetencyPrerequisite[] @relation("competency")
+  dependents       CompetencyPrerequisite[] @relation("prerequisite")
 
   @@index([skillId])
   @@map("competencies")
@@ -195,6 +206,7 @@ model Competency {
 model LearningObjective {
   id           String   @id @default(uuid())
   competencyId String
+  conceptId    String?
   name         String
   description  String?
   order        Int      @default(0)
@@ -202,10 +214,13 @@ model LearningObjective {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
-  activities Activity[]
+  competency   Competency     @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  concept      Concept?       @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  activities   Activity[]
+  contentItems ContentItem[]
 
   @@index([competencyId])
+  @@index([conceptId])
   @@map("learning_objectives")
 }
 
@@ -222,8 +237,9 @@ model Activity {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
-  objective LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
-  attempts  ActivityAttempt[]
+  objective        LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  attempts         ActivityAttempt[]
+  missionActivities MissionActivity[]
 
   @@index([objectiveId])
   @@index([type])
@@ -336,7 +352,8 @@ model Mission {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  runs MissionRun[]
+  runs              MissionRun[]
+  missionActivities MissionActivity[]
 
   @@index([type])
   @@map("missions")
@@ -409,7 +426,8 @@ model Project {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
-  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  learner    Learner            @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  milestones ProjectMilestone[]
 
   @@index([learnerId])
   @@index([state])
@@ -506,6 +524,10 @@ model Character {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  conversations Conversation[]
+  interactions  CharacterInteraction[]
+  states        CharacterState[]
+
   @@index([role])
   @@map("characters")
 }
@@ -515,6 +537,16 @@ enum CharacterRole {
   MENTOR
   COMPANION
   CHALLENGER
+  ENGLISH_COACH
+  CODING_MENTOR
+  AI_MENTOR
+  CREATIVE_MENTOR
+  SCIENCE_MENTOR
+  ENTREPRENEURSHIP_MENTOR
+  STORY_GUIDE
+  CHALLENGE_MASTER
+  PROJECT_REVIEWER
+  WORLD_GUIDE
 }
 
 // ============================================
@@ -573,4 +605,552 @@ model QuarantinedContent {
   @@index([status])
   @@index([severity])
   @@map("quarantined_content")
+}
+
+// ============================================
+// PHASE 3: AI CONVERSATIONS (5 tables)
+// ============================================
+
+model Conversation {
+  id              String             @id @default(uuid())
+  learnerId       String
+  characterId     String
+  sessionId       String?
+  type            ConversationType
+  status          ConversationStatus @default(ACTIVE)
+  contextSnapshot Json?
+  startedAt       DateTime           @default(now())
+  endedAt         DateTime?
+
+  learner  Learner              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  character Character            @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  messages ConversationMessage[]
+
+  @@index([learnerId])
+  @@index([characterId])
+  @@index([sessionId])
+  @@index([status])
+  @@map("conversations")
+}
+
+model ConversationMessage {
+  id               String   @id @default(uuid())
+  conversationId   String
+  role             MessageRole
+  content          String   @db.Text
+  metadata         Json?
+  moderationResult Json?
+  createdAt        DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("conversation_messages")
+}
+
+model CharacterInteraction {
+  id              String   @id @default(uuid())
+  learnerId       String
+  characterId     String
+  interactionType String
+  context         Json?
+  request         String?  @db.Text
+  response        String   @db.Text
+  mood            String?
+  createdAt       DateTime @default(now())
+
+  learner   Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([characterId])
+  @@index([createdAt])
+  @@map("character_interactions")
+}
+
+model CharacterState {
+  id                String    @id @default(uuid())
+  learnerId         String
+  characterId       String
+  relationshipLevel Int       @default(1)
+  interactionCount  Int       @default(0)
+  lastInteraction   DateTime?
+  preferences       Json?
+  updatedAt         DateTime  @updatedAt
+
+  learner   Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, characterId])
+  @@index([learnerId])
+  @@index([characterId])
+  @@map("character_states")
+}
+
+model LearnerContext {
+  id                   String   @id @default(uuid())
+  learnerId            String
+  sessionId            String?
+  ageBand              AgeBand
+  currentDomainId      String?
+  currentMissionId     String?
+  currentActivityId    String?
+  masterySnapshot      Json
+  preferencesSnapshot  Json?
+  generatedAt          DateTime @default(now())
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([sessionId])
+  @@index([generatedAt])
+  @@map("learner_contexts")
+}
+
+enum ConversationType {
+  LEARNING_SUPPORT
+  ENGLISH_PRACTICE
+  CODING_HELP
+  PROJECT_GUIDANCE
+  CASUAL
+  ROLEPLAY
+}
+
+enum ConversationStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+  BLOCKED
+}
+
+enum MessageRole {
+  LEARNER
+  CHARACTER
+  SYSTEM
+}
+
+// ============================================
+// PHASE 4: LEARNING GRAPH & PREREQUISITES (4 tables)
+// ============================================
+
+model Concept {
+  id           String   @id @default(uuid())
+  competencyId String
+  name         String
+  slug         String   @unique
+  description  String?
+  order        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  competency    Competency            @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  objectives    LearningObjective[]
+  prerequisites ConceptPrerequisite[] @relation("concept")
+  dependents    ConceptPrerequisite[] @relation("prerequisite")
+
+  @@index([competencyId])
+  @@index([slug])
+  @@map("concepts")
+}
+
+model ConceptPrerequisite {
+  id             String           @id @default(uuid())
+  conceptId      String
+  prerequisiteId String
+  type           PrerequisiteType @default(REQUIRED)
+  createdAt      DateTime         @default(now())
+
+  concept      Concept @relation("concept", fields: [conceptId], references: [id], onDelete: Cascade)
+  prerequisite Concept @relation("prerequisite", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, prerequisiteId])
+  @@index([conceptId])
+  @@index([prerequisiteId])
+  @@map("concept_prerequisites")
+}
+
+model CompetencyPrerequisite {
+  id             String           @id @default(uuid())
+  competencyId   String
+  prerequisiteId String
+  type           PrerequisiteType @default(REQUIRED)
+  createdAt      DateTime         @default(now())
+
+  competency   Competency @relation("competency", fields: [competencyId], references: [id], onDelete: Cascade)
+  prerequisite Competency @relation("prerequisite", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([competencyId, prerequisiteId])
+  @@index([competencyId])
+  @@index([prerequisiteId])
+  @@map("competency_prerequisites")
+}
+
+enum PrerequisiteType {
+  REQUIRED
+  RECOMMENDED
+  COREQUISITE
+}
+
+// ============================================
+// PHASE 4: LEARNING PATHS (3 tables)
+// ============================================
+
+model LearningPath {
+  id          String   @id @default(uuid())
+  domainId    String
+  name        String
+  slug        String   @unique
+  description String?
+  ageBand     AgeBand?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  domain   Domain                 @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  nodes    LearningPathNode[]
+  progress LearningPathProgress[]
+
+  @@index([domainId])
+  @@index([slug])
+  @@map("learning_paths")
+}
+
+model LearningPathNode {
+  id         String   @id @default(uuid())
+  pathId     String
+  entityType String
+  entityId   String
+  order      Int      @default(0)
+  isOptional Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  path LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+
+  @@index([pathId])
+  @@index([entityType, entityId])
+  @@map("learning_path_nodes")
+}
+
+model LearningPathProgress {
+  id               String   @id @default(uuid())
+  learnerId        String
+  pathId           String
+  currentNodeIndex Int      @default(0)
+  completedNodes   String[]
+  startedAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  learner Learner      @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  path    LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, pathId])
+  @@index([learnerId])
+  @@index([pathId])
+  @@map("learning_path_progress")
+}
+
+// ============================================
+// PHASE 4: MISSION-ACTIVITY LINKAGE (1 table)
+// ============================================
+
+model MissionActivity {
+  id         String   @id @default(uuid())
+  missionId  String
+  activityId String
+  order      Int      @default(0)
+  isRequired Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  mission  Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, activityId])
+  @@index([missionId])
+  @@index([activityId])
+  @@map("mission_activities")
+}
+
+// ============================================
+// PHASE 4: AGE ADAPTATION (1 table)
+// ============================================
+
+model AgeVariant {
+  id            String        @id @default(uuid())
+  entityType    String
+  entityId      String
+  ageBand       AgeBand
+  framing       String
+  languageLevel String?
+  scaffoldLevel ScaffoldLevel @default(GUIDED)
+  surface       String?
+  content       Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([entityType, entityId, ageBand])
+  @@index([entityType, entityId])
+  @@index([ageBand])
+  @@map("age_variants")
+}
+
+enum ScaffoldLevel {
+  MODELLED
+  GUIDED
+  COACHED
+  INDEPENDENT
+}
+
+// ============================================
+// PHASE 4: CONTENT MANAGEMENT (1 table)
+// ============================================
+
+model ContentItem {
+  id          String          @id @default(uuid())
+  type        ContentType
+  title       String
+  content     Json
+  metadata    Json?
+  language    String          @default("en")
+  ageBand     AgeBand?
+  domainId    String?
+  objectiveId String?
+  difficulty  DifficultyLevel?
+  status      ContentStatus   @default(DRAFT)
+  version     Int             @default(1)
+  generatedBy String?
+  validatedBy String?
+  validatedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  domain    Domain?            @relation(fields: [domainId], references: [id], onDelete: SetNull)
+  objective LearningObjective? @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([status])
+  @@index([domainId])
+  @@index([ageBand])
+  @@index([generatedBy])
+  @@map("content_items")
+}
+
+enum ContentType {
+  ACTIVITY
+  QUESTION
+  STORY
+  SCENARIO
+  HINT
+  EXPLANATION
+  PROJECT_BRIEF
+  PRACTICE_SET
+}
+
+enum ContentStatus {
+  DRAFT
+  VALIDATING
+  VALIDATED
+  PUBLISHED
+  DEPRECATED
+  REJECTED
+}
+
+// ============================================
+// PHASE 4: MULTILINGUAL (1 table)
+// ============================================
+
+model Translation {
+  id         String   @id @default(uuid())
+  entityType String
+  entityId   String
+  field      String
+  language   String
+  value      String   @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([entityType, entityId, field, language])
+  @@index([entityType, entityId])
+  @@index([language])
+  @@map("translations")
+}
+
+// ============================================
+// PHASE 4: LEARNING EVENTS (1 table)
+// ============================================
+
+model LearningEvent {
+  id         String            @id @default(uuid())
+  learnerId  String
+  type       LearningEventType
+  entityType String?
+  entityId   String?
+  data       Json?
+  sessionId  String?
+  createdAt  DateTime          @default(now())
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([entityType, entityId])
+  @@map("learning_events")
+}
+
+enum LearningEventType {
+  ACTIVITY_STARTED
+  ACTIVITY_COMPLETED
+  ANSWER_SUBMITTED
+  HINT_REQUESTED
+  EXPLANATION_REQUESTED
+  MASTERY_CHANGED
+  PROJECT_STARTED
+  PROJECT_COMPLETED
+  MISSION_STARTED
+  MISSION_COMPLETED
+  CONVERSATION_STARTED
+  SKILL_UNLOCKED
+  CONCEPT_UNLOCKED
+  ACHIEVEMENT_EARNED
+  PRACTICE_STREAK_UPDATED
+  REVIEW_SCHEDULED
+  ASSESSMENT_STARTED
+  ASSESSMENT_COMPLETED
+}
+
+// ============================================
+// PHASE 4: PROJECT ENHANCEMENTS (3 tables)
+// ============================================
+
+model ProjectMilestone {
+  id          String    @id @default(uuid())
+  projectId   String
+  title       String
+  description String?
+  targetDate  DateTime?
+  status      String    @default("PENDING")
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@map("project_milestones")
+}
+
+model Rubric {
+  id         String   @id @default(uuid())
+  entityType String
+  entityId   String
+  title      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  criteria RubricCriterion[]
+
+  @@index([entityType, entityId])
+  @@map("rubrics")
+}
+
+model RubricCriterion {
+  id          String   @id @default(uuid())
+  rubricId    String
+  name        String
+  description String
+  order       Int      @default(0)
+  levels      Json
+  createdAt   DateTime @default(now())
+
+  rubric Rubric @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+
+  @@index([rubricId])
+  @@map("rubric_criteria")
+}
+
+// ============================================
+// PHASE 4: DOMAIN-SPECIFIC STRUCTURES (5 tables)
+// ============================================
+
+model EnglishStrand {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  cefrLevel   String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([slug])
+  @@map("english_strands")
+}
+
+model CodingConcept {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  category    String
+  difficulty  Int      @default(1)
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("coding_concepts")
+}
+
+model AILiteracyConcept {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?
+  ageAppropriate  AgeBand
+  category        String
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([ageAppropriate])
+  @@map("ai_literacy_concepts")
+}
+
+model EntrepreneurshipConcept {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?
+  category        String
+  ageAppropriate  AgeBand
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("entrepreneurship_concepts")
+}
+
+model FinancialLiteracyConcept {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?
+  category        String
+  ageAppropriate  AgeBand
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("financial_literacy_concepts")
 }
