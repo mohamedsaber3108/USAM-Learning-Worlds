@@ -154,22 +154,44 @@ export function DashboardPage() {
 
             <div className="card">
               <h3 className="text-lg font-semibold mb-4">🎯 Quick Actions</h3>
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Link
                   to="/missions"
-                  className="block p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
+                  className="p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors text-center"
                 >
-                  <h4 className="font-semibold text-primary-900">Start a Mission</h4>
-                  <p className="text-sm text-primary-700">Browse interactive challenges</p>
+                  <div className="text-2xl mb-1">🎯</div>
+                  <p className="font-semibold text-primary-900 text-sm">Missions</p>
                 </Link>
                 <Link
                   to="/projects"
-                  className="block p-3 bg-secondary-50 hover:bg-secondary-100 rounded-lg transition-colors"
+                  className="p-3 bg-secondary-50 hover:bg-secondary-100 rounded-lg transition-colors text-center"
                 >
-                  <h4 className="font-semibold text-secondary-900">Create Project</h4>
-                  <p className="text-sm text-secondary-700">Showcase your work</p>
+                  <div className="text-2xl mb-1">🎨</div>
+                  <p className="font-semibold text-secondary-900 text-sm">Projects</p>
+                </Link>
+                <Link
+                  to="/achievements"
+                  className="p-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors text-center"
+                >
+                  <div className="text-2xl mb-1">🏆</div>
+                  <p className="font-semibold text-yellow-900 text-sm">Achievements</p>
+                </Link>
+                <Link
+                  to="/leaderboard"
+                  className="p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-center"
+                >
+                  <div className="text-2xl mb-1">📊</div>
+                  <p className="font-semibold text-green-900 text-sm">Leaderboard</p>
                 </Link>
               </div>
+              <Link
+                to="/progress"
+                className="block mt-3 p-3 bg-gradient-to-r from-primary-50 to-secondary-50 hover:from-primary-100 hover:to-secondary-100 rounded-lg transition-colors text-center"
+              >
+                <p className="font-semibold text-gray-900 text-sm">
+                  📈 View Full Progress
+                </p>
+              </Link>
             </div>
           </div>
         )}
