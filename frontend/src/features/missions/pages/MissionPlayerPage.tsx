@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { missionsApi } from '@/lib/api/endpoints'
@@ -73,9 +73,26 @@ export function MissionPlayerPage() {
       return
     }
 
+    // Format response based on backend activity type
+    let formattedResponse: any = answer
+    const type = currentActivity.type
+    if (type === 'SELECT' || type === 'multiple_choice') {
+      formattedResponse = { selectedAnswers: [answer] }
+    } else if (type === 'SOLVE' || type === 'fill_blank') {
+      formattedResponse = { answer }
+    } else if (type === 'EXPLAIN' || type === 'short_answer') {
+      formattedResponse = { explanation: answer }
+    } else if (type === 'CODE' || type === 'coding') {
+      formattedResponse = { code: answer }
+    } else if (type === 'CREATE') {
+      formattedResponse = { submission: answer, description: answer }
+    } else {
+      formattedResponse = { answer }
+    }
+
     submitMutation.mutate({
       activityId: currentActivity.id,
-      answer,
+      response: formattedResponse,
     })
   }
 
@@ -117,10 +134,10 @@ export function MissionPlayerPage() {
           {/* Question */}
           <div className="mb-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              {currentActivity.question || currentActivity.prompt}
+              {currentActivity.content?.question || currentActivity.content?.problem || currentActivity.content?.prompt || currentActivity.title || currentActivity.question || currentActivity.prompt}
             </h2>
-            {currentActivity.context && (
-              <p className="text-gray-600 mb-4">{currentActivity.context}</p>
+            {(currentActivity.content?.context || currentActivity.context) && (
+              <p className="text-gray-600 mb-4">{currentActivity.content?.context || currentActivity.context}</p>
             )}
           </div>
 
@@ -177,11 +194,16 @@ function ActivityContent({
   answer: any
   onChange: (value: any) => void
 }) {
-  switch (activity.type) {
+  const type = activity.type?.toLowerCase()
+  const options = activity.content?.options || activity.options || []
+  const question = activity.content?.question || activity.question || activity.prompt || activity.title
+
+  switch (type) {
+    case 'select':
     case 'multiple_choice':
       return (
         <div className="space-y-3">
-          {activity.options?.map((option: string, index: number) => (
+          {options.map((option: string, index: number) => (
             <label
               key={index}
               className={`block p-4 border-2 rounded-lg cursor-pointer transition-colors ${
@@ -204,6 +226,7 @@ function ActivityContent({
         </div>
       )
 
+    case 'solve':
     case 'fill_blank':
       return (
         <input
@@ -215,6 +238,7 @@ function ActivityContent({
         />
       )
 
+    case 'explain':
     case 'short_answer':
       return (
         <textarea
@@ -251,6 +275,7 @@ function ActivityContent({
         </div>
       )
 
+    case 'code':
     case 'coding':
       return (
         <textarea

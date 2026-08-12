@@ -82,22 +82,22 @@ export function LeaderboardPage() {
               <div className="flex items-center space-x-4">
                 <div
                   className={`text-4xl font-bold ${getRankColor(
-                    myRank.globalRank
+                    myRank.rank
                   )}`}
                 >
-                  {getRankIcon(myRank.globalRank)}
+                  {getRankIcon(myRank.rank)}
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Your Rank</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {myRank.displayName || 'You'}
+                    #{myRank.rank || '---'}
                   </p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Total XP</p>
                 <p className="text-2xl font-bold text-secondary-600">
-                  {myRank.totalXp?.toLocaleString() || 0}
+                  {myRank.totalXP?.toLocaleString() || 0}
                 </p>
               </div>
             </div>
@@ -159,7 +159,7 @@ export function LeaderboardPage() {
                       {/* Stats */}
                       <div className="text-right">
                         <p className="font-bold text-secondary-600">
-                          {entry.totalXp?.toLocaleString() || 0}
+                          {entry.totalXP?.toLocaleString() || 0}
                         </p>
                         <p className="text-xs text-gray-500">XP</p>
                       </div>

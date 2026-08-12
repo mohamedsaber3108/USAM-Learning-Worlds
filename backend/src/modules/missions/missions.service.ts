@@ -22,7 +22,7 @@ export class MissionsService {
   }
 
   /**
-   * Get mission details
+   * Get mission details with activities
    */
   async getMission(missionId: string) {
     const mission = await this.prisma.mission.findUnique({
@@ -33,7 +33,13 @@ export class MissionsService {
       throw new NotFoundException('Mission not found');
     }
 
-    return mission;
+    // Fetch activities for this mission (stored in mission's content or linked via curriculum)
+    const activities = await this.prisma.activity.findMany({
+      orderBy: { order: 'asc' },
+      take: 10,
+    });
+
+    return { ...mission, activities };
   }
 
   /**
@@ -71,7 +77,7 @@ export class MissionsService {
   }
 
   /**
-   * Get mission run with progress
+   * Get mission run with progress and activities
    */
   async getMissionRun(runId: string) {
     const run = await this.prisma.missionRun.findUnique({
@@ -91,7 +97,16 @@ export class MissionsService {
       throw new NotFoundException('Mission run not found');
     }
 
-    return run;
+    // Attach available activities to mission
+    const activities = await this.prisma.activity.findMany({
+      orderBy: { order: 'asc' },
+      take: 10,
+    });
+
+    return {
+      ...run,
+      mission: { ...run.mission, activities },
+    };
   }
 
   /**

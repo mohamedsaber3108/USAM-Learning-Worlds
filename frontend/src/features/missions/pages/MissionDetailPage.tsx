@@ -25,21 +25,21 @@ export function MissionDetailPage() {
     },
   })
 
-  const difficultyColors: Record<string, string> = {
-    beginner: 'bg-green-100 text-green-800',
-    intermediate: 'bg-blue-100 text-blue-800',
-    advanced: 'bg-purple-100 text-purple-800',
-    expert: 'bg-red-100 text-red-800',
+  const typeColors: Record<string, string> = {
+    GUIDED: 'bg-green-100 text-green-800',
+    EXPLORATION: 'bg-blue-100 text-blue-800',
+    CHALLENGE: 'bg-purple-100 text-purple-800',
+    PROJECT_BASED: 'bg-orange-100 text-orange-800',
   }
 
   const activityIcons: Record<string, string> = {
-    multiple_choice: '✓',
-    fill_blank: '📝',
-    ordering: '↕️',
-    matching: '⇄',
-    true_false: '✓✗',
-    short_answer: '💬',
-    coding: '💻',
+    SELECT: '✓',
+    MATCH: '⇄',
+    SEQUENCE: '↕️',
+    CODE: '💻',
+    EXPLAIN: '💬',
+    CREATE: '🎨',
+    SOLVE: '📝',
   }
 
   if (isLoading) {
@@ -94,24 +94,20 @@ export function MissionDetailPage() {
           <div className="flex flex-wrap gap-2 mb-6">
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
-                difficultyColors[mission.difficulty] || 'bg-gray-100 text-gray-800'
+                typeColors[mission.type] || 'bg-gray-100 text-gray-800'
               }`}
             >
-              {mission.difficulty}
+              {mission.type?.replace('_', ' ')}
             </span>
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-              {mission.domain?.name || 'General'}
-            </span>
+            {mission.estimatedMinutes && (
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                ⏱️ {mission.estimatedMinutes} min
+              </span>
+            )}
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary-600">
-                {mission.xpReward || 0}
-              </p>
-              <p className="text-sm text-gray-600">XP Reward</p>
-            </div>
+          <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="text-center">
               <p className="text-2xl font-bold text-secondary-600">
                 {mission.activities?.length || 0}
@@ -158,14 +154,11 @@ export function MissionDetailPage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900">
-                      {activity.question || activity.prompt || 'Activity'}
+                      {activity.content?.question || activity.content?.problem || activity.title || 'Activity'}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {activityIcons[activity.type] || '📋'} {activity.type.replace('_', ' ')}
+                      {activityIcons[activity.type] || '📋'} {activity.type?.replace('_', ' ')}
                     </p>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {activity.points || 10} pts
                   </div>
                 </div>
               ))}
