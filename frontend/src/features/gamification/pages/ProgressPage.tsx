@@ -56,7 +56,7 @@ export function ProgressPage() {
             <div className="text-right">
               <p className="text-white/80 mb-1">Total XP</p>
               <p className="text-4xl font-bold">
-                {progression?.totalXp?.toLocaleString() || 0}
+                {progression?.totalXP?.toLocaleString() || 0}
               </p>
             </div>
           </div>
@@ -66,14 +66,14 @@ export function ProgressPage() {
             <div className="flex justify-between text-sm text-white/80 mb-2">
               <span>Progress to Level {(progression?.level || 1) + 1}</span>
               <span>
-                {progression?.xp || 0} / {progression?.xpToNextLevel || 100} XP
+                {progression?.xpInCurrentLevel || 0} / {progression?.xpForNextLevel || 100} XP
               </span>
             </div>
             <div className="w-full bg-white/20 rounded-full h-4">
               <div
                 className="bg-white h-4 rounded-full transition-all"
                 style={{
-                  width: `${progression?.xpProgress || 0}%`,
+                  width: `${progression?.progress || 0}%`,
                 }}
               />
             </div>
@@ -113,11 +113,11 @@ export function ProgressPage() {
           <div className="card text-center">
             <div className="text-5xl mb-2">🎯</div>
             <p className="text-3xl font-bold text-green-600">
-              {mastery?.masteredCount || 0}
+              {Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0}
             </p>
             <p className="text-sm text-gray-600 mt-1">Mastered</p>
             <p className="text-xs text-gray-500 mt-1">
-              {mastery?.learningCount || 0} learning
+              {Array.isArray(mastery) ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length : 0} learning
             </p>
           </div>
 
@@ -125,7 +125,7 @@ export function ProgressPage() {
           <div className="card text-center">
             <div className="text-5xl mb-2">✅</div>
             <p className="text-3xl font-bold text-blue-600">
-              {recentMissions?.filter((m: any) => m.status === 'completed').length || 0}
+              {recentMissions?.filter((m: any) => m.status === 'COMPLETED').length || 0}
             </p>
             <p className="text-sm text-gray-600 mt-1">Completed</p>
             <Link
@@ -207,7 +207,7 @@ export function ProgressPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      {run.status === 'completed' ? (
+                      {run.status === 'COMPLETED' ? (
                         <>
                           <p className="text-sm font-semibold text-green-600">
                             {run.finalScore}%

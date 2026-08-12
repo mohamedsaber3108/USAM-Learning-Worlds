@@ -13,6 +13,16 @@ export function DashboardPage() {
     queryFn: () => gamificationApi.getProgression().then(res => res.data),
   })
 
+  const { data: streak } = useQuery({
+    queryKey: ['streak'],
+    queryFn: () => gamificationApi.getStreak().then(res => res.data),
+  })
+
+  const { data: rank } = useQuery({
+    queryKey: ['rank'],
+    queryFn: () => gamificationApi.getRank().then(res => res.data),
+  })
+
   const { data: mastery } = useQuery({
     queryKey: ['mastery-overview'],
     queryFn: () => masteryApi.getOverview().then(res => res.data),
@@ -65,14 +75,14 @@ export function DashboardPage() {
                 </p>
                 <div className="mt-2">
                   <div className="flex justify-between text-xs text-gray-600 mb-1">
-                    <span>{progression?.xp || 0} XP</span>
-                    <span>{progression?.xpToNextLevel || 100} XP</span>
+                    <span>{progression?.xpInCurrentLevel || 0} XP</span>
+                    <span>{progression?.xpForNextLevel || 100} XP</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-primary-600 h-2 rounded-full transition-all"
                       style={{
-                        width: `${progression?.xpProgress || 0}%`,
+                        width: `${progression?.progress || 0}%`,
                       }}
                     />
                   </div>
@@ -89,10 +99,10 @@ export function DashboardPage() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total XP</p>
                 <p className="text-3xl font-bold text-secondary-600">
-                  {progression?.totalXp?.toLocaleString() || 0}
+                  {progression?.totalXP?.toLocaleString() || 0}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Rank #{progression?.rank || '---'}
+                  Rank #{rank?.rank || '---'}
                 </p>
               </div>
               <div className="w-12 h-12 bg-secondary-100 rounded-full flex items-center justify-center">
@@ -106,10 +116,10 @@ export function DashboardPage() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Streak</p>
                 <p className="text-3xl font-bold text-orange-600">
-                  {progression?.currentStreak || 0}
+                  {streak?.currentStreak || 0}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Best: {progression?.longestStreak || 0} days
+                  Best: {streak?.longestStreak || 0} days
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
@@ -129,7 +139,7 @@ export function DashboardPage() {
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Mastered</span>
                     <span className="font-semibold text-green-600">
-                      {mastery.masteredCount || 0}
+                      {Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0}
                     </span>
                   </div>
                 </div>
@@ -137,7 +147,7 @@ export function DashboardPage() {
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Learning</span>
                     <span className="font-semibold text-blue-600">
-                      {mastery.learningCount || 0}
+                      {Array.isArray(mastery) ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length : 0}
                     </span>
                   </div>
                 </div>
@@ -145,7 +155,7 @@ export function DashboardPage() {
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">To Explore</span>
                     <span className="font-semibold text-gray-600">
-                      {mastery.notStartedCount || 0}
+                      {Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'NOT_STARTED').length : 0}
                     </span>
                   </div>
                 </div>
@@ -209,7 +219,7 @@ export function DashboardPage() {
                   <div>
                     <h4 className="font-medium">{run.mission?.title || 'Mission'}</h4>
                     <p className="text-sm text-gray-600">
-                      {run.status === 'completed' ? '✅ Completed' : '⏳ In Progress'}
+                      {run.status === 'COMPLETED' ? '✅ Completed' : '⏳ In Progress'}
                     </p>
                   </div>
                   <div className="text-right">
