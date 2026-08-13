@@ -36,17 +36,17 @@ export class LearningController {
   }
 
   @Get('concepts/:id')
-  async getConcept(@Param('id') id: string) {
+  async getConcept(@Param('id') id: string) : Promise<any> {
     return this.conceptService.findOne(id);
   }
 
   @Get('concepts/slug/:slug')
-  async getConceptBySlug(@Param('slug') slug: string) {
+  async getConceptBySlug(@Param('slug') slug: string) : Promise<any> {
     return this.conceptService.findBySlug(slug);
   }
 
   @Get('concepts/:id/prerequisites')
-  async getPrerequisiteChain(@Param('id') id: string) {
+  async getPrerequisiteChain(@Param('id') id: string) : Promise<any> {
     return this.conceptService.getPrerequisiteChain(id);
   }
 
@@ -97,7 +97,7 @@ export class LearningController {
   }
 
   @Get('paths/:id/progress')
-  async getPathProgress(@Param('id') id: string, @Request() req: any) {
+  async getPathProgress(@Param('id') id: string, @Request() req: any) : Promise<any> {
     const learnerId = req.user.learnerId;
     return this.learningPathService.getProgress(id, learnerId);
   }
@@ -139,7 +139,7 @@ export class LearningController {
     @Param('entityType') entityType: string,
     @Param('entityId') entityId: string,
     @Request() req: any
-  ) {
+  ) : Promise<any> {
     const learner = await this.getLearnerFromRequest(req);
     const ageBand = learner.ageBand as AgeBand;
 
@@ -156,12 +156,12 @@ export class LearningController {
   }
 
   @Get('age-config/:ageBand')
-  async getAgeConfig(@Param('ageBand') ageBand: AgeBand) {
+  async getAgeConfig(@Param('ageBand') ageBand: AgeBand) : Promise<any> {
     return this.contentAdaptationService.getAgeConfig(ageBand);
   }
 
   @Get('age-configs')
-  async getAllAgeConfigs() {
+  async getAllAgeConfigs() : Promise<any> {
     return this.contentAdaptationService.getAllAgeConfigs();
   }
 
@@ -226,7 +226,7 @@ export class LearningController {
   }
 
   @Get('events/stats')
-  async getEventStats(@Request() req: any, @Query('since') since?: string) {
+  async getEventStats(@Request() req: any, @Query('since') since?: string) : Promise<any> {
     const learnerId = req.user.learnerId;
     return this.learningEventService.getEventStats(
       learnerId,

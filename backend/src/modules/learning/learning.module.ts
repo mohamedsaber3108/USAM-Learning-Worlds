@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '../../core/prisma/prisma.module';
+import { DatabaseModule } from '../../database/database.module';
 import { ConceptService } from './services/concept.service';
 import { LearningPathService } from './services/learning-path.service';
 import { ContentAdaptationService } from './services/content-adaptation.service';
@@ -11,8 +11,8 @@ import { CodingController } from './coding.controller';
 import { AIModule } from '../ai/ai.module';
 
 @Module({
-  imports: [PrismaModule, AIModule],
-  controllers: [LearningController, EnglishController, CodingController],
+  imports: [DatabaseModule, AIModule],
+  controllers: [LearningController],
   providers: [
     ConceptService,
     LearningPathService,

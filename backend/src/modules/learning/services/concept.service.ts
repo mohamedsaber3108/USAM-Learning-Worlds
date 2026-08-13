@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../../core/prisma/prisma.service';
+import { PrismaService } from '../../../database/prisma.service';
 import { Concept, PrerequisiteType } from '@prisma/client';
 
 interface ConceptWithPrerequisites extends Concept {

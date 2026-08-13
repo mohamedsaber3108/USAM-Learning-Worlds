@@ -1,0 +1,528 @@
+[31m[Nest] 30630  - [39m08/12/2026, 7:37:28 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30660  - [39m08/12/2026, 7:37:29 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30671  - [39m08/12/2026, 7:37:30 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30683  - [39m08/12/2026, 7:37:31 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30694  - [39m08/12/2026, 7:37:32 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30706  - [39m08/12/2026, 7:37:33 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30732  - [39m08/12/2026, 7:37:34 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30743  - [39m08/12/2026, 7:37:35 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30754  - [39m08/12/2026, 7:37:36 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30765  - [39m08/12/2026, 7:37:37 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30776  - [39m08/12/2026, 7:37:38 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30787  - [39m08/12/2026, 7:37:39 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30798  - [39m08/12/2026, 7:37:41 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30809  - [39m08/12/2026, 7:37:42 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30820  - [39m08/12/2026, 7:37:43 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30831  - [39m08/12/2026, 7:37:44 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30842  - [39m08/12/2026, 7:37:45 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30853  - [39m08/12/2026, 7:37:46 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30864  - [39m08/12/2026, 7:37:47 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30875  - [39m08/12/2026, 7:37:48 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30887  - [39m08/12/2026, 7:37:49 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30898  - [39m08/12/2026, 7:37:50 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30909  - [39m08/12/2026, 7:37:51 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30920  - [39m08/12/2026, 7:37:52 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30931  - [39m08/12/2026, 7:37:53 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30942  - [39m08/12/2026, 7:37:54 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30953  - [39m08/12/2026, 7:37:55 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30964  - [39m08/12/2026, 7:37:56 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30975  - [39m08/12/2026, 7:37:57 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30986  - [39m08/12/2026, 7:37:58 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 30997  - [39m08/12/2026, 7:37:59 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31008  - [39m08/12/2026, 7:38:00 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31020  - [39m08/12/2026, 7:38:01 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31031  - [39m08/12/2026, 7:38:02 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31042  - [39m08/12/2026, 7:38:03 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31053  - [39m08/12/2026, 7:38:05 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31064  - [39m08/12/2026, 7:38:06 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31075  - [39m08/12/2026, 7:38:07 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31086  - [39m08/12/2026, 7:38:08 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31098  - [39m08/12/2026, 7:38:09 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31109  - [39m08/12/2026, 7:38:10 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31120  - [39m08/12/2026, 7:38:11 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31131  - [39m08/12/2026, 7:38:12 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+[31m[Nest] 31142  - [39m08/12/2026, 7:38:13 PM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mJwtStrategy requires a secret or key[39m
+TypeError: JwtStrategy requires a secret or key
+    at new JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/passport-jwt/lib/strategy.js:45:15)
+    at new MixinStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/passport/dist/passport/passport.strategy.js:32:13)
+    at JwtStrategy (/home/ubuntu/USAM-Learning-Worlds/backend/src/modules/auth/strategies/jwt.strategy.ts:13:5)
+    at Injector.instantiateClass (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:373:19)
+    at callback (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:65:45)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Injector.resolveConstructorParams (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:145:24)
+    at async Injector.loadInstance (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at async Injector.loadProvider (/home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/injector.js:98:9)
+    at async /home/ubuntu/USAM-Learning-Worlds/backend/node_modules/@nestjs/core/injector/instance-loader.js:56:13
