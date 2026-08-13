@@ -57,7 +57,7 @@ export class LearnerContextService {
     }
 
     // Calculate mastery summary
-    const mastery Summary = this.calculateMasterySummary(mastery);
+    const masterySummary = this.calculateMasterySummary(mastery);
     const performanceSummary = this.calculatePerformanceSummary(recentEvidence);
 
     // Get current learning state (most recent mission run)

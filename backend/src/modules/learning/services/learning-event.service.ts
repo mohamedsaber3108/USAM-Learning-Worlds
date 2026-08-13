@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../core/prisma/prisma.service';
+import { PrismaService } from '../../../database/prisma.service';
 import { LearningEventType } from '@prisma/client';
 
 interface EventData {
@@ -202,7 +202,7 @@ export class LearningEventService {
     const activitiesCompleted = events.filter((e) => e.type === 'ACTIVITY_COMPLETED').length;
 
     const successfulActivities = events.filter(
-      (e) => e.type === 'ACTIVITY_COMPLETED' && e.data?.success === true
+      (e) => e.type === 'ACTIVITY_COMPLETED' && (e.data as any)?.success === true
     ).length;
 
     const hintsRequested = events.filter((e) => e.type === 'HINT_REQUESTED').length;

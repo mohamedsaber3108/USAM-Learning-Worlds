@@ -196,7 +196,6 @@ function ActivityContent({
 }) {
   const type = activity.type?.toLowerCase()
   const options = activity.content?.options || activity.options || []
-  const question = activity.content?.question || activity.question || activity.prompt || activity.title
 
   switch (type) {
     case 'select':
