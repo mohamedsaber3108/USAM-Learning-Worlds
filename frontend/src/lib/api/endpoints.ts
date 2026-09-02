@@ -99,6 +99,15 @@ export const projectsApi = {
 
   showcase: (id: number) =>
     apiClient.post(`/projects/${id}/showcase`),
+
+  getRubric: (id: number | string) =>
+    apiClient.get(`/projects/${id}/rubric`),
+}
+
+// ==================== Rubrics ====================
+export const rubricsApi = {
+  list: () =>
+    apiClient.get('/rubrics'),
 }
 
 // ==================== Adaptive ====================
