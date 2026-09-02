@@ -16,6 +16,7 @@ import { GamificationModule } from './modules/gamification/gamification.module';
 import { CommunityModule } from './modules/community/community.module';
 import { ParentsModule } from './modules/parents/parents.module';
 import { LearningModule } from './modules/learning/learning.module';
+import { CodingSandboxModule } from './modules/coding-sandbox/coding-sandbox.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { LearningModule } from './modules/learning/learning.module';
     CommunityModule,
     ParentsModule,
     LearningModule,
+    CodingSandboxModule,
   ],
   controllers: [AppController],
   providers: [

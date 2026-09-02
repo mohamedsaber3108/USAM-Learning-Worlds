@@ -176,6 +176,7 @@ function MissionRunExperience({
                   characters={characters}
                   result={results[activity.id] ?? null}
                   submitting={submitMutation.isPending}
+                  runId={run.id}
                   onSubmit={(response) =>
                     submitMutation.mutate({ activityId: activity.id, response })
                   }

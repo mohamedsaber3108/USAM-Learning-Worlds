@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { missionsApi } from '@/lib/api/endpoints'
+import { missionsApi, codingSandboxApi } from '@/lib/api/endpoints'
+import { CodeMissionRunner } from '@/features/coding/components/CodeMissionRunner'
 
 export function MissionPlayerPage() {
   const { runId } = useParams<{ runId: string }>()
@@ -142,13 +143,27 @@ export function MissionPlayerPage() {
           </div>
 
           {/* Activity Content */}
-          <ActivityContent
-            activity={currentActivity}
-            answer={answers[currentActivity.id]}
-            onChange={(value) =>
-              setAnswers({ ...answers, [currentActivity.id]: value })
-            }
-          />
+          {(currentActivity.type === 'CODE' || currentActivity.type === 'coding') ? (
+            <CodeActivity
+              activityId={currentActivity.id}
+              runId={Number(runId)}
+              onDone={() => {
+                if (currentIndex < activities.length - 1) {
+                  setCurrentIndex(currentIndex + 1)
+                } else {
+                  completeMutation.mutate()
+                }
+              }}
+            />
+          ) : (
+            <ActivityContent
+              activity={currentActivity}
+              answer={answers[currentActivity.id]}
+              onChange={(value) =>
+                setAnswers({ ...answers, [currentActivity.id]: value })
+              }
+            />
+          )}
 
           {/* Error Message */}
           {error && (
@@ -295,4 +310,43 @@ function ActivityContent({
         />
       )
   }
+}
+
+/**
+ * Bridges a CODE/coding mission activity to the real coding-sandbox
+ * backend module: fetches the mission's starter code + assertions, then
+ * renders `CodeMissionRunner`, which runs the code client-side (Pyodide
+ * Worker or Sandpack) and POSTs only the already-executed result. Grading
+ * happens inside CodeMissionRunner via /coding-sandbox/submissions, so
+ * this wrapper just advances the mission once the learner is satisfied.
+ */
+function CodeActivity({
+  activityId,
+  runId,
+  onDone,
+}: {
+  activityId: string
+  runId: number
+  onDone: () => void
+}) {
+  const missionQuery = useQuery({
+    queryKey: ['coding-sandbox', 'mission', activityId],
+    queryFn: () => codingSandboxApi.getMission(String(activityId)).then((res) => res.data),
+  })
+
+  if (missionQuery.isLoading) {
+    return <p className="text-sm text-gray-500">Booting the runtime…</p>
+  }
+  if (missionQuery.isError || !missionQuery.data) {
+    return <p className="text-sm text-red-600">Coding mission unavailable.</p>
+  }
+
+  return (
+    <div className="space-y-4">
+      <CodeMissionRunner mission={missionQuery.data} runId={runId} />
+      <button type="button" onClick={onDone} className="btn btn-primary">
+        Continue →
+      </button>
+    </div>
+  )
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Lightbulb, Mic, Send, ShieldQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +14,8 @@ import type {
 } from "@/types/mission";
 import { effortMet } from "@/services/mission";
 import { cn } from "@/lib/utils";
+import { CodeMissionRunner } from "@/components/coding/CodeMissionRunner";
+import { codingSandboxAPI } from "@/services/api";
 
 /**
  * Presentation metadata for every supported activity kind.
@@ -55,12 +58,15 @@ export function ActivityRunner({
   result,
   submitting,
   onSubmit,
+  runId,
 }: {
   activity: MissionActivity;
   characters: Character[];
   result: ActivityResult | null;
   submitting: boolean;
   onSubmit: (response: ActivityResponse) => void;
+  /** Real MissionRun id — required to reach the coding-sandbox endpoint for `kind: "coding"`. */
+  runId?: string;
 }) {
   const { ageBand, setVoiceState, voiceState } = useExperience();
   const [text, setText] = useState("");
@@ -110,7 +116,9 @@ export function ActivityRunner({
         )}
 
         <div className="mt-4">
-          {activity.options?.length ? (
+          {activity.kind === "coding" && runId ? (
+            <CodingActivitySurface activityId={activity.id} runId={runId} />
+          ) : activity.options?.length ? (
             <OptionPicker
               options={activity.options}
               selected={selected}
@@ -171,6 +179,27 @@ export function ActivityRunner({
 }
 
 /* ------------------------------------------------------------- surfaces ---- */
+
+/**
+ * Bridges a `kind: "coding"` mission activity to the real coding-sandbox
+ * backend module: fetches the mission's starter code + assertions, then
+ * renders `CodeMissionRunner`, which runs the code client-side (Pyodide
+ * Worker or Sandpack) and POSTs only the already-executed result.
+ */
+function CodingActivitySurface({ activityId, runId }: { activityId: string; runId: string }) {
+  const missionQuery = useQuery({
+    queryKey: ["coding-sandbox", "mission", activityId],
+    queryFn: () => codingSandboxAPI.getMission(activityId),
+  });
+
+  if (missionQuery.isLoading) {
+    return <p className="text-sm text-muted-foreground">Booting the runtime…</p>;
+  }
+  if (missionQuery.isError || !missionQuery.data) {
+    return <p className="text-sm text-destructive">Coding mission unavailable.</p>;
+  }
+  return <CodeMissionRunner mission={missionQuery.data} runId={runId} />;
+}
 
 function WorkSurface({
   activity,

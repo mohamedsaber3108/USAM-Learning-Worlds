@@ -154,3 +154,39 @@ export const parentsApi = {
   getChildActivity: (learnerId: number, params?: { days?: number }) =>
     apiClient.get(`/parents/children/${learnerId}/activity`, { params }),
 }
+
+// ==================== Coding Sandbox (Pyodide/Sandpack — zero backend execution) ====================
+export interface CodingSandboxMission {
+  activityId: string
+  title: string
+  language: 'python' | 'javascript'
+  runner: 'pyodide' | 'sandpack'
+  prompt: string
+  starterCode: string
+  assertions: Array<{ id: string; description: string; type: string; expected: string }>
+}
+
+export interface CodingSandboxSubmission {
+  runId: string | number
+  activityId: string
+  code: string
+  language: 'python' | 'javascript'
+  stdout: string
+  stderr?: string
+  result?: unknown
+  durationMs?: number
+  timedOut?: boolean
+}
+
+/**
+ * Talks to backend/src/modules/coding-sandbox/*. That backend module
+ * NEVER executes code — it serves mission specs and grades results that
+ * were already executed client-side (Pyodide Worker or Sandpack).
+ */
+export const codingSandboxApi = {
+  getMission: (activityId: string) =>
+    apiClient.get<CodingSandboxMission>(`/coding-sandbox/missions/${activityId}`),
+
+  submitResult: (submission: CodingSandboxSubmission) =>
+    apiClient.post('/coding-sandbox/submissions', submission),
+}
