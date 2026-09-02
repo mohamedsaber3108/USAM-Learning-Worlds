@@ -16,7 +16,7 @@ import { ContentAdaptationService } from './services/content-adaptation.service'
 import { LearningEventService } from './services/learning-event.service';
 import { AgeBand, PrerequisiteType, ScaffoldLevel } from '@prisma/client';
 
-@Controller('api/learning')
+@Controller('learning')
 @UseGuards(JwtAuthGuard)
 export class LearningController {
   constructor(

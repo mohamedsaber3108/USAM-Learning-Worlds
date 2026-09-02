@@ -21,7 +21,7 @@ import { CharacterService } from './character.service';
 import { ConversationService } from './services/conversation.service';
 import { ConversationType, ConversationStatus } from '@prisma/client';
 
-@Controller('api/characters')
+@Controller('characters')
 @UseGuards(JwtAuthGuard)
 export class CharacterController {
   constructor(
