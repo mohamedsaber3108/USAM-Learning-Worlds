@@ -104,6 +104,33 @@ and live-verified on kids.usamif.com the same day.
 |---|---|---|---|---|---|
 | Pyodide | github.com/pyodide/pyodide | MPL-2.0 | Yes | Yes (unmodified, notice-preserving) | **adopted** — `462c6f5` |
 | Sandpack (@codesandbox/sandpack-react) | github.com/codesandbox/sandpack | Apache-2.0 | Yes | Yes | **adopted** — `462c6f5` |
+| LanguageTool | github.com/languagetool-org/languagetool | LGPL-2.1 | Yes (self-hosted, arm's-length HTTP service — no static linking into USAM's Node backend) | Yes (self-hosted image; standard LGPL notice terms if the image itself is redistributed) | **adopted** — `97f2e07` |
+| Microsoft Presidio | github.com/microsoft/presidio | MIT | Yes | Yes | **adopted** — `97f2e07` |
+
+LanguageTool and Presidio were adopted on 2026-09-02 as internal-only
+sidecar services on the Kids-server (16.16.128.228), both bound to
+`127.0.0.1` only (never exposed publicly) — see
+`docs/architecture/USAM_OSS_INTEGRATION_PLAN.md` Sections 2 and 4 for the
+full license verification and integration rationale. Backend wiring:
+`backend/src/modules/english-learning/services/grammar-check.service.ts`
+(new module, calls LanguageTool's `/v2/check`, returns a normalized
+`GrammarIssue[]`) is layered into
+`backend/src/modules/ai/services/english-coach.service.ts`'s
+`correctGrammar()` alongside (not replacing) the existing Bedrock LLM
+call. `backend/src/modules/ai/services/pii-detection.service.ts` (new,
+calls Presidio's `/analyze`) is layered into
+`backend/src/modules/ai/moderation.service.ts`'s `moderateContent()` as a
+deterministic pre-check whose verdict is OR'd with the existing Bedrock
+LLM moderation verdict — confirmed live on kids.usamif.com: a clean test
+string returned `categories:["ERROR"]` (Bedrock currently down on a
+pre-existing, unrelated invalid-AWS-credential issue) while a string
+containing a fake phone number returned
+`categories:["ERROR","PII_DETECTED"]`, `shouldBlock:true` — i.e. the
+Presidio backstop independently caught the PII even with the LLM check
+failing. Commit
+[`97f2e07`](https://github.com/mohamedsaber3108/USAM-Learning-Worlds/commit/97f2e07)
+is the evidence. Reproducibility: `docker-compose.sidecars.yml` documents
+the exact `docker run` invocations for both containers.
 
 ## Part 4 — Batch 2: Projects/Coding, Community/Safety, Gamification/World
 
