@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import { ArrowLeft, Flame, Trophy, Target, CheckCircle2 } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi } from '@/lib/api/endpoints'
+import { useCountUp } from '@/lib/hooks/useCountUp'
 
 export function ProgressPage() {
   const { data: progression } = useQuery({
@@ -29,17 +32,27 @@ export function ProgressPage() {
   })
 
   const unlockedAchievements = achievements?.filter((a: any) => a.unlockedAt) || []
+  const masteredCount = Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0
+  const learningCount = Array.isArray(mastery)
+    ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length
+    : 0
+  const completedMissions = recentMissions?.filter((m: any) => m.status === 'COMPLETED').length || 0
+
+  const totalXP = useCountUp(progression?.totalXP || 0, 1000)
+  const streakCount = useCountUp(streak?.currentStreak || 0, 700)
+  const levelProgress = useCountUp(progression?.progress || 0, 900)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-surface-50">
+      {/* Header — one solid brand color, no rainbow gradient */}
+      <header className="bg-primary-600 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900">
-              ← Back
+            <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
+              <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+              Back
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">My Progress</h1>
+            <h1 className="text-2xl font-display font-bold text-white">My Progress</h1>
           </div>
         </div>
       </header>
@@ -47,102 +60,133 @@ export function ProgressPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Level & XP */}
-        <div className="card mb-8 bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="card mb-8"
+        >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-white/80 mb-1">Current Level</p>
-              <p className="text-5xl font-bold">{progression?.level || 1}</p>
+              <p className="text-slate-500 text-xs font-medium mb-1">Current Level</p>
+              <p className="text-5xl font-display font-extrabold text-primary-600">{progression?.level || 1}</p>
             </div>
             <div className="text-right">
-              <p className="text-white/80 mb-1">Total XP</p>
-              <p className="text-4xl font-bold">
-                {progression?.totalXP?.toLocaleString() || 0}
+              <p className="text-slate-500 text-xs font-medium mb-1">Total XP</p>
+              <p className="text-4xl font-display font-extrabold text-slate-900">
+                {totalXP.toLocaleString()}
               </p>
             </div>
           </div>
 
           {/* XP Progress */}
           <div>
-            <div className="flex justify-between text-sm text-white/80 mb-2">
+            <div className="flex justify-between text-sm text-slate-500 mb-2">
               <span>Progress to Level {(progression?.level || 1) + 1}</span>
               <span>
                 {progression?.xpInCurrentLevel || 0} / {progression?.xpForNextLevel || 100} XP
               </span>
             </div>
-            <div className="w-full bg-white/20 rounded-full h-4">
+            <div className="progress-track">
               <div
-                className="bg-white h-4 rounded-full transition-all"
-                style={{
-                  width: `${progression?.progress || 0}%`,
-                }}
+                className="progress-fill"
+                style={{ width: `${levelProgress}%` }}
               />
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
           {/* Streak */}
-          <div className="card text-center">
-            <div className="text-5xl mb-2">🔥</div>
-            <p className="text-3xl font-bold text-orange-600">
-              {streak?.currentStreak || 0}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.05 }}
+            className="stat-card text-center"
+          >
+            <div className="icon-chip bg-accent-50 text-accent-600 mx-auto mb-2">
+              <Flame className="w-5 h-5" strokeWidth={2} />
+            </div>
+            <p className="text-3xl font-display font-extrabold text-slate-900">
+              {streakCount}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Day Streak</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-sm text-slate-500 mt-1">Day Streak</p>
+            <p className="text-xs text-slate-400 mt-1">
               Best: {streak?.longestStreak || 0}
             </p>
-          </div>
+          </motion.div>
 
           {/* Achievements */}
-          <div className="card text-center">
-            <div className="text-5xl mb-2">🏆</div>
-            <p className="text-3xl font-bold text-yellow-600">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.1 }}
+            className="stat-card text-center"
+          >
+            <div className="icon-chip bg-secondary-50 text-secondary-600 mx-auto mb-2">
+              <Trophy className="w-5 h-5" strokeWidth={2} />
+            </div>
+            <p className="text-3xl font-display font-extrabold text-slate-900">
               {unlockedAchievements.length}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Achievements</p>
+            <p className="text-sm text-slate-500 mt-1">Achievements</p>
             <Link
               to="/achievements"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
               View All →
             </Link>
-          </div>
+          </motion.div>
 
           {/* Mastery */}
-          <div className="card text-center">
-            <div className="text-5xl mb-2">🎯</div>
-            <p className="text-3xl font-bold text-green-600">
-              {Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.15 }}
+            className="stat-card text-center"
+          >
+            <div className="icon-chip bg-success-50 text-success-600 mx-auto mb-2">
+              <Target className="w-5 h-5" strokeWidth={2} />
+            </div>
+            <p className="text-3xl font-display font-extrabold text-slate-900">
+              {masteredCount}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Mastered</p>
-            <p className="text-xs text-gray-500 mt-1">
-              {Array.isArray(mastery) ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length : 0} learning
+            <p className="text-sm text-slate-500 mt-1">Mastered</p>
+            <p className="text-xs text-slate-400 mt-1">
+              {learningCount} learning
             </p>
-          </div>
+          </motion.div>
 
           {/* Missions */}
-          <div className="card text-center">
-            <div className="text-5xl mb-2">✅</div>
-            <p className="text-3xl font-bold text-blue-600">
-              {recentMissions?.filter((m: any) => m.status === 'COMPLETED').length || 0}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.2 }}
+            className="stat-card text-center"
+          >
+            <div className="icon-chip bg-primary-50 text-primary-600 mx-auto mb-2">
+              <CheckCircle2 className="w-5 h-5" strokeWidth={2} />
+            </div>
+            <p className="text-3xl font-display font-extrabold text-slate-900">
+              {completedMissions}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Completed</p>
+            <p className="text-sm text-slate-500 mt-1">Completed</p>
             <Link
               to="/missions"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
               Browse →
             </Link>
-          </div>
+          </motion.div>
         </div>
 
         {/* Recent Activity */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Recent Achievements */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Recent Achievements</h2>
+              <h2 className="text-xl font-display font-semibold">Recent Achievements</h2>
               <Link
                 to="/achievements"
                 className="text-sm text-primary-600 hover:text-primary-700"
@@ -156,16 +200,16 @@ export function ProgressPage() {
                 {unlockedAchievements.slice(0, 5).map((achievement: any) => (
                   <div
                     key={achievement.id}
-                    className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center space-x-3 p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
                   >
-                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-2xl">
-                      🏆
+                    <div className="icon-chip bg-secondary-50 text-secondary-600">
+                      <Trophy className="w-5 h-5" strokeWidth={2} />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-slate-900">
                         {achievement.title}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-500">
                         {new Date(achievement.unlockedAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -173,7 +217,7 @@ export function ProgressPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">
+              <p className="text-slate-500 text-center py-8">
                 No achievements yet. Keep learning!
               </p>
             )}
@@ -182,7 +226,7 @@ export function ProgressPage() {
           {/* Recent Missions */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Recent Missions</h2>
+              <h2 className="text-xl font-display font-semibold">Recent Missions</h2>
               <Link
                 to="/missions"
                 className="text-sm text-primary-600 hover:text-primary-700"
@@ -196,35 +240,35 @@ export function ProgressPage() {
                 {recentMissions.slice(0, 5).map((run: any) => (
                   <div
                     key={run.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-slate-900">
                         {run.mission?.title || 'Mission'}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-500">
                         {new Date(run.startedAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right">
                       {run.status === 'COMPLETED' ? (
                         <>
-                          <p className="text-sm font-semibold text-green-600">
+                          <p className="text-sm font-semibold text-success-600">
                             {run.finalScore}%
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-slate-500">
                             +{run.xpEarned} XP
                           </p>
                         </>
                       ) : (
-                        <p className="text-sm text-gray-500">In Progress</p>
+                        <p className="text-sm text-slate-500">In Progress</p>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">
+              <p className="text-slate-500 text-center py-8">
                 No missions yet. Start your first mission!
               </p>
             )}

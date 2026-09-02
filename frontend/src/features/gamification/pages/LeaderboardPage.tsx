@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import { ArrowLeft, Trophy, Medal, Award, Flame } from 'lucide-react'
 import { gamificationApi } from '@/lib/api/endpoints'
+import { useCountUp } from '@/lib/hooks/useCountUp'
 
 export function LeaderboardPage() {
   const [scope, setScope] = useState<'global' | 'friends'>('global')
@@ -19,51 +22,54 @@ export function LeaderboardPage() {
     queryFn: () => gamificationApi.getRank().then(res => res.data),
   })
 
+  const myRankXP = useCountUp(myRank?.totalXP || 0, 900)
+
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return '🥇'
-    if (rank === 2) return '🥈'
-    if (rank === 3) return '🥉'
-    return `#${rank}`
+    if (rank === 1) return Trophy
+    if (rank === 2) return Medal
+    if (rank === 3) return Award
+    return null
   }
 
-  const getRankColor = (rank: number) => {
-    if (rank === 1) return 'text-yellow-600'
-    if (rank === 2) return 'text-gray-500'
-    if (rank === 3) return 'text-orange-600'
-    return 'text-gray-600'
+  const getRankTint = (rank: number) => {
+    if (rank === 1) return 'bg-secondary-50 text-secondary-600'
+    if (rank === 2) return 'bg-surface-200 text-slate-500'
+    if (rank === 3) return 'bg-accent-50 text-accent-600'
+    return 'bg-surface-100 text-slate-500'
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-surface-50">
+      {/* Header — one solid brand color, no rainbow gradient */}
+      <header className="bg-primary-600 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/dashboard" className="text-gray-600 hover:text-gray-900">
-                ← Back
+              <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
+                <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+                Back
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
+              <h1 className="text-2xl font-display font-bold text-white">Leaderboard</h1>
             </div>
 
             {/* Scope Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
+            <div className="flex bg-white/10 rounded-control p-1">
               <button
                 onClick={() => setScope('global')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-control text-sm font-medium transition-colors ${
                   scope === 'global'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-primary-700 shadow-soft'
+                    : 'text-white/80 hover:text-white'
                 }`}
               >
                 Global
               </button>
               <button
                 onClick={() => setScope('friends')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-control text-sm font-medium transition-colors ${
                   scope === 'friends'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-primary-700 shadow-soft'
+                    : 'text-white/80 hover:text-white'
                 }`}
               >
                 Friends
@@ -77,38 +83,46 @@ export function LeaderboardPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* My Rank Card */}
         {myRank && (
-          <div className="card mb-8 bg-gradient-to-r from-primary-50 to-secondary-50">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="stat-card mb-8"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div
-                  className={`text-4xl font-bold ${getRankColor(
-                    myRank.rank
-                  )}`}
-                >
-                  {getRankIcon(myRank.rank)}
+                <div className={`icon-chip ${getRankTint(myRank.rank)}`}>
+                  {getRankIcon(myRank.rank) ? (
+                    (() => {
+                      const RankIcon = getRankIcon(myRank.rank)!
+                      return <RankIcon className="w-5 h-5" strokeWidth={2} />
+                    })()
+                  ) : (
+                    <span className="font-display font-bold text-sm">#{myRank.rank}</span>
+                  )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Your Rank</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xs font-medium text-slate-500">Your Rank</p>
+                  <p className="text-2xl font-display font-extrabold text-slate-900">
                     #{myRank.rank || '---'}
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">Total XP</p>
-                <p className="text-2xl font-bold text-secondary-600">
-                  {myRank.totalXP?.toLocaleString() || 0}
+                <p className="text-xs font-medium text-slate-500">Total XP</p>
+                <p className="text-2xl font-display font-extrabold text-secondary-600">
+                  {myRankXP.toLocaleString()}
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Leaderboard */}
         {isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-gray-600">Loading leaderboard...</p>
+            <p className="mt-4 text-slate-500">Loading leaderboard...</p>
           </div>
         ) : leaderboard && leaderboard.length > 0 ? (
           <div className="card">
@@ -116,34 +130,35 @@ export function LeaderboardPage() {
               {leaderboard.map((entry: any, index: number) => {
                 const rank = index + 1
                 const isMe = entry.id === myRank?.id
+                const RankIcon = getRankIcon(rank)
 
                 return (
                   <div
                     key={entry.id}
-                    className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
+                    className={`flex items-center justify-between p-4 rounded-control transition-colors ${
                       isMe
-                        ? 'bg-primary-50 border-2 border-primary-200'
-                        : 'bg-gray-50 hover:bg-gray-100'
+                        ? 'bg-primary-50 border border-primary-200'
+                        : 'bg-surface-50 hover:bg-surface-100'
                     }`}
                   >
                     <div className="flex items-center space-x-4 flex-1">
                       {/* Rank */}
-                      <div
-                        className={`w-12 text-center text-2xl font-bold ${getRankColor(
-                          rank
-                        )}`}
-                      >
-                        {getRankIcon(rank)}
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getRankTint(rank)}`}>
+                        {RankIcon ? (
+                          <RankIcon className="w-5 h-5" strokeWidth={2} />
+                        ) : (
+                          <span className="font-display font-bold text-sm">#{rank}</span>
+                        )}
                       </div>
 
                       {/* Avatar */}
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-display font-bold text-base flex-shrink-0">
                         {entry.displayName?.charAt(0) || 'L'}
                       </div>
 
                       {/* Name & Level */}
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-slate-900">
                           {entry.displayName || 'Learner'}
                           {isMe && (
                             <span className="ml-2 text-xs font-normal text-primary-600">
@@ -151,26 +166,29 @@ export function LeaderboardPage() {
                             </span>
                           )}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-slate-500">
                           Level {entry.level || 1}
                         </p>
                       </div>
 
                       {/* Stats */}
                       <div className="text-right">
-                        <p className="font-bold text-secondary-600">
+                        <p className="font-display font-bold text-secondary-600">
                           {entry.totalXP?.toLocaleString() || 0}
                         </p>
-                        <p className="text-xs text-gray-500">XP</p>
+                        <p className="text-xs text-slate-400">XP</p>
                       </div>
 
                       {/* Streak */}
                       {entry.currentStreak > 0 && (
-                        <div className="text-right ml-4">
-                          <p className="font-bold text-orange-600">
-                            {entry.currentStreak}🔥
-                          </p>
-                          <p className="text-xs text-gray-500">streak</p>
+                        <div className="text-right ml-4 flex items-center gap-1">
+                          <Flame className="w-4 h-4 text-accent-600" strokeWidth={2} />
+                          <div>
+                            <p className="font-display font-bold text-accent-600 leading-none">
+                              {entry.currentStreak}
+                            </p>
+                            <p className="text-xs text-slate-400">streak</p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -181,11 +199,13 @@ export function LeaderboardPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏆</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="icon-chip bg-secondary-50 text-secondary-600 mx-auto mb-4 w-16 h-16">
+              <Trophy className="w-8 h-8" strokeWidth={2} />
+            </div>
+            <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">
               No Rankings Yet
             </h2>
-            <p className="text-gray-600">
+            <p className="text-slate-500">
               {scope === 'friends'
                 ? 'Add friends to see their rankings!'
                 : 'Be the first to earn XP!'}
