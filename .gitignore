@@ -20,6 +20,17 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Secrets / env files (never commit real secrets; .env.example files are explicitly allowed)
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pm2
+backend/.env.pm2
+
+# Archives accidentally dropped in repo root
+*.zip
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
