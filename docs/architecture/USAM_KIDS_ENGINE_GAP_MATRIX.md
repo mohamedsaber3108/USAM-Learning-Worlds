@@ -140,6 +140,81 @@ still-missing must-not-forget engine and should be the next build target
 once Batch 3 classification (Content Pipeline, remaining English
 sub-engines) is done, per the inventory's stated priority order.
 
+## Part 5 — Tick 7 findings (mastery algorithm confirmed, coding-coach/english-coach reachability)
+
+**Action item resolved: `mastery-confidence.algorithm.ts` read line-by-line.**
+It implements neither BKT, DKT, nor IRT as distinct statistical models. It's
+a custom heuristic: weighted recency-decayed success rate (60%) + evidence-type
+diversity bonus (20%) + spacing-effect score (20%), then multiplied by an
+Ebbinghaus-style exponential recency/forgetting factor, clamped 0-1, with a
+7-state bucket mapping (`NOT_STARTED`->`MASTERED`) and an FSRS-inspired
+next-review-date scheduler. It's explicitly documented in its own header as
+"inspired by FSRS," not a BKT/DKT/IRT implementation. Reclassifying row 4
+(Mastery Engine)'s note: this is a real, coherent, working single-algorithm
+v1 — good engineering, just not the swappable-model architecture the
+inventory envisions. No change to "Already implemented (v1)" classification;
+confidence in that classification is now much higher (previously structural
+guess, now confirmed by full read).
+
+**Action item resolved: `coding-coach.service.ts` read in detail (431 lines).**
+This is real, substantive LLM-backed coaching logic — `provideDebugAssistance`,
+`reviewCode`, `explainCode`, `generateChallenge` — each builds age-aware
+prompts via `LearnerContextService`, calls `AIProviderService` (Bedrock), and
+post-processes the response (extract fix/explanation/learning-points/
+strengths/improvements/next-concept, code-quality heuristic scoring,
+challenge-time estimation). This is NOT a stub — it's comparable in maturity
+to `english-coach.service.ts`.
+
+**New finding, more precise than Tick 6's "check next tick" note: neither
+`CodingCoachService` nor `EnglishCoachService` has ANY controller route.**
+Both are registered as providers/exports in `ai.module.ts`, but `ai.module.ts`
+only registers `AIController` and `CharacterController` in its `controllers:`
+array. Grepped both controllers for any reference to `CodingCoach`/
+`EnglishCoach` — zero matches. So:
+- The disabled `learning/coding.controller.ts` (empty class, "TEMPORARILY
+  DISABLED") was apparently meant to expose coding-coach functionality but
+  never got fixed/reconnected.
+- `english.controller.ts` (also a 3-line empty class, `EnglishController {}`)
+  has the exact same problem — confirmed empty on inspection this tick, not
+  previously stated so plainly. Neither controller has ANY route.
+- Net effect: two real, working, LLM-backed coaching services
+  (Coding Learning Engine's coaching half, and English Learning Engine's
+  coaching half) are **fully unreachable from the API** — same class of bug
+  as the Tick 3 Knowledge Graph double-prefix issue, but here the cause is
+  "controller never implemented" rather than "wrong route prefix."
+
+**Reclassification**: Coding Learning Engine and English Learning Engine
+(coaching sub-engine specifically) move from "Missing (stubbed, honestly)" /
+"Partially implemented" to **Conflict** — real backend logic exists and is
+wired into the DI graph, but zero HTTP surface reaches it. This is higher
+priority to fix than net-new build work: it's a small, well-scoped
+integration bug (write two thin controllers wiring existing service methods
+to routes with auth guards + DTOs), not a research or architecture problem,
+and it unlocks working AI coaching features that already exist server-side.
+Flagged as next concrete build task (see Next Tick Priorities).
+
+**Translation Service**: re-checked `learning/services/translation.service.ts`
+(351 lines) directly — grepped for TODO/FIXME, found **zero** in the current
+file. The original security audit's TODO claim for this file may refer to
+a since-resolved TODO, or the audit conflated it with another file. Current
+state: real `upsertTranslation`/`getTranslatedEntity`-style CRUD against a
+`Translation` Prisma model, no unimplemented-stub methods found in this file
+as of this tick. Not reclassifying without more certainty — flagging as
+"claim not reproducible in current code" rather than asserting the original
+audit was wrong, since the file may have been fixed in an earlier tick this
+job doesn't have full log detail on. `english-coach.service.ts` similarly
+has zero TODO/FIXME markers found this tick via direct grep.
+
+**Content Pipeline / Question Engine / English sub-engines search (Batch 3,
+partial)**: grepped `backend/src` for ingest/ocr/question/vocab/grammar/
+pronun/listening/story/shadow/dictation/corpus — **zero files found for any
+of these**. Confirms Tick 6's Batch 3 prediction: Content Ingestion Engine,
+Question Engine, Assessment Quality Engine, and essentially all English
+sub-engines beyond the single coaching service are genuinely Missing, not
+just unclassified. These stay Missing/Future per inventory's own priority
+order (they're outside the 15 must-not-forget engines) — no build action
+this tick, correctly deferred behind Voice & Conversation Engine.
+
 ## Part 4b — Not yet classified (remaining)
 
 Remaining ~148 engines (see list above) deferred to subsequent ticks.

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AIController } from './ai.controller';
 import { CharacterController } from './character.controller';
+import { CodingCoachController } from './coding-coach.controller';
+import { EnglishCoachController } from './english-coach.controller';
 import { BedrockService } from './bedrock.service';
 import { ModerationService } from './moderation.service';
 import { AIUsageService } from './ai-usage.service';
@@ -17,7 +19,12 @@ import { EnglishCoachService } from './services/english-coach.service';
 import { CodingCoachService } from './services/coding-coach.service';
 
 @Module({
-  controllers: [AIController, CharacterController],
+  controllers: [
+    AIController,
+    CharacterController,
+    CodingCoachController,
+    EnglishCoachController,
+  ],
   providers: [
     // Legacy services (kept for backward compatibility)
     BedrockService,
