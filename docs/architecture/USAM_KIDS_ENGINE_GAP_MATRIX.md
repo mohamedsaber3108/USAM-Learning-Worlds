@@ -35,17 +35,55 @@ Missing | Conflict | Needs refactor | Open-source candidate | Build custom
 | 14 | Safety & Parent Engine | `parents/parents.service.ts` (dashboard, progress, activity, time limits, family summary), `ai/moderation.service.ts` (content moderation + quarantine + review workflow), `ModerationLog`/`QuarantinedContent` models | Already implemented (v1) | This is the most mature engine outside Mastery/Character — real moderation with quarantine+review workflow, real parent dashboard with time limits. Age-band-specific safety policy tuning and a versioned "AI Prompt/Policy Engine" (inventory's term) are Missing — moderation exists but isn't yet policy-versioned/audited as a distinct engine. |
 | 15 | Learning Analytics & Evaluation Engine | `learning/learning-event.service.ts` (event logging, stats, patterns, session-level and recent-event queries) | Partially implemented | Real event capture and basic stats/pattern queries exist. No separation yet between product analytics and learning analytics (inventory explicitly calls for keeping these separate — "retention != learning"); today it's one event stream serving both concerns. Needs refactor once a second (product/retention) analytics need shows up — not urgent now. |
 
-## Part 2 — Reconciliation with existing planning docs
+## Part 2 — Reconciliation with existing planning docs (done Tick 4)
 
-- `USAM_GAP_REGISTER.md`, `USAM_IMPLEMENTATION_ROADMAP.md`,
-  `FINAL_BACKEND_ROADMAP.md`, `ROADMAP_VISUAL.md` — **not yet
-  cross-referenced line-by-line against this matrix.** These docs predate
-  the 171-engine inventory and use different terminology/phase numbering.
-  Next tick: read each, map their items onto the engine numbers above (or
-  onto the ~156 not-yet-covered engines), and flag genuine
-  contradictions (e.g. a roadmap doc claiming something is "done" that
-  this code-read shows as Partially implemented) rather than silently
-  picking one source as authoritative.
+`USAM_GAP_REGISTER.md` is dated 2026-08-12 ("Educational Core Foundation
+- Analysis") — **stale relative to the current codebase.** Cross-checked
+every CRITICAL/HIGH row against the real code this tick (not from the
+register's own claims):
+
+| Register ID | Register said (2026-08-12) | Actual now (Tick 4 verified) |
+|---|---|---|
+| GAP-001 Learning Graph w/ prerequisites | MISSING | **Stale — implemented.** `concept.service.ts` + `Concept`/`ConceptPrerequisite` tables, DFS cycle detection, unlock-status. Live route confirmed 401 (exists). |
+| GAP-003 Concept/Subskill model | MISSING | **Stale — implemented.** Same as above. |
+| GAP-004 Learning Path model | MISSING | **Stale — implemented.** `LearningController` `paths/*` endpoints, live-route-confirmed. |
+| GAP-002 Age adaptation | SCHEMA_ONLY | **Stale — partially implemented.** `content-adaptation.service.ts` + `AgeVariant` model does real age-variant adaptation (matches Gap Matrix row 7), not just an enum. |
+| GAP-005 Activity-Mission linkage BROKEN (`take: 10` global fetch) | BROKEN | **Stale — fixed.** `missions.service.ts:getMission()` now uses a real `missionActivities` join table (`MissionActivity` with `order`/`isRequired`), not a global `take: 10`. Per-mission activity ordering is real. |
+| GAP-006 English learning architecture | MISSING entirely | **Stale — partially implemented.** `english.controller.ts`, `EnglishStrand` model, `english-coach.service.ts` exist (matches Gap Matrix row 12); still missing pronunciation/listening/story sub-engines as the Gap Matrix already notes. |
+| GAP-009 Character behavior engine | SCHEMA_ONLY | **Stale — implemented (v1).** Matches Gap Matrix row 10. |
+| GAP-030 Rate limiting | IMPORTED but not configured | **Fixed (Tick 1), verified live again this tick.** |
+| CONF-001 Two frontends | "Backend must serve both; src/ is design authority" | **Superseded by Tick 1 decision: `src/` is the ONLY deployed/served frontend (confirmed via nginx root + built asset inspection). `frontend/` is not live and not actively served — register's "serve both" framing is outdated; documented decision stands.** |
+| GAP-036/037 CI/CD, Dockerfile | MISSING | **Fixed (Tick 2).** |
+
+**Conclusion**: `USAM_GAP_REGISTER.md` reflects an early-August snapshot
+of the codebase and should be treated as historical, not current. Most
+of its CRITICAL items are now resolved or partially resolved; the ones
+still genuinely open (voice pipeline GAP-023, code sandbox GAP-022,
+diagnostic assessment GAP-012, misconception tracking GAP-017, English
+sub-engines, AI provider abstraction GAP-010 still Bedrock-locked) agree
+with this Gap Matrix's independent findings, which is a good cross-check
+signal both docs are looking at the same real gaps for those items.
+Recommend the repo owner archive/retitle `USAM_GAP_REGISTER.md` as
+"Historical — 2026-08-12 snapshot, superseded by
+USAM_KIDS_ENGINE_GAP_MATRIX.md" rather than deleting it (preserves
+history per this job's own git-history-care principle) — logged as a
+suggestion, not done unilaterally since it's a docs-organization call,
+not a security/correctness fix.
+
+`ROADMAP_VISUAL.md` and `USAM_IMPLEMENTATION_ROADMAP.md` describe a
+12-phase, 24-week plan with phase-gated milestones (MVP=phases 1-6, Beta
+=1-10, Production=1-12). Spot-checked against real code: Phase 1
+(Database/Auth), Phase 3 (Mastery), Phase 4 (Missions), Phase 5 (AI
+Gateway + Moderation), Phase 8 (Gamification), Phase 9 (Community +
+Moderation), Phase 10 (Parent) all have real, working code confirmed
+elsewhere in this matrix — i.e. the codebase is materially further along
+than a naive reading of "no ✅ marks past Phase 1" in the visual doc
+would suggest. The visual roadmap was not kept updated as phases
+shipped; it undercounts real progress. Not correcting it in-place this
+tick (out of scope vs security/gap-matrix work) but flagging so no
+future tick mistakes it for current status. `FINAL_BACKEND_ROADMAP.md`
+(7236 lines) not read line-by-line this tick — too large for one pass;
+next tick should sample it in sections rather than defer again wholesale.
 
 ## Part 3 — Open-Source License Registry
 
