@@ -1,14 +1,21 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { join } from 'path';
 import helmet from 'helmet';
 import * as compression from 'compression';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Security headers
   app.use(helmet());
+
+  // Serve synthesized voice-turn audio (Voice Pipeline v1). Not under the
+  // /api prefix — plain static files, same pattern as any other public
+  // asset directory.
+  app.useStaticAssets(join(process.cwd(), 'public'));
 
   // Response compression
   app.use(compression());

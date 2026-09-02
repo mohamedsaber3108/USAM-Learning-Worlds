@@ -17,6 +17,7 @@ import { CommunityModule } from './modules/community/community.module';
 import { ParentsModule } from './modules/parents/parents.module';
 import { LearningModule } from './modules/learning/learning.module';
 import { CodingSandboxModule } from './modules/coding-sandbox/coding-sandbox.module';
+import { VoiceModule } from './modules/voice/voice.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { CodingSandboxModule } from './modules/coding-sandbox/coding-sandbox.mod
     ParentsModule,
     LearningModule,
     CodingSandboxModule,
+    VoiceModule,
   ],
   controllers: [AppController],
   providers: [
