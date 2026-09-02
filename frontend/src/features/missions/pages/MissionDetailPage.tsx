@@ -24,12 +24,12 @@ export function MissionDetailPage() {
 
   const { data: mission, isLoading } = useQuery({
     queryKey: ['mission', id],
-    queryFn: () => missionsApi.getById(Number(id)).then(res => res.data),
+    queryFn: () => missionsApi.getById(id!).then(res => res.data),
     enabled: !!id,
   })
 
   const startMutation = useMutation({
-    mutationFn: () => missionsApi.start(Number(id)),
+    mutationFn: () => missionsApi.start(id!),
     onSuccess: (response) => {
       const runId = response.data.id
       navigate(`/missions/play/${runId}`)

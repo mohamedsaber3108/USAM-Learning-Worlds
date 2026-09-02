@@ -13,12 +13,12 @@ export function MissionPlayerPage() {
 
   const { data: run, isLoading } = useQuery({
     queryKey: ['mission-run', runId],
-    queryFn: () => missionsApi.getRun(Number(runId)).then(res => res.data),
+    queryFn: () => missionsApi.getRun(runId!).then(res => res.data),
     enabled: !!runId,
   })
 
   const submitMutation = useMutation({
-    mutationFn: (data: any) => missionsApi.submitActivity(Number(runId), data),
+    mutationFn: (data: any) => missionsApi.submitActivity(runId!, data),
     onSuccess: () => {
       // Move to next activity
       if (currentActivity && currentIndex < activities.length - 1) {
@@ -35,7 +35,7 @@ export function MissionPlayerPage() {
   })
 
   const completeMutation = useMutation({
-    mutationFn: () => missionsApi.complete(Number(runId)),
+    mutationFn: () => missionsApi.complete(runId!),
     onSuccess: (response) => {
       navigate('/missions/complete', {
         state: { result: response.data },
@@ -146,7 +146,7 @@ export function MissionPlayerPage() {
           {(currentActivity.type === 'CODE' || currentActivity.type === 'coding') ? (
             <CodeActivity
               activityId={currentActivity.id}
-              runId={Number(runId)}
+              runId={runId!}
               onDone={() => {
                 if (currentIndex < activities.length - 1) {
                   setCurrentIndex(currentIndex + 1)
@@ -326,7 +326,7 @@ function CodeActivity({
   onDone,
 }: {
   activityId: string
-  runId: number
+  runId: string
   onDone: () => void
 }) {
   const missionQuery = useQuery({

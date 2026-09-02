@@ -58,19 +58,19 @@ export const missionsApi = {
   }) =>
     apiClient.get('/missions', { params }),
 
-  getById: (id: number) =>
+  getById: (id: string) =>
     apiClient.get(`/missions/${id}`),
 
-  start: (id: number) =>
+  start: (id: string) =>
     apiClient.post(`/missions/${id}/start`),
 
-  getRun: (runId: number) =>
+  getRun: (runId: string) =>
     apiClient.get(`/missions/runs/${runId}`),
 
-  submitActivity: (runId: number, data: any) =>
+  submitActivity: (runId: string, data: any) =>
     apiClient.post(`/missions/runs/${runId}/submit`, data),
 
-  complete: (runId: number) =>
+  complete: (runId: string) =>
     apiClient.post(`/missions/runs/${runId}/complete`),
 
   getHistory: () =>
@@ -88,16 +88,16 @@ export const projectsApi = {
   browse: (params?: { category?: string; featured?: boolean }) =>
     apiClient.get('/projects/browse', { params }),
 
-  getById: (id: number) =>
+  getById: (id: string) =>
     apiClient.get(`/projects/${id}`),
 
-  update: (id: number, data: any) =>
+  update: (id: string, data: any) =>
     apiClient.put(`/projects/${id}`, data),
 
-  delete: (id: number) =>
+  delete: (id: string) =>
     apiClient.delete(`/projects/${id}`),
 
-  showcase: (id: number) =>
+  showcase: (id: string) =>
     apiClient.post(`/projects/${id}/showcase`),
 
   getRubric: (id: number | string) =>
