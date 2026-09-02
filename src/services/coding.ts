@@ -1,12 +1,24 @@
 /**
  * Coding service.
  *
- * `createMockSandboxAdapter` is the only interesting part: it implements the
- * real `CodeSandboxAdapter` contract with a heuristic evaluator, so every
- * screen already talks to the shape a Pyodide worker / Scratch VM / sandboxed
- * iframe will present. Swapping in a real runtime is a factory change here and
- * nothing else.
+ * `createMockSandboxAdapter` remains local — there is no backend Pyodide/
+ * Scratch-VM execution endpoint (code execution stays client-side by design;
+ * the sandbox is a frontend runtime concern, not backend data). What IS
+ * wired to the real backend here is mentor support: `support()` now calls
+ * the real `coding-coach` AI service (`backend/src/modules/ai/coding-coach
+ * .controller.ts`, mounted at `/api/coding-coach`) via `codingAPI` in
+ * `src/services/api.ts`, instead of the static `mentorLibrary` lookup table.
+ *
+ * `pathway()`/`lab()`/`adapter()`/`history()`/`save()` still read from
+ * `src/data/coding.ts` — there is no backend model for `CodingLab`/
+ * `AdapterDescriptor`/`ProjectSnapshot` (no matching Prisma tables), and no
+ * reachable `/coding/*` listing endpoints (the real `learning/coding
+ * .controller.ts` is a permanently-disabled empty class — see
+ * docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md Part 5). Rewiring those
+ * would mean fabricating a backend contract that doesn't exist; left as
+ * local content pending that backend work.
  */
+import { codingAPI } from "@/services/api";
 import {
   codingAdapters,
   codingConcepts,
@@ -284,12 +296,46 @@ export const codingService = {
    * bounded by `MentorSupportKind`, and repeated pulls escalate the *type* of
    * thinking asked for, not the amount given away.
    */
+  /**
+   * Mentor support — wired to the real backend `coding-coach` AI service.
+   * `used`/`kind` map onto the real endpoints where a matching one exists
+   * (debug/review/explain/challenge); kinds with no backend analogue
+   * (`hint`, `guided-correction`, `reflection`) fall back to the local
+   * `mentorLibrary` copy, since there is no reachable backend route for
+   * them yet. Real calls never return the learner's solution — same
+   * guarantee as before, now enforced server-side by the AI prompt instead
+   * of client-side static text.
+   */
   async support(request: MentorSupportRequest): Promise<MentorSupport> {
     const perLab = mentorLibrary[request.labId] ?? {};
     const base = perLab[request.kind] ?? mentorFallback[request.kind];
-    if (request.kind === "debugging-question" && request.lastError) {
-      return respond({ ...base, body: request.lastError.askYourself, askBack: base.askBack }, 320);
+
+    try {
+      if (request.kind === "debugging-question" && request.lastError) {
+        const help = await codingAPI.getDebugHelp(
+          "",
+          "python",
+          request.lastError.message,
+          undefined,
+        );
+        return { ...base, body: help.diagnosis || request.lastError.askYourself, askBack: base.askBack };
+      }
+      if (request.kind === "explanation" || request.kind === "concept-explanation") {
+        // No real code payload is available at this call site (mentor requests
+        // don't carry the learner's files) — ask the coach for a general
+        // concept explanation using the lab id as context.
+        const explained = await codingAPI.explainCode(request.labId, "python");
+        return { ...base, body: explained.explanation || base.body };
+      }
+      if (request.kind === "example") {
+        const challenge = await codingAPI.generateChallenge(request.labId, "easy");
+        return { ...base, body: challenge.challenge || base.body, exampleOf: request.labId };
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[coding service] backend mentor call failed, falling back to local copy", err);
     }
+
     if (request.used >= 3 && request.kind !== "reflection") {
       return respond(
         {

@@ -16,7 +16,7 @@ class APIError extends Error {
   }
 }
 
-async function fetchAPI<T>(
+export async function fetchAPI<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
@@ -154,47 +154,66 @@ export interface VocabularyPractice {
   exercises: any[];
 }
 
+/**
+ * NOTE: `learning/english.controller.ts` is a permanently-disabled empty
+ * class (see docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md Part 5), so
+ * `/api/english/*` routes below it never existed. The real, reachable
+ * routes are on `ai/english-coach.controller.ts` (`/api/english-coach/*`).
+ * This client talks to those instead. `listStrands`/`getStrand` have no
+ * backend model at all yet (no EnglishStrand table) — left as best-effort
+ * stubs that throw until that lands.
+ */
 export const englishAPI = {
-  listStrands: (cefrLevel?: string) =>
-    fetchAPI<EnglishStrand[]>(
-      `/english/strands${cefrLevel ? `?cefrLevel=${cefrLevel}` : ''}`,
-    ),
+  listStrands: (_cefrLevel?: string): Promise<EnglishStrand[]> =>
+    Promise.reject(new Error('No backend EnglishStrand endpoint yet')),
 
-  getStrand: (slug: string) =>
-    fetchAPI<EnglishStrand>(`/english/strands/${slug}`),
+  getStrand: (_slug: string): Promise<EnglishStrand> =>
+    Promise.reject(new Error('No backend EnglishStrand endpoint yet')),
 
-  startConversation: (topic?: string, cefrLevel?: string) =>
-    fetchAPI<{ response: string; conversationId: string }>(
-      '/english/conversation',
+  startConversation: (topic?: string, cefrLevel?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2', userMessage = '') =>
+    fetchAPI<{ response: string; cefrLevel: string; topic?: string; suggestedVocabulary: string[] }>(
+      '/english-coach/conversation',
       {
         method: 'POST',
-        body: JSON.stringify({ topic, cefrLevel }),
+        body: JSON.stringify({ topic, difficulty: cefrLevel, userMessage }),
       },
     ),
 
-  correctGrammar: (text: string) =>
-    fetchAPI<GrammarCorrection>('/english/grammar/correct', {
-      method: 'POST',
-      body: JSON.stringify({ text }),
-    }),
+  correctGrammar: (text: string, explainMistakes = true) =>
+    fetchAPI<{ originalText: string; correctedText: string; feedback: string; mistakeCount: number }>(
+      '/english-coach/grammar',
+      {
+        method: 'POST',
+        body: JSON.stringify({ text, explainMistakes }),
+      },
+    ),
 
-  getPronunciationFeedback: (text: string, transcription: string) =>
-    fetchAPI<any>('/english/pronunciation/feedback', {
-      method: 'POST',
-      body: JSON.stringify({ text, transcription }),
-    }),
+  getPronunciationFeedback: (word: string, transcript?: string) =>
+    fetchAPI<{ word: string; feedback: string; pronunciationScore: number | null }>(
+      '/english-coach/pronunciation',
+      {
+        method: 'POST',
+        body: JSON.stringify({ word, transcript }),
+      },
+    ),
 
   generateVocabulary: (topic: string, wordCount?: number) =>
-    fetchAPI<VocabularyPractice>('/english/vocabulary/practice', {
-      method: 'POST',
-      body: JSON.stringify({ topic, wordCount }),
-    }),
+    fetchAPI<{ topic: string; cefrLevel: string; vocabulary: any[] }>(
+      '/english-coach/vocabulary',
+      {
+        method: 'POST',
+        body: JSON.stringify({ topic, wordCount }),
+      },
+    ),
 
   generateReading: (topic: string, length?: 'short' | 'medium' | 'long') =>
-    fetchAPI<any>('/english/reading/passage', {
-      method: 'POST',
-      body: JSON.stringify({ topic, length }),
-    }),
+    fetchAPI<{ topic: string; cefrLevel: string; passage: string; wordCount: number; estimatedReadingTime: number }>(
+      '/english-coach/reading',
+      {
+        method: 'POST',
+        body: JSON.stringify({ topic, length }),
+      },
+    ),
 
   getCEFRLevel: () =>
     fetchAPI<{
@@ -234,68 +253,131 @@ export interface CodeReview {
   overallFeedback: string;
 }
 
+/**
+ * NOTE: `learning/coding.controller.ts` is a permanently-disabled empty
+ * class (see docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md Part 5), so
+ * `/api/coding/*` routes below never existed. The real, reachable routes
+ * are on `ai/coding-coach.controller.ts` (`/api/coding-coach/*`). This
+ * client talks to those. `listConcepts`/`getConcept`/`listCategories` have
+ * no reachable backend route yet — left as best-effort stubs that throw
+ * until that lands.
+ */
 export const codingAPI = {
-  listConcepts: (category?: string, maxDifficulty?: number) => {
-    const params = new URLSearchParams();
-    if (category) params.append('category', category);
-    if (maxDifficulty) params.append('maxDifficulty', maxDifficulty.toString());
-    return fetchAPI<CodingConcept[]>(
-      `/coding/concepts${params.toString() ? `?${params.toString()}` : ''}`,
-    );
-  },
+  listConcepts: (_category?: string, _maxDifficulty?: number): Promise<CodingConcept[]> =>
+    Promise.reject(new Error('No reachable backend coding-concepts endpoint yet')),
 
-  getConcept: (slug: string) =>
-    fetchAPI<CodingConcept>(`/coding/concepts/${slug}`),
+  getConcept: (_slug: string): Promise<CodingConcept> =>
+    Promise.reject(new Error('No reachable backend coding-concepts endpoint yet')),
 
-  listCategories: () => fetchAPI<string[]>('/coding/categories'),
+  listCategories: (): Promise<string[]> =>
+    Promise.reject(new Error('No reachable backend coding-categories endpoint yet')),
 
   getDebugHelp: (
     code: string,
-    language: string,
+    language: 'scratch' | 'blockly' | 'python' | 'javascript' | 'html' | 'css',
     error?: string,
     expectedBehavior?: string,
   ) =>
-    fetchAPI<DebugAssistance>('/coding/debug', {
+    fetchAPI<{ diagnosis: string; suggestedFix: string; explanation: string; learningPoints: string[] }>(
+      '/coding-coach/debug',
+      {
+        method: 'POST',
+        body: JSON.stringify({ code, language, error, expectedBehavior }),
+      },
+    ),
+
+  reviewCode: (code: string, language: string, objectiveId?: string) =>
+    fetchAPI<{ code: string; feedback: string; strengths: string[]; improvements: string[]; nextConcept: string; codeQualityScore: number }>(
+      '/coding-coach/review',
+      {
+        method: 'POST',
+        body: JSON.stringify({ code, language, objectiveId }),
+      },
+    ),
+
+  explainCode: (code: string, language: string, specificLine?: number) =>
+    fetchAPI<{ code: string; explanation: string; keyConceptsintroduced: string[]; analogies: string[] }>(
+      '/coding-coach/explain',
+      {
+        method: 'POST',
+        body: JSON.stringify({ code, language, specificLine }),
+      },
+    ),
+
+  generateChallenge: (conceptId: string, difficulty?: 'easy' | 'medium' | 'hard') =>
+    fetchAPI<{ concept: string; difficulty: string; challenge: string; estimatedTime: number }>(
+      '/coding-coach/challenge',
+      {
+        method: 'POST',
+        body: JSON.stringify({ conceptId, difficulty: difficulty ?? 'medium' }),
+      },
+    ),
+
+  getSocraticGuidance: (_code: string, _stuckPoint: string): Promise<{ questions: string[]; hints: string[] }> =>
+    Promise.reject(new Error('No reachable backend socratic-guidance endpoint yet')),
+
+  suggestNextProject: (): Promise<any> =>
+    Promise.reject(new Error('No reachable backend next-project endpoint yet')),
+
+  getProgress: (): Promise<{
+    learnerId: string;
+    ageBand: string;
+    totalCodingSkills: number;
+    masteredSkills: number;
+    masteryByState: Record<string, number>;
+    maxDifficulty: number;
+    suggestedConcepts: CodingConcept[];
+  }> => Promise.reject(new Error('No reachable backend coding-progress endpoint yet')),
+};
+
+// ============================================
+// CODING SANDBOX API (Pyodide/Sandpack — zero backend execution)
+// ============================================
+
+export interface CodingSandboxMission {
+  activityId: string;
+  title: string;
+  language: 'python' | 'javascript';
+  runner: 'pyodide' | 'sandpack';
+  prompt: string;
+  starterCode: string;
+  assertions: Array<{ id: string; description: string; type: string; expected: string }>;
+}
+
+export interface CodingSandboxSubmission {
+  runId: string;
+  activityId: string;
+  code: string;
+  language: 'python' | 'javascript';
+  stdout: string;
+  stderr?: string;
+  result?: unknown;
+  durationMs?: number;
+  timedOut?: boolean;
+}
+
+export interface CodingSandboxResult {
+  attempt: any;
+  outcomes: Array<{ id: string; description: string; passed: boolean }>;
+  passed: boolean;
+  score: number;
+  coachFeedback: string | null;
+}
+
+/**
+ * Talks to backend/src/modules/coding-sandbox/*. That module NEVER
+ * executes code — it serves mission specs and grades already-executed
+ * client results (Pyodide in a Worker, or Sandpack in the browser).
+ */
+export const codingSandboxAPI = {
+  getMission: (activityId: string) =>
+    fetchAPI<CodingSandboxMission>(`/coding-sandbox/missions/${activityId}`),
+
+  submitResult: (submission: CodingSandboxSubmission) =>
+    fetchAPI<CodingSandboxResult>('/coding-sandbox/submissions', {
       method: 'POST',
-      body: JSON.stringify({ code, language, error, expectedBehavior }),
+      body: JSON.stringify(submission),
     }),
-
-  reviewCode: (code: string, language: string, focusAreas?: string[]) =>
-    fetchAPI<CodeReview>('/coding/review', {
-      method: 'POST',
-      body: JSON.stringify({ code, language, focusAreas }),
-    }),
-
-  explainCode: (code: string, language: string, specificPart?: string) =>
-    fetchAPI<{ explanation: string; keyPoints: string[] }>('/coding/explain', {
-      method: 'POST',
-      body: JSON.stringify({ code, language, specificPart }),
-    }),
-
-  generateChallenge: (conceptSlug: string, difficulty?: number) =>
-    fetchAPI<any>('/coding/challenge', {
-      method: 'POST',
-      body: JSON.stringify({ conceptSlug, difficulty }),
-    }),
-
-  getSocraticGuidance: (code: string, stuckPoint: string) =>
-    fetchAPI<{ questions: string[]; hints: string[] }>('/coding/guidance', {
-      method: 'POST',
-      body: JSON.stringify({ code, stuckPoint }),
-    }),
-
-  suggestNextProject: () => fetchAPI<any>('/coding/next-project'),
-
-  getProgress: () =>
-    fetchAPI<{
-      learnerId: string;
-      ageBand: string;
-      totalCodingSkills: number;
-      masteredSkills: number;
-      masteryByState: Record<string, number>;
-      maxDifficulty: number;
-      suggestedConcepts: CodingConcept[];
-    }>('/coding/learner/progress'),
 };
 
 // ============================================
@@ -379,6 +461,7 @@ export const api = {
   characters: characterAPI,
   english: englishAPI,
   coding: codingAPI,
+  codingSandbox: codingSandboxAPI,
   translations: translationAPI,
   auth: authAPI,
 };

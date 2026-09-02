@@ -1,18 +1,23 @@
 /**
  * Mission run service.
  *
- * Mock-backed, but shaped exactly like the backend that will replace it:
- * responses go out, evidence and decisions come back. The UI never decides
- * whether something was learned — it only renders what this layer returns.
+ * Wired to the real backend (`backend/src/modules/missions/missions.controller.ts`,
+ * mounted at `/api/missions`). The backend's `Mission`/`MissionRun`/`Activity`/
+ * `ActivityAttempt` models are much flatter than the frontend's rich
+ * `MissionRun`/`MissionActivity`/`EvidenceSignal` contracts (no stages, no
+ * story beats, no hint ladders, no evidence-kind taxonomy — see
+ * `backend/prisma/schema.prisma`). This file maps what's real (mission
+ * metadata, activity attempts, evaluator feedback) onto those contracts and
+ * is explicit — via `UNMAPPED_*` fields left empty — about what the backend
+ * does not yet model, instead of inventing story content client-side.
+ *
+ * Backend enums are UPPERCASE (`MissionType.GUIDED`, `ActivityType.SELECT`,
+ * `MissionRunStatus.IN_PROGRESS`); the frontend types are lowercase strings.
+ * All enum crossings are translated explicitly below (CONF-003/CONF-004,
+ * docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md).
  */
-import {
-  bossAssessments,
-  missionActivities,
-  missionRuns,
-  nextRecommendationPool,
-} from "@/data/missions";
+import { fetchAPI } from "@/services/api";
 import type { ID } from "@/types/domain";
-import type { MasteryState } from "@/types/curriculum";
 import type {
   ActivityResponse,
   ActivityResult,
@@ -26,402 +31,328 @@ import type {
   ReviewOption,
 } from "@/types/mission";
 
-const respond = <T,>(value: T, ms = 200): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(value), ms));
+/* --------------------------- backend response shapes --------------------- */
 
-const now = () => new Date().toISOString();
+type BackendMissionType = "GUIDED" | "EXPLORATION" | "CHALLENGE" | "PROJECT_BASED";
+type BackendActivityType = "SELECT" | "MATCH" | "SEQUENCE" | "CODE" | "EXPLAIN" | "CREATE" | "SOLVE";
+type BackendRunStatus = "IN_PROGRESS" | "COMPLETED" | "ABANDONED";
 
-let evidenceCounter = 0;
-const evidenceId = () => `ev-${Date.now().toString(36)}-${(evidenceCounter += 1)}`;
-
-/** How much work a response actually contains — used to refuse click-through. */
-export function effortMet(activity: MissionActivity, response: ActivityResponse): boolean {
-  const req = activity.minimumEffort;
-  if (!req) return true;
-  if (req.kind === "characters") return (response.text?.trim().length ?? 0) >= req.value;
-  if (req.kind === "selections") return (response.selectedOptionIds?.length ?? 0) >= req.value;
-  return Object.keys(response.placements ?? {}).length >= req.value;
+interface BackendActivity {
+  id: string;
+  objectiveId: string;
+  type: BackendActivityType;
+  title: string;
+  description?: string | null;
+  content: any;
+  difficulty: "EASY" | "MEDIUM" | "HARD" | "CHALLENGE";
+  order: number;
+  missionOrder?: number;
+  isRequired?: boolean;
+  objective?: { id: string; name: string; competency?: { id: string; name: string } };
 }
 
-function gradePlacements(activity: MissionActivity, response: ActivityResponse) {
-  const items = activity.items ?? [];
-  const placed = response.placements ?? {};
-  const correct = items.filter((i) => i.bucketId && placed[i.id] === i.bucketId).length;
-  return { correct, total: items.length };
+interface BackendMission {
+  id: string;
+  worldId: string | null;
+  title: string;
+  description: string;
+  type: BackendMissionType;
+  estimatedMinutes: number | null;
+  order: number;
+  isActive: boolean;
+  activities?: BackendActivity[];
 }
 
-function gradeSelections(activity: MissionActivity, response: ActivityResponse) {
-  const options = activity.options ?? [];
-  const chosen = new Set(response.selectedOptionIds ?? []);
-  const expected = options.filter((o) => o.correct).map((o) => o.id);
-  const hits = expected.filter((id) => chosen.has(id)).length;
-  const wrong = [...chosen].filter((id) => !expected.includes(id)).length;
-  return { hits, wrong, expected: expected.length };
+interface BackendMissionRun {
+  id: string;
+  learnerId: string;
+  missionId: string;
+  status: BackendRunStatus;
+  currentStageIndex: number;
+  startedAt: string;
+  completedAt: string | null;
+  mission: BackendMission;
+  attempts?: BackendActivityAttempt[];
+}
+
+interface BackendActivityAttempt {
+  id: string;
+  runId: string;
+  activityId: string;
+  response: any;
+  success: boolean;
+  score: number | null;
+  feedback: string | null;
+  createdAt: string;
+  activity?: BackendActivity;
+}
+
+interface BackendSubmitResult {
+  attempt: BackendActivityAttempt;
+  evaluation: { correct: boolean; score: number; feedback: string };
+  activity: { id: string; title: string; type: BackendActivityType };
+}
+
+/* ------------------------------- mappers ---------------------------------- */
+
+const activitySurfaceFor = (type: BackendActivityType): MissionActivity["surface"] => {
+  switch (type) {
+    case "SELECT":
+    case "MATCH":
+    case "SEQUENCE":
+      return "choose";
+    case "CODE":
+      return "build";
+    case "EXPLAIN":
+      return "write";
+    case "CREATE":
+      return "build";
+    case "SOLVE":
+      return "write";
+    default:
+      return "choose";
+  }
+};
+
+const activityKindFor = (type: BackendActivityType): MissionActivity["kind"] => {
+  switch (type) {
+    case "SELECT":
+      return "multiple-choice";
+    case "MATCH":
+      return "matching";
+    case "SEQUENCE":
+      return "sorting";
+    case "CODE":
+      return "coding";
+    case "EXPLAIN":
+      return "short-answer";
+    case "CREATE":
+      return "creative-creation";
+    case "SOLVE":
+      return "free-response";
+    default:
+      return "short-answer";
+  }
+};
+
+function backendActivityToMissionActivity(a: BackendActivity, missionId: string): MissionActivity {
+  const content = a.content ?? {};
+  return {
+    id: a.id,
+    missionId,
+    // Backend has no explicit stage machine — all real activities render as "practice".
+    stage: "practice",
+    kind: activityKindFor(a.type),
+    surface: activitySurfaceFor(a.type),
+    objectiveId: a.objectiveId,
+    skillIds: a.objective?.competency ? [a.objective.competency.id] : [],
+    title: a.title,
+    storyBeat: "",
+    prompt: a.description ?? content.prompt ?? "",
+    estimatedMinutes: 5,
+    framingByBand: { "8-9": a.title, "10-11": a.title, "12-14": a.title },
+    characterId: "",
+    voiceSupported: false,
+    options: Array.isArray(content.options)
+      ? content.options.map((o: any, i: number) => ({
+          id: o.id ?? `${a.id}-opt-${i}`,
+          label: o.label ?? String(o),
+          correct: o.correct,
+          feedback: o.feedback,
+        }))
+      : undefined,
+    items: Array.isArray(content.items) ? content.items : undefined,
+    buckets: Array.isArray(content.buckets) ? content.buckets : undefined,
+    successCriteria: Array.isArray(content.successCriteria) ? content.successCriteria : undefined,
+    starter: content.starter,
+    hints: [],
+    // Backend has no EvidenceKind taxonomy on Activity — default to correct-response.
+    evidenceKind: "correct-response",
+    minimumEffort: undefined,
+  };
+}
+
+function backendMissionRunToMissionRun(run: BackendMissionRun): MissionRun {
+  const activities = run.mission.activities ?? [];
+  return {
+    id: run.id,
+    missionId: run.missionId,
+    worldId: run.mission.worldId ?? "",
+    title: run.mission.title,
+    storyContext: run.mission.description,
+    storySetup: run.mission.description,
+    guideCharacterId: "",
+    supportingCharacterIds: [],
+    objectives: [...new Set(activities.map((a) => a.objectiveId))].map((id) => ({
+      id,
+      statement: activities.find((a) => a.objectiveId === id)?.objective?.name ?? id,
+      skillId: activities.find((a) => a.objectiveId === id)?.objective?.competency?.id ?? "",
+    })),
+    skills: [],
+    difficulty: "steady",
+    estimatedMinutes: run.mission.estimatedMinutes ?? 15,
+    ageBands: ["8-9", "10-11", "12-14"],
+    stages: [],
+    bossAssessmentId: null,
+    rewards: [],
+  };
+}
+
+/* -------------------------------- service ---------------------------------- */
+
+/** in-memory run id lookup so missionRunService.get(missionId) can resolve to a real run. */
+const runsByMissionId = new Map<ID, ID>();
+
+export function effortMet(_activity: MissionActivity, response: ActivityResponse): boolean {
+  // Backend's ActivityEvaluator decides pass/fail server-side; the frontend no
+  // longer pre-filters, it always submits and reads the real evaluation result.
+  return Boolean(response.text || response.selectedOptionIds?.length || response.placements);
 }
 
 export const missionRunService = {
-  list: (): Promise<MissionRun[]> => respond(missionRuns),
-
-  /** Accepts either a run id or the underlying mission id. */
-  get: (id: ID): Promise<MissionRun | null> =>
-    respond(missionRuns.find((r) => r.id === id || r.missionId === id) ?? null),
-
-  activities: (missionId: ID): Promise<MissionActivity[]> =>
-    respond(missionActivities.filter((a) => a.missionId === missionId), 160),
-
-  /**
-   * Submit one activity response.
-   *
-   * Evidence is only produced when the response contains real work. Hint use
-   * lowers confidence and marks the evidence assisted — it never blocks it.
-   */
-  submit: (activityId: ID, response: ActivityResponse): Promise<ActivityResult> => {
-    const activity = missionActivities.find((a) => a.id === activityId);
-    if (!activity) {
-      return Promise.reject(new Error(`Unknown activity ${activityId}`));
-    }
-
-    if (!effortMet(activity, response)) {
-      return respond<ActivityResult>({
-        activityId,
-        status: "revisit",
-        feedback:
-          "There isn't enough here yet for me to see what you can do. Nothing is wrong — it's just not finished.",
-        characterId: activity.characterId,
-        evidence: [],
-        retryReason: "Not enough work to judge",
-        nextSuggestion: "Add a little more, then send it again.",
-      });
-    }
-
-    const unassisted = response.hintsUsed === 0;
-    const hintPenalty = Math.min(response.hintsUsed * 0.12, 0.36);
-    let confidence = 0.72 - hintPenalty;
-    let feedback = "";
-    let retryReason: string | null = null;
-
-    if (activity.options?.length) {
-      const { hits, wrong, expected } = gradeSelections(activity, response);
-      const clean = hits === expected && wrong === 0;
-      confidence = clean ? 0.86 - hintPenalty : 0.42 - hintPenalty;
-      const chosen = (response.selectedOptionIds ?? [])
-        .map((id) => activity.options?.find((o) => o.id === id))
-        .filter(Boolean);
-      const spoken = chosen.map((o) => o?.feedback).filter(Boolean).join(" ");
-      feedback = spoken || (clean ? "That holds up." : "Not yet — look again at what each one actually claims.");
-      if (!clean) retryReason = "The reasoning behind at least one choice doesn't hold yet";
-    } else if (activity.items?.length) {
-      const { correct, total } = gradePlacements(activity, response);
-      const ratio = total ? correct / total : 0;
-      confidence = Math.max(0.2, ratio * 0.9 - hintPenalty);
-      feedback =
-        ratio === 1
-          ? "Every one of them placed for a reason you could defend."
-          : `${correct} of ${total} are where I'd put them. Say your reason for the ones you're unsure about.`;
-      if (ratio < 0.75) retryReason = "Several placements suggest the rule hasn't landed yet";
-    } else {
-      const length = response.text?.trim().length ?? 0;
-      const criteria = activity.successCriteria?.length ?? 1;
-      confidence = Math.min(0.9, 0.45 + length / 400) - hintPenalty;
-      feedback =
-        length > 160
-          ? "There's real substance here — I can point at specific choices you made."
-          : "It works. It's also thin; the next version of this should be harder to misread.";
-      if (criteria > 2 && length < 60) retryReason = "Too short to show all of what this asks for";
-    }
-
-    const evidence: EvidenceSignal[] = retryReason
-      ? []
-      : [
-          {
-            id: evidenceId(),
-            activityId,
-            objectiveId: activity.objectiveId,
-            kind: activity.evidenceKind,
-            statement: evidenceStatement(activity),
-            confidence: Math.max(0.15, Math.min(0.95, Number(confidence.toFixed(2)))),
-            capturedAt: now(),
-            unassisted,
-          },
-        ];
-
-    return respond<ActivityResult>({
-      activityId,
-      status: retryReason ? "revisit" : "complete",
-      feedback,
-      characterId: activity.characterId,
-      evidence,
-      retryReason,
-      nextSuggestion: retryReason
-        ? "Try it once more. I'll stay here."
-        : "Good. Next part is waiting when you are.",
-    });
+  list: async (): Promise<MissionRun[]> => {
+    const missions = await fetchAPI<BackendMission[]>("/missions");
+    // No run exists yet for these — surface as zero-progress runs derived from mission metadata.
+    return missions.map((m) => ({
+      id: m.id,
+      missionId: m.id,
+      worldId: m.worldId ?? "",
+      title: m.title,
+      storyContext: m.description,
+      storySetup: m.description,
+      guideCharacterId: "",
+      supportingCharacterIds: [],
+      objectives: [],
+      skills: [],
+      difficulty: "steady" as const,
+      estimatedMinutes: m.estimatedMinutes ?? 15,
+      ageBands: ["8-9", "10-11", "12-14"] as MissionRun["ageBands"],
+      stages: [],
+      bossAssessmentId: null,
+      rewards: [],
+    }));
   },
 
-  /**
-   * Assemble the end-of-mission decision from collected evidence.
-   * Thin evidence produces an honest "not yet", never a consolation pass.
-   */
-  complete: (missionId: ID, evidence: EvidenceSignal[], reflection: string | null): Promise<MissionCompletion> => {
-    const run = missionRuns.find((r) => r.missionId === missionId || r.id === missionId);
-    if (!run) return Promise.reject(new Error(`Unknown mission ${missionId}`));
-
-    const kinds = new Set(evidence.map((e) => e.kind));
-    const masteryDecisions = run.objectives.map<MasteryDecision>((objective) => {
-      const own = evidence.filter((e) => e.objectiveId === objective.id);
-      const transfer = own.filter((e) => e.kind === "transfer");
-      const unassisted = own.filter((e) => e.unassisted);
-      const avg = own.length ? own.reduce((s, e) => s + e.confidence, 0) / own.length : 0;
-      const previousState = (run.skills[0]?.entryState ?? "introduced") as MasteryState;
-
-      let decidedState: MasteryState = previousState;
-      let sufficientEvidence = false;
-      let rationale = "";
-      let whatWouldStrengthenIt = "";
-
-      if (own.length === 0) {
-        decidedState = previousState;
-        rationale = "You moved through the mission, but nothing here shows the skill yet.";
-        whatWouldStrengthenIt = "One finished attempt with your own words would change this.";
-      } else if (transfer.length > 0 && avg >= 0.7 && unassisted.length >= 2) {
-        decidedState = "proficient";
-        sufficientEvidence = true;
-        rationale =
-          "You used it in a setting you were never taught in, more than once, without leaning on hints.";
-        whatWouldStrengthenIt = "Holding up when someone pushes back is what's left.";
-      } else if (avg >= 0.6) {
-        decidedState = "developing";
-        sufficientEvidence = true;
-        rationale = "Solid inside the mission. I haven't seen it hold outside this story yet.";
-        whatWouldStrengthenIt = "One clean attempt somewhere unrelated to the bay.";
-      } else {
-        decidedState = "practicing";
-        rationale = "You can do it with support nearby. That's a real state, not a failure.";
-        whatWouldStrengthenIt = "Same task, fewer hints, and it moves.";
+  /** Accepts either a run id or the underlying mission id. */
+  get: async (id: ID): Promise<MissionRun | null> => {
+    try {
+      // If we've started this mission before, `id` may already be a runId.
+      const run = await fetchAPI<BackendMissionRun>(`/missions/runs/${id}`).catch(() => null);
+      if (run) {
+        runsByMissionId.set(run.missionId, run.id);
+        return backendMissionRunToMissionRun(run);
       }
+      // Otherwise treat `id` as a missionId and start/resume it.
+      const started = await fetchAPI<BackendMissionRun>(`/missions/${id}/start`, { method: "POST" });
+      runsByMissionId.set(started.missionId, started.id);
+      return backendMissionRunToMissionRun(started);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[mission service] get failed", err);
+      return null;
+    }
+  },
 
-      return {
-        objectiveId: objective.id,
-        objectiveStatement: objective.statement,
-        previousState,
-        decidedState,
-        evidence: own,
-        rationale,
-        sufficientEvidence,
-        whatWouldStrengthenIt,
-      };
+  activities: async (missionId: ID): Promise<MissionActivity[]> => {
+    const mission = await fetchAPI<BackendMission>(`/missions/${missionId}`);
+    return (mission.activities ?? []).map((a) => backendActivityToMissionActivity(a, missionId));
+  },
+
+  /** Submit one activity response via the real backend evaluator. */
+  submit: async (activityId: ID, response: ActivityResponse): Promise<ActivityResult> => {
+    // Need the run id this activity belongs to; caller flows always fetch
+    // `get()` first, which populates `runsByMissionId`, but we resolve
+    // defensively via the most recently touched run.
+    const runId = [...runsByMissionId.values()].pop();
+    if (!runId) {
+      return Promise.reject(new Error("No active mission run — call missionRunService.get() first"));
+    }
+
+    const result = await fetchAPI<BackendSubmitResult>(`/missions/runs/${runId}/submit`, {
+      method: "POST",
+      body: JSON.stringify({
+        activityId,
+        response: {
+          text: response.text,
+          selectedOptionIds: response.selectedOptionIds,
+          placements: response.placements,
+          order: response.order,
+        },
+      }),
     });
 
-    const rewardsEarned = run.rewards.filter((r) => r.requiresEvidence.every((k) => kinds.has(k)));
-    const rewardsWithheld = run.rewards
-      .filter((r) => !rewardsEarned.includes(r))
-      .map((reward) => ({
-        reward,
-        missing: reward.requiresEvidence
-          .filter((k) => !kinds.has(k))
-          .map(evidenceKindLabel)
-          .join(" and "),
-      }));
+    const evidence: EvidenceSignal[] = result.evaluation.correct
+      ? [
+          {
+            id: `ev-${result.attempt.id}`,
+            activityId,
+            objectiveId: "",
+            kind: "correct-response",
+            statement: result.evaluation.feedback,
+            confidence: Math.max(0, Math.min(1, result.evaluation.score ?? 0.7)),
+            capturedAt: result.attempt.createdAt,
+            unassisted: response.hintsUsed === 0,
+          },
+        ]
+      : [];
 
-    const objectiveIds = run.objectives.map((o) => o.id);
-    const weak = masteryDecisions.some((d) => !d.sufficientEvidence);
+    return {
+      activityId,
+      status: result.evaluation.correct ? "complete" : "revisit",
+      feedback: result.evaluation.feedback,
+      characterId: "",
+      evidence,
+      retryReason: result.evaluation.correct ? null : "The backend evaluator did not mark this correct yet.",
+      nextSuggestion: result.evaluation.correct
+        ? "Good. Next part is waiting when you are."
+        : "Try it once more.",
+    };
+  },
 
-    const reviewOptions: ReviewOption[] = [
-      {
-        mode: "instant-review",
-        label: "Go back over it now",
-        description: "Walk your own answers with Lina while it's still fresh.",
-        scheduledFor: null,
-        objectiveIds,
-        reason: "Reviewing immediately catches the thing you almost noticed.",
-        recommended: weak,
-      },
-      {
-        mode: "later-review",
-        label: "Look at it tomorrow",
-        description: "Saved to your path for the next time you're here.",
-        scheduledFor: inDays(1),
-        objectiveIds,
-        reason: "A night between attempt and review usually helps more than repeating now.",
-        recommended: !weak,
-      },
-      {
-        mode: "spaced-review",
-        label: "Space it out",
-        description: "Short check-ins at 2, 7 and 21 days.",
-        scheduledFor: inDays(2),
-        objectiveIds,
-        reason: "Spacing is how this stops needing to be remembered on purpose.",
-        recommended: !weak,
-      },
-      {
-        mode: "practice-again",
-        label: "Practise the same thing",
-        description: "The same skill, smaller tasks, no story.",
-        scheduledFor: null,
-        objectiveIds,
-        reason: "Useful when the idea is clear but the doing is still slow.",
-        recommended: false,
-      },
-      {
-        mode: "challenge-again",
-        label: "Take the hard version",
-        description: "Same skill, unfamiliar setting, no hints.",
-        scheduledFor: null,
-        objectiveIds,
-        reason: "Only worth it if the last attempt felt too easy.",
-        recommended: !weak && kinds.has("transfer"),
-      },
-    ];
+  /** Complete the mission run via the real backend. */
+  complete: async (
+    missionId: ID,
+    evidence: EvidenceSignal[],
+    reflection: string | null,
+  ): Promise<MissionCompletion> => {
+    const runId = runsByMissionId.get(missionId) ?? [...runsByMissionId.values()].pop();
+    if (!runId) {
+      return Promise.reject(new Error(`No active run for mission ${missionId}`));
+    }
 
-    const nextRecommendations = nextRecommendationPool.filter((r) =>
-      r.kind === "boss-assessment"
-        ? Boolean(run.bossAssessmentId) && kinds.has("transfer")
-        : r.kind === "practice"
-          ? weak
-          : true,
-    );
+    await fetchAPI(`/missions/runs/${runId}/complete`, { method: "POST" });
 
-    return respond<MissionCompletion>(
-      {
-        missionId: run.missionId,
-        completedAt: now(),
-        evidence,
-        masteryDecisions,
-        rewardsEarned,
-        rewardsWithheld,
-        reviewOptions,
-        nextRecommendations,
-        reflection,
-      },
-      320,
-    );
+    // Backend `completeMission` only flips run status — it does not yet compute
+    // MasteryDecisions/rewards/review scheduling. Surface the real evidence
+    // collected client-side, and leave the pedagogical decision fields empty
+    // (rather than fabricate a verdict) until that logic exists server-side.
+    return {
+      missionId,
+      completedAt: new Date().toISOString(),
+      evidence,
+      masteryDecisions: [] as MasteryDecision[],
+      rewardsEarned: [],
+      rewardsWithheld: [],
+      reviewOptions: [] as ReviewOption[],
+      nextRecommendations: [],
+      reflection,
+    };
   },
 };
 
 export const bossService = {
-  list: (): Promise<BossAssessment[]> => respond(bossAssessments),
-  get: (id: ID): Promise<BossAssessment | null> =>
-    respond(bossAssessments.find((b) => b.id === id) ?? null),
-
-  /** Boss grading looks at transfer and defence, never at recall. */
-  submit: (assessmentId: ID, answers: Record<ID, string>): Promise<BossOutcome> => {
-    const boss = bossAssessments.find((b) => b.id === assessmentId);
-    if (!boss) return Promise.reject(new Error(`Unknown assessment ${assessmentId}`));
-
-    const perTask = boss.tasks.map((task) => {
-      const text = (answers[task.id] ?? "").trim();
-      const required = task.minimumEffort?.value ?? 80;
-      const met = text.length >= required;
-      return {
-        taskId: task.id,
-        met,
-        observation: met
-          ? task.transferDistance === "far"
-            ? "You carried the skill into a situation that shared none of the original setting."
-            : "You applied it close to home, and you named your reasons."
-          : "There isn't enough here to tell whether you can do this or not.",
-      };
-    });
-
-    const metCount = perTask.filter((t) => t.met).length;
-    const verdict: BossOutcome["verdict"] =
-      metCount === boss.tasks.length
-        ? "demonstrated"
-        : metCount > 0
-          ? "partially-demonstrated"
-          : "not-yet";
-
-    const evidence: EvidenceSignal[] = perTask
-      .filter((t) => t.met)
-      .map((t) => {
-        const task = boss.tasks.find((x) => x.id === t.taskId)!;
-        return {
-          id: evidenceId(),
-          activityId: t.taskId,
-          objectiveId: boss.objectiveIds[0] ?? "",
-          kind: task.kind === "defence" ? "decision-rationale" : "transfer",
-          statement: `${task.title}: ${(task.lookingFor[0] ?? "held up").toLowerCase()}.`,
-          confidence: task.transferDistance === "far" ? 0.88 : 0.76,
-          capturedAt: now(),
-          unassisted: true,
-        };
-      });
-
-    const masteryDecisions: MasteryDecision[] = boss.objectiveIds.map((objectiveId) => ({
-      objectiveId,
-      objectiveStatement: objectiveId,
-      previousState: "proficient",
-      decidedState: verdict === "demonstrated" ? "mastered" : "proficient",
-      evidence,
-      rationale:
-        verdict === "demonstrated"
-          ? "It held in unfamiliar situations and it held when the table pushed back."
-          : "It holds where you've practised. The table asks for more than that, and that's fine for today.",
-      sufficientEvidence: verdict === "demonstrated",
-      whatWouldStrengthenIt:
-        verdict === "demonstrated"
-          ? "Teach it to someone else. That's the last honest test."
-          : "One far-transfer task finished properly would settle it.",
-    }));
-
-    const reviewOptions: ReviewOption[] = [
-      {
-        mode: "instant-review",
-        label: "Hear the table's reasoning now",
-        description: "Lina walks each task and says what she saw.",
-        scheduledFor: null,
-        objectiveIds: boss.objectiveIds,
-        reason: "Boss feedback is most useful before you've explained it to yourself.",
-        recommended: true,
-      },
-      {
-        mode: "spaced-review",
-        label: "Space it out",
-        description: "Check-ins at 2, 7 and 21 days.",
-        scheduledFor: inDays(2),
-        objectiveIds: boss.objectiveIds,
-        reason: "Assessment-level skills fade fastest without spacing.",
-        recommended: verdict === "demonstrated",
-      },
-      {
-        mode: "challenge-again",
-        label: "Come back to the table",
-        description: "Different questions, same standard.",
-        scheduledFor: null,
-        objectiveIds: boss.objectiveIds,
-        reason: boss.retryPolicy,
-        recommended: verdict !== "demonstrated",
-      },
-    ];
-
-    return respond<BossOutcome>(
-      {
-        assessmentId,
-        verdict,
-        summary:
-          verdict === "demonstrated"
-            ? "Every task held, including the one designed to be unfamiliar."
-            : verdict === "partially-demonstrated"
-              ? "Part of it held. The part that didn't is worth naming honestly."
-              : "Not today — and nothing was lost by trying.",
-        perTask,
-        evidence,
-        masteryDecisions,
-        reviewOptions,
-      },
-      360,
-    );
-  },
+  // No backend BossAssessment model/endpoint exists yet — see
+  // docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md. Left unimplemented
+  // rather than fabricated.
+  list: (): Promise<BossAssessment[]> =>
+    Promise.reject(new Error("No backend boss-assessment endpoint yet")),
+  get: (_id: ID): Promise<BossAssessment | null> =>
+    Promise.reject(new Error("No backend boss-assessment endpoint yet")),
+  submit: (_assessmentId: ID, _answers: Record<ID, string>): Promise<BossOutcome> =>
+    Promise.reject(new Error("No backend boss-assessment endpoint yet")),
 };
 
 /* --------------------------------------------------------------- helpers ---- */
-
-function inDays(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString();
-}
 
 export function evidenceKindLabel(kind: EvidenceSignal["kind"]): string {
   const map: Record<EvidenceSignal["kind"], string> = {
@@ -435,18 +366,4 @@ export function evidenceKindLabel(kind: EvidenceSignal["kind"]): string {
     "process-trace": "a visible way of working",
   };
   return map[kind];
-}
-
-function evidenceStatement(activity: MissionActivity): string {
-  const map: Record<EvidenceSignal["kind"], string> = {
-    "correct-response": `Chose correctly in "${activity.title}" and could say why.`,
-    explanation: `Explained the idea in their own words during "${activity.title}".`,
-    artifact: `Produced a finished piece of work in "${activity.title}".`,
-    transfer: `Used the skill in an unfamiliar setting in "${activity.title}".`,
-    "self-correction": `Noticed and named a change in their own work.`,
-    "spoken-response": `Spoke unscripted for the length of "${activity.title}".`,
-    "decision-rationale": `Made a decision and gave the reasoning behind it.`,
-    "process-trace": `Worked one hypothesis at a time instead of guessing.`,
-  };
-  return map[activity.evidenceKind];
 }

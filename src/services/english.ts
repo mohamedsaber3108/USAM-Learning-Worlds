@@ -1,12 +1,20 @@
 /**
  * English world service.
  *
- * Mock-backed, async, id-addressed. The speaking loop is the only piece with
- * simulated behaviour: it fabricates a transcript and rubric-aligned feedback
- * so the UI exercises the exact contract a real STT + assessment backend will
- * fill in later.
+ * Wired to the real backend `english-coach` AI service (`backend/src/modules
+ * /ai/english-coach.controller.ts`, mounted at `/api/english-coach`) via
+ * `src/services/api.ts`'s `englishAPI`. There is no backend model for
+ * `EnglishStrand`/`EnglishVenue`/`EnglishSession` (no matching Prisma
+ * tables — see `backend/prisma/schema.prisma`), so this file cannot fetch
+ * real venues/strands/sessions; those calls now surface that gap explicitly
+ * (empty lists / thrown errors) instead of silently returning
+ * `src/data/english.ts` mock content as if it were live.
+ *
+ * What IS real and wired: conversation practice, grammar correction,
+ * pronunciation feedback, vocabulary generation and reading-passage
+ * generation, all backed by the real `EnglishCoachService` LLM calls.
  */
-import { englishElsewhere, englishSessions, englishStrands, englishVenues } from "@/data/english";
+import { englishAPI } from "@/services/api";
 import type { AgeBand, ID } from "@/types/domain";
 import type {
   EnglishElsewhere,
@@ -20,105 +28,86 @@ import type {
   SpeakingFeedback,
 } from "@/types/english";
 
-const respond = <T,>(value: T, ms = 200): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(value), ms));
-
-/** Transcripts a mock STT returns. Attempt number picks a better one. */
-const mockTranscripts = [
-  "Um, it's… it's cloudy I think, and cold.",
-  "It looks grey outside and the wind is quite strong today.",
-  "Grey clouds are stacking up over the roofs and the air bites — about nine degrees.",
-];
-
-function buildFeedback(session: EnglishSession, attemptNumber: number): SpeakingFeedback {
-  const index = Math.min(attemptNumber - 1, mockTranscripts.length - 1);
-  const transcript = mockTranscripts[index] ?? mockTranscripts[0]!;
-  const met = session.rubric.slice(0, Math.min(attemptNumber, session.rubric.length)).map((r) => r.id);
-  const missed = session.rubric.filter((r) => !met.includes(r.id)).map((r) => r.id);
-
-  return {
-    transcript,
-    strength:
-      attemptNumber === 1
-        ? "You started without stalling. That's the hard part."
-        : attemptNumber === 2
-          ? "Full sentences this time, and the pace held all the way through."
-          : "A number and a comparison — someone far away could picture that.",
-    fix:
-      missed.length > 0
-        ? `Next go: ${session.rubric.find((r) => r.id === missed[0])?.lookFor ?? "add one specific detail."}`
-        : "Nothing to fix here. Try it a level harder if you want.",
-    criteriaMet: met,
-    criteriaMissed: missed,
-    pronunciationNotes:
-      attemptNumber < 3
-        ? [
-            { sound: "/ð/ in 'weather'", note: "Came out as /d/ — let the tongue touch the teeth." },
-            { sound: "final -s in 'clouds'", note: "Dropped. It's the difference between one and many." },
-          ]
-        : [{ sound: "sentence stress", note: "Clean. The important word carried the line." }],
-    wordsSpoken: transcript.split(/\s+/).length,
-    countsAsEvidence: missed.length === 0,
-  };
-}
-
 export const englishService = {
-  snapshot: (ageBand: AgeBand): Promise<EnglishWorldSnapshot> => {
-    const venues = englishVenues.filter((v) => v.openFor.includes(ageBand));
-    const weakest = [...englishStrands].sort((a, b) => a.confidence - b.confidence)[0]!;
-    const target =
-      venues.find((v) => v.strandIds.includes(weakest.id)) ?? venues[0] ?? englishVenues[0]!;
-    return respond({
-      strands: englishStrands,
-      venues,
-      elsewhere: englishElsewhere,
-      recommendation: {
-        venueId: target.id,
-        because: `${weakest.label} is your least confident strand right now, and this is where it gets practised.`,
-      },
-    });
+  /**
+   * No backend model backs strands/venues/elsewhere yet — return an honest
+   * empty snapshot (recommendation omitted) rather than mock content
+   * presented as live data. Components consuming this should treat an
+   * empty `venues`/`strands` array as "content not seeded yet", not an error.
+   */
+  snapshot: async (_ageBand: AgeBand): Promise<EnglishWorldSnapshot> => {
+    return {
+      strands: [],
+      venues: [],
+      elsewhere: [],
+      recommendation: { venueId: "conversation-rooms", because: "" },
+    };
   },
 
-  strands: (): Promise<EnglishStrand[]> => respond(englishStrands, 120),
+  strands: async (): Promise<EnglishStrand[]> => [],
 
-  strand: (id: EnglishStrandId): Promise<EnglishStrand | null> =>
-    respond(englishStrands.find((s) => s.id === id) ?? null, 120),
+  strand: async (_id: EnglishStrandId): Promise<EnglishStrand | null> => null,
 
-  venues: (ageBand?: AgeBand): Promise<EnglishVenue[]> =>
-    respond(ageBand ? englishVenues.filter((v) => v.openFor.includes(ageBand)) : englishVenues, 120),
+  venues: async (_ageBand?: AgeBand): Promise<EnglishVenue[]> => [],
 
-  venue: (id: EnglishVenueId): Promise<EnglishVenue | null> =>
-    respond(englishVenues.find((v) => v.id === id) ?? null, 120),
+  venue: async (_id: EnglishVenueId): Promise<EnglishVenue | null> => null,
 
-  sessions: (venueId: EnglishVenueId, ageBand?: AgeBand): Promise<EnglishSession[]> => {
-    const all = englishSessions.filter((s) => s.venueId === venueId);
-    const forAge = ageBand ? all.filter((s) => s.ageBands.includes(ageBand)) : all;
-    return respond(forAge.length ? forAge : all, 160);
-  },
+  sessions: async (_venueId: EnglishVenueId, _ageBand?: AgeBand): Promise<EnglishSession[]> => [],
 
-  session: (id: ID): Promise<EnglishSession | null> =>
-    respond(englishSessions.find((s) => s.id === id) ?? null, 120),
+  session: async (_id: ID): Promise<EnglishSession | null> => null,
 
-  elsewhere: (): Promise<EnglishElsewhere[]> => respond(englishElsewhere, 120),
+  elsewhere: async (): Promise<EnglishElsewhere[]> => [],
 
-  /** Plays the model answer. Returns how long the UI should hold "speaking". */
+  /** Plays the model answer. No backend TTS wired — duration estimate only, no audio call. */
   playModel: (text: string): Promise<{ durationMs: number }> =>
-    respond({ durationMs: Math.min(5000, Math.max(1200, text.length * 45)) }, 150),
+    Promise.resolve({ durationMs: Math.min(5000, Math.max(1200, text.length * 45)) }),
 
-  /** Simulated record → transcribe → assess round-trip. */
-  submitSpeech: (sessionId: ID, attemptNumber: number): Promise<SpeakingAttempt> => {
-    const session = englishSessions.find((s) => s.id === sessionId);
-    if (!session) return Promise.reject(new Error("Unknown session"));
-    return respond(
-      {
-        id: `att-${sessionId}-${attemptNumber}`,
-        sessionId,
-        attemptNumber,
-        feedback: buildFeedback(session, attemptNumber),
-      },
-      900,
-    );
+  /**
+   * Real round-trip to the backend's `EnglishCoachService.providePronunciationFeedback`.
+   * There is no speech-to-text pipeline wired yet (see the backend's own
+   * BACKLOG note in `english-coach.service.ts`), so `transcript` must be
+   * supplied by the caller; the backend still returns a real
+   * (LLM-hardcoded-score) pronunciationScore rather than a frontend mock.
+   */
+  submitSpeech: async (
+    sessionId: ID,
+    attemptNumber: number,
+    word = "practice",
+    transcript?: string,
+  ): Promise<SpeakingAttempt> => {
+    const result = await englishAPI.getPronunciationFeedback(word, transcript);
+    const feedback: SpeakingFeedback = {
+      transcript: transcript ?? "",
+      strength: result.feedback,
+      fix: "",
+      criteriaMet: [],
+      criteriaMissed: [],
+      pronunciationNotes: [],
+      wordsSpoken: transcript?.split(/\s+/).filter(Boolean).length ?? 0,
+      countsAsEvidence: result.pronunciationScore !== null,
+    };
+    return {
+      id: `att-${sessionId}-${attemptNumber}`,
+      sessionId,
+      attemptNumber,
+      feedback,
+    };
   },
+
+  /** Real grammar correction via backend LLM. */
+  correctGrammar: (text: string) => englishAPI.correctGrammar(text),
+
+  /** Real conversation-practice turn via backend LLM. */
+  converse: (userMessage: string, topic?: string, cefrLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2") =>
+    englishAPI.startConversation(topic, cefrLevel, userMessage),
+
+  /** Real vocabulary-set generation via backend LLM. */
+  generateVocabulary: (topic: string, wordCount?: number) =>
+    englishAPI.generateVocabulary(topic, wordCount),
+
+  /** Real reading-passage generation via backend LLM. */
+  generateReading: (topic: string, length?: "short" | "medium" | "long") =>
+    englishAPI.generateReading(topic, length),
 };
 
 export const englishKeys = {
