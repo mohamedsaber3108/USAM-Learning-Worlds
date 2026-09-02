@@ -1,6 +1,61 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import apiClient from '@/lib/api/client'
+import type { AuthResponse } from '@/types'
+
+const registerSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  displayName: z.string().min(1, 'Display name is required'),
+})
+
+type RegisterForm = z.infer<typeof registerSchema>
 
 export function RegisterPage() {
+  const navigate = useNavigate()
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+  })
+
+  const onSubmit = async (data: RegisterForm) => {
+    try {
+      setLoading(true)
+      setError('')
+
+      // ageBand is intentionally NOT collected here — it's chosen in the
+      // onboarding flow (AgeSelectPage) right after signup.
+      const response = await apiClient.post<AuthResponse>('/auth/register', {
+        email: data.email,
+        password: data.password,
+        role: 'LEARNER',
+        firstName: data.firstName,
+        displayName: data.displayName,
+      })
+
+      localStorage.setItem('accessToken', response.data.accessToken)
+      localStorage.setItem('refreshToken', response.data.refreshToken)
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+
+      // First-time users always go through onboarding before the dashboard.
+      navigate('/onboarding/welcome')
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50">
       <div className="max-w-md w-full mx-4">
@@ -9,8 +64,84 @@ export function RegisterPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Create Account
             </h1>
-            <p className="text-gray-600">Coming soon! Registration feature in development.</p>
+            <p className="text-gray-600">Join USAM Learning Worlds</p>
           </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                First Name
+              </label>
+              <input
+                {...register('firstName')}
+                type="text"
+                className="input"
+                placeholder="Alex"
+              />
+              {errors.firstName && (
+                <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Display Name
+              </label>
+              <input
+                {...register('displayName')}
+                type="text"
+                className="input"
+                placeholder="What should we call you?"
+              />
+              {errors.displayName && (
+                <p className="text-red-500 text-sm mt-1">{errors.displayName.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                {...register('email')}
+                type="email"
+                className="input"
+                placeholder="you@example.com"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                {...register('password')}
+                type="password"
+                className="input"
+                placeholder="••••••••"
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">

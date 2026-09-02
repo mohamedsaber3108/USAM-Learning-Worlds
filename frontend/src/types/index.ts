@@ -14,7 +14,7 @@ export interface Learner {
   firstName: string
   lastName: string
   displayName: string
-  ageBand: string
+  ageBand: string | null
   avatarUrl: string | null
   status: string
 }

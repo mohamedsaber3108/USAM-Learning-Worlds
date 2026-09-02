@@ -49,7 +49,7 @@ model Learner {
   firstName         String
   lastName          String?
   displayName       String        @unique
-  ageBand           AgeBand
+  ageBand           AgeBand?
   avatarUrl         String?
   dateOfBirth       DateTime?
   status            LearnerStatus @default(ACTIVE)

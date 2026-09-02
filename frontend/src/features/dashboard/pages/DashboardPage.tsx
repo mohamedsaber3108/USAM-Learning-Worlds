@@ -1,4 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
@@ -39,6 +40,15 @@ export function DashboardPage() {
   const navigate = useNavigate()
   const userStr = localStorage.getItem('user')
   const user = userStr ? JSON.parse(userStr) : null
+
+  // First-time learners who somehow land here without completing
+  // onboarding (e.g. a pre-existing account, or a direct URL visit)
+  // get routed into the onboarding flow instead of seeing the dashboard.
+  useEffect(() => {
+    if (user?.role === 'LEARNER' && user.learner && !user.learner.ageBand) {
+      navigate('/onboarding/welcome', { replace: true })
+    }
+  }, [user, navigate])
 
   const { data: progression } = useQuery({
     queryKey: ['progression'],

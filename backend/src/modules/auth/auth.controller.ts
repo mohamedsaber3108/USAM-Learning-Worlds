@@ -1,7 +1,7 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Patch, Body, UseGuards, Get } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './dto';
+import { RegisterDto, LoginDto, UpdateAgeBandDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
@@ -37,5 +37,14 @@ export class AuthController {
       learner: user.learner,
       guardian: user.guardian,
     };
+  }
+
+  // Minimal endpoint to persist the age-band chosen during first-time
+  // onboarding (Welcome -> Age Select -> Character Intro -> Complete).
+  // Lives here (not a dedicated learners module) since none exists yet.
+  @Patch('me/age-band')
+  @UseGuards(JwtAuthGuard)
+  async updateAgeBand(@CurrentUser() user: any, @Body() dto: UpdateAgeBandDto) {
+    return this.authService.updateLearnerAgeBand(user.id, dto.ageBand);
   }
 }

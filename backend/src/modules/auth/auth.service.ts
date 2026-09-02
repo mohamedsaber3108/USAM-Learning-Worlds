@@ -1,8 +1,9 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { AgeBand } from '@prisma/client';
 import { RegisterDto, LoginDto } from './dto';
 
 @Injectable()
@@ -157,6 +158,26 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  // Persists the age-band chosen during first-time onboarding
+  // (AgeSelectPage -> PATCH /auth/me/age-band). Learner-only.
+  async updateLearnerAgeBand(userId: string, ageBand: AgeBand) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { learner: true },
+    });
+
+    if (!user || !user.learner) {
+      throw new NotFoundException('Learner profile not found for this account');
+    }
+
+    const learner = await this.prisma.learner.update({
+      where: { id: user.learner.id },
+      data: { ageBand },
+    });
+
+    return { learner };
   }
 
   async validateUser(email: string, password: string): Promise<any> {

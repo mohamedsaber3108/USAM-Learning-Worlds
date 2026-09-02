@@ -2,6 +2,10 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
+import { WelcomePage } from '@/features/onboarding/pages/WelcomePage'
+import { AgeSelectPage } from '@/features/onboarding/pages/AgeSelectPage'
+import { CharacterIntroPage } from '@/features/onboarding/pages/CharacterIntroPage'
+import { OnboardingCompletePage } from '@/features/onboarding/pages/OnboardingCompletePage'
 import { MissionsBrowsePage } from '@/features/missions/pages/MissionsBrowsePage'
 import { MissionDetailPage } from '@/features/missions/pages/MissionDetailPage'
 import { MissionPlayerPage } from '@/features/missions/pages/MissionPlayerPage'
@@ -35,6 +39,40 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Onboarding (first-time learners: age select + Azouz intro) */}
+      <Route
+        path="/onboarding/welcome"
+        element={
+          <ProtectedRoute>
+            <WelcomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/onboarding/age"
+        element={
+          <ProtectedRoute>
+            <AgeSelectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/onboarding/character"
+        element={
+          <ProtectedRoute>
+            <CharacterIntroPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/onboarding/complete"
+        element={
+          <ProtectedRoute>
+            <OnboardingCompletePage />
           </ProtectedRoute>
         }
       />
