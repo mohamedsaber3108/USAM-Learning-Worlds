@@ -25,25 +25,18 @@ import { VoiceChatPage } from '@/features/voice/pages/VoiceChatPage'
 import { EnglishStrandsPage } from '@/features/english/pages/EnglishStrandsPage'
 import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
+import { AppShell } from '@/components/layout/AppShell'
 
 export function AppRouter() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes — no shell */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Protected routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Onboarding (first-time learners: age select + Azouz intro) */}
+      {/* Onboarding (first-time learners: age select + Azouz intro) — a
+          full-screen guided wizard, intentionally kept outside the tab-bar
+          shell so kids aren't distracted by nav mid-flow. */}
       <Route
         path="/onboarding/welcome"
         element={
@@ -77,167 +70,57 @@ export function AppRouter() {
         }
       />
 
-      {/* Missions */}
+      {/* Authenticated app routes — all wrapped in the persistent AppShell
+          (header + bottom tab bar + More drawer). ProtectedRoute guards
+          the whole tree once, so unauth'd users bounce to /login before
+          the shell even mounts. */}
       <Route
-        path="/missions"
         element={
           <ProtectedRoute>
-            <MissionsBrowsePage />
+            <AppShell />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="/missions/:id"
-        element={
-          <ProtectedRoute>
-            <MissionDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/missions/play/:runId"
-        element={
-          <ProtectedRoute>
-            <MissionPlayerPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/missions/complete"
-        element={
-          <ProtectedRoute>
-            <MissionCompletePage />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
 
-      {/* Learning / Curriculum */}
-      <Route
-        path="/learn"
-        element={
-          <ProtectedRoute>
-            <CurriculumBrowsePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/learn/concepts/:id"
-        element={
-          <ProtectedRoute>
-            <ConceptDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/learn/paths"
-        element={
-          <ProtectedRoute>
-            <LearningPathsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/learn/paths/:id"
-        element={
-          <ProtectedRoute>
-            <LearningPathDetailPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Missions */}
+        <Route path="/missions" element={<MissionsBrowsePage />} />
+        <Route path="/missions/:id" element={<MissionDetailPage />} />
+        <Route path="/missions/play/:runId" element={<MissionPlayerPage />} />
+        <Route path="/missions/complete" element={<MissionCompletePage />} />
 
-      {/* Projects */}
-      <Route
-        path="/projects"
-        element={
-          <ProtectedRoute>
-            <ProjectsPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Learning / Curriculum */}
+        <Route path="/learn" element={<CurriculumBrowsePage />} />
+        <Route path="/learn/concepts/:id" element={<ConceptDetailPage />} />
+        <Route path="/learn/paths" element={<LearningPathsPage />} />
+        <Route path="/learn/paths/:id" element={<LearningPathDetailPage />} />
 
-      {/* Community */}
-      <Route
-        path="/community"
-        element={
-          <ProtectedRoute>
-            <CommunityPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Projects */}
+        <Route path="/projects" element={<ProjectsPage />} />
 
-      {/* Gamification */}
-      <Route
-        path="/achievements"
-        element={
-          <ProtectedRoute>
-            <AchievementsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/leaderboard"
-        element={
-          <ProtectedRoute>
-            <LeaderboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/progress"
-        element={
-          <ProtectedRoute>
-            <ProgressPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Community */}
+        <Route path="/community" element={<CommunityPage />} />
 
-      {/* Parents (guardian-only backend endpoints; no client role-gate yet — see followup) */}
-      <Route
-        path="/parents"
-        element={
-          <ProtectedRoute>
-            <ParentDashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/parents/children/:learnerId/time-limits"
-        element={
-          <ProtectedRoute>
-            <ParentTimeLimitsPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Gamification */}
+        <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/progress" element={<ProgressPage />} />
 
-      {/* Voice Chat (Voice Pipeline v1) */}
-      <Route
-        path="/voice-chat"
-        element={
-          <ProtectedRoute>
-            <VoiceChatPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Parents (guardian-only backend endpoints; no client role-gate yet — see followup) */}
+        <Route path="/parents" element={<ParentDashboardPage />} />
+        <Route path="/parents/children/:learnerId/time-limits" element={<ParentTimeLimitsPage />} />
 
-      {/* English (Strands browser + Coach chat) */}
-      <Route
-        path="/english"
-        element={
-          <ProtectedRoute>
-            <EnglishStrandsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/english/coach"
-        element={
-          <ProtectedRoute>
-            <EnglishCoachPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Voice Chat (Voice Pipeline v1) */}
+        <Route path="/voice-chat" element={<VoiceChatPage />} />
 
-      {/* Default redirect */}
+        {/* English (Strands browser + Coach chat) */}
+        <Route path="/english" element={<EnglishStrandsPage />} />
+        <Route path="/english/coach" element={<EnglishCoachPage />} />
+      </Route>
+
+      {/* Default redirect — authenticated landing decision.
+          "/" and unknown paths forward to /dashboard, which is itself
+          protected and redirects unauthenticated users to /login. */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

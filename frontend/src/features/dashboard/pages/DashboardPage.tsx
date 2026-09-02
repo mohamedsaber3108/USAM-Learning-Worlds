@@ -19,7 +19,6 @@ import {
   TrendingUp,
   CheckCircle2,
   Clock,
-  LogOut,
 } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
@@ -79,13 +78,6 @@ export function DashboardPage() {
   const streakCount = useCountUp(streak?.currentStreak || 0, 700)
   const levelProgress = progression?.progress || 0
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    localStorage.removeItem('user')
-    navigate('/login')
-  }
-
   const masteredCount = Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0
   const learningCount = Array.isArray(mastery)
     ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length
@@ -94,23 +86,7 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-surface-50">
-      {/* Header — one solid brand color, no rainbow gradient */}
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-display font-bold text-white">
-            USAM Learning Worlds
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
+      {/* Main Content — header + bottom nav now come from AppShell */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
