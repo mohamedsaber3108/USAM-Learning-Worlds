@@ -5,7 +5,7 @@
  * Characters are not separate chatbots - they are AI interfaces over the learning engine
  */
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { LearnerContextService } from './learner-context.service';
 import { AIProviderService } from './ai-provider.service';
@@ -15,6 +15,7 @@ import {
 } from './interfaces/ai-task.interface';
 import { LearnerContext, CharacterContext } from './interfaces/learner-context.interface';
 import { CharacterSafetyService } from './services/character-safety.service';
+import { pickFallbackLine } from './services/character-fallback-responses';
 
 /** Fallback copy shown instead of the raw AI text when the safety layer intervenes. */
 const SAFETY_FALLBACK_BLOCKED =
@@ -27,10 +28,21 @@ export interface CharacterResponse {
   mood?: string;
   suggestedActions?: string[];
   metadata?: any;
+  /**
+   * True when this response is a pre-written, character-appropriate canned
+   * line served because the live Bedrock call failed (e.g. expired/invalid
+   * AWS credentials, throttling, network error) - NOT a real AI-generated
+   * reply. The frontend can use this to visually distinguish the message
+   * (e.g. a small "offline" indicator) without breaking the chat experience.
+   * Absent/false on normal AI-generated responses.
+   */
+  isFallback?: boolean;
 }
 
 @Injectable()
 export class CharacterService {
+  private readonly logger = new Logger(CharacterService.name);
+
   constructor(
     private prisma: PrismaService,
     private learnerContext: LearnerContextService,
@@ -357,21 +369,55 @@ export class CharacterService {
       },
     };
 
-    // Get AI response
-    const aiResponse = await this.aiProvider.invoke({
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: input,
-        },
-      ],
-      maxTokens: 500,
-      temperature: 0.8, // Higher temperature for more varied personality
-    });
+    // Get AI response. This is the live Bedrock call - it can fail for
+    // reasons entirely outside the learner's control (expired/invalid AWS
+    // credentials, throttling, network blips). A child tapping a character
+    // must never see a raw error or a dead chat, so any failure here is
+    // caught and swapped for one of that character's own pre-written,
+    // personality-appropriate fallback lines (see
+    // services/character-fallback-responses.ts) instead of propagating.
+    let aiResponse: { content: string };
+    try {
+      aiResponse = await this.aiProvider.invoke({
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: input,
+          },
+        ],
+        maxTokens: 500,
+        temperature: 0.8, // Higher temperature for more varied personality
+      });
+    } catch (error) {
+      // Log the real error server-side so it stays debuggable - never
+      // swallow it silently, just don't surface it to the learner.
+      this.logger.error(
+        `Bedrock call failed for character ${character.name} (${characterId}), learner ${learnerId}: ${error?.message}`,
+        error?.stack,
+      );
+
+      const fallbackMessage = pickFallbackLine(character.name);
+
+      await this.logInteraction(
+        characterId,
+        learnerId,
+        input,
+        fallbackMessage,
+        context,
+      );
+
+      return {
+        message: fallbackMessage,
+        mood: 'neutral',
+        suggestedActions: ['BROWSE_MISSIONS'],
+        metadata: { fallbackReason: 'ai_provider_error' },
+        isFallback: true,
+      };
+    }
 
     // --- Character Safety Policy layer: re-check the generated response
     // BEFORE it goes back to the learner. Both directions matter - a
