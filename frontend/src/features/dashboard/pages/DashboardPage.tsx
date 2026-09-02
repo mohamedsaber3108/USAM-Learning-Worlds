@@ -1,14 +1,45 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
+import 'react-circular-progressbar/dist/styles.css'
+import {
+  Target,
+  Zap,
+  Flame,
+  BarChart3,
+  BookOpen,
+  Palette,
+  Sparkles,
+  Trophy,
+  Mic,
+  Languages,
+  Users2,
+  TrendingUp,
+  CheckCircle2,
+  Clock,
+  LogOut,
+} from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi } from '@/lib/api/endpoints'
+import { useCountUp } from '@/lib/hooks/useCountUp'
+
+// Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
+const quickActions = [
+  { to: '/learn', label: 'Learn', icon: BookOpen, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/missions', label: 'Missions', icon: Target, tint: 'bg-accent-50 text-accent-600' },
+  { to: '/projects', label: 'Projects', icon: Palette, tint: 'bg-secondary-50 text-secondary-600' },
+  { to: '/community', label: 'Community', icon: Sparkles, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/achievements', label: 'Achievements', icon: Trophy, tint: 'bg-warning-50 text-warning-600' },
+  { to: '/leaderboard', label: 'Leaderboard', icon: BarChart3, tint: 'bg-success-50 text-success-600' },
+  { to: '/voice-chat', label: 'Voice Chat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/english', label: 'English', icon: Languages, tint: 'bg-accent-50 text-accent-600' },
+]
 
 export function DashboardPage() {
   const navigate = useNavigate()
   const userStr = localStorage.getItem('user')
   const user = userStr ? JSON.parse(userStr) : null
 
-  // Fetch real data from backend
   const { data: progression } = useQuery({
     queryKey: ['progression'],
     queryFn: () => gamificationApi.getProgression().then(res => res.data),
@@ -34,6 +65,10 @@ export function DashboardPage() {
     queryFn: () => missionsApi.getHistory().then(res => res.data),
   })
 
+  const totalXP = useCountUp(progression?.totalXP || 0, 1000)
+  const streakCount = useCountUp(streak?.currentStreak || 0, 700)
+  const levelProgress = progression?.progress || 0
+
   const handleLogout = () => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
@@ -41,115 +76,116 @@ export function DashboardPage() {
     navigate('/login')
   }
 
+  const masteredCount = Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0
+  const learningCount = Array.isArray(mastery)
+    ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length
+    : 0
+  const toExploreCount = Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'NOT_STARTED').length : 0
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-primary-500 via-primary-600 to-secondary-500 shadow-pop">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-heading font-extrabold text-white drop-shadow-sm">
-            🚀 USAM Learning Worlds
+    <div className="min-h-screen bg-surface-50">
+      {/* Header — one solid brand color, no rainbow gradient */}
+      <header className="bg-primary-600 shadow-soft">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <h1 className="text-xl font-display font-bold text-white">
+            USAM Learning Worlds
           </h1>
           <button
             onClick={handleLogout}
-            className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
+            className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
           >
+            <LogOut className="w-4 h-4" />
             Logout
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.35 }}
           className="mb-8"
         >
-          <h2 className="text-3xl font-heading font-bold text-gray-900 mb-2">
-            Welcome back, {user?.displayName || 'Learner'}! 👋
+          <h2 className="text-2xl font-display font-bold text-slate-900 mb-1">
+            Welcome back, {user?.displayName || 'Learner'}
           </h2>
-          <p className="text-gray-600">Ready to continue your learning journey?</p>
+          <p className="text-slate-500 text-sm">Ready to continue your learning journey?</p>
         </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Stats Grid — one tasteful accent per card via icon-chip + progress ring, not full gradient blocks */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            whileHover={{ y: -4 }}
-            className="card-colorful bg-gradient-to-br from-primary-500 to-primary-700"
+            transition={{ duration: 0.35, delay: 0.05 }}
+            className="stat-card"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/80 mb-1">Level</p>
-                <p className="text-3xl font-heading font-extrabold">
+                <p className="text-xs font-medium text-slate-500 mb-1">Level</p>
+                <p className="text-3xl font-display font-extrabold text-slate-900">
                   {progression?.level || 1}
                 </p>
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-white/80 mb-1">
-                    <span>{progression?.xpInCurrentLevel || 0} XP</span>
-                    <span>{progression?.xpForNextLevel || 100} XP</span>
-                  </div>
-                  <div className="w-full bg-white/25 rounded-full h-2.5 overflow-hidden">
-                    <motion.div
-                      className="bg-white h-2.5 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progression?.progress || 0}%` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
-                    />
-                  </div>
-                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  {progression?.xpInCurrentLevel || 0} / {progression?.xpForNextLevel || 100} XP
+                </p>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-bounce-soft">
-                <span className="text-2xl">🎯</span>
+              <div className="w-14 h-14">
+                <CircularProgressbar
+                  value={levelProgress}
+                  text=""
+                  strokeWidth={10}
+                  styles={buildStyles({
+                    pathColor: '#4f46e5',
+                    trailColor: '#e0e4ff',
+                  })}
+                />
               </div>
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.12 }}
-            whileHover={{ y: -4 }}
-            className="card-colorful bg-gradient-to-br from-secondary-500 to-secondary-700"
+            transition={{ duration: 0.35, delay: 0.1 }}
+            className="stat-card"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/80 mb-1">Total XP</p>
-                <p className="text-3xl font-heading font-extrabold">
-                  {progression?.totalXP?.toLocaleString() || 0}
+                <p className="text-xs font-medium text-slate-500 mb-1">Total XP</p>
+                <p className="text-3xl font-display font-extrabold text-slate-900">
+                  {totalXP.toLocaleString()}
                 </p>
-                <p className="text-xs text-white/80 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Rank #{rank?.rank || '---'}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-bounce-soft">
-                <span className="text-2xl">⭐</span>
+              <div className="icon-chip bg-secondary-50 text-secondary-600">
+                <Zap className="w-5 h-5" strokeWidth={2} />
               </div>
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.19 }}
-            whileHover={{ y: -4 }}
-            className="card-colorful bg-gradient-to-br from-accent-500 to-accent-700"
+            transition={{ duration: 0.35, delay: 0.15 }}
+            className="stat-card"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/80 mb-1">Streak</p>
-                <p className="text-3xl font-heading font-extrabold">
-                  {streak?.currentStreak || 0}
+                <p className="text-xs font-medium text-slate-500 mb-1">Streak</p>
+                <p className="text-3xl font-display font-extrabold text-slate-900">
+                  {streakCount}
                 </p>
-                <p className="text-xs text-white/80 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Best: {streak?.longestStreak || 0} days
                 </p>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-wiggle">
-                <span className="text-2xl">🔥</span>
+              <div className="icon-chip bg-accent-50 text-accent-600">
+                <Flame className="w-5 h-5" strokeWidth={2} />
               </div>
             </div>
           </motion.div>
@@ -157,106 +193,57 @@ export function DashboardPage() {
 
         {/* Mastery Overview */}
         {mastery && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="card animate-fade-in-up">
-              <h3 className="text-lg font-heading font-semibold mb-4">📊 Mastery Progress</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+            <div className="card">
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                <h3>Mastery Progress</h3>
+              </div>
               <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">Mastered</span>
-                    <span className="font-semibold text-success-600">
-                      {Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0}
-                    </span>
-                  </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Mastered</span>
+                  <span className="font-semibold text-success-600">{masteredCount}</span>
                 </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">Learning</span>
-                    <span className="font-semibold text-primary-600">
-                      {Array.isArray(mastery) ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length : 0}
-                    </span>
-                  </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Learning</span>
+                  <span className="font-semibold text-primary-600">{learningCount}</span>
                 </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">To Explore</span>
-                    <span className="font-semibold text-gray-600">
-                      {Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'NOT_STARTED').length : 0}
-                    </span>
-                  </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">To Explore</span>
+                  <span className="font-semibold text-slate-500">{toExploreCount}</span>
                 </div>
               </div>
             </div>
 
-            <div className="card animate-fade-in-up" style={{ animationDelay: '0.08s' }}>
-              <h3 className="text-lg font-heading font-semibold mb-4">🎯 Quick Actions</h3>
+            <div className="card">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                <h3>Quick Actions</h3>
+              </div>
               <div className="grid grid-cols-2 gap-3">
-                <Link
-                  to="/learn"
-                  className="p-3 bg-primary-50 hover:bg-primary-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                >
-                  <div className="text-2xl mb-1">📚</div>
-                  <p className="font-semibold text-primary-900 text-sm">Learn</p>
-                </Link>
-                <Link
-                  to="/missions"
-                  className="p-3 bg-primary-50 hover:bg-primary-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                >
-                  <div className="text-2xl mb-1">🎯</div>
-                  <p className="font-semibold text-primary-900 text-sm">Missions</p>
-                </Link>
-                <Link
-                  to="/projects"
-                  className="p-3 bg-secondary-50 hover:bg-secondary-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                >
-                  <div className="text-2xl mb-1">🎨</div>
-                  <p className="font-semibold text-secondary-900 text-sm">Projects</p>
-                </Link>
-                <Link
-                  to="/community"
-                  className="p-3 bg-primary-50 hover:bg-primary-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                >
-                  <div className="text-2xl mb-1">🌟</div>
-                  <p className="font-semibold text-primary-900 text-sm">Community</p>
-                </Link>
-                <Link
-                  to="/achievements"
-                  className="p-3 bg-warning-50 hover:bg-warning-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                >
-                  <div className="text-2xl mb-1">🏆</div>
-                  <p className="font-semibold text-warning-900 text-sm">Achievements</p>
-                </Link>
-                <Link
-                  to="/leaderboard"
-                  className="p-3 bg-success-50 hover:bg-success-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                >
-                  <div className="text-2xl mb-1">📊</div>
-                  <p className="font-semibold text-success-900 text-sm">Leaderboard</p>
-                </Link>
-                <Link
-                  to="/voice-chat"
-                  className="p-3 bg-indigo-50 hover:bg-indigo-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                >
-                  <div className="text-2xl mb-1">🎙️</div>
-                  <p className="font-semibold text-indigo-900 text-sm">Voice Chat</p>
-                </Link>
+                {quickActions.map(({ to, label, icon: Icon, tint }) => (
+                  <Link key={to} to={to} className="quick-action">
+                    <div className={`icon-chip ${tint}`}>
+                      <Icon className="w-5 h-5" strokeWidth={2} />
+                    </div>
+                    <p className="font-medium text-slate-700 text-sm">{label}</p>
+                  </Link>
+                ))}
                 {user?.role === 'GUARDIAN' && (
-                  <Link
-                    to="/parents"
-                    className="p-3 bg-pink-50 hover:bg-pink-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
-                  >
-                    <div className="text-2xl mb-1">👨‍👩‍👧</div>
-                    <p className="font-semibold text-pink-900 text-sm">Parent Dashboard</p>
+                  <Link to="/parents" className="quick-action">
+                    <div className="icon-chip bg-primary-50 text-primary-600">
+                      <Users2 className="w-5 h-5" strokeWidth={2} />
+                    </div>
+                    <p className="font-medium text-slate-700 text-sm">Parent Dashboard</p>
                   </Link>
                 )}
               </div>
               <Link
                 to="/progress"
-                className="block mt-3 p-3 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 rounded-xl transition-all text-center"
+                className="btn btn-primary w-full mt-3"
               >
-                <p className="font-semibold text-white text-sm">
-                  📈 View Full Progress
-                </p>
+                <TrendingUp className="w-4 h-4" strokeWidth={2} />
+                View Full Progress
               </Link>
             </div>
           </div>
@@ -264,25 +251,35 @@ export function DashboardPage() {
 
         {/* Recent Activity */}
         {recentMissions && recentMissions.length > 0 && (
-          <div className="card mb-8 animate-fade-in-up">
-            <h3 className="text-xl font-heading font-semibold mb-4">📚 Recent Missions</h3>
-            <div className="space-y-3">
+          <div className="card">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="w-5 h-5 text-primary-600" strokeWidth={2} />
+              <h3>Recent Missions</h3>
+            </div>
+            <div className="space-y-2">
               {recentMissions.slice(0, 5).map((run: any) => (
                 <div
                   key={run.id}
-                  className="flex items-center justify-between p-3 bg-primary-50/60 rounded-xl hover:bg-primary-50 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
                 >
-                  <div>
-                    <h4 className="font-medium">{run.mission?.title || 'Mission'}</h4>
-                    <p className="text-sm text-gray-600">
-                      {run.status === 'COMPLETED' ? '✅ Completed' : '⏳ In Progress'}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    {run.status === 'COMPLETED' ? (
+                      <CheckCircle2 className="w-4 h-4 text-success-500 flex-shrink-0" strokeWidth={2} />
+                    ) : (
+                      <Clock className="w-4 h-4 text-warning-500 flex-shrink-0" strokeWidth={2} />
+                    )}
+                    <div>
+                      <h4 className="font-medium text-sm text-slate-800">{run.mission?.title || 'Mission'}</h4>
+                      <p className="text-xs text-slate-500">
+                        {run.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold text-primary-600">
                       {run.finalScore ? `${run.finalScore}%` : '---'}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-400">
                       {new Date(run.startedAt).toLocaleDateString()}
                     </p>
                   </div>

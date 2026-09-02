@@ -18,6 +18,8 @@ import { LearningPathDetailPage } from '@/features/learning/pages/LearningPathDe
 import { ParentDashboardPage } from '@/features/parents/pages/ParentDashboardPage'
 import { ParentTimeLimitsPage } from '@/features/parents/pages/ParentTimeLimitsPage'
 import { VoiceChatPage } from '@/features/voice/pages/VoiceChatPage'
+import { EnglishStrandsPage } from '@/features/english/pages/EnglishStrandsPage'
+import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 
 export function AppRouter() {
@@ -175,6 +177,24 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <VoiceChatPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* English (Strands browser + Coach chat) */}
+      <Route
+        path="/english"
+        element={
+          <ProtectedRoute>
+            <EnglishStrandsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/english/coach"
+        element={
+          <ProtectedRoute>
+            <EnglishCoachPage />
           </ProtectedRoute>
         }
       />

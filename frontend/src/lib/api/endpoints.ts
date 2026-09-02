@@ -245,6 +245,59 @@ export const learningApi = {
     apiClient.get('/learning/my-paths'),
 }
 
+// ==================== English (Strands + Coach) ====================
+export interface EnglishStrand {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  cefrLevel: string | null
+  order: number
+  isActive: boolean
+  createdAt: string
+}
+
+/**
+ * Real content routes, backed by the `EnglishStrand` Prisma model
+ * (`backend/src/modules/learning/english.controller.ts`, mounted at
+ * `/api/english`). 45 seeded rows across the 9 strand families
+ * (Vocabulary, Grammar, Pronunciation, Listening, Reading, Writing,
+ * Speaking, Shadowing, Dictation), CEFR A1-B2.
+ */
+export const englishApi = {
+  listStrands: (params?: { cefrLevel?: string }) =>
+    apiClient.get<EnglishStrand[]>('/english/strands', { params }),
+
+  getStrand: (slug: string) =>
+    apiClient.get<EnglishStrand>(`/english/strands/${slug}`),
+}
+
+/**
+ * Real Bedrock-backed coaching routes
+ * (`backend/src/modules/ai/english-coach.controller.ts`, mounted at
+ * `/api/english-coach`). Requires a valid AWS Bedrock credential on the
+ * backend; if Bedrock creds are invalid the backend still responds (500
+ * with a JSON error body), it does not crash the process — the caller
+ * should treat any non-2xx here as "coach unavailable" and show a
+ * graceful message rather than a stack trace.
+ */
+export const englishCoachApi = {
+  conversation: (data: { userMessage: string; topic?: string; difficulty?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' }) =>
+    apiClient.post('/english-coach/conversation', data),
+
+  grammar: (data: { text: string; explainMistakes?: boolean }) =>
+    apiClient.post('/english-coach/grammar', data),
+
+  pronunciation: (data: { word: string; transcript?: string }) =>
+    apiClient.post('/english-coach/pronunciation', data),
+
+  vocabulary: (data: { topic: string; wordCount?: number }) =>
+    apiClient.post('/english-coach/vocabulary', data),
+
+  reading: (data: { topic: string; length?: 'short' | 'medium' | 'long' }) =>
+    apiClient.post('/english-coach/reading', data),
+}
+
 // ==================== Coding Sandbox (Pyodide/Sandpack — zero backend execution) ====================
 export interface CodingSandboxMission {
   activityId: string

@@ -4,94 +4,96 @@
 
 @layer base {
   * {
-    @apply border-gray-200;
+    @apply border-surface-200;
   }
 
   body {
-    @apply bg-cream-100 text-gray-900 antialiased;
-    font-family: 'Quicksand', sans-serif;
-    background-image:
-      radial-gradient(circle at 8% 8%, rgba(21, 156, 230, 0.08), transparent 40%),
-      radial-gradient(circle at 92% 18%, rgba(249, 126, 11, 0.08), transparent 40%),
-      radial-gradient(circle at 50% 95%, rgba(157, 62, 242, 0.06), transparent 45%);
+    @apply bg-surface-100 text-gray-900 antialiased;
+    font-family: 'Inter', sans-serif;
   }
 
-  h1, h2, h3, h4 {
-    font-family: '"Baloo 2"', 'Baloo 2', sans-serif;
+  h1, h2, h3 {
+    font-family: 'Manrope', sans-serif;
+    letter-spacing: -0.01em;
   }
 
   h1 {
-    @apply text-4xl font-bold;
+    @apply text-3xl font-bold text-slate-900;
   }
 
   h2 {
-    @apply text-3xl font-bold;
+    @apply text-2xl font-bold text-slate-900;
   }
 
   h3 {
-    @apply text-2xl font-semibold;
+    @apply text-lg font-semibold text-slate-900;
   }
 
   h4 {
-    @apply text-xl font-semibold;
+    @apply text-base font-semibold text-slate-900;
   }
 }
 
 @layer components {
+  /* Buttons — flat fill, soft shadow on hover only, no chunky 3D offset */
   .btn {
-    @apply px-5 py-2.5 rounded-2xl font-heading font-semibold transition-all duration-150
-      focus:outline-none focus:ring-2 focus:ring-offset-2
-      active:translate-y-0.5 active:shadow-none hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-control
+      font-semibold text-sm transition-all duration-150
+      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white;
   }
 
   .btn-primary {
-    @apply bg-primary-500 text-white shadow-chunky-primary hover:bg-primary-600 focus:ring-primary-400;
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-400
+      shadow-soft hover:shadow-soft-hover;
   }
 
   .btn-secondary {
-    @apply bg-secondary-500 text-white shadow-[0_4px_0_0_#6a20aa] hover:bg-secondary-600 focus:ring-secondary-400;
+    @apply bg-white text-primary-700 border border-surface-200 hover:bg-surface-100
+      focus:ring-primary-300 shadow-soft;
   }
 
   .btn-accent {
-    @apply bg-accent-500 text-white shadow-chunky-accent hover:bg-accent-600 focus:ring-accent-400;
+    @apply bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-300
+      shadow-soft hover:shadow-soft-hover;
   }
 
   .btn-outline {
-    @apply bg-white border-2 border-primary-200 text-primary-700 hover:bg-primary-50 shadow-none;
+    @apply bg-transparent border border-surface-200 text-slate-700 hover:bg-surface-100;
   }
 
+  /* Cards — restrained radius, layered soft shadow, subtle lift on hover */
   .card {
-    @apply bg-white rounded-2xl shadow-pop p-6 border border-primary-100/60
-      transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg;
+    @apply bg-white rounded-card shadow-soft p-6 border border-surface-200/70
+      transition-all duration-200 hover:shadow-soft-md;
   }
 
-  .card-colorful {
-    @apply rounded-2xl shadow-pop p-6 text-white transition-transform duration-200 hover:-translate-y-1;
+  /* Stat card — ONE tint color used tastefully (bg tint + colored icon chip), not a full gradient block */
+  .stat-card {
+    @apply bg-white rounded-card shadow-soft p-5 border border-surface-200/70
+      transition-all duration-200 hover:shadow-soft-hover hover:-translate-y-0.5;
+  }
+
+  .icon-chip {
+    @apply w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0;
   }
 
   .input {
-    @apply w-full px-4 py-2 border-2 border-primary-100 rounded-xl focus:ring-2
-      focus:ring-primary-400 focus:border-primary-400 transition-all font-sans;
+    @apply w-full px-4 py-2.5 border border-surface-200 rounded-control bg-white
+      focus:ring-2 focus:ring-primary-300 focus:border-primary-400 transition-all
+      text-sm placeholder:text-slate-400;
   }
 
   .progress-track {
-    @apply w-full bg-primary-100 rounded-full h-3 overflow-hidden;
+    @apply w-full bg-surface-100 rounded-full h-2 overflow-hidden;
   }
 
   .progress-fill {
-    @apply h-full rounded-full bg-gradient-to-r from-primary-400 via-primary-500 to-secondary-500
-      transition-[width] duration-700 ease-out relative overflow-hidden;
+    @apply h-full rounded-full bg-primary-500 transition-[width] duration-700 ease-out;
   }
 
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-    animation: shine 1.8s ease-in-out infinite;
-  }
-
-  .badge-pop {
-    @apply inline-flex items-center justify-center rounded-full animate-pop-in;
+  .quick-action {
+    @apply flex flex-col items-center gap-2 p-4 rounded-card border border-surface-200/70
+      bg-white hover:border-primary-200 hover:shadow-soft-md hover:-translate-y-0.5
+      transition-all duration-200 text-center;
   }
 }
