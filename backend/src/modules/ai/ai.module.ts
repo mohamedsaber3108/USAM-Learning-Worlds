@@ -14,6 +14,7 @@ import { AIProviderService } from './ai-provider.service';
 import { LearnerContextService } from './learner-context.service';
 import { CharacterService } from './character.service';
 import { ConversationService } from './services/conversation.service';
+import { CharacterSafetyService } from './services/character-safety.service';
 
 // Domain-specific coaches
 import { EnglishCoachService } from './services/english-coach.service';
@@ -41,6 +42,7 @@ import { EnglishLearningModule } from '../english-learning/grammar-check.module'
     LearnerContextService,
     CharacterService,
     ConversationService,
+    CharacterSafetyService,
 
     // Domain coaches
     EnglishCoachService,
@@ -56,6 +58,7 @@ import { EnglishLearningModule } from '../english-learning/grammar-check.module'
     LearnerContextService,
     CharacterService,
     ConversationService,
+    CharacterSafetyService,
     EnglishCoachService,
     CodingCoachService,
   ],

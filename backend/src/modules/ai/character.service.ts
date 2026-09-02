@@ -14,6 +14,13 @@ import {
   AIContext,
 } from './interfaces/ai-task.interface';
 import { LearnerContext, CharacterContext } from './interfaces/learner-context.interface';
+import { CharacterSafetyService } from './services/character-safety.service';
+
+/** Fallback copy shown instead of the raw AI text when the safety layer intervenes. */
+const SAFETY_FALLBACK_BLOCKED =
+  "Let's talk about something else! Would you like to try a mission?";
+const SAFETY_FALLBACK_ESCALATION =
+  'It might help to talk to a parent or trusted adult about that. Want to try a mission together instead?';
 
 export interface CharacterResponse {
   message: string;
@@ -28,6 +35,7 @@ export class CharacterService {
     private prisma: PrismaService,
     private learnerContext: LearnerContextService,
     private aiProvider: AIProviderService,
+    private characterSafety: CharacterSafetyService,
   ) {}
 
   /**
@@ -103,6 +111,28 @@ export class CharacterService {
       situation?: string;
     },
   ): Promise<CharacterResponse> {
+    // --- Character Safety Policy layer: pre-check the learner's input
+    // BEFORE spending a generation call on it. See
+    // services/character-safety.service.ts for the 5-state model; this
+    // is a dedicated layer on top of (not a replacement for) the
+    // existing ModerationService. ---
+    const inputSafety = await this.characterSafety.evaluateSafety(
+      characterId,
+      learnerId,
+      input,
+    );
+
+    if (inputSafety.state === 'blocked' || inputSafety.state === 'escalation_required') {
+      const fallback =
+        inputSafety.state === 'blocked' ? SAFETY_FALLBACK_BLOCKED : SAFETY_FALLBACK_ESCALATION;
+      return {
+        message: fallback,
+        mood: 'neutral',
+        suggestedActions: ['BROWSE_MISSIONS'],
+        metadata: { safetyState: inputSafety.state, safetyReasons: inputSafety.reasons },
+      };
+    }
+
     // Get character and learner context
     const [character, learnerCtx, characterState] = await Promise.all([
       this.getCharacter(characterId),
@@ -146,19 +176,40 @@ export class CharacterService {
       temperature: 0.8, // Higher temperature for more varied personality
     });
 
-    // Log interaction
-    await this.logInteraction(
+    // --- Character Safety Policy layer: re-check the generated response
+    // BEFORE it goes back to the learner. Both directions matter - a
+    // benign input can still yield an unsafe AI response. ---
+    const responseSafety = await this.characterSafety.evaluateSafety(
       characterId,
       learnerId,
       input,
       aiResponse.content,
+    );
+
+    const finalMessage =
+      responseSafety.state === 'blocked'
+        ? SAFETY_FALLBACK_BLOCKED
+        : responseSafety.state === 'escalation_required'
+          ? SAFETY_FALLBACK_ESCALATION
+          : aiResponse.content;
+
+    // Log interaction (never logs the raw text if it was suppressed for safety)
+    await this.logInteraction(
+      characterId,
+      learnerId,
+      input,
+      finalMessage,
       context,
     );
 
     return {
-      message: aiResponse.content,
+      message: finalMessage,
       mood: this.determineMood(learnerCtx),
       suggestedActions: this.suggestActions(learnerCtx, context),
+      metadata:
+        responseSafety.state !== 'safe'
+          ? { safetyState: responseSafety.state, safetyReasons: responseSafety.reasons }
+          : undefined,
     };
   }
 
