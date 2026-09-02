@@ -10,6 +10,10 @@ import { PrismaService } from '../../../database/prisma.service';
 import { AIProviderService } from '../ai-provider.service';
 import { LearnerContextService } from '../learner-context.service';
 import { AITaskType } from '../interfaces/ai-task.interface';
+import {
+  GrammarCheckService,
+  GrammarIssue,
+} from '../../english-learning/services/grammar-check.service';
 
 export interface EnglishConversationRequest {
   learnerId: string;
@@ -36,6 +40,7 @@ export class EnglishCoachService {
     private prisma: PrismaService,
     private aiProvider: AIProviderService,
     private learnerContext: LearnerContextService,
+    private grammarCheck: GrammarCheckService,
   ) {}
 
   /**
@@ -78,6 +83,16 @@ export class EnglishCoachService {
   async correctGrammar(request: GrammarCorrectionRequest) {
     const context = await this.learnerContext.buildContext(request.learnerId);
 
+    // Deterministic rule-based layer FIRST: self-hosted LanguageTool
+    // catches mechanical errors (spelling, subject-verb agreement,
+    // punctuation) cheaply and reliably. This runs alongside the LLM call
+    // below and never replaces it — it's an additive, deterministic
+    // backstop per docs/architecture/USAM_OSS_INTEGRATION_PLAN.md Section 2.
+    const grammarCheckResult = await this.grammarCheck.checkGrammar(
+      request.text,
+      'en-US',
+    );
+
     const prompt = `You are an encouraging English teacher helping a ${context.age}-year-old learner.
 
 Analyze this text for grammar mistakes:
@@ -103,6 +118,10 @@ Be encouraging and focus on progress, not just errors.`;
       correctedText: this.extractCorrectedText(response.content),
       feedback: response.content,
       mistakeCount: this.countMistakes(request.text, response.content),
+      // New: deterministic rule-based issues from LanguageTool, layered on
+      // top of the LLM's holistic feedback above (not a replacement).
+      grammarIssues: grammarCheckResult.issues,
+      grammarIssueCount: grammarCheckResult.issues.length,
     };
   }
 

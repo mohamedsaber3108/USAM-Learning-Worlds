@@ -6,6 +6,7 @@ import { EnglishCoachController } from './english-coach.controller';
 import { BedrockService } from './bedrock.service';
 import { ModerationService } from './moderation.service';
 import { AIUsageService } from './ai-usage.service';
+import { PiiDetectionService } from './services/pii-detection.service';
 
 // Phase 3 services
 import { BedrockAdapter } from './providers/bedrock.adapter';
@@ -17,8 +18,10 @@ import { ConversationService } from './services/conversation.service';
 // Domain-specific coaches
 import { EnglishCoachService } from './services/english-coach.service';
 import { CodingCoachService } from './services/coding-coach.service';
+import { EnglishLearningModule } from '../english-learning/grammar-check.module';
 
 @Module({
+  imports: [EnglishLearningModule],
   controllers: [
     AIController,
     CharacterController,
@@ -30,6 +33,7 @@ import { CodingCoachService } from './services/coding-coach.service';
     BedrockService,
     ModerationService,
     AIUsageService,
+    PiiDetectionService,
 
     // Phase 3 services
     BedrockAdapter,
@@ -47,6 +51,7 @@ import { CodingCoachService } from './services/coding-coach.service';
     BedrockService,
     ModerationService,
     AIUsageService,
+    PiiDetectionService,
     AIProviderService,
     LearnerContextService,
     CharacterService,

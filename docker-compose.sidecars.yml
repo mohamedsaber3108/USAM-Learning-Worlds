@@ -1,0 +1,46 @@
+version: "3.8"
+
+# Internal-only sidecar services for the Kids-server.
+#
+# These containers are NEVER exposed publicly — every port binding below is
+# explicitly pinned to 127.0.0.1 so nginx/the internet cannot reach them
+# directly. The NestJS backend (running via PM2 on the same host) talks to
+# them over localhost HTTP.
+#
+# See docs/architecture/USAM_OSS_INTEGRATION_PLAN.md Section 2 (LanguageTool)
+# and Section 4 (Presidio) for the license/architecture rationale.
+#
+# This file documents the exact `docker run` invocations used in production
+# on the Kids-server (16.16.128.228) for reproducibility. It is not
+# currently wired into any CI/CD deploy step — deploy manually with:
+#   docker compose -f docker-compose.sidecars.yml up -d
+#
+services:
+  languagetool:
+    image: erikvl87/languagetool:latest
+    container_name: languagetool
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8010:8010"
+    # LGPL-2.1 (aggregation, not linking, into USAM's Node backend — see
+    # integration plan Section 2). Grammar/spelling rule engine consumed by
+    # backend/src/modules/english-learning/services/grammar-check.service.ts
+
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio-analyzer:latest
+    container_name: presidio-analyzer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5002:3000"
+    # MIT licensed. Deterministic PII detection backstop consumed by
+    # backend/src/modules/ai/services/pii-detection.service.ts, wired into
+    # moderation.service.ts's moderateContent().
+    #
+    # NOTE: the image's built-in Docker HEALTHCHECK (curl -f .../health on
+    # a 30s interval) was observed to starve gunicorn's single sync worker
+    # under this app's default `WORKERS=1` config, making /analyze appear
+    # to hang indefinitely even though the process was alive. If you rely
+    # on `docker ps` health status, either bump WORKERS (see below) or set
+    # a much longer --health-interval / disable the healthcheck.
+    # environment:
+    #   - WORKERS=2
