@@ -1,13 +1,18 @@
 #!/bin/bash
-export NODE_ENV="production"
-export PORT="3001"
-export DATABASE_URL='postgresql://usam_user:USAM_SecurePass_2026!@localhost:5432/usam_learning_worlds?schema=public'
-export JWT_ACCESS_SECRET="a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6"
-export JWT_REFRESH_SECRET="z6y5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0i9h8g7f6e5d4c3b2a1"
-export REDIS_HOST="localhost"
-export REDIS_PORT="6379"
-export AWS_REGION="us-east-1"
-export CORS_ORIGINS="http://16.16.128.228"
+# This script intentionally contains NO secrets.
+# All real values (JWT secrets, DATABASE_URL, ALLOWED_ORIGINS, etc.) live in
+# backend/.env.production on each deployment target, which is gitignored
+# (matches the ".env.*" pattern in .gitignore) and never committed.
+# See backend/.env.example for the full list of variables that must be set.
+set -a
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/.env.production" ]; then
+  source "$SCRIPT_DIR/.env.production"
+else
+  echo "FATAL: $SCRIPT_DIR/.env.production not found. Copy backend/.env.example, fill in real values, save as .env.production." >&2
+  exit 1
+fi
+set +a
 
-cd /home/ubuntu/USAM-Learning-Worlds/backend
+cd "$SCRIPT_DIR"
 node dist/src/main.js
