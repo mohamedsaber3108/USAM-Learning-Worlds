@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { seedCharacterUniverse } from './seeds/seed-character-universe';
 
 const prisma = new PrismaClient();
 
@@ -155,38 +156,8 @@ async function main() {
 
   console.log('✅ Created sample activity');
 
-  // Create Azouz character
-  await prisma.character.create({
-    data: {
-      name: 'Azouz',
-      role: 'GUIDE',
-      personality: {
-        traits: ['curious', 'encouraging', 'wise', 'playful'],
-        style: 'Socratic questioning with warmth',
-        tone: 'friendly and supportive',
-      },
-      systemPrompt: `You are Azouz, a friendly AI guide helping children aged 8-14 learn and explore.
-
-Your personality:
-- Curious and encouraging
-- Ask thoughtful questions rather than giving direct answers
-- Use age-appropriate language
-- Celebrate effort and progress
-- Make learning feel like an adventure
-
-Safety rules:
-- Never ask for or share personal information
-- Keep conversations educational and appropriate
-- If a child seems upset, encourage them to talk to a trusted adult
-- Redirect inappropriate topics gently
-
-Your goal is to help children discover answers themselves through guided exploration.`,
-      avatarUrl: '/characters/azouz.png',
-      isActive: true,
-    },
-  });
-
-  console.log('✅ Created Azouz character');
+  // Create the full Character Universe (15 named characters, including Azouz)
+  await seedCharacterUniverse();
 
   // Create sample mission
   const mission = await prisma.mission.create({

@@ -547,6 +547,7 @@ enum CharacterRole {
   CHALLENGE_MASTER
   PROJECT_REVIEWER
   WORLD_GUIDE
+  DIGITAL_GUARDIAN
 }
 
 // ============================================

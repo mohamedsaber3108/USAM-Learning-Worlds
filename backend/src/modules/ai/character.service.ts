@@ -54,6 +54,203 @@ export class CharacterService {
   }
 
   /**
+   * List all active characters, optionally filtered by role.
+   * Backs GET /characters.
+   */
+  async getAllCharacters(role?: string) {
+    return this.prisma.character.findMany({
+      where: {
+        isActive: true,
+        ...(role ? { role: role as any } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        personality: true,
+        avatarUrl: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  /** Names of the 4 core characters, always visible from day 1. */
+  private static readonly CORE_CHARACTER_NAMES = ['Azouz', 'Zein', 'Luma', 'Codey'];
+
+  /**
+   * Evaluate, per real learner progress, which characters are currently
+   * unlocked for a given learner. Core characters are always included.
+   * Every unlockable character has its own real trigger condition
+   * evaluated against real tables (mastery/evidence/mission
+   * runs/projects/xp/domain navigation) - no stub / all-true logic.
+   *
+   * Backs GET /characters/unlocked.
+   */
+  async getUnlockedCharactersForLearner(learnerId: string) {
+    const allCharacters = await this.prisma.character.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        personality: true,
+        avatarUrl: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    // Pre-fetch the signals we need once, then evaluate each character's
+    // trigger against them. Domain names below match the seeded `domains`
+    // table (prisma/seed.ts).
+    const domainEngagement = await this.getDomainEngagementSet(learnerId);
+    const [
+      projectCount,
+      missionCompletionCount,
+      distinctDomainCount,
+      hasAnyXpGain,
+      learner,
+    ] = await Promise.all([
+      this.prisma.project.count({ where: { learnerId } }),
+      this.prisma.missionRun.count({ where: { learnerId, status: 'COMPLETED' } }),
+      Promise.resolve(domainEngagement.size),
+      this.hasAnyXpGain(learnerId),
+      this.prisma.learner.findUnique({ where: { id: learnerId }, select: { ageBand: true } }),
+    ]);
+
+    const ageBand = learner?.ageBand ?? null;
+    const isAgeBandAtLeast10 = ageBand === 'AGE_10_11' || ageBand === 'AGE_12_14';
+
+    const unlockEvaluators: Record<string, () => boolean> = {
+      // Nova (AI_MENTOR) - unlocked once the learner has any evidence of
+      // AI-Literacy-domain engagement (an AI Literacy Concept-tagged
+      // learning event, or mastery/evidence tagged to the AI-literacy
+      // area). We track this via domain engagement's 'ai-literacy' key.
+      Nova: () => domainEngagement.has('ai-literacy'),
+      // Mira (CREATIVE_MENTOR) - first Arts or Creativity domain touch.
+      Mira: () => domainEngagement.has('arts') || domainEngagement.has('creativity'),
+      // Rami (SCIENCE_MENTOR) - first Science domain touch.
+      Rami: () => domainEngagement.has('science'),
+      // Faris (CHALLENGE_MASTER) - first Critical-Thinking domain touch.
+      Faris: () => domainEngagement.has('critical-thinking'),
+      // Tala (PROJECT_REVIEWER) - first Project submission/showcase.
+      Tala: () => projectCount > 0,
+      // Adam (ENTREPRENEURSHIP_MENTOR) - first Entrepreneurship domain touch.
+      Adam: () => domainEngagement.has('entrepreneurship'),
+      // Byte (DIGITAL_GUARDIAN) - first Digital-Literacy touch, OR the
+      // learner is old enough (10+) to warrant proactive digital-safety
+      // guidance even before they've explicitly engaged with the domain.
+      Byte: () => domainEngagement.has('digital-literacy') || isAgeBandAtLeast10,
+      // Nour (MENTOR / Financial-Life-Skills) - first Financial-Literacy touch.
+      Nour: () => domainEngagement.has('financial-literacy'),
+      // Rex (CHALLENGER) - leaderboard views aren't tracked server-side,
+      // so the practical proxy is "has the learner earned any XP yet?"
+      Rex: () => hasAnyXpGain,
+      // Zara (STORY_GUIDE) - first completed Mission.
+      Zara: () => missionCompletionCount > 0,
+      // Atlas (WORLD_GUIDE) - has navigated across 2+ distinct domains/worlds.
+      Atlas: () => distinctDomainCount >= 2,
+    };
+
+    return allCharacters.filter((c) => {
+      if (CharacterService.CORE_CHARACTER_NAMES.includes(c.name)) {
+        return true;
+      }
+      const evaluator = unlockEvaluators[c.name];
+      return evaluator ? evaluator() : false;
+    });
+  }
+
+  /**
+   * Build the set of domain slugs a learner has real engagement with,
+   * combining signals across mastery/evidence, mission-linked activity
+   * competencies, and cross-curricular concept models
+   * (AILiteracyConcept/EntrepreneurshipConcept/FinancialLiteracyConcept)
+   * via LearningEvent entries recorded against them.
+   */
+  private async getDomainEngagementSet(learnerId: string): Promise<Set<string>> {
+    const engaged = new Set<string>();
+
+    // Signal 1: MasteryRecord rows (created as soon as a learner starts
+    // interacting with a competency) joined up to their Domain slug.
+    const masteryDomains = await this.prisma.$queryRaw<Array<{ slug: string }>>`
+      SELECT DISTINCT d.slug AS slug
+      FROM mastery_records m
+      JOIN competencies c ON c.id = m."competencyId"
+      JOIN skills s ON s.id = c."skillId"
+      JOIN domains d ON d.id = s."domainId"
+      WHERE m."learnerId" = ${learnerId}
+    `;
+    masteryDomains.forEach((r) => engaged.add(r.slug));
+
+    // Signal 2: Evidence rows joined the same way (covers activity-level
+    // engagement that may predate a mastery-state change).
+    const evidenceDomains = await this.prisma.$queryRaw<Array<{ slug: string }>>`
+      SELECT DISTINCT d.slug AS slug
+      FROM evidence e
+      JOIN competencies c ON c.id = e."competencyId"
+      JOIN skills s ON s.id = c."skillId"
+      JOIN domains d ON d.id = s."domainId"
+      WHERE e."learnerId" = ${learnerId}
+    `;
+    evidenceDomains.forEach((r) => engaged.add(r.slug));
+
+    // Signal 3: LearningEvent rows recorded against the cross-curricular
+    // concept models (AI Literacy / Entrepreneurship / Financial Literacy)
+    // and Digital-Literacy concepts, whenever those flows record
+    // entityType/entityId pointing at those concept IDs.
+    const aiLiteracyIds = await this.prisma.aILiteracyConcept.findMany({ select: { id: true } });
+    const entrepreneurshipIds = await this.prisma.entrepreneurshipConcept.findMany({ select: { id: true } });
+    const financialLiteracyIds = await this.prisma.financialLiteracyConcept.findMany({ select: { id: true } });
+
+    const conceptEvents = await this.prisma.learningEvent.findMany({
+      where: {
+        learnerId,
+        entityId: {
+          in: [
+            ...aiLiteracyIds.map((c) => c.id),
+            ...entrepreneurshipIds.map((c) => c.id),
+            ...financialLiteracyIds.map((c) => c.id),
+          ],
+        },
+      },
+      select: { entityId: true },
+    });
+
+    const aiLiteracyIdSet = new Set(aiLiteracyIds.map((c) => c.id));
+    const entrepreneurshipIdSet = new Set(entrepreneurshipIds.map((c) => c.id));
+    const financialLiteracyIdSet = new Set(financialLiteracyIds.map((c) => c.id));
+
+    for (const ev of conceptEvents) {
+      if (!ev.entityId) continue;
+      if (aiLiteracyIdSet.has(ev.entityId)) engaged.add('ai-literacy');
+      if (entrepreneurshipIdSet.has(ev.entityId)) engaged.add('entrepreneurship');
+      if (financialLiteracyIdSet.has(ev.entityId)) engaged.add('financial-literacy');
+    }
+
+    // Digital-literacy has no dedicated concept model yet in this schema;
+    // treat any LearningEvent explicitly tagged entityType 'DIGITAL_LITERACY'
+    // as engagement (future content modules can record this directly).
+    const digitalLiteracyEvents = await this.prisma.learningEvent.count({
+      where: { learnerId, entityType: 'DIGITAL_LITERACY' },
+    });
+    if (digitalLiteracyEvents > 0) engaged.add('digital-literacy');
+
+    return engaged;
+  }
+
+  /** True if the learner has ever earned XP (used as Rex's practical unlock trigger). */
+  private async hasAnyXpGain(learnerId: string): Promise<boolean> {
+    const progression = await this.prisma.progression.findUnique({
+      where: { learnerId },
+      select: { totalXP: true },
+    });
+    if (progression && progression.totalXP > 0) return true;
+
+    const xpGainCount = await this.prisma.xPGain.count({ where: { learnerId } });
+    return xpGainCount > 0;
+  }
+
+  /**
    * Get character state for a specific learner
    */
   async getCharacterState(

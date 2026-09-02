@@ -36,25 +36,31 @@ export class CharacterController {
   /**
    * List all available characters
    */
-//   @Get()
-//   async listCharacters(@Query('role') role?: string) {
-//     const characters = await this.characterService.getCharacter(role);
-//       where: {
-//         isActive: true,
-//         role: role as any,
-//       },
-//       select: {
-//         id: true,
-//         name: true,
-//         role: true,
-//         personality: true,
-//         avatarUrl: true,
-//       },
-//       orderBy: { name: 'asc' },
-//     });
-// 
-//     return { characters };
-//   }
+  @Get()
+  async listCharacters(@Query('role') role?: string) {
+    const characters = await this.characterService.getAllCharacters(role);
+
+    return { characters };
+  }
+
+  /**
+   * List characters unlocked for the current learner (core characters
+   * always included, plus any progressive unlocks whose real trigger
+   * condition has been met).
+   */
+  @Get('unlocked')
+  async getUnlockedCharacters(@Request() req: any) {
+    const learnerId = req.user.learner?.id;
+
+    if (!learnerId) {
+      throw new Error('Only learners can access unlocked characters');
+    }
+
+    const characters = await this.characterService.getUnlockedCharactersForLearner(learnerId);
+
+    return { characters };
+  }
+
 
   /**
    * Get character details
