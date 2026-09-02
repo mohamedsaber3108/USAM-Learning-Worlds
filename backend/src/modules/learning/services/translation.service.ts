@@ -256,9 +256,15 @@ export class TranslationService {
     const results = [];
 
     for (const targetLang of targetLanguages) {
-      // TODO: Replace with real translation API (Google Translate, DeepL, etc.)
-      // For now, mark as "needs translation"
-      const translatedValue = `[${targetLang.toUpperCase()}] ${sourceTranslation}`;
+      // BACKLOG (tracked in docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md
+      // under Translation QA Engine / Localization CMS): wire a real
+      // translation provider here (candidates: DeepL API, Google Cloud
+      // Translation, or LibreTranslate self-hosted). Deliberately NOT
+      // auto-implemented because it requires a funded API key decision
+      // (cost/quality tradeoff) - a product call, not a code call. Until
+      // then, output is explicitly marked untranslated so it's never
+      // silently served to a learner as if it were real content.
+      const translatedValue = `[NEEDS_TRANSLATION:${targetLang.toUpperCase()}] ${sourceTranslation}`;
 
       const result = await this.upsertTranslation({
         entityType,

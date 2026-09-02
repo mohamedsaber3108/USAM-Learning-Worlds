@@ -12,14 +12,13 @@ export function MissionsBrowsePage() {
 
   const { data: missions, isLoading } = useQuery({
     queryKey: ['missions', filters],
-    queryFn: () =>
-      missionsApi
-        .browse({
-          difficulty: filters.difficulty || undefined,
-          domainId: filters.domainId ? Number(filters.domainId) : undefined,
-          search: filters.search || undefined,
-        })
-        .then(res => res.data),
+    queryFn: () => {
+      const params: { difficulty?: string; domainId?: number; search?: string } = {}
+      if (filters.difficulty) params.difficulty = filters.difficulty
+      if (filters.domainId) params.domainId = Number(filters.domainId)
+      if (filters.search) params.search = filters.search
+      return missionsApi.browse(params).then(res => res.data)
+    },
   })
 
   const typeColors: Record<string, string> = {

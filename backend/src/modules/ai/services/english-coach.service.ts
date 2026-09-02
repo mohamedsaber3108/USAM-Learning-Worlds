@@ -136,7 +136,14 @@ Keep it simple and encouraging!`;
     return {
       word: request.word,
       feedback: response.content,
-      // TODO: Add actual pronunciation scoring when STT is implemented
+      // BACKLOG (tracked in docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md
+      // under Voice & Conversation Engine / English Learning): real
+      // pronunciation scoring requires an STT+phoneme-alignment pipeline
+      // (candidates: Whisper/faster-whisper for transcription + a forced-
+      // aligner, or a commercial pronunciation-assessment API). Not
+      // implemented yet - this is a hardcoded placeholder score, kept
+      // explicit (not silently presented as measured) until that engine
+      // is built. Score is null when no transcript was even provided.
       pronunciationScore: request.transcript ? 0.85 : null,
     };
   }
