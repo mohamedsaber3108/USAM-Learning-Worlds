@@ -100,11 +100,48 @@ verification before adoption).
 |---|---|---|---|---|---|
 | _(none adopted yet)_ | | | | | |
 
-## Part 4 — Not yet classified
+## Part 4 — Batch 2: Projects/Coding, Community/Safety, Gamification/World
 
-Remaining ~156 engines from the full inventory list (Content Pipeline,
-World/Game/Creative, Analytics/Observability overlap with existing DevOps
-skills, CMS/Authoring, etc.) — deferred to subsequent ticks per the
-inventory's own priority order (15 must-not-forget first). Will be added
-incrementally; this file is committed and updated each tick that touches
-it, not written once and abandoned.
+Read directly from `backend/src/modules/*` on 2026-09-02 (Tick 6), not
+guessed from names.
+
+| Engine (inventory) | Classification | Evidence |
+|---|---|---|
+| Project-Based Learning Engine | Partially implemented | `modules/projects/projects.service.ts` — real CRUD (create/get/update), `visibility` (PRIVATE/etc.) enforcement, Prisma `Project` model. No Idea->Plan->Build->Test->Improve->Present->Reflect stage machine yet — just a flat project record. |
+| Coding Learning Engine | Missing (stubbed, honestly) | `modules/learning/coding.controller.ts` is a literal empty class with comment "TEMPORARILY DISABLED — API signature mismatches need fixing." Still imported and listed in `learning.module.ts`'s imports but NOT in that module's `controllers:` array — so it registers zero routes, no dead-code risk, just inert. `coding-coach.service.ts` (under `ai/services/`) exists separately and may have real logic — not yet read in detail; check next tick before assuming Coding Learning Engine is 0%. |
+| Coding Sandbox / Code Execution Security Engine | Missing | No Pyodide/Piston/Judge0/WebContainers integration found anywhere in backend/src. Matches inventory's explicit warning to NEVER run child code directly on backend — currently there is no code-execution surface at all, which is safe-by-absence but means the feature doesn't exist. |
+| Community Engine | Partially implemented | `modules/community/community.controller.ts` has real routes: feed, trending, search, stats, report, moderation/quarantined, moderation/review/:id — i.e. moderation-first design matching the inventory's "child-safe: moderated, no unsafe DMs by default" requirement. No DM/messaging routes exist at all (consistent with "no unsafe DMs by default" — could be intentional non-implementation, not a gap). |
+| Safety & Parent Engine | Partially implemented | `modules/parents/*.controller.ts` — children list, family-summary, per-child dashboard/progress/activity, time-limits (POST). Real parental-control surface exists. AI-side safety (input/output moderation) lives in `modules/ai/moderation.service.ts` (from Part 1/2 findings) — not re-verified this tick, flagged as already partially covered. |
+| Gamification Engine | Already implemented (v1) | `modules/gamification/gamification.controller.ts` — progression, award-xp, leaderboard, rank, achievements, streak + streak/update. Real routes, matches Character Progression Engine from inventory too. Not verified against inventory's explicit "avoid addiction loops/FOMO/gambling mechanics" — worth a design review, not a code gap, so flagged not classified as Conflict without more evidence. |
+| Economy Engine | Missing | No economy/currency/shop module found. Inventory explicitly says "avoid pay-to-win education" — absence here is neutral-to-good, not a scored gap unless a design calls for it later. |
+| Mastery Engine | Already implemented | `modules/mastery/` has `mastery-confidence.algorithm.ts` + `mastery.service.ts` + `mastery.processor.ts` (background job) + controller. Substantive, not a stub — matches inventory's BKT/DKT/IRT ask at least structurally (algorithm not read line-by-line this tick to confirm which model(s) it implements — next-tick action item). |
+| Adaptive Learning Engine / ZPD Engine / Recommendation Engine | Already implemented | `modules/adaptive/` has `zpd-calculator.service.ts` (dedicated ZPD engine — direct inventory match) + `recommendation.service.ts` + `adaptive.controller.ts`. Real, separate files per concern, good sign of intentional architecture rather than a monolith. |
+| World Engine / Mission Engine / Adventure Engine | Partially implemented | `modules/missions/` real service+controller (per earlier tick's GAP-005 fix — real join-table-based activity ordering, not global `take: 10`). No dedicated "World Engine" (Future City metaphor / zones like English Academy/Coding Lab) found as its own module — missions may implicitly serve this role; needs product-side confirmation, not a pure code question. |
+
+**Still unclassified after Batch 2** (~148 engines remaining): Content
+Ingestion (OCR/transcription pipeline), Content Intelligence, Question
+Engine, Assessment Quality Engine, all English sub-engines beyond the
+already-tracked `english-coach.service.ts`/`EnglishStrand` (Vocabulary,
+Grammar, Pronunciation, Listening, Story, Reading, Writing, Speaking,
+Shadowing, Dictation, Corpus/Dialogue-dataset layer), Voice Interaction
+Engine (mic->VAD->ASR->TTS pipeline — inventory's #11 must-not-forget,
+still not found anywhere in backend/src, this is a real gap on a
+must-not-forget engine and should be prioritized next), Creativity/Media/
+Lip-Sync/3D engines, Cross-Curricular engines (Entrepreneurship, Financial
+Literacy, Critical Thinking, Collaboration, Portfolio, Career, Research,
+AI/Digital Literacy), Learning Analytics/Science/Metacognition/Cognitive
+Load engines beyond the existing `learning-event.service.ts` (which is
+event logging, not yet analytics/insight generation).
+
+**Priority flag for next tick**: Voice & Conversation Engine is one of
+the inventory's 15 must-not-forget engines and currently has zero
+backend presence (no ASR/TTS/VAD code found). This is the highest-value
+still-missing must-not-forget engine and should be the next build target
+once Batch 3 classification (Content Pipeline, remaining English
+sub-engines) is done, per the inventory's stated priority order.
+
+## Part 4b — Not yet classified (remaining)
+
+Remaining ~148 engines (see list above) deferred to subsequent ticks.
+File committed and updated each tick that touches it, not written once
+and abandoned.
