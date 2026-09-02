@@ -298,6 +298,64 @@ export const englishCoachApi = {
     apiClient.post('/english-coach/reading', data),
 }
 
+// ==================== Character Universe ====================
+/**
+ * Talks to `backend/src/modules/ai/character.controller.ts` (mounted at
+ * `/api/characters`).
+ *
+ * Verified live against production on 2026-09-02:
+ *   - GET /characters/:id            → 200, real Character row (confirmed
+ *     with Azouz's real id, e.g. {"id":"...","name":"Azouz","role":"GUIDE",
+ *     "personality":{...},"avatarUrl":"/characters/azouz.png"})
+ *   - POST /characters/:id/chat      → routes correctly (auth + Prisma +
+ *     controller all fire), but currently 500s downstream at the Bedrock
+ *     call ("The security token included in the request is invalid").
+ *     That is the pre-existing, documented AWS Bedrock credential blocker
+ *     (same one english-coach hits) — not a bug in this client or in the
+ *     chat route itself.
+ *
+ * `list()` (GET /characters) and `getUnlocked()` (GET /characters/unlocked)
+ * are NOT live yet — the sibling backend-data agent is adding the full
+ * 15-character seed + these two endpoints in parallel. Built here against
+ * the expected response shape (an array of the same Character shape the
+ * working `:id` endpoint already returns, with `getUnlocked()` additionally
+ * carrying `isUnlocked` / `unlockHint` per item so the gallery can render
+ * locked silhouettes). FOLLOW-UP: once that lands, sanity-check the actual
+ * field names against this comment and adjust CharacterGalleryPage's mapping
+ * if they differ.
+ */
+export interface CharacterSummary {
+  id: string
+  name: string
+  nameAr?: string
+  role: string
+  personality?: {
+    tone?: string
+    style?: string
+    traits?: string[]
+  }
+  description?: string
+  avatarUrl?: string | null
+  isActive?: boolean
+  // Present on /characters/unlocked (expected shape, backend pending):
+  isUnlocked?: boolean
+  unlockHint?: string
+}
+
+export const charactersApi = {
+  list: () => apiClient.get<CharacterSummary[]>('/characters'),
+
+  getUnlocked: () => apiClient.get<CharacterSummary[]>('/characters/unlocked'),
+
+  getById: (id: string) => apiClient.get<CharacterSummary>(`/characters/${id}`),
+
+  chat: (id: string, message: string, context?: Record<string, unknown>) =>
+    apiClient.post<{ response: { message: string; mood?: string; suggestedActions?: string[] } }>(
+      `/characters/${id}/chat`,
+      { message, context },
+    ),
+}
+
 // ==================== Coding Sandbox (Pyodide/Sandpack — zero backend execution) ====================
 export interface CodingSandboxMission {
   activityId: string

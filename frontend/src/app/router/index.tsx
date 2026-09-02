@@ -24,6 +24,8 @@ import { ParentTimeLimitsPage } from '@/features/parents/pages/ParentTimeLimitsP
 import { VoiceChatPage } from '@/features/voice/pages/VoiceChatPage'
 import { EnglishStrandsPage } from '@/features/english/pages/EnglishStrandsPage'
 import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
+import { CharacterGalleryPage } from '@/features/characters/pages/CharacterGalleryPage'
+import { CharacterChatPage } from '@/features/characters/pages/CharacterChatPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AppShell } from '@/components/layout/AppShell'
 
@@ -116,6 +118,10 @@ export function AppRouter() {
         {/* English (Strands browser + Coach chat) */}
         <Route path="/english" element={<EnglishStrandsPage />} />
         <Route path="/english/coach" element={<EnglishCoachPage />} />
+
+        {/* Character Universe (gallery with progressive unlock + per-character chat) */}
+        <Route path="/characters" element={<CharacterGalleryPage />} />
+        <Route path="/characters/:id/chat" element={<CharacterChatPage />} />
       </Route>
 
       {/* Default redirect — authenticated landing decision.

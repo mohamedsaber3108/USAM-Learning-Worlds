@@ -17,6 +17,7 @@ import {
   X,
   Languages,
   Palette,
+  Sparkles,
 } from 'lucide-react'
 
 /**
@@ -92,6 +93,7 @@ const moreItems: MoreItem[] = [
   { label: 'Leaderboard', to: '/leaderboard', icon: BarChart3, description: 'See how you rank' },
   { label: 'Progress', to: '/progress', icon: TrendingUp, description: 'Your mastery over time' },
   { label: 'Voice Chat', to: '/voice-chat', icon: Mic, description: 'Talk with your AI coach' },
+  { label: 'Characters', to: '/characters', icon: Sparkles, description: 'Meet your mentor team' },
   { label: 'Time Limits', to: '/parents', icon: Timer, description: "Manage a learner's screen time (via Parent Dashboard)" },
 ]
 
@@ -111,7 +113,7 @@ export function AppShell() {
 
   const isMoreActive = useMemo(
     () =>
-      ['/achievements', '/leaderboard', '/progress', '/voice-chat'].some((p) =>
+      ['/achievements', '/leaderboard', '/progress', '/voice-chat', '/characters'].some((p) =>
         location.pathname.startsWith(p)
       ) || location.pathname.startsWith('/parents/children'),
     [location.pathname]
