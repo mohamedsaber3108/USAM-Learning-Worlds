@@ -12,7 +12,7 @@ import { AIModule } from '../ai/ai.module';
 
 @Module({
   imports: [DatabaseModule, AIModule],
-  controllers: [LearningController],
+  controllers: [LearningController, EnglishController],
   providers: [
     ConceptService,
     LearningPathService,

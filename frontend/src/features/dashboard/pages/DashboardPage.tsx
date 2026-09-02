@@ -192,6 +192,13 @@ export function DashboardPage() {
               <h3 className="text-lg font-heading font-semibold mb-4">🎯 Quick Actions</h3>
               <div className="grid grid-cols-2 gap-3">
                 <Link
+                  to="/learn"
+                  className="p-3 bg-primary-50 hover:bg-primary-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
+                >
+                  <div className="text-2xl mb-1">📚</div>
+                  <p className="font-semibold text-primary-900 text-sm">Learn</p>
+                </Link>
+                <Link
                   to="/missions"
                   className="p-3 bg-primary-50 hover:bg-primary-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
                 >
@@ -204,6 +211,13 @@ export function DashboardPage() {
                 >
                   <div className="text-2xl mb-1">🎨</div>
                   <p className="font-semibold text-secondary-900 text-sm">Projects</p>
+                </Link>
+                <Link
+                  to="/community"
+                  className="p-3 bg-primary-50 hover:bg-primary-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
+                >
+                  <div className="text-2xl mb-1">🌟</div>
+                  <p className="font-semibold text-primary-900 text-sm">Community</p>
                 </Link>
                 <Link
                   to="/achievements"
@@ -219,6 +233,22 @@ export function DashboardPage() {
                   <div className="text-2xl mb-1">📊</div>
                   <p className="font-semibold text-success-900 text-sm">Leaderboard</p>
                 </Link>
+                <Link
+                  to="/voice-chat"
+                  className="p-3 bg-indigo-50 hover:bg-indigo-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
+                >
+                  <div className="text-2xl mb-1">🎙️</div>
+                  <p className="font-semibold text-indigo-900 text-sm">Voice Chat</p>
+                </Link>
+                {user?.role === 'GUARDIAN' && (
+                  <Link
+                    to="/parents"
+                    className="p-3 bg-pink-50 hover:bg-pink-100 hover:-translate-y-0.5 rounded-xl transition-all text-center"
+                  >
+                    <div className="text-2xl mb-1">👨‍👩‍👧</div>
+                    <p className="font-semibold text-pink-900 text-sm">Parent Dashboard</p>
+                  </Link>
+                )}
               </div>
               <Link
                 to="/progress"

@@ -7,9 +7,17 @@ import { MissionDetailPage } from '@/features/missions/pages/MissionDetailPage'
 import { MissionPlayerPage } from '@/features/missions/pages/MissionPlayerPage'
 import { MissionCompletePage } from '@/features/missions/pages/MissionCompletePage'
 import { ProjectsPage } from '@/features/projects/pages/ProjectsPage'
+import { CommunityPage } from '@/features/community/pages/CommunityPage'
 import { AchievementsPage } from '@/features/gamification/pages/AchievementsPage'
 import { LeaderboardPage } from '@/features/gamification/pages/LeaderboardPage'
 import { ProgressPage } from '@/features/gamification/pages/ProgressPage'
+import { CurriculumBrowsePage } from '@/features/learning/pages/CurriculumBrowsePage'
+import { ConceptDetailPage } from '@/features/learning/pages/ConceptDetailPage'
+import { LearningPathsPage } from '@/features/learning/pages/LearningPathsPage'
+import { LearningPathDetailPage } from '@/features/learning/pages/LearningPathDetailPage'
+import { ParentDashboardPage } from '@/features/parents/pages/ParentDashboardPage'
+import { ParentTimeLimitsPage } from '@/features/parents/pages/ParentTimeLimitsPage'
+import { VoiceChatPage } from '@/features/voice/pages/VoiceChatPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 
 export function AppRouter() {
@@ -63,12 +71,56 @@ export function AppRouter() {
         }
       />
 
+      {/* Learning / Curriculum */}
+      <Route
+        path="/learn"
+        element={
+          <ProtectedRoute>
+            <CurriculumBrowsePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/learn/concepts/:id"
+        element={
+          <ProtectedRoute>
+            <ConceptDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/learn/paths"
+        element={
+          <ProtectedRoute>
+            <LearningPathsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/learn/paths/:id"
+        element={
+          <ProtectedRoute>
+            <LearningPathDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Projects */}
       <Route
         path="/projects"
         element={
           <ProtectedRoute>
             <ProjectsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Community */}
+      <Route
+        path="/community"
+        element={
+          <ProtectedRoute>
+            <CommunityPage />
           </ProtectedRoute>
         }
       />
@@ -95,6 +147,34 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <ProgressPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Parents (guardian-only backend endpoints; no client role-gate yet — see followup) */}
+      <Route
+        path="/parents"
+        element={
+          <ProtectedRoute>
+            <ParentDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/parents/children/:learnerId/time-limits"
+        element={
+          <ProtectedRoute>
+            <ParentTimeLimitsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Voice Chat (Voice Pipeline v1) */}
+      <Route
+        path="/voice-chat"
+        element={
+          <ProtectedRoute>
+            <VoiceChatPage />
           </ProtectedRoute>
         }
       />
