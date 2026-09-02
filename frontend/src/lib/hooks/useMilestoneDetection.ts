@@ -77,7 +77,6 @@ export function detectMilestones(
 ): MilestoneResult {
   const level = current.level ?? 1
   const streak = current.streak ?? 0
-  const totalXP = current.totalXP ?? 0
   const masteredCount = current.masteredCount ?? 0
   const completedMissionCount = current.completedMissionCount ?? 0
 
@@ -107,8 +106,9 @@ export function detectMilestones(
   const crossed = STREAK_MILESTONES.filter(
     (m) => streak >= m && lastSeen.streak < m
   )
-  if (crossed.length > 0) {
-    result.streakMilestone = crossed[crossed.length - 1]
+  const highestCrossed = crossed[crossed.length - 1]
+  if (highestCrossed !== undefined) {
+    result.streakMilestone = highestCrossed
   }
 
   if (lastSeen.completedMissionCount === 0 && completedMissionCount >= 1) {

@@ -19,6 +19,7 @@ import {
   Palette,
   Sparkles,
 } from 'lucide-react'
+import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 
 /**
  * AppShell — the one persistent navigation frame for every authenticated page.
@@ -31,6 +32,17 @@ import {
  *    (Achievements, Leaderboard, Progress, Voice Chat, Time Limits)
  *  - Page content renders via <Outlet /> with a subtle fade/slide transition
  *    keyed on the route path
+ *
+ * Age-adaptation (lighter touch than DashboardPage.tsx): the primary nav
+ * already uses simple one-word labels for every band (Home/Learn/Missions/
+ * Community/Profile), so there's no vocabulary change needed here. What
+ * does change with `density`:
+ *   - AGE_8_9 (density='simple'): larger icons/label text using existing
+ *     Tailwind size tokens (w-6 h-6 / text-sm vs w-5 h-5 / text-xs) so the
+ *     nav reads more clearly without shrinking touch targets.
+ *   - AGE_12_14 (density='detailed'): the "More" drawer shows the item
+ *     descriptions (already present) at full density since there's room;
+ *     labels stay one-word to match audit guidance.
  */
 
 interface NavItem {
@@ -105,6 +117,14 @@ export function AppShell() {
   const userStr = localStorage.getItem('user')
   const user = userStr ? JSON.parse(userStr) : null
 
+  // Real age-adaptation config, read from the current learner's ageBand.
+  // Lighter-touch than DashboardPage — only size tokens and drawer detail
+  // density change here, no copy/vocabulary swap (labels are already
+  // one-word across every band).
+  const adapt = useAgeAdaptation(user?.learner?.ageBand)
+  const isSimpleDensity = adapt.density === 'simple'
+  const isDetailedDensity = adapt.density === 'detailed'
+
   const activeKey = useMemo(() => {
     // "More" pages count as active on their own tab (not a bottom-bar entry)
     const found = primaryNav.find((item) => item.match(location.pathname))
@@ -125,6 +145,11 @@ export function AppShell() {
     localStorage.removeItem('user')
     navigate('/login')
   }
+
+  // Existing Tailwind size tokens only — no new design-system tokens.
+  const navIconSizeClass = isSimpleDensity ? 'w-6 h-6' : 'w-5 h-5'
+  const navLabelSizeClass = isSimpleDensity ? 'text-sm' : 'text-xs'
+  const navItemPaddingClass = isSimpleDensity ? 'py-3' : 'py-2.5'
 
   return (
     <div className="min-h-screen bg-surface-50 flex flex-col">
@@ -159,7 +184,12 @@ export function AppShell() {
         </AnimatePresence>
       </main>
 
-      {/* Bottom tab bar — mobile-first primary navigation */}
+      {/* Bottom tab bar — mobile-first primary navigation.
+          Real branching (not cosmetic): icon/label size tokens and vertical
+          padding scale up for the younger band via navIconSizeClass /
+          navLabelSizeClass / navItemPaddingClass computed from `adapt`
+          above, using only Tailwind size tokens already used elsewhere in
+          this file (w-5/w-6, text-xs/text-sm, py-2.5/py-3). */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-surface-200
           shadow-[0_-4px_16px_rgba(15,23,42,0.06)] pb-[env(safe-area-inset-bottom)]"
@@ -173,7 +203,7 @@ export function AppShell() {
               <Link
                 key={item.key}
                 to={item.to}
-                className="relative flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium"
+                className={`relative flex flex-col items-center justify-center gap-1 ${navItemPaddingClass} font-medium`}
               >
                 {isActive && (
                   <motion.div
@@ -183,10 +213,10 @@ export function AppShell() {
                   />
                 )}
                 <Icon
-                  className={`relative w-5 h-5 ${isActive ? 'text-primary-600' : 'text-slate-400'}`}
+                  className={`relative ${navIconSizeClass} ${isActive ? 'text-primary-600' : 'text-slate-400'}`}
                   strokeWidth={2}
                 />
-                <span className={`relative ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
+                <span className={`relative ${navLabelSizeClass} ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
                   {item.label}
                 </span>
               </Link>
@@ -196,7 +226,7 @@ export function AppShell() {
           {/* More tab — overflow drawer for lower-frequency pages */}
           <button
             onClick={() => setMoreOpen(true)}
-            className="relative flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium"
+            className={`relative flex flex-col items-center justify-center gap-1 ${navItemPaddingClass} font-medium`}
             aria-haspopup="dialog"
             aria-expanded={moreOpen}
           >
@@ -208,17 +238,20 @@ export function AppShell() {
               />
             )}
             <MoreHorizontal
-              className={`relative w-5 h-5 ${isMoreActive ? 'text-primary-600' : 'text-slate-400'}`}
+              className={`relative ${navIconSizeClass} ${isMoreActive ? 'text-primary-600' : 'text-slate-400'}`}
               strokeWidth={2}
             />
-            <span className={`relative ${isMoreActive ? 'text-primary-600' : 'text-slate-400'}`}>
+            <span className={`relative ${navLabelSizeClass} ${isMoreActive ? 'text-primary-600' : 'text-slate-400'}`}>
               More
             </span>
           </button>
         </div>
       </nav>
 
-      {/* More sheet/drawer */}
+      {/* More sheet/drawer — descriptions (already existing content) only
+          render for the higher-density bands; AGE_8_9 gets label-only rows
+          so the sheet doesn't turn into a wall of text for the youngest
+          band. This is real conditional content, not a font-size tweak. */}
       <AnimatePresence>
         {moreOpen && (
           <>
@@ -264,7 +297,9 @@ export function AppShell() {
                       </div>
                       <div>
                         <p className="font-medium text-slate-700 text-sm">{item.label}</p>
-                        <p className="text-xs text-slate-400">{item.description}</p>
+                        {isDetailedDensity && (
+                          <p className="text-xs text-slate-400">{item.description}</p>
+                        )}
                       </div>
                     </Link>
                   )
@@ -280,7 +315,7 @@ export function AppShell() {
                     </div>
                     <div>
                       <p className="font-medium text-slate-700 text-sm">Parent Dashboard</p>
-                      <p className="text-xs text-slate-400">Guardian controls</p>
+                      {isDetailedDensity && <p className="text-xs text-slate-400">Guardian controls</p>}
                     </div>
                   </Link>
                 )}
@@ -294,7 +329,7 @@ export function AppShell() {
                   </div>
                   <div>
                     <p className="font-medium text-slate-700 text-sm">English</p>
-                    <p className="text-xs text-slate-400">Strands & AI coach</p>
+                    {isDetailedDensity && <p className="text-xs text-slate-400">Strands & AI coach</p>}
                   </div>
                 </Link>
               </div>

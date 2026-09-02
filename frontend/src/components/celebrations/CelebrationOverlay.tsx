@@ -30,7 +30,7 @@ function useConfettiPieces(count = 42): ConfettiPiece[] {
           x: Math.cos(angle) * distance,
           y: Math.sin(angle) * distance - 40, // slight upward bias
           rotate: Math.random() * 360,
-          color: CONFETTI_COLORS[id % CONFETTI_COLORS.length],
+          color: CONFETTI_COLORS[id % CONFETTI_COLORS.length] ?? CONFETTI_COLORS[0],
           size: 6 + Math.random() * 8,
           delay: Math.random() * 0.15,
         }
@@ -253,11 +253,10 @@ export function CelebrationOverlay({ milestone, onDismiss }: CelebrationOverlayP
   }
 
   useEffect(() => {
-    if (!visible) {
-      // allow exit animation to play before notifying parent
-      const t = setTimeout(onDismiss, 250)
-      return () => clearTimeout(t)
-    }
+    if (!visible) return undefined
+    // allow exit animation to play before notifying parent
+    const t = setTimeout(onDismiss, 250)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible])
 
