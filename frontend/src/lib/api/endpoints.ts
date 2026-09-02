@@ -123,21 +123,55 @@ export const adaptiveApi = {
 }
 
 // ==================== Community ====================
+// Backed by backend/src/modules/community/community.controller.ts +
+// community.service.ts. The feed only ever surfaces Project rows with
+// visibility=PUBLIC and state=SHOWCASED — i.e. content that has already
+// passed the showcase step. There is no separate "community post" entity;
+// posting to the community means creating a Project and submitting it for
+// showcase via projectsApi.create() + projectsApi.showcase(), which is the
+// real moderation-adjacent pipeline available on this backend today.
+export interface CommunityReportPayload {
+  entityType: 'PROJECT' | 'COMMENT' | 'MESSAGE' | 'PROFILE'
+  entityId: string
+  reason: 'INAPPROPRIATE' | 'SPAM' | 'HARASSMENT' | 'COPYRIGHT' | 'SAFETY' | 'OTHER'
+  description?: string
+}
+
 export const communityApi = {
-  getFeed: (params?: { page?: number; limit?: number }) =>
+  getFeed: (params?: { type?: string; limit?: number }) =>
     apiClient.get('/community/feed', { params }),
 
-  getTrending: () =>
-    apiClient.get('/community/trending'),
+  getTrending: (params?: { limit?: number }) =>
+    apiClient.get('/community/trending', { params }),
 
-  search: (query: string) =>
-    apiClient.get('/community/search', { params: { query } }),
+  search: (query: string, params?: { type?: string; limit?: number }) =>
+    apiClient.get('/community/search', { params: { q: query, ...params } }),
 
-  report: (data: any) =>
+  getStats: () =>
+    apiClient.get('/community/stats'),
+
+  // Reports flagged content into the real ModerationService/QuarantinedContent
+  // pipeline (community.service.ts -> moderation.moderateWithQuarantine).
+  report: (data: CommunityReportPayload) =>
     apiClient.post('/community/report', data),
+
+  // Educator/parent-only moderation queue endpoints.
+  getQuarantined: (status?: string) =>
+    apiClient.get('/community/moderation/quarantined', { params: { status } }),
+
+  reviewContent: (id: string, decision: 'APPROVED' | 'REJECTED', notes?: string) =>
+    apiClient.post(`/community/moderation/review/${id}`, { decision, notes }),
 }
 
 // ==================== Parents ====================
+// Backed by backend/src/modules/parents/parents.controller.ts + parents.service.ts.
+// learnerId is a UUID string (Learner.id), not a numeric id.
+export interface SetTimeLimitsPayload {
+  dailyMinutes?: number
+  weeklyMinutes?: number
+  bedtimeHour?: number
+}
+
 export const parentsApi = {
   getChildren: () =>
     apiClient.get('/parents/children'),
@@ -145,14 +179,70 @@ export const parentsApi = {
   getFamilySummary: () =>
     apiClient.get('/parents/family-summary'),
 
-  getChildDashboard: (learnerId: number) =>
+  getChildDashboard: (learnerId: string) =>
     apiClient.get(`/parents/children/${learnerId}/dashboard`),
 
-  getChildProgress: (learnerId: number, params?: { startDate?: string; endDate?: string }) =>
-    apiClient.get(`/parents/children/${learnerId}/progress`, { params }),
+  getChildProgress: (learnerId: string) =>
+    apiClient.get(`/parents/children/${learnerId}/progress`),
 
-  getChildActivity: (learnerId: number, params?: { days?: number }) =>
+  getChildActivity: (learnerId: string, params?: { days?: number }) =>
     apiClient.get(`/parents/children/${learnerId}/activity`, { params }),
+
+  setTimeLimits: (learnerId: string, data: SetTimeLimitsPayload) =>
+    apiClient.post(`/parents/children/${learnerId}/time-limits`, data),
+}
+
+// ==================== Curriculum (Domains) ====================
+export const curriculumApi = {
+  getDomains: () =>
+    apiClient.get('/domains'),
+}
+
+// ==================== Learning (Concepts, Prerequisites, Paths) ====================
+export const learningApi = {
+  // Concepts
+  getConcepts: (params?: { competencyId?: string }) =>
+    apiClient.get('/learning/concepts', { params }),
+
+  getConcept: (id: string) =>
+    apiClient.get(`/learning/concepts/${id}`),
+
+  getConceptBySlug: (slug: string) =>
+    apiClient.get(`/learning/concepts/slug/${slug}`),
+
+  getPrerequisiteChain: (id: string) =>
+    apiClient.get(`/learning/concepts/${id}/prerequisites`),
+
+  getUnlockStatus: (id: string) =>
+    apiClient.get(`/learning/concepts/${id}/unlock-status`),
+
+  getConceptsForSkill: (skillId: string) =>
+    apiClient.get(`/learning/skills/${skillId}/concepts`),
+
+  getConceptsForDomain: (domainId: string) =>
+    apiClient.get(`/learning/domains/${domainId}/concepts`),
+
+  // Learning Paths
+  getPaths: (params?: { domainId?: string; ageBand?: string }) =>
+    apiClient.get('/learning/paths', { params }),
+
+  getPath: (id: string) =>
+    apiClient.get(`/learning/paths/${id}`),
+
+  getPathProgress: (id: string) =>
+    apiClient.get(`/learning/paths/${id}/progress`),
+
+  advancePathProgress: (id: string, nodeId: string) =>
+    apiClient.post(`/learning/paths/${id}/advance`, { nodeId }),
+
+  resetPathProgress: (id: string) =>
+    apiClient.post(`/learning/paths/${id}/reset`),
+
+  recommendPath: (domainId?: string) =>
+    apiClient.get('/learning/paths/recommend', { params: { domainId } }),
+
+  getMyPaths: () =>
+    apiClient.get('/learning/my-paths'),
 }
 
 // ==================== Coding Sandbox (Pyodide/Sandpack — zero backend execution) ====================
