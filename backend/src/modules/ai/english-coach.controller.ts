@@ -39,7 +39,7 @@ export class EnglishCoachController {
     @Body() body: Omit<EnglishConversationRequest, 'learnerId'>,
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.englishCoach.conductConversation({ ...body, learnerId });
   }
 
@@ -51,7 +51,7 @@ export class EnglishCoachController {
     @Body() body: Omit<GrammarCorrectionRequest, 'learnerId'>,
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.englishCoach.correctGrammar({ ...body, learnerId });
   }
 
@@ -65,7 +65,7 @@ export class EnglishCoachController {
     @Body() body: Omit<PronunciationFeedbackRequest, 'learnerId'>,
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.englishCoach.providePronunciationFeedback({
       ...body,
       learnerId,
@@ -80,7 +80,7 @@ export class EnglishCoachController {
     @Body() body: { topic: string; wordCount?: number },
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.englishCoach.generateVocabularyPractice(
       learnerId,
       body.topic,
@@ -96,7 +96,7 @@ export class EnglishCoachController {
     @Body() body: { topic: string; length?: 'short' | 'medium' | 'long' },
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.englishCoach.generateReadingPassage(
       learnerId,
       body.topic,

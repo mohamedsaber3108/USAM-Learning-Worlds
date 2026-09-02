@@ -77,7 +77,7 @@ export class CharacterController {
    */
   @Get(':id/state')
   async getCharacterState(@Param('id') id: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can access character state');
@@ -97,7 +97,7 @@ export class CharacterController {
     @Body() body: { message: string; context?: any },
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can chat with characters');
@@ -131,7 +131,7 @@ export class CharacterController {
     },
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can create conversations');
@@ -157,7 +157,7 @@ export class CharacterController {
    */
   @Get('conversations/:conversationId')
   async getConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can access conversations');
@@ -182,7 +182,7 @@ export class CharacterController {
     @Body() body: { content: string; metadata?: any },
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can send messages');
@@ -206,7 +206,7 @@ export class CharacterController {
     @Query('offset') offset?: string,
     @Request() req?: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can access message history');
@@ -231,7 +231,7 @@ export class CharacterController {
     @Query('limit') limit?: string,
     @Request() req?: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can list conversations');
@@ -252,7 +252,7 @@ export class CharacterController {
    */
   @Patch('conversations/:conversationId/pause')
   async pauseConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can pause conversations');
@@ -268,7 +268,7 @@ export class CharacterController {
    */
   @Patch('conversations/:conversationId/resume')
   async resumeConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can resume conversations');
@@ -284,7 +284,7 @@ export class CharacterController {
    */
   @Patch('conversations/:conversationId/end')
   async endConversation(@Param('conversationId') conversationId: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can end conversations');
@@ -303,7 +303,7 @@ export class CharacterController {
     @Param('conversationId') conversationId: string,
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can access conversation summary');
@@ -319,7 +319,7 @@ export class CharacterController {
    */
   @Post('conversations/:conversationId/refresh-context')
   async refreshContext(@Param('conversationId') conversationId: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
       throw new Error('Only learners can refresh context');

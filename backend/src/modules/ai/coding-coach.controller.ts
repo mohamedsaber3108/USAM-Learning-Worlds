@@ -39,7 +39,7 @@ export class CodingCoachController {
     body: Omit<DebugAssistanceRequest, 'learnerId'>,
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.codingCoach.provideDebugAssistance({
       ...body,
       learnerId,
@@ -54,7 +54,7 @@ export class CodingCoachController {
     @Body() body: Omit<CodeReviewRequest, 'learnerId'>,
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.codingCoach.reviewCode({ ...body, learnerId });
   }
 
@@ -66,7 +66,7 @@ export class CodingCoachController {
     @Body() body: Omit<CodeExplanationRequest, 'learnerId'>,
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.codingCoach.explainCode({ ...body, learnerId });
   }
 
@@ -79,7 +79,7 @@ export class CodingCoachController {
     body: { conceptId: string; difficulty: 'easy' | 'medium' | 'hard' },
     @Request() req: any,
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.codingCoach.generateChallenge(
       learnerId,
       body.conceptId,

@@ -52,7 +52,7 @@ export class LearningController {
 
   @Get('concepts/:id/unlock-status')
   async getUnlockStatus(@Param('id') id: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.conceptService.getUnlockStatus(id, learnerId);
   }
 
@@ -98,7 +98,7 @@ export class LearningController {
 
   @Get('paths/:id/progress')
   async getPathProgress(@Param('id') id: string, @Request() req: any) : Promise<any> {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningPathService.getProgress(id, learnerId);
   }
 
@@ -108,25 +108,25 @@ export class LearningController {
     @Body() body: { nodeId: string },
     @Request() req: any
   ) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningPathService.advanceProgress(id, learnerId, body.nodeId);
   }
 
   @Post('paths/:id/reset')
   async resetPathProgress(@Param('id') id: string, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningPathService.resetProgress(id, learnerId);
   }
 
   @Get('paths/recommend')
   async recommendPath(@Query('domainId') domainId: string | undefined, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningPathService.recommendPath(learnerId, domainId);
   }
 
   @Get('my-paths')
   async getMyPaths(@Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningPathService.getLearnerPaths(learnerId);
   }
 
@@ -204,7 +204,7 @@ export class LearningController {
 
   @Post('events')
   async recordEvent(@Body() event: any, @Request() req: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningEventService.recordEvent({
       learnerId,
       ...event,
@@ -213,7 +213,7 @@ export class LearningController {
 
   @Get('events')
   async getEvents(@Request() req: any, @Query() options: any) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningEventService.getEventsForLearner(learnerId, {
       type: options.type,
       entityType: options.entityType,
@@ -227,7 +227,7 @@ export class LearningController {
 
   @Get('events/stats')
   async getEventStats(@Request() req: any, @Query('since') since?: string) : Promise<any> {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningEventService.getEventStats(
       learnerId,
       since ? new Date(since) : undefined
@@ -236,7 +236,7 @@ export class LearningController {
 
   @Get('events/recent')
   async getRecentActivity(@Request() req: any, @Query('hours') hours?: string) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningEventService.getRecentActivity(
       learnerId,
       hours ? parseInt(hours) : 24
@@ -250,7 +250,7 @@ export class LearningController {
 
   @Get('events/patterns')
   async getLearningPatterns(@Request() req: any, @Query('days') days?: string) {
-    const learnerId = req.user.learnerId;
+    const learnerId = req.user.learner?.id;
     return this.learningEventService.getLearningPatterns(
       learnerId,
       days ? parseInt(days) : 30
@@ -260,7 +260,7 @@ export class LearningController {
   private async getLearnerFromRequest(req: any) {
     const prisma = (this.conceptService as any).prisma;
     return prisma.learner.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
       select: { id: true, ageBand: true },
     });
   }
