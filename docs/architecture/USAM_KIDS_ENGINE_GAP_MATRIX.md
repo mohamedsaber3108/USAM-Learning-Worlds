@@ -87,18 +87,23 @@ next tick should sample it in sections rather than defer again wholesale.
 
 ## Part 3 — Open-Source License Registry
 
-No external library/dataset from the inventory's candidate list has been
-adopted into the codebase yet. This section stays empty until something is
-actually merged — per the task's own rule, every adoption gets an entry
-here BEFORE merge, no exceptions. First real candidates likely to come up
-soon based on Part 1 gaps: Pyodide/WebContainers (Project/Sandbox execution,
-Tier B), Whisper or similar (Voice Engine ASR, Tier B/C), LanguageTool
-(English grammar, Tier A candidate — LGPL, needs commercial-use
-verification before adoption).
+Pyodide and Sandpack (@codesandbox/sandpack-react) were adopted on
+2026-09-02 as the Coding Sandbox v1 execution surfaces (see
+`docs/architecture/USAM_OSS_INTEGRATION_PLAN.md` Section 1 for the full
+license verification and rationale). Both run 100% client-side in the
+learner's browser; `backend/src/modules/coding-sandbox/` never executes
+child code — it only serves mission specs and grades already-executed
+client results. Commit
+[`462c6f5cb49f06461e2b27fc02bf909fb59741f2`](https://github.com/mohamedsaber3108/USAM-Learning-Worlds/commit/462c6f5cb49f06461e2b27fc02bf909fb59741f2)
+is the evidence: backend module + frontend runners
+(`frontend/src/features/coding/components/{PyodideRunner,SandpackMission,CodeMissionRunner}.tsx`,
+wired into the live `frontend/` app's `MissionPlayerPage.tsx`), deployed
+and live-verified on kids.usamif.com the same day.
 
 | Library/Dataset | Source | License | Commercial use OK? | Redistribution OK? | Status |
 |---|---|---|---|---|---|
-| _(none adopted yet)_ | | | | | |
+| Pyodide | github.com/pyodide/pyodide | MPL-2.0 | Yes | Yes (unmodified, notice-preserving) | **adopted** — `462c6f5` |
+| Sandpack (@codesandbox/sandpack-react) | github.com/codesandbox/sandpack | Apache-2.0 | Yes | Yes | **adopted** — `462c6f5` |
 
 ## Part 4 — Batch 2: Projects/Coding, Community/Safety, Gamification/World
 
