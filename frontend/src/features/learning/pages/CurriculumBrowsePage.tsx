@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { curriculumApi, learningApi, masteryApi } from '@/lib/api/endpoints'
+import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
 
 interface Domain {
   id: string
@@ -27,6 +28,14 @@ interface MasteryRecord {
   state: string
 }
 
+interface DomainMasteryAggregate {
+  domain: string
+  totalCompetencies: number
+  masteredCount: number
+  proficientCount: number
+  avgConfidence: number
+}
+
 export function CurriculumBrowsePage() {
   const [selectedDomainId, setSelectedDomainId] = useState<string>('')
 
@@ -47,6 +56,40 @@ export function CurriculumBrowsePage() {
     queryFn: () => masteryApi.getOverview().then(res => res.data as MasteryRecord[]),
   })
 
+  // Real per-domain engagement signal: MasteryRecord rows joined up to their
+  // Domain, aggregated server-side by mastery.service.getMasteryByDomain().
+  // This is the same underlying signal (MasteryRecord -> competency -> skill
+  // -> domain) that character.service.ts's getDomainEngagementSet() uses as
+  // its Signal 1 for "has the learner engaged with domain X" - reused here
+  // rather than inventing a separate definition.
+  const { data: masteryByDomain } = useQuery({
+    queryKey: ['mastery-by-domain'],
+    queryFn: () => masteryApi.getByDomain().then(res => res.data as DomainMasteryAggregate[]),
+  })
+
+  // Real per-domain curriculum size (conceptCount), fetched once per domain
+  // in parallel so the world path can show real "mastered/total" progress
+  // rather than a placeholder.
+  const { data: conceptCountsByDomainId } = useQuery({
+    queryKey: ['concept-counts-by-domain', domains?.map(d => d.id).join(',')],
+    queryFn: async () => {
+      if (!domains) return {} as Record<string, number>
+      const entries = await Promise.all(
+        domains.map(async d => {
+          try {
+            const res = await learningApi.getConceptsForDomain(d.id)
+            const list = res.data as Concept[]
+            return [d.id, Array.isArray(list) ? list.length : 0] as const
+          } catch {
+            return [d.id, 0] as const
+          }
+        })
+      )
+      return Object.fromEntries(entries)
+    },
+    enabled: !!domains && domains.length > 0,
+  })
+
   const masteredCompetencyIds = useMemo(() => {
     if (!Array.isArray(mastery)) return new Set<string>()
     return new Set(
@@ -55,6 +98,30 @@ export function CurriculumBrowsePage() {
         .map((m: MasteryRecord) => m.competencyId)
     )
   }, [mastery])
+
+  // Build the world-path domain list: real name, real unlock signal, and
+  // real masteredCount/conceptCount progress per domain.
+  const worldPathDomains: WorldPathDomain[] = useMemo(() => {
+    if (!domains) return []
+    const engagementByName = new Map(
+      (masteryByDomain ?? []).map(d => [d.domain, d])
+    )
+    return domains.map((domain, index) => {
+      const engagement = engagementByName.get(domain.name)
+      // A domain is unlocked once the learner has any real engagement with
+      // it (MasteryRecord rows exist), same as the character-unlock signal.
+      // The very first domain (alphabetical, matching backend ordering) is
+      // always unlocked as the learner's entry point into the path.
+      const isUnlocked = !!engagement || index === 0
+      return {
+        id: domain.id,
+        name: domain.name,
+        isUnlocked,
+        conceptCount: conceptCountsByDomainId?.[domain.id] ?? 0,
+        masteredCount: engagement?.masteredCount ?? 0,
+      }
+    })
+  }, [domains, masteryByDomain, conceptCountsByDomainId])
 
   // Group concepts -> competencies (domains -> competencies -> concepts)
   const competencyGroups = useMemo(() => {
@@ -101,28 +168,17 @@ export function CurriculumBrowsePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Domain selector */}
+        {/* World path domain navigation - replaces the flat icon-tile grid */}
         <div className="card mb-6">
-          <h2 className="text-lg font-heading font-semibold mb-4">Choose a Domain</h2>
+          <h2 className="text-lg font-heading font-semibold mb-4">Your Learning Path</h2>
           {domainsLoading ? (
             <p className="text-gray-600">Loading domains...</p>
           ) : (
-            <div className="flex flex-wrap gap-3">
-              {domains?.map(domain => (
-                <button
-                  key={domain.id}
-                  onClick={() => setSelectedDomainId(domain.id)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all border ${
-                    selectedDomainId === domain.id
-                      ? 'bg-primary-600 text-white border-primary-600'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-primary-400'
-                  }`}
-                >
-                  {domain.icon ? `${domain.icon} ` : ''}
-                  {domain.name}
-                </button>
-              ))}
-            </div>
+            <WorldPathMap
+              domains={worldPathDomains}
+              selectedDomainId={selectedDomainId}
+              onSelectDomain={setSelectedDomainId}
+            />
           )}
         </div>
 

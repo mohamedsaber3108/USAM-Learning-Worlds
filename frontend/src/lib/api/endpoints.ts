@@ -36,8 +36,8 @@ export const masteryApi = {
   getOverview: () =>
     apiClient.get('/mastery/overview'),
 
-  getByDomain: (domainId: number) =>
-    apiClient.get('/mastery/by-domain', { params: { domainId } }),
+  getByDomain: () =>
+    apiClient.get('/mastery/by-domain'),
 
   getReviewDue: () =>
     apiClient.get('/mastery/review-due'),
