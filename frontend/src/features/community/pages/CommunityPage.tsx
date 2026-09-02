@@ -2,6 +2,19 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
+import {
+  ArrowLeft,
+  MessageCircle,
+  Shield,
+  Plus,
+  X,
+  PenLine,
+  GraduationCap,
+  CheckCircle2,
+  Eye,
+  Send,
+  Sprout,
+} from 'lucide-react'
 import { communityApi, projectsApi } from '@/lib/api/endpoints'
 
 interface CommunityProject {
@@ -33,14 +46,16 @@ interface CommunityProject {
 function ModerationBadge({ state }: { state?: string | undefined }) {
   if (state === 'SHOWCASED') {
     return (
-      <span className="badge-pop bg-success-100 text-success-700 text-xs font-semibold px-3 py-1">
-        ✅ Approved &amp; Live
+      <span className="inline-flex items-center gap-1 bg-success-100 text-success-700 text-xs font-semibold px-3 py-1 rounded-control">
+        <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2} />
+        Approved &amp; Live
       </span>
     )
   }
   return (
-    <span className="badge-pop bg-warning-100 text-warning-700 text-xs font-semibold px-3 py-1">
-      👀 Being Checked
+    <span className="inline-flex items-center gap-1 bg-warning-100 text-warning-700 text-xs font-semibold px-3 py-1 rounded-control">
+      <Eye className="w-3.5 h-3.5" strokeWidth={2} />
+      Being Checked
     </span>
   )
 }
@@ -100,24 +115,36 @@ export function CommunityPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
+    <div className="min-h-screen bg-surface-50">
+      {/* Header — one solid brand color, no rainbow gradient */}
+      <header className="bg-primary-600 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors">
-                ← Back
+            <div className="flex items-center gap-4">
+              <Link to="/dashboard" className="flex items-center gap-1 text-white/90 hover:text-white transition-colors text-sm font-medium">
+                <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+                Back
               </Link>
-              <h1 className="text-2xl font-heading font-extrabold text-white drop-shadow-sm">
-                🌟 Community
+              <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" strokeWidth={2} />
+                Community
               </h1>
             </div>
             <button
               onClick={() => setShowForm((v) => !v)}
-              className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
+              className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
             >
-              {showForm ? 'Close' : '+ Share Something'}
+              {showForm ? (
+                <>
+                  <X className="w-4 h-4" strokeWidth={2} />
+                  Close
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" strokeWidth={2} />
+                  Share Something
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -126,9 +153,11 @@ export function CommunityPage() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Safety banner - always visible, always up front */}
         <div className="card mb-6 bg-primary-50 border-primary-200 flex items-start gap-3">
-          <span className="text-2xl">🛡️</span>
+          <div className="icon-chip bg-primary-100 text-primary-600 flex-shrink-0">
+            <Shield className="w-5 h-5" strokeWidth={2} />
+          </div>
           <div>
-            <p className="font-heading font-semibold text-primary-900">
+            <p className="font-display font-semibold text-primary-900">
               This is a safe, kid-friendly space!
             </p>
             <p className="text-sm text-primary-800">
@@ -147,15 +176,18 @@ export function CommunityPage() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="card mb-8 border-secondary-200">
-                <h2 className="text-xl font-heading font-bold mb-2">✏️ Share with the Community</h2>
+              <div className="card mb-8">
+                <h2 className="text-xl font-display font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <PenLine className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                  Share with the Community
+                </h2>
 
-                {/* Child-safe, moderation-first copy — safety-critical UX */}
-                <div className="bg-warning-50 border border-warning-200 rounded-xl p-3 mb-4 flex items-start gap-2">
-                  <span className="text-xl">🧑‍🏫</span>
+                {/* Child-safe, moderation-first copy — safety-critical UX, content unchanged */}
+                <div className="bg-warning-50 border border-warning-200 rounded-control p-3 mb-4 flex items-start gap-2">
+                  <GraduationCap className="w-5 h-5 text-warning-700 flex-shrink-0 mt-0.5" strokeWidth={2} />
                   <p className="text-sm text-warning-900 font-medium">
                     Your post will be checked by a grown-up helper before others can see it!
-                    This keeps everyone in our community safe. 💛
+                    This keeps everyone in our community safe.
                   </p>
                 </div>
 
@@ -165,11 +197,13 @@ export function CommunityPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-6"
                   >
-                    <div className="text-5xl mb-2">📨</div>
-                    <p className="font-heading font-bold text-lg text-success-700">
+                    <div className="icon-chip bg-success-50 text-success-600 w-14 h-14 mx-auto mb-3">
+                      <Send className="w-6 h-6" strokeWidth={2} />
+                    </div>
+                    <p className="font-display font-bold text-lg text-success-700">
                       Sent for review!
                     </p>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <p className="text-slate-600 text-sm mt-1">
                       A grown-up helper will check your post soon. Once it's approved,
                       it will show up here for everyone to see!
                     </p>
@@ -183,7 +217,7 @@ export function CommunityPage() {
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">
                         Title
                       </label>
                       <input
@@ -196,7 +230,7 @@ export function CommunityPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">
                         Tell us about it
                       </label>
                       <textarea
@@ -210,7 +244,7 @@ export function CommunityPage() {
                     </div>
 
                     {submitState === 'error' && (
-                      <p className="text-danger-600 text-sm font-medium">{errorMessage}</p>
+                      <p className="text-error-600 text-sm font-medium">{errorMessage}</p>
                     )}
 
                     <button
@@ -218,7 +252,14 @@ export function CommunityPage() {
                       disabled={submitState === 'submitting'}
                       className="btn btn-primary w-full disabled:opacity-60"
                     >
-                      {submitState === 'submitting' ? 'Sending to a helper…' : '🚀 Submit for Review'}
+                      {submitState === 'submitting' ? (
+                        'Sending to a helper…'
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" strokeWidth={2} />
+                          Submit for Review
+                        </>
+                      )}
                     </button>
                   </form>
                 )}
@@ -228,31 +269,33 @@ export function CommunityPage() {
         </AnimatePresence>
 
         {/* Feed */}
-        <h2 className="text-xl font-heading font-bold mb-4">Approved Posts</h2>
+        <h2 className="text-xl font-display font-bold text-slate-900 mb-4">Approved Posts</h2>
 
         {isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-gray-600">Loading the community feed...</p>
+            <p className="mt-4 text-slate-600">Loading the community feed...</p>
           </div>
         ) : isError ? (
           <div className="card text-center py-8">
-            <p className="text-gray-600">
+            <p className="text-slate-600">
               Couldn't load the community feed right now. Please try again later.
             </p>
           </div>
         ) : projects.length === 0 ? (
           <div className="card text-center py-12">
-            <div className="text-6xl mb-4">🌱</div>
-            <h3 className="text-xl font-heading font-bold text-gray-900 mb-2">
+            <div className="icon-chip bg-success-50 text-success-600 w-16 h-16 mx-auto mb-4">
+              <Sprout className="w-8 h-8" strokeWidth={2} />
+            </div>
+            <h3 className="text-xl font-display font-bold text-slate-900 mb-2">
               No posts here yet!
             </h3>
-            <p className="text-gray-600">
+            <p className="text-slate-600">
               Be the first to share something once it's checked by a helper.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {projects.map((project, idx) => (
               <motion.div
                 key={project.id}
@@ -266,16 +309,16 @@ export function CommunityPage() {
                     <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center font-semibold text-primary-700">
                       {project.learner?.displayName?.[0]?.toUpperCase() || '?'}
                     </div>
-                    <span className="text-sm font-semibold text-gray-800">
+                    <span className="text-sm font-semibold text-slate-800">
                       {project.learner?.displayName || 'A learner'}
                     </span>
                   </div>
                   <ModerationBadge state={project.state ?? undefined} />
                 </div>
-                <h3 className="font-heading font-bold text-lg text-gray-900 mb-1">
+                <h3 className="font-display font-bold text-lg text-slate-900 mb-1">
                   {project.title}
                 </h3>
-                <p className="text-sm text-gray-600 line-clamp-4">{project.description}</p>
+                <p className="text-sm text-slate-600 line-clamp-4">{project.description}</p>
                 {project.skills && project.skills.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {project.skills.slice(0, 4).map((skill) => (
@@ -289,7 +332,7 @@ export function CommunityPage() {
                   </div>
                 )}
                 {project.updatedAt && (
-                  <p className="text-xs text-gray-400 mt-3">
+                  <p className="text-xs text-slate-400 mt-3">
                     {new Date(project.updatedAt).toLocaleDateString()}
                   </p>
                 )}

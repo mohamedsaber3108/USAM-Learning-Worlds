@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
+import { Users2, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle } from 'lucide-react'
 import { parentsApi } from '@/lib/api/endpoints'
 
 interface ChildLink {
@@ -51,16 +52,17 @@ export function ParentDashboardPage() {
   const isForbidden = (childrenError as any)?.response?.status === 403
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-primary-500 via-primary-600 to-secondary-500 shadow-pop">
+    <div className="min-h-screen bg-surface-50">
+      {/* Header — one solid brand color, no rainbow gradient */}
+      <header className="bg-primary-600 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-heading font-extrabold text-white drop-shadow-sm">
-            👨‍👩‍👧 Parent Dashboard
+          <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
+            <Users2 className="w-5 h-5" strokeWidth={2} />
+            Parent Dashboard
           </h1>
           <Link
             to="/dashboard"
-            className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
+            className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
           >
             Back to App
           </Link>
@@ -78,11 +80,11 @@ export function ParentDashboardPage() {
           </div>
         )}
 
-        {childrenLoading && <p className="text-gray-600">Loading children…</p>}
+        {childrenLoading && <p className="text-slate-600">Loading children…</p>}
 
         {!childrenLoading && !isForbidden && children && children.length === 0 && (
           <div className="card">
-            <p className="text-gray-600">No children are linked to this guardian account yet.</p>
+            <p className="text-slate-600">No children are linked to this guardian account yet.</p>
           </div>
         )}
 
@@ -95,10 +97,10 @@ export function ParentDashboardPage() {
                   <button
                     key={c.learner.id}
                     onClick={() => setSelectedLearnerId(c.learner.id)}
-                    className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
+                    className={`px-4 py-2 rounded-control font-semibold text-sm transition-colors ${
                       c.learner.id === learnerId
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-primary-50'
+                        ? 'bg-primary-600 text-white shadow-soft'
+                        : 'bg-white text-slate-700 border border-surface-200 hover:bg-primary-50'
                     }`}
                   >
                     {c.learner.displayName}
@@ -108,95 +110,99 @@ export function ParentDashboardPage() {
             )}
 
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.35 }}
               className="mb-8"
             >
-              <h2 className="text-3xl font-heading font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-display font-bold text-slate-900 mb-1">
                 {activeChild?.learner.displayName || 'Child'}'s Progress
               </h2>
-              <p className="text-gray-600">
+              <p className="text-slate-500 text-sm">
                 Age band: {activeChild?.learner.ageBand} · Status: {activeChild?.learner.status}
               </p>
               <Link
                 to={`/parents/children/${learnerId}/time-limits`}
-                className="inline-block mt-3 text-primary-600 hover:text-primary-800 font-semibold"
+                className="inline-flex items-center gap-1.5 mt-3 text-primary-600 hover:text-primary-800 font-semibold text-sm"
               >
-                ⏱️ Manage Time Limits →
+                <Timer className="w-4 h-4" strokeWidth={2} />
+                Manage Time Limits →
               </Link>
             </motion.div>
 
-            {dashboardLoading && <p className="text-gray-600">Loading dashboard…</p>}
+            {dashboardLoading && <p className="text-slate-600">Loading dashboard…</p>}
 
             {dashboard && (
               <>
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <div className="card-colorful bg-gradient-to-br from-primary-500 to-primary-700">
-                    <p className="text-sm text-white/80 mb-1">Level</p>
-                    <p className="text-3xl font-heading font-extrabold">
+                {/* Stats Grid — icon-chip + tint per card, not full gradient blocks */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+                  <div className="stat-card">
+                    <p className="text-xs font-medium text-slate-500 mb-1">Level</p>
+                    <p className="text-3xl font-display font-extrabold text-slate-900">
                       {dashboard.progression?.level ?? 1}
                     </p>
-                    <p className="text-xs text-white/80 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {dashboard.progression?.totalXP?.toLocaleString() ?? 0} XP
                     </p>
                   </div>
 
-                  <div className="card-colorful bg-gradient-to-br from-accent-500 to-accent-700">
-                    <p className="text-sm text-white/80 mb-1">Current Streak</p>
-                    <p className="text-3xl font-heading font-extrabold">
-                      {dashboard.streak?.current ?? 0} 🔥
+                  <div className="stat-card">
+                    <p className="text-xs font-medium text-slate-500 mb-1">Current Streak</p>
+                    <p className="text-3xl font-display font-extrabold text-slate-900">
+                      {dashboard.streak?.current ?? 0}
                     </p>
-                    <p className="text-xs text-white/80 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       Best: {dashboard.streak?.longest ?? 0} days
                     </p>
                   </div>
 
-                  <div className="card-colorful bg-gradient-to-br from-secondary-500 to-secondary-700">
-                    <p className="text-sm text-white/80 mb-1">Proficient Skills</p>
-                    <p className="text-3xl font-heading font-extrabold">
+                  <div className="stat-card">
+                    <p className="text-xs font-medium text-slate-500 mb-1">Proficient Skills</p>
+                    <p className="text-3xl font-display font-extrabold text-slate-900">
                       {dashboard.mastery?.proficient ?? 0}
                     </p>
-                    <p className="text-xs text-white/80 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       of {dashboard.mastery?.total ?? 0} tracked
                     </p>
                   </div>
 
-                  <div className="card-colorful bg-gradient-to-br from-success-500 to-success-700">
-                    <p className="text-sm text-white/80 mb-1">Showcased Projects</p>
-                    <p className="text-3xl font-heading font-extrabold">
+                  <div className="stat-card">
+                    <p className="text-xs font-medium text-slate-500 mb-1">Showcased Projects</p>
+                    <p className="text-3xl font-display font-extrabold text-slate-900">
                       {dashboard.projects?.showcased ?? 0}
                     </p>
                   </div>
                 </div>
 
                 {/* Mastery highlights */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                   <div className="card">
-                    <h3 className="text-lg font-heading font-semibold mb-4">📊 Mastery Breakdown</h3>
+                    <h3 className="flex items-center gap-2 mb-4">
+                      <BarChart3 className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                      Mastery Breakdown
+                    </h3>
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Proficient</span>
+                        <span className="text-slate-500">Proficient</span>
                         <span className="font-semibold text-success-600">{dashboard.mastery?.proficient ?? 0}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Developing</span>
+                        <span className="text-slate-500">Developing</span>
                         <span className="font-semibold text-primary-600">{dashboard.mastery?.developing ?? 0}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Emerging</span>
-                        <span className="font-semibold text-gray-500">{dashboard.mastery?.emerging ?? 0}</span>
+                        <span className="text-slate-500">Emerging</span>
+                        <span className="font-semibold text-slate-500">{dashboard.mastery?.emerging ?? 0}</span>
                       </div>
                     </div>
 
                     {dashboard.mastery?.byDomain && Object.keys(dashboard.mastery.byDomain).length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                        <p className="text-sm font-semibold text-gray-700">By Domain</p>
+                      <div className="mt-4 pt-4 border-t border-surface-200 space-y-2">
+                        <p className="text-sm font-semibold text-slate-700">By Domain</p>
                         {Object.entries(dashboard.mastery.byDomain as Record<string, any>).map(([domain, stats]) => (
                           <div key={domain} className="flex justify-between text-sm">
-                            <span className="text-gray-600">{domain}</span>
-                            <span className="text-gray-800">
+                            <span className="text-slate-500">{domain}</span>
+                            <span className="text-slate-700">
                               {stats.proficient}/{stats.total} · avg {stats.avgConfidence}%
                             </span>
                           </div>
@@ -206,22 +212,30 @@ export function ParentDashboardPage() {
                   </div>
 
                   <div className="card">
-                    <h3 className="text-lg font-heading font-semibold mb-4">📚 Recent Activity</h3>
+                    <h3 className="flex items-center gap-2 mb-4">
+                      <BookOpenCheck className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                      Recent Activity
+                    </h3>
                     {dashboard.recentActivity && dashboard.recentActivity.length > 0 ? (
                       <div className="space-y-2">
                         {dashboard.recentActivity.slice(0, 8).map((a: any, i: number) => (
-                          <div key={i} className="flex items-center justify-between p-2 bg-primary-50/60 rounded-lg text-sm">
-                            <span>
-                              {a.success ? '✅' : '❌'} {a.type}
+                          <div key={i} className="flex items-center justify-between p-2 bg-surface-50 rounded-control text-sm">
+                            <span className="flex items-center gap-1.5">
+                              {a.success ? (
+                                <CheckCircle2 className="w-4 h-4 text-success-500 flex-shrink-0" strokeWidth={2} />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-error-500 flex-shrink-0" strokeWidth={2} />
+                              )}
+                              {a.type}
                             </span>
-                            <span className="text-gray-500">
+                            <span className="text-slate-500">
                               {a.date ? new Date(a.date).toLocaleDateString() : ''}
                             </span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-sm">No recent activity in this window.</p>
+                      <p className="text-slate-500 text-sm">No recent activity in this window.</p>
                     )}
                   </div>
                 </div>
@@ -229,33 +243,39 @@ export function ParentDashboardPage() {
                 {/* Last 7 days activity log */}
                 {activity && (
                   <div className="card mb-8">
-                    <h3 className="text-lg font-heading font-semibold mb-4">
-                      🗓️ Activity in the last {activity.days} days
+                    <h3 className="flex items-center gap-2 mb-4">
+                      <CalendarRange className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                      Activity in the last {activity.days} days
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <p className="text-sm font-semibold text-gray-700 mb-2">Practice ({activity.activities?.evidence?.length ?? 0})</p>
+                        <p className="text-sm font-semibold text-slate-700 mb-2">Practice ({activity.activities?.evidence?.length ?? 0})</p>
                         <div className="space-y-1">
                           {(activity.activities?.evidence ?? []).slice(0, 5).map((e: any, i: number) => (
-                            <p key={i} className="text-xs text-gray-600">
-                              {e.success ? '✅' : '❌'} {e.type} {e.score != null ? `(${e.score})` : ''}
+                            <p key={i} className="text-xs text-slate-600 flex items-center gap-1.5">
+                              {e.success ? (
+                                <CheckCircle2 className="w-3.5 h-3.5 text-success-500 flex-shrink-0" strokeWidth={2} />
+                              ) : (
+                                <XCircle className="w-3.5 h-3.5 text-error-500 flex-shrink-0" strokeWidth={2} />
+                              )}
+                              {e.type} {e.score != null ? `(${e.score})` : ''}
                             </p>
                           ))}
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-700 mb-2">Missions ({activity.activities?.missions?.length ?? 0})</p>
+                        <p className="text-sm font-semibold text-slate-700 mb-2">Missions ({activity.activities?.missions?.length ?? 0})</p>
                         <div className="space-y-1">
                           {(activity.activities?.missions ?? []).slice(0, 5).map((m: any, i: number) => (
-                            <p key={i} className="text-xs text-gray-600">{m.title} — {m.status}</p>
+                            <p key={i} className="text-xs text-slate-600">{m.title} — {m.status}</p>
                           ))}
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-700 mb-2">Projects ({activity.activities?.projects?.length ?? 0})</p>
+                        <p className="text-sm font-semibold text-slate-700 mb-2">Projects ({activity.activities?.projects?.length ?? 0})</p>
                         <div className="space-y-1">
                           {(activity.activities?.projects ?? []).slice(0, 5).map((p: any, i: number) => (
-                            <p key={i} className="text-xs text-gray-600">{p.title} — {p.state}</p>
+                            <p key={i} className="text-xs text-slate-600">{p.title} — {p.state}</p>
                           ))}
                         </div>
                       </div>
