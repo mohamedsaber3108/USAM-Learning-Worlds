@@ -215,7 +215,74 @@ just unclassified. These stay Missing/Future per inventory's own priority
 order (they're outside the 15 must-not-forget engines) — no build action
 this tick, correctly deferred behind Voice & Conversation Engine.
 
-## Part 4b — Not yet classified (remaining)
+## Part 5b — Tick 7 continued: MAJOR finding — two full migrations never applied to live DB
+
+While live-testing this tick's controller fixes, `learning/my-paths` and
+`english-coach/grammar` both 500'd even after the `req.user.learnerId` fix
+above. Root cause traced via pm2 error log: `PrismaClientKnownRequestError:
+The table 'public.learning_path_progress' does not exist in the current
+database.`
+
+Investigation: `backend/prisma/migrations/` contains two raw `.sql` files
+(`add_phase3_ai_tables.sql`, `20260813_add_phase4_learning_foundation.sql`)
+that are NOT tracked by Prisma's migration system (`npx prisma migrate
+status` reported "No migration found in prisma/migrations" and "Database
+schema is up to date!" — misleadingly, because these files were never run
+through `prisma migrate deploy`, so Prisma's `_prisma_migrations` tracking
+table has zero rows). Queried `information_schema.tables` directly: **only
+23 of the 47 tables the Prisma schema defines actually existed in the live
+database** before this tick's fix. Missing tables included `concepts`,
+`concept_prerequisites`, `competency_prerequisites`, `learning_paths`,
+`learning_path_nodes`, `learning_path_progress`, `mission_activities`,
+`age_variants`, `content_items`, `translations`, `learning_events`,
+`project_milestones`, `rubrics`, `rubric_criteria`, `english_strands`,
+`coding_concepts`, `ai_literacy_concepts`, `entrepreneurship_concepts`,
+`financial_literacy_concepts`, `conversations`, `conversation_messages`,
+`character_interactions`, `character_states`, `learner_contexts`.
+
+**This retroactively invalidates confidence in several "Already
+implemented"/"Partially implemented" classifications in Parts 1 and 4** —
+those were based on reading service/controller code and confirming routes
+exist, but never confirmed the underlying tables existed in the LIVE
+database (the Tick 3 note "Live route confirmed 401" only proved the auth
+guard fired, not that a successful authenticated call would actually work).
+Concretely this means Knowledge Graph, Learning Paths, Content Intelligence,
+Translation, Learning Analytics, Coding/English coaching, Character
+conversation/interaction state, and Learner Model context-building were ALL
+silently broken end-to-end in production despite code-level completeness.
+
+**Fix applied this tick**: backed up the live DB (`pg_dump -F c`, verified
+non-zero size, stored at `~ /db_backup_pre_migration_<timestamp>.dump` on
+Kids-server), then applied both `.sql` files directly via `psql` against
+the live database (`ON_ERROR_STOP=1`, both completed with zero errors).
+Table count went 23 -> 47, matching every model in the Prisma schema.
+Restarted pm2. Re-verified live: `GET /api/learning/my-paths` now 200
+(empty array — correct, no seed data, not an error), `GET
+/api/learning/concepts` now 200 (empty array, same reason), CORS/rate-limit/
+login all re-confirmed unregressed.
+
+**Not yet fixed / still open**: `english-coach` and `coding-coach` routes
+now fail with a DIFFERENT, unrelated error post-migration:
+`UnrecognizedClientException: The security token included in the request
+is invalid` from AWS Bedrock. Checked `backend/.env.production` -
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` are entirely absent from that
+file (only `AWS_REGION` is set). Checked `~/.aws/credentials` on
+Kids-server - a key pair IS present there (`AKIAYK...TGPY`), but `aws sts
+get-caller-identity` using those same credentials independently fails with
+the identical `InvalidClientTokenId` error — i.e. this is a genuinely
+revoked/expired/deactivated AWS IAM access key, not an app-config bug. This
+is a real external blocker outside this job's authority to fix (no ability
+to mint new AWS keys) - flagged via Telegram this tick. Every AI-coaching
+and character-chat feature that calls `BedrockAdapter.invoke()` is affected
+system-wide, not just the two new controllers.
+
+**Seed data**: no seed data exists for any of the newly-populated-schema
+tables (`concepts`, `learning_paths`, `content_items`, etc. all report
+empty on GET). This is expected for freshly-created tables, not a new bug -
+flagged as a real backlog item (seed script or content-authoring flow) but
+out of scope for this tick's fix-verify-deploy loop.
+
+
 
 Remaining ~148 engines (see list above) deferred to subsequent ticks.
 File committed and updated each tick that touches it, not written once
