@@ -102,8 +102,8 @@ export function WorldPathMap({ domains, selectedDomainId, onSelectDomain }: Worl
                   delay: index * 0.12,
                   ease: 'easeOut',
                 }}
-                whileHover={domain.isUnlocked ? { scale: 1.06 } : undefined}
-                whileTap={domain.isUnlocked ? { scale: 0.97 } : undefined}
+                whileHover={domain.isUnlocked ? { scale: 1.06 } : {}}
+                whileTap={domain.isUnlocked ? { scale: 0.97 } : {}}
                 className={`world-path-node relative flex flex-col items-center justify-center gap-1 w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 shadow-pop transition-colors ${
                   domain.isUnlocked
                     ? isSelected
@@ -126,7 +126,7 @@ export function WorldPathMap({ domains, selectedDomainId, onSelectDomain }: Worl
                 <span className="text-xs font-semibold text-center px-2 leading-tight line-clamp-2">
                   {domain.isUnlocked ? domain.name : 'Locked'}
                 </span>
-                {domain.isUnlocked && (
+                {domain.isUnlocked ? (
                   <span
                     className={`text-[10px] font-medium ${
                       isSelected ? 'text-white/90' : 'text-gray-500'
@@ -134,7 +134,7 @@ export function WorldPathMap({ domains, selectedDomainId, onSelectDomain }: Worl
                   >
                     {domain.masteredCount}/{domain.conceptCount} ({progressPct}%)
                   </span>
-                )}
+                ) : null}
               </motion.button>
 
               {!isLast && (

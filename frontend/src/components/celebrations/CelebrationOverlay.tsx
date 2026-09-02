@@ -30,7 +30,7 @@ function useConfettiPieces(count = 42): ConfettiPiece[] {
           x: Math.cos(angle) * distance,
           y: Math.sin(angle) * distance - 40, // slight upward bias
           rotate: Math.random() * 360,
-          color: CONFETTI_COLORS[id % CONFETTI_COLORS.length] ?? CONFETTI_COLORS[0],
+          color: CONFETTI_COLORS[id % CONFETTI_COLORS.length] || '#4f46e5',
           size: 6 + Math.random() * 8,
           delay: Math.random() * 0.15,
         }
