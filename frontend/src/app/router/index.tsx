@@ -28,6 +28,19 @@ import { CharacterGalleryPage } from '@/features/characters/pages/CharacterGalle
 import { CharacterChatPage } from '@/features/characters/pages/CharacterChatPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AppShell } from '@/components/layout/AppShell'
+import { LandingPage } from '@/features/landing/pages/LandingPage'
+
+/** Branch "/" on auth state: signed-in visitors go straight to the app
+ * (their previous behavior, unchanged); first-time/signed-out visitors get
+ * the real public landing/preview experience instead of bouncing through
+ * /dashboard -> /login. Mirrors ProtectedRoute's own token check. */
+function RootRoute() {
+  const token = localStorage.getItem('accessToken')
+  if (token) {
+    return <Navigate to="/dashboard" replace />
+  }
+  return <LandingPage />
+}
 
 export function AppRouter() {
   return (
@@ -124,10 +137,12 @@ export function AppRouter() {
         <Route path="/characters/:id/chat" element={<CharacterChatPage />} />
       </Route>
 
-      {/* Default redirect — authenticated landing decision.
-          "/" and unknown paths forward to /dashboard, which is itself
-          protected and redirects unauthenticated users to /login. */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* "/" — public landing/preview for signed-out visitors (real product
+          value before the registration wall, Duolingo-pattern), straight to
+          /dashboard for anyone already signed in. Unknown paths still fall
+          back to /dashboard, which itself redirects unauthenticated users
+          to /login. */}
+      <Route path="/" element={<RootRoute />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )

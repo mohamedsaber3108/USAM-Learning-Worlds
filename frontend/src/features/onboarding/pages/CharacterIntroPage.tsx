@@ -1,6 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Compass, MessageCircle, Star } from 'lucide-react'
+import {
+  getPreferredCharacter,
+  clearPreferredCharacter,
+} from '@/features/landing/lib/characterPreference'
 
 // PLACEHOLDER NOTICE:
 // There is no illustrated character asset for "Azouz" yet. This screen uses
@@ -8,8 +12,21 @@ import { Compass, MessageCircle, Star } from 'lucide-react'
 // avatar. Swap the icon block below for a real illustration/sprite once
 // character art is produced — the seeded Character record (name: "Azouz",
 // role: GUIDE) is the source of truth this screen references by name.
+//
+// If the visitor picked a favorite character on the public landing page
+// (`/`) before registering, honor that choice here instead of silently
+// defaulting to Azouz for everyone — only Azouz is seeded/playable today
+// (see characterVisuals.ts), so we still introduce Azouz as the guide, but
+// acknowledge their pick by name so the earlier interaction wasn't thrown
+// away. The preference is cleared once consumed.
 export function CharacterIntroPage() {
   const navigate = useNavigate()
+  const preferredCharacter = getPreferredCharacter()
+
+  function handleContinue() {
+    clearPreferredCharacter()
+    navigate('/onboarding/complete')
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 p-4">
@@ -44,6 +61,20 @@ export function CharacterIntroPage() {
         </h1>
         <p className="text-primary-600 font-medium mb-6">Your Learning Guide</p>
 
+        {preferredCharacter && preferredCharacter !== 'Azouz' && (
+          <p className="text-sm text-slate-500 -mt-4 mb-6">
+            You picked <span className="font-semibold text-slate-700">{preferredCharacter}</span>{' '}
+            as your favorite earlier — great taste! Azouz is your main guide
+            to start, and {preferredCharacter} will be waiting for you in the
+            Character Universe once you're in.
+          </p>
+        )}
+        {preferredCharacter === 'Azouz' && (
+          <p className="text-sm text-slate-500 -mt-4 mb-6">
+            Nice — Azouz was your pick too!
+          </p>
+        )}
+
         <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl text-left mb-8">
           <MessageCircle className="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" />
           <p className="text-gray-700">
@@ -54,7 +85,7 @@ export function CharacterIntroPage() {
         </div>
 
         <button
-          onClick={() => navigate('/onboarding/complete')}
+          onClick={handleContinue}
           className="btn btn-primary w-full py-3 text-lg"
         >
           Nice to meet you, Azouz!
