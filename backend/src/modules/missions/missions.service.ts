@@ -5,6 +5,7 @@ import { ActivityEvaluator } from './evaluators/activity-evaluator';
 import { CognitiveLoadService } from '../adaptive/cognitive-load.service';
 import { MisconceptionService } from '../misconceptions/misconception.service';
 import { InterventionService } from '../interventions/intervention.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class MissionsService {
@@ -15,6 +16,7 @@ export class MissionsService {
     private cognitiveLoadService: CognitiveLoadService,
     private misconceptionService: MisconceptionService,
     private interventionService: InterventionService,
+    private notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -325,6 +327,13 @@ export class MissionsService {
         completedAt: new Date(),
       },
     });
+
+    // Notification Engine: real mission-count milestone trigger.
+    // Best-effort — never blocks mission completion.
+    void this.prisma.missionRun
+      .count({ where: { learnerId, status: 'COMPLETED' } })
+      .then((completedCount) => this.notificationsService.emitMissionMilestone(learnerId, completedCount))
+      .catch(() => undefined);
 
     return {
       success: true,

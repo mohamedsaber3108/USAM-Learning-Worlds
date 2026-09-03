@@ -8,9 +8,10 @@ import { AuthModule } from '../auth/auth.module';
 import { AdaptiveModule } from '../adaptive/adaptive.module';
 import { MisconceptionModule } from '../misconceptions/misconception.module';
 import { InterventionModule } from '../interventions/intervention.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [MasteryModule, AuthModule, AdaptiveModule, MisconceptionModule, InterventionModule],
+  imports: [MasteryModule, AuthModule, AdaptiveModule, MisconceptionModule, InterventionModule, NotificationsModule],
   controllers: [MissionsController, AdminMissionsController],
   providers: [MissionsService, ActivityEvaluator],
   exports: [MissionsService],
