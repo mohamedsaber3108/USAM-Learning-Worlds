@@ -152,13 +152,20 @@ export class ConversationService {
       throw new BadRequestException('Conversation is not active');
     }
 
-    // Moderate learner message
-    // const moderationResult = await this.moderation.moderateText(dto.content);
-    const moderationResult = { flagged: false, severity: "LOW" } as any;
+    // Moderate learner message — real check, not a bypassed stub.
+    // Fails closed on infra error (treated as HIGH) so a moderation-service
+    // outage never silently lets unmoderated content through.
+    let moderationResult: { flagged: boolean; severity: string; explanation?: string };
+    try {
+      const result = await this.moderation.moderateContent(dto.content, 'TEXT', learnerId);
+      moderationResult = { flagged: result.flagged, severity: result.severity, explanation: result.explanation };
+    } catch (error: any) {
+      moderationResult = { flagged: true, severity: 'HIGH', explanation: 'moderation service error' };
+    }
 
     if (moderationResult.flagged) {
       // Block conversation if severe violation
-      if (moderationResult.severity === 'HIGH') {
+      if (moderationResult.severity === 'HIGH' || moderationResult.severity === 'CRITICAL') {
         await this.updateStatus(conversationId, 'BLOCKED');
         throw new BadRequestException('Message violates content policy');
       }
