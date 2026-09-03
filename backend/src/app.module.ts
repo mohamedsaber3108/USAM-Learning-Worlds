@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -30,6 +31,9 @@ import { CreativityModule } from './modules/creativity/creativity.module';
 import { ProblemSolvingModule } from './modules/problem-solving/problem-solving.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
+import { MisconceptionModule } from './modules/misconceptions/misconception.module';
+import { ContentQaModule } from './modules/content-qa/content-qa.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -44,6 +48,7 @@ import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module
         limit: 100,
       },
     ]),
+    ScheduleModule.forRoot(),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -79,6 +84,9 @@ import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module
     ProblemSolvingModule,
     AuditModule,
     FeatureFlagsModule,
+    MisconceptionModule,
+    ContentQaModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

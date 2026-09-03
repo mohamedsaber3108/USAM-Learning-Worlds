@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../../database/prisma.service';
 import { MasteryService } from '../mastery/mastery.service';
 import { ActivityEvaluator } from './evaluators/activity-evaluator';
+import { CognitiveLoadService } from '../adaptive/cognitive-load.service';
 
 @Injectable()
 export class MissionsService {
@@ -9,6 +10,7 @@ export class MissionsService {
     private prisma: PrismaService,
     private masteryService: MasteryService,
     private activityEvaluator: ActivityEvaluator,
+    private cognitiveLoadService: CognitiveLoadService,
   ) {}
 
   /**
@@ -150,6 +152,7 @@ export class MissionsService {
     runId: string,
     activityId: string,
     response: any,
+    cognitiveLoadInput?: { hintCount?: number; timeOnTaskSeconds?: number; pauseCount?: number },
   ) {
     // Verify run ownership
     const run = await this.prisma.missionRun.findUnique({
@@ -212,6 +215,20 @@ export class MissionsService {
         feedback: evaluation.feedback,
       },
     });
+
+    // Cognitive Load Engine: best-effort fatigue/pacing signal, never
+    // blocks or fails the submission itself.
+    if (cognitiveLoadInput) {
+      void this.cognitiveLoadService.recordSignal({
+        learnerId,
+        activityId,
+        missionRunId: runId,
+        attemptId: attempt.id,
+        hintCount: cognitiveLoadInput.hintCount,
+        timeOnTaskSeconds: cognitiveLoadInput.timeOnTaskSeconds,
+        pauseCount: cognitiveLoadInput.pauseCount,
+      });
+    }
 
     // DIAGNOSTIC activities inform placement/starting point but should not
     // themselves move a learner's mastery state — they establish where the

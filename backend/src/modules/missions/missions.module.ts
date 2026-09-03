@@ -5,9 +5,10 @@ import { MissionsService } from './missions.service';
 import { ActivityEvaluator } from './evaluators/activity-evaluator';
 import { MasteryModule } from '../mastery/mastery.module';
 import { AuthModule } from '../auth/auth.module';
+import { AdaptiveModule } from '../adaptive/adaptive.module';
 
 @Module({
-  imports: [MasteryModule, AuthModule],
+  imports: [MasteryModule, AuthModule, AdaptiveModule],
   controllers: [MissionsController, AdminMissionsController],
   providers: [MissionsService, ActivityEvaluator],
   exports: [MissionsService],

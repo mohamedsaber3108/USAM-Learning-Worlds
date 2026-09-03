@@ -42,7 +42,7 @@ export class MissionsController {
   async submitActivity(
     @CurrentUser() user: any,
     @Param('runId') runId: string,
-    @Body() dto: { activityId: string; response: any },
+    @Body() dto: { activityId: string; response: any; hintCount?: number; timeOnTaskSeconds?: number; pauseCount?: number },
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
@@ -54,6 +54,7 @@ export class MissionsController {
       runId,
       dto.activityId,
       dto.response,
+      { hintCount: dto.hintCount, timeOnTaskSeconds: dto.timeOnTaskSeconds, pauseCount: dto.pauseCount },
     );
   }
 
