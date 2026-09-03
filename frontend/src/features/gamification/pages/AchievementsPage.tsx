@@ -14,10 +14,10 @@ import {
   Lock,
 } from 'lucide-react'
 import { gamificationApi } from '@/lib/api/endpoints'
-import { EmptyState } from '@/components/common/CharacterState'
+import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 
 export function AchievementsPage() {
-  const { data: achievements, isLoading } = useQuery({
+  const { data: achievements, isLoading, isError, refetch } = useQuery({
     queryKey: ['achievements'],
     queryFn: () => gamificationApi.getAchievements().then(res => res.data),
   })
@@ -60,7 +60,14 @@ export function AchievementsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isLoading ? (
+        {isError ? (
+          <ErrorState
+            character="Azouz"
+            title="Couldn't load your achievements"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetch()}
+          />
+        ) : isLoading ? (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
               {Array.from({ length: 3 }).map((_, i) => (
