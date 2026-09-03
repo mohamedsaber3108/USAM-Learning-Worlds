@@ -13,6 +13,11 @@ export class MissionsController {
     return this.missionsService.getMissions();
   }
 
+  @Get('activities/by-purpose/:purpose')
+  async getActivitiesByPurpose(@Param('purpose') purpose: string) {
+    return this.missionsService.getActivitiesByAssessmentPurpose(purpose);
+  }
+
   @Get(':id')
   async getMission(@Param('id') id: string) {
     return this.missionsService.getMission(id);

@@ -180,6 +180,20 @@ export class MissionsService {
       throw new NotFoundException('Activity not found');
     }
 
+    // SUMMATIVE activities are a final graded check — once a learner has a
+    // recorded attempt for this run+activity, they cannot resubmit and
+    // overwrite it (closes the "no diagnostic/formative/summative typing"
+    // gap: summative now behaves differently from formative, not just a
+    // label).
+    if (activity.assessmentPurpose === 'SUMMATIVE') {
+      const existingSummativeAttempt = await this.prisma.activityAttempt.findFirst({
+        where: { runId, activityId },
+      });
+      if (existingSummativeAttempt) {
+        throw new Error('This is a summative assessment — it has already been submitted and cannot be retaken in this run.');
+      }
+    }
+
     // Evaluate response
     const evaluation = this.activityEvaluator.evaluate(
       activity.type,
@@ -199,17 +213,32 @@ export class MissionsService {
       },
     });
 
-    // Record evidence for mastery tracking
-    const evidenceType = this.activityEvaluator.getEvidenceType(activity.type);
-    await this.masteryService.recordEvidence(
-      learnerId,
-      activity.objective.competencyId,
-      evidenceType as any,
-      evaluation.correct,
-      evaluation.score,
-      { activityId, attemptId: attempt.id },
-      attempt.id,
-    );
+    // DIAGNOSTIC activities inform placement/starting point but should not
+    // themselves move a learner's mastery state — they establish where the
+    // learner already is, not what they just learned. FORMATIVE and
+    // SUMMATIVE both count as real evidence, but SUMMATIVE is weighted
+    // higher since it's a final check of the objective.
+    if (activity.assessmentPurpose !== 'DIAGNOSTIC') {
+      const evidenceType = this.activityEvaluator.getEvidenceType(activity.type);
+      const weightedScore =
+        activity.assessmentPurpose === 'SUMMATIVE' && evaluation.score != null
+          ? Math.min(100, evaluation.score * 1.15)
+          : evaluation.score;
+
+      await this.masteryService.recordEvidence(
+        learnerId,
+        activity.objective.competencyId,
+        evidenceType as any,
+        evaluation.correct,
+        weightedScore,
+        {
+          activityId,
+          attemptId: attempt.id,
+          assessmentPurpose: activity.assessmentPurpose,
+        },
+        attempt.id,
+      );
+    }
 
     return {
       attempt,
@@ -218,7 +247,9 @@ export class MissionsService {
         id: activity.id,
         title: activity.title,
         type: activity.type,
+        assessmentPurpose: activity.assessmentPurpose,
       },
+      diagnosticOnly: activity.assessmentPurpose === 'DIAGNOSTIC',
     };
   }
 
@@ -251,6 +282,28 @@ export class MissionsService {
       success: true,
       message: 'Mission completed!',
     };
+  }
+
+  /**
+   * Browse activities filtered by assessment purpose (diagnostic /
+   * formative / summative) — closes the Assessment Engine gap: there was
+   * no way to distinguish placement checks from graded final checks.
+   */
+  async getActivitiesByAssessmentPurpose(purpose: string) {
+    const normalized = purpose.toUpperCase();
+    if (!['DIAGNOSTIC', 'FORMATIVE', 'SUMMATIVE'].includes(normalized)) {
+      throw new Error(`Invalid assessment purpose: ${purpose}`);
+    }
+
+    return this.prisma.activity.findMany({
+      where: { assessmentPurpose: normalized as any, isActive: true },
+      include: {
+        objective: {
+          include: { competency: { select: { id: true, name: true } } },
+        },
+      },
+      orderBy: { order: 'asc' },
+    });
   }
 
   /**

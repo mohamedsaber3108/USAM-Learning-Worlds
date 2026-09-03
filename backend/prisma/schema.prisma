@@ -229,17 +229,18 @@ model LearningObjective {
 }
 
 model Activity {
-  id          String         @id @default(uuid())
-  objectiveId String
-  type        ActivityType
-  title       String
-  description String?
-  content     Json
-  difficulty  DifficultyLevel @default(MEDIUM)
-  order       Int            @default(0)
-  isActive    Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id                String         @id @default(uuid())
+  objectiveId       String
+  type              ActivityType
+  title             String
+  description       String?
+  content           Json
+  difficulty        DifficultyLevel @default(MEDIUM)
+  assessmentPurpose AssessmentPurpose @default(FORMATIVE)
+  order             Int            @default(0)
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   objective        LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
   attempts         ActivityAttempt[]
@@ -247,7 +248,14 @@ model Activity {
 
   @@index([objectiveId])
   @@index([type])
+  @@index([assessmentPurpose])
   @@map("activities")
+}
+
+enum AssessmentPurpose {
+  DIAGNOSTIC
+  FORMATIVE
+  SUMMATIVE
 }
 
 enum ActivityType {
