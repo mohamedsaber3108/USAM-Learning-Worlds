@@ -5,11 +5,12 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Trophy, Medal, Award, Flame } from 'lucide-react'
 import { gamificationApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
+import { ErrorState } from '@/components/common/CharacterState'
 
 export function LeaderboardPage() {
   const [scope, setScope] = useState<'global' | 'friends'>('global')
 
-  const { data: leaderboard, isLoading } = useQuery({
+  const { data: leaderboard, isLoading, isError, refetch } = useQuery({
     queryKey: ['leaderboard', scope],
     queryFn: () =>
       gamificationApi
@@ -119,7 +120,14 @@ export function LeaderboardPage() {
         )}
 
         {/* Leaderboard */}
-        {isLoading ? (
+        {isError ? (
+          <ErrorState
+            character="Azouz"
+            title="Couldn't load the leaderboard"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetch()}
+          />
+        ) : isLoading ? (
           <div className="card">
             <div className="space-y-2">
               {Array.from({ length: 6 }).map((_, i) => (

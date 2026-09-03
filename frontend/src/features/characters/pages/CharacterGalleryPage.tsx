@@ -4,7 +4,7 @@ import { MessageCircle } from 'lucide-react'
 import { charactersApi, translationsApi, type CharacterSummary } from '@/lib/api/endpoints'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { CHARACTER_VISUALS, getCharacterVisual } from '../lib/characterVisuals'
-import { LoadingState } from '@/components/common/CharacterState'
+import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 
 /**
  * Fetches the live human-approved Egyptian-Arabic personality blurb for one
@@ -116,7 +116,7 @@ export function CharacterGalleryPage() {
   // Prefer the real backend list once it exists; fall back to the seeded
   // single-character roster + a static unlock-hint map otherwise. See the
   // FOLLOW-UP note on charactersApi in lib/api/endpoints.ts.
-  const { data: unlockedData, isLoading: unlockedLoading } = useQuery({
+  const { data: unlockedData, isLoading: unlockedLoading, isError: unlockedIsError, refetch: refetchUnlocked } = useQuery({
     queryKey: ['characters', 'unlocked'],
     queryFn: () => charactersApi.getUnlocked().then((r) => r.data),
     retry: false,
@@ -195,6 +195,19 @@ export function CharacterGalleryPage() {
       </header>
 
       {loading && <LoadingState character="Codey" message="Codey is loading your character crew..." />}
+
+      {/* unlockedData failing (with no listData/azouz fallback yet resolved)
+          means the roster below is running purely on FALLBACK_ROSTER static
+          data with no real unlock state — flag it with a retry instead of
+          silently pretending everything is fine. */}
+      {unlockedIsError && !listData && !azouz && !loading && (
+        <ErrorState
+          character="Azouz"
+          title="Couldn't load your unlocked characters"
+          message="No worries — this happens sometimes. Let's give it another try."
+          onRetry={() => refetchUnlocked()}
+        />
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {roster.map((entry) => (
