@@ -18,6 +18,11 @@ export class MissionsController {
     return this.missionsService.getActivitiesByAssessmentPurpose(purpose);
   }
 
+  @Get('activities/by-bloom-level/:level')
+  async getActivitiesByBloomLevel(@Param('level') level: string) {
+    return this.missionsService.getActivitiesByBloomLevel(level);
+  }
+
   @Get(':id')
   async getMission(@Param('id') id: string) {
     return this.missionsService.getMission(id);

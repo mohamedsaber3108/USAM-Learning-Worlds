@@ -364,6 +364,31 @@ export class MissionsService {
   }
 
   /**
+   * Bloom Engine v1 (manual-tagging slice — see gap matrix "Bloom Engine"
+   * row). Filters activities by the manually-tagged `bloomLevel` column.
+   * This is the real, small, honest read half that the schema comment
+   * next to `Activity.bloomLevel` promised but the API never shipped
+   * until this pass — data existed, this endpoint did not.
+   */
+  async getActivitiesByBloomLevel(level: string) {
+    const normalized = level.toUpperCase();
+    const validLevels = ['REMEMBER', 'UNDERSTAND', 'APPLY', 'ANALYZE', 'EVALUATE', 'CREATE'];
+    if (!validLevels.includes(normalized)) {
+      throw new Error(`Invalid Bloom level: ${level}`);
+    }
+
+    return this.prisma.activity.findMany({
+      where: { bloomLevel: normalized as any, isActive: true },
+      include: {
+        objective: {
+          include: { competency: { select: { id: true, name: true } } },
+        },
+      },
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  /**
    * Get learner's mission history
    */
   async getMissionHistory(learnerId: string) {
