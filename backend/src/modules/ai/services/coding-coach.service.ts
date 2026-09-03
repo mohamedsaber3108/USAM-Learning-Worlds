@@ -197,6 +197,31 @@ ${this.hallucinationControl.getPromptGuardrail()}`;
       temperature: 0.7,
     });
 
+    // v1 low-confidence-answer escalation: if the AI's own explanation
+    // reads as hedged/uncertain on what is inherently a factual/
+    // educational question ("explain this code"), don't hand the shaky
+    // explanation to the child - swap in the safe teacher-escalation
+    // hedge and persist a real SafetyEscalation record for review. See
+    // HallucinationControlService / USAM_KIDS_ENGINE_GAP_MATRIX.md
+    // ("AI Hallucination Control").
+    const lowConfidence = await this.hallucinationControl.flagLowConfidenceIfNeeded({
+      learnerId: request.learnerId,
+      question: `Explain this ${request.language} code${request.specificLine ? ` (line ${request.specificLine})` : ''}`,
+      answerText: response.content,
+      source: 'coding-coach.explainCode',
+    });
+    if (lowConfidence) {
+      return {
+        code: request.code,
+        explanation: lowConfidence.hedge,
+        keyConceptsintroduced: [],
+        analogies: [],
+        groundedIn: groundedInFromContext(context as any),
+        lowConfidenceHedge: true,
+        matchedHedgingPhrases: lowConfidence.matchedPhrases,
+      };
+    }
+
     return {
       code: request.code,
       explanation: response.content,
