@@ -19,6 +19,8 @@ import {
   Palette,
   Sparkles,
   ShoppingBag,
+  Zap,
+  FolderKanban,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 
@@ -69,7 +71,7 @@ const primaryNav: NavItem[] = [
     icon: BookOpen,
     to: '/learn',
     match: (p) =>
-      p.startsWith('/learn') || p.startsWith('/english') || p.startsWith('/projects'),
+      p.startsWith('/learn') || p.startsWith('/english') || p.startsWith('/projects') || p.startsWith('/cross-curricular'),
   },
   {
     key: 'missions',
@@ -103,6 +105,8 @@ interface MoreItem {
 
 const moreItems: MoreItem[] = [
   { label: 'Shop', to: '/shop', icon: ShoppingBag, description: 'Spend XP on borders, badges, titles & themes' },
+  { label: 'My Journey', to: '/insights', icon: Zap, description: 'Your activity timeline, patterns & stats' },
+  { label: 'My Portfolio', to: '/portfolio', icon: FolderKanban, description: 'Your best showcased projects, all in one place' },
   { label: 'Achievements', to: '/achievements', icon: Trophy, description: 'Badges & milestones' },
   { label: 'Leaderboard', to: '/leaderboard', icon: BarChart3, description: 'See how you rank' },
   { label: 'Progress', to: '/progress', icon: TrendingUp, description: 'Your mastery over time' },
@@ -135,7 +139,7 @@ export function AppShell() {
 
   const isMoreActive = useMemo(
     () =>
-      ['/achievements', '/leaderboard', '/progress', '/voice-chat', '/characters', '/shop'].some((p) =>
+      ['/achievements', '/leaderboard', '/progress', '/voice-chat', '/characters', '/shop', '/insights', '/portfolio'].some((p) =>
         location.pathname.startsWith(p)
       ) || location.pathname.startsWith('/parents/children'),
     [location.pathname]

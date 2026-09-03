@@ -46,6 +46,15 @@ export const cosmeticsApi = {
     apiClient.post(`/gamification/cosmetics/${id}/equip`),
 }
 
+// ==================== Streak Freeze (coin-spending shop) ====================
+export const streakFreezeApi = {
+  getStatus: () =>
+    apiClient.get('/gamification/streak-freeze/status'),
+
+  purchase: () =>
+    apiClient.post('/gamification/streak-freeze/purchase'),
+}
+
 // ==================== Mastery ====================
 export const masteryApi = {
   getOverview: () =>
@@ -260,6 +269,51 @@ export const learningApi = {
     apiClient.get('/learning/my-paths'),
 }
 
+// ==================== Learning Events (Analytics pipeline) ====================
+// Real response shapes read from backend/src/modules/learning/services/
+// learning-event.service.ts + learning.controller.ts — NOT guessed:
+//   GET /learning/events/stats    -> EventStats[]   { eventType, count, lastOccurred }
+//   GET /learning/events/recent   -> LearningEvent[] (Prisma rows: id, learnerId, type,
+//                                     entityType, entityId, data, sessionId, createdAt)
+//   GET /learning/events/patterns -> { period: { days, since }, activeDays, consistency,
+//                                     avgActivitiesPerDay, peakLearningHour, hourlyDistribution }
+export interface LearningEventStat {
+  eventType: string
+  count: number
+  lastOccurred: string
+}
+
+export interface LearningEventRow {
+  id: string
+  learnerId: string
+  type: string
+  entityType: string | null
+  entityId: string | null
+  data: any
+  sessionId: string | null
+  createdAt: string
+}
+
+export interface LearningPatterns {
+  period: { days: number; since: string }
+  activeDays: number
+  consistency: number
+  avgActivitiesPerDay: number
+  peakLearningHour: number
+  hourlyDistribution: number[]
+}
+
+export const learningEventsApi = {
+  getStats: (since?: string) =>
+    apiClient.get<LearningEventStat[]>('/learning/events/stats', { params: { since } }),
+
+  getRecent: (hours: number = 72) =>
+    apiClient.get<LearningEventRow[]>('/learning/events/recent', { params: { hours } }),
+
+  getPatterns: (days: number = 30) =>
+    apiClient.get<LearningPatterns>('/learning/events/patterns', { params: { days } }),
+}
+
 // ==================== English (Strands + Coach) ====================
 export interface EnglishStrand {
   id: string
@@ -405,4 +459,34 @@ export const codingSandboxApi = {
 
   submitResult: (submission: CodingSandboxSubmission) =>
     apiClient.post('/coding-sandbox/submissions', submission),
+}
+
+// ==================== Cross-Curricular Concepts ====================
+// Real data backed by three Prisma models seeded with age-banded content
+// (backend/prisma/seeds/seed-cross-curricular.ts):
+//   - AILiteracyConcept        (18 rows, ai_literacy_concepts)
+//   - EntrepreneurshipConcept  (15 rows, entrepreneurship_concepts)
+//   - FinancialLiteracyConcept (19 rows, financial_literacy_concepts)
+// Served by backend/src/modules/cross-curricular/cross-curricular.controller.ts,
+// mounted at `/api/cross-curricular`.
+export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy'
+
+export interface CrossCurricularConcept {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  category: string
+  ageAppropriate: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
+  order: number
+  isActive: boolean
+  createdAt: string
+}
+
+export const crossCurricularApi = {
+  list: (category: CrossCurricularCategory, params?: { ageBand?: string }) =>
+    apiClient.get<CrossCurricularConcept[]>(`/cross-curricular/${category}`, { params }),
+
+  getConcept: (category: CrossCurricularCategory, slug: string) =>
+    apiClient.get<CrossCurricularConcept>(`/cross-curricular/${category}/${slug}`),
 }

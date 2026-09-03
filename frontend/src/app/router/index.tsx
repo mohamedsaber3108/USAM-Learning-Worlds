@@ -11,6 +11,7 @@ import { MissionDetailPage } from '@/features/missions/pages/MissionDetailPage'
 import { MissionPlayerPage } from '@/features/missions/pages/MissionPlayerPage'
 import { MissionCompletePage } from '@/features/missions/pages/MissionCompletePage'
 import { ProjectsPage } from '@/features/projects/pages/ProjectsPage'
+import { MyPortfolioPage } from '@/features/projects/pages/MyPortfolioPage'
 import { CommunityPage } from '@/features/community/pages/CommunityPage'
 import { AchievementsPage } from '@/features/gamification/pages/AchievementsPage'
 import { LeaderboardPage } from '@/features/gamification/pages/LeaderboardPage'
@@ -27,6 +28,9 @@ import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
 import { CharacterGalleryPage } from '@/features/characters/pages/CharacterGalleryPage'
 import { CharacterChatPage } from '@/features/characters/pages/CharacterChatPage'
 import { CosmeticShopPage } from '@/features/cosmetics/pages/CosmeticShopPage'
+import { LearningInsightsPage } from '@/features/analytics/pages/LearningInsightsPage'
+import { CrossCurricularPage } from '@/features/cross-curricular/pages/CrossCurricularPage'
+import { CrossCurricularConceptDetailPage } from '@/features/cross-curricular/pages/CrossCurricularConceptDetailPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AppShell } from '@/components/layout/AppShell'
 import { LandingPage } from '@/features/landing/pages/LandingPage'
@@ -113,6 +117,7 @@ export function AppRouter() {
 
         {/* Projects */}
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/portfolio" element={<MyPortfolioPage />} />
 
         {/* Community */}
         <Route path="/community" element={<CommunityPage />} />
@@ -139,6 +144,15 @@ export function AppRouter() {
 
         {/* Cosmetic Shop — real XP-spending economy (borders/badges/titles/themes) */}
         <Route path="/shop" element={<CosmeticShopPage />} />
+
+        {/* My Journey — learner-facing view of the /learning/events analytics pipeline */}
+        <Route path="/insights" element={<LearningInsightsPage />} />
+
+        {/* Cross-Curricular (AI Literacy, Entrepreneurship, Financial Literacy) —
+            real seeded AILiteracyConcept/EntrepreneurshipConcept/FinancialLiteracyConcept
+            content, one shared parameterized page per category. */}
+        <Route path="/cross-curricular/:category" element={<CrossCurricularPage />} />
+        <Route path="/cross-curricular/:category/:slug" element={<CrossCurricularConceptDetailPage />} />
       </Route>
 
       {/* "/" — public landing/preview for signed-out visitors (real product
