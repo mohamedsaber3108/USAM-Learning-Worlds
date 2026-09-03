@@ -77,6 +77,12 @@ describe('Critical-path smoke tests (real app, real DB)', () => {
     const email = `smoke-test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
     const password = 'SmokeTestPassword123!';
 
+    // displayName is @unique in the schema and defaults to firstName when
+    // not set explicitly, so give each test run its own value (and its
+    // own value distinct from the missions test below) to avoid a
+    // spurious unique-constraint 500 on re-run/parallel runs.
+    const displayName = `SmokeTest-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     const registerRes = await request(app.getHttpServer())
       .post('/api/auth/register')
       .send({
@@ -85,6 +91,7 @@ describe('Critical-path smoke tests (real app, real DB)', () => {
         role: 'LEARNER',
         firstName: 'Smoke',
         lastName: 'Test',
+        displayName,
         ageBand: 'AGE_10_11',
       });
 
@@ -124,6 +131,7 @@ describe('Critical-path smoke tests (real app, real DB)', () => {
         role: 'LEARNER',
         firstName: 'Smoke',
         lastName: 'Missions',
+        displayName: `SmokeMissions-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         ageBand: 'AGE_10_11',
       });
 

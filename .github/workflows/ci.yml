@@ -107,7 +107,7 @@ jobs:
         run: npx prisma db push --skip-generate --accept-data-loss
 
       - name: Critical-path smoke tests
-        run: npm test -- --config test/smoke/jest-smoke.json
+        run: npm test -- --config test/smoke/jest-smoke.json --forceExit
 
   frontend:
     name: Frontend (lint, typecheck, build)
