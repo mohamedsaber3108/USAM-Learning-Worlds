@@ -39,6 +39,7 @@ import { InterventionModule } from './modules/interventions/intervention.module'
 import { AssessmentQualityModule } from './modules/assessment-quality/assessment-quality.module';
 import { SearchModule } from './modules/search/search.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { DifficultyCalibrationModule } from './modules/difficulty-calibration/difficulty-calibration.module';
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     AssessmentQualityModule,
     SearchModule,
     AnalyticsModule,
+    DifficultyCalibrationModule,
   ],
   controllers: [AppController],
   providers: [

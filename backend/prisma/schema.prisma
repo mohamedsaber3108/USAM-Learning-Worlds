@@ -274,6 +274,7 @@ model Activity {
   cognitiveLoadSignals  CognitiveLoadSignal[]
   misconceptionPatterns MisconceptionPattern[]
   qualityFlags          AssessmentQualityFlag[]
+  difficultyCalibrationFlags DifficultyCalibrationFlag[]
 
   @@index([objectiveId])
   @@index([type])
@@ -2125,6 +2126,32 @@ model AssessmentQualityFlag {
   @@index([flagType])
   @@index([resolvedAt])
   @@map("assessment_quality_flags")
+}
+
+// ==================== Difficulty Calibration Engine v1 ====================
+// Distinct from Assessment Quality (static item-structure review) and
+// Content QA (content-completeness sweep) — this is the one engine that
+// reads real ActivityAttempt outcomes and flags where the AUTHORED
+// DifficultyLevel disagrees with the EMPIRICAL success rate real
+// learners achieve. See difficulty-calibration.service.ts for the scan
+// logic that writes rows here.
+model DifficultyCalibrationFlag {
+  id                   String    @id @default(uuid())
+  activityId           String
+  flagType             String
+  authoredDifficulty   String
+  empiricalSuccessRate Float
+  attemptCount         Int
+  detail               String?
+  detectedAt           DateTime  @default(now())
+  resolvedAt           DateTime?
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([activityId])
+  @@index([flagType])
+  @@index([resolvedAt])
+  @@map("difficulty_calibration_flags")
 }
 
 // ==================== Misconception Engine v1 ====================
