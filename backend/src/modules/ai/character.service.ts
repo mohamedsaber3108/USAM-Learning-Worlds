@@ -320,6 +320,12 @@ export class CharacterService {
       situation?: string;
     },
   ): Promise<CharacterResponse> {
+    // Fetch the character early (cheap lookup) so we have its name/identity
+    // available for BOTH the safety-layer branch below and the Bedrock
+    // catch block further down - both need to pick a personality-matched
+    // fallback line rather than a generic one.
+    const character = await this.getCharacter(characterId);
+
     // --- Character Safety Policy layer: pre-check the learner's input
     // BEFORE spending a generation call on it. See
     // services/character-safety.service.ts for the 5-state model; this
@@ -332,6 +338,33 @@ export class CharacterService {
     );
 
     if (inputSafety.state === 'blocked' || inputSafety.state === 'escalation_required') {
+      // Distinguish a REAL safety verdict (actual unsafe content) from an
+      // underlying infrastructure failure inside the moderation pipeline
+      // itself (ModerationService also calls Bedrock, and fails CLOSED
+      // with a generic "talk to a trusted adult" message on any error -
+      // including the known AWS-credential outage). A learner tapping a
+      // character during that outage should still get THIS character's
+      // own charming fallback line, not a scary generic safety message
+      // for content that was never actually evaluated.
+      const isInfraFailure = inputSafety.reasons.some((r) =>
+        r.toLowerCase().includes('moderation service error'),
+      );
+
+      if (isInfraFailure) {
+        const fallbackMessage = pickFallbackLine(character.name);
+        this.logger.error(
+          `Safety/moderation pipeline errored (likely Bedrock outage) for character ${character.name} (${characterId}), learner ${learnerId}: ${inputSafety.reasons.join('; ')}`,
+        );
+        await this.logInteraction(characterId, learnerId, input, fallbackMessage, context);
+        return {
+          message: fallbackMessage,
+          mood: 'neutral',
+          suggestedActions: ['BROWSE_MISSIONS'],
+          metadata: { fallbackReason: 'ai_provider_error' },
+          isFallback: true,
+        };
+      }
+
       const fallback =
         inputSafety.state === 'blocked' ? SAFETY_FALLBACK_BLOCKED : SAFETY_FALLBACK_ESCALATION;
       return {
@@ -342,9 +375,9 @@ export class CharacterService {
       };
     }
 
-    // Get character and learner context
-    const [character, learnerCtx, characterState] = await Promise.all([
-      this.getCharacter(characterId),
+    // Get learner context and character state (character itself was
+    // already fetched above, before the safety check).
+    const [learnerCtx, characterState] = await Promise.all([
       this.learnerContext.buildContext(learnerId),
       this.getCharacterState(characterId, learnerId),
     ]);
