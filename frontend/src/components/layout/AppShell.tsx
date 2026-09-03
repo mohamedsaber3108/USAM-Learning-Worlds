@@ -24,6 +24,7 @@ import {
   FolderKanban,
   Settings,
   FlaskConical,
+  ShieldCheck,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { LanguageToggle } from './LanguageToggle'
@@ -405,6 +406,19 @@ export function AppShell() {
                       <div>
                         <p className="font-medium text-slate-700 text-sm">Admin: Experiments</p>
                         {isDetailedDensity && <p className="text-xs text-slate-400">A/B experiments &amp; variants</p>}
+                      </div>
+                    </Link>
+                    <Link
+                      to="/admin/safety-policies"
+                      onClick={() => setMoreOpen(false)}
+                      className="quick-action !items-start ltr:!text-left rtl:!text-right"
+                    >
+                      <div className="icon-chip bg-slate-100 text-slate-600">
+                        <ShieldCheck className="w-5 h-5" strokeWidth={2} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">Admin: Safety Policies</p>
+                        {isDetailedDensity && <p className="text-xs text-slate-400">Per-age-band policy versions</p>}
                       </div>
                     </Link>
                   </>
