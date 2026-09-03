@@ -34,6 +34,7 @@ import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module
 import { MisconceptionModule } from './modules/misconceptions/misconception.module';
 import { ContentQaModule } from './modules/content-qa/content-qa.module';
 import { InterventionModule } from './modules/interventions/intervention.module';
+import { AssessmentQualityModule } from './modules/assessment-quality/assessment-quality.module';
 import { SearchModule } from './modules/search/search.module';
 
 @Module({
@@ -88,6 +89,7 @@ import { SearchModule } from './modules/search/search.module';
     MisconceptionModule,
     ContentQaModule,
     InterventionModule,
+    AssessmentQualityModule,
     SearchModule,
   ],
   controllers: [AppController],

@@ -271,6 +271,7 @@ model Activity {
   generatedFromTemplate QuestionTemplate?      @relation("GeneratedFromTemplate", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
   cognitiveLoadSignals  CognitiveLoadSignal[]
   misconceptionPatterns MisconceptionPattern[]
+  qualityFlags          AssessmentQualityFlag[]
 
   @@index([objectiveId])
   @@index([type])
@@ -1967,6 +1968,26 @@ model ContentQAFlag {
   @@index([resolvedAt])
   @@index([severity])
   @@map("content_qa_flags")
+}
+
+// ==================== Assessment Quality Engine v1 ====================
+// Auto-review of question ITEM structural quality (broken/unwinnable
+// SELECT items, degenerate MATCH/SEQUENCE items) — distinct from
+// Content QA's general completeness sweep and the human Rubric system.
+model AssessmentQualityFlag {
+  id         String    @id @default(uuid())
+  activityId String
+  flagType   String
+  detail     String?
+  detectedAt DateTime  @default(now())
+  resolvedAt DateTime?
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([activityId])
+  @@index([flagType])
+  @@index([resolvedAt])
+  @@map("assessment_quality_flags")
 }
 
 // ==================== Misconception Engine v1 ====================
