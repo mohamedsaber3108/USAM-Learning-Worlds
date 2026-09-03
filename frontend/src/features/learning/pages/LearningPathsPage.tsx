@@ -69,7 +69,7 @@ export function LearningPathsPage() {
               <Link
                 key={path.id}
                 to={`/learn/paths/${path.id}`}
-                className="card hover:shadow-lg transition-shadow"
+                className="card hover:shadow-soft-hover transition-shadow"
               >
                 <h3 className="font-semibold text-lg text-gray-900 mb-1">{path.name}</h3>
                 <p className="text-sm text-gray-600 line-clamp-2 mb-3">{path.description}</p>

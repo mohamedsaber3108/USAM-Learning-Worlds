@@ -338,7 +338,7 @@ function ConceptCard({ concept }: { concept: Concept; assumedUnlocked: boolean }
   return (
     <Link
       to={`/learn/concepts/${concept.id}`}
-      className={`card hover:shadow-lg transition-shadow relative ${
+      className={`card hover:shadow-soft-hover transition-shadow relative ${
         !unlocked ? 'opacity-70' : ''
       }`}
     >
