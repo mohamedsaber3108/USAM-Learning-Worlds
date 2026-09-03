@@ -18,6 +18,7 @@ import { ParentsModule } from './modules/parents/parents.module';
 import { LearningModule } from './modules/learning/learning.module';
 import { CodingSandboxModule } from './modules/coding-sandbox/coding-sandbox.module';
 import { VoiceModule } from './modules/voice/voice.module';
+import { CrossCurricularModule } from './modules/cross-curricular/cross-curricular.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { VoiceModule } from './modules/voice/voice.module';
     LearningModule,
     CodingSandboxModule,
     VoiceModule,
+    CrossCurricularModule,
   ],
   controllers: [AppController],
   providers: [

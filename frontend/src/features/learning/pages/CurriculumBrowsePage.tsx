@@ -166,6 +166,26 @@ export function CurriculumBrowsePage() {
         </div>
       </header>
 
+      {/* Cross-Curricular quick links — real seeded AILiteracyConcept /
+          EntrepreneurshipConcept / FinancialLiteracyConcept content,
+          surfaced from the main curriculum browse page. */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="card mb-2">
+          <h2 className="text-lg font-heading font-semibold mb-3">Cross-Curricular</h2>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/cross-curricular/ai-literacy" className="btn bg-violet-600 text-white hover:bg-violet-700 shadow-none">
+              🤖 AI Literacy
+            </Link>
+            <Link to="/cross-curricular/entrepreneurship" className="btn bg-amber-600 text-white hover:bg-amber-700 shadow-none">
+              💡 Entrepreneurship
+            </Link>
+            <Link to="/cross-curricular/financial-literacy" className="btn bg-emerald-600 text-white hover:bg-emerald-700 shadow-none">
+              💰 Financial Literacy
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* World path domain navigation - replaces the flat icon-tile grid */}
