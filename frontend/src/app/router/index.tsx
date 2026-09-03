@@ -43,6 +43,7 @@ import { AdminMissionsPage } from '@/features/admin/pages/AdminMissionsPage'
 import { AdminFeatureFlagsPage } from '@/features/admin/pages/AdminFeatureFlagsPage'
 import { AdminQuestionTemplatesPage } from '@/features/admin/pages/AdminQuestionTemplatesPage'
 import { AdminAnalyticsPage } from '@/features/admin/pages/AdminAnalyticsPage'
+import { AdminAuditLogPage } from '@/features/admin/pages/AdminAuditLogPage'
 import { LoadingState } from '@/components/common/CharacterState'
 
 /** Route-level code splitting for the heaviest pages in the bundle.
@@ -275,6 +276,14 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <AdminAnalyticsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/audit-log"
+          element={
+            <AdminRoute>
+              <AdminAuditLogPage />
             </AdminRoute>
           }
         />
