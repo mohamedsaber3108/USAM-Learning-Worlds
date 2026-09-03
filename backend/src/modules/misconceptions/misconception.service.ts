@@ -129,6 +129,29 @@ export class MisconceptionService {
     return this.listOrdered({ activityId });
   }
 
+  /**
+   * Platform-wide top misconceptions, most frequent first, regardless of
+   * which question/activity they belong to — the admin overview surface
+   * (no scope filter). Includes the question/activity title so the admin
+   * doesn't have to cross-reference raw ids.
+   */
+  async listTopOverall(take = 50) {
+    const patterns = await this.prisma.misconceptionPattern.findMany({
+      orderBy: [{ frequencyCount: 'desc' }, { lastSeenAt: 'desc' }],
+      take,
+      include: {
+        questionTemplate: { select: { id: true, stem: true } },
+        activity: { select: { id: true, title: true } },
+      },
+    });
+
+    return patterns.map((p) => ({
+      ...p,
+      isConfirmedRecurring:
+        !p.isLabeled && p.frequencyCount >= MisconceptionService.RECURRENCE_THRESHOLD,
+    }));
+  }
+
   private async listOrdered(where: {
     questionTemplateId?: string;
     activityId?: string;

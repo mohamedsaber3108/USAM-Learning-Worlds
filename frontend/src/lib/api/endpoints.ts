@@ -974,6 +974,33 @@ export const interventionsApi = {
     apiClient.patch<InterventionRecommendation>(`/admin/interventions/${id}/resolve`),
 }
 
+// Misconception Engine v1 — admin overview surface over MisconceptionPattern
+// rows, created reactively by MisconceptionService.recordWrongAnswer() right
+// after a wrong-answer evaluation. Shows the most frequent wrong-answer
+// patterns platform-wide so a curriculum admin can see what learners
+// actually get wrong. See backend/src/modules/misconceptions/.
+export interface MisconceptionPattern {
+  id: string
+  questionTemplateId: string | null
+  activityId: string | null
+  wrongAnswerValue: string
+  frequencyCount: number
+  description: string | null
+  isLabeled: boolean
+  isConfirmedRecurring: boolean
+  firstSeenAt: string
+  lastSeenAt: string
+  questionTemplate?: { id: string; stem?: string }
+  activity?: { id: string; title?: string }
+}
+
+export const misconceptionsApi = {
+  listTop: (take?: number) =>
+    apiClient.get<MisconceptionPattern[]>('/admin/misconceptions', {
+      params: take ? { take } : undefined,
+    }),
+}
+
 // Safety Escalation Queue — staff (MODERATOR/ADMIN) surface over
 // SafetyEscalation, the persisted record created whenever
 // CharacterSafetyService.evaluateSafety() resolves to
