@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { seedCharacterUniverse } from './seeds/seed-character-universe';
 import { seedCosmetics } from './seeds/seed-cosmetics';
+import { seedReflectionPrompts } from './seeds/seed-reflection-prompts';
 
 const prisma = new PrismaClient();
 
@@ -160,6 +161,12 @@ async function main() {
   // Create the full Character Universe (15 named characters, including Azouz)
   await seedCharacterUniverse();
   await seedCosmetics(prisma);
+
+  // Metacognition Engine: reflection prompt bank shown after mission
+  // completion (see ReflectionQuickCheck.tsx). Was previously an orphaned
+  // seed file never invoked by `npm run seed` — wired in here so a fresh
+  // database actually has the 3 prompt rows the frontend/controller expect.
+  await seedReflectionPrompts(prisma);
 
   // Create sample mission
   const mission = await prisma.mission.create({
