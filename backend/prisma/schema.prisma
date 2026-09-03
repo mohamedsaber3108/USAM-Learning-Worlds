@@ -2052,3 +2052,134 @@ model MisconceptionPattern {
   @@index([frequencyCount])
   @@map("misconception_patterns")
 }
+
+// ============================================================
+// agent-backend-content-engines-v3: three engines confirmed
+// genuinely Missing per USAM_KIDS_ENGINE_GAP_MATRIX.md (zero
+// model/service/controller trace found via grep before this pass) —
+// Media Engine, Simulation Engine, Visual Language Engine.
+// All three built as flat, read-only, age-banded content tables
+// mirroring the already-established AILiteracyConcept/
+// DigitalLiteracyConcept pattern used throughout cross-curricular.
+// ============================================================
+
+enum MediaAssetType {
+  IMAGE
+  AUDIO
+  VIDEO
+  ILLUSTRATION
+}
+
+// Media Engine — was "Missing" (Part 7b: "no image/video/audio asset
+// pipeline, no upload/transcode/CDN handling anywhere"). This v1 is
+// deliberately NOT an upload/transcode pipeline — it's a licensed,
+// USAM-original asset catalog (real metadata: license/source/
+// attribution, matching the Asset Management Engine provenance
+// pattern already used on AvatarCosmetic) that missions/activities
+// can reference by id. No CDN/transcode step; assetUrl points at a
+// pre-hosted static file.
+model MediaAsset {
+  id             String         @id @default(uuid())
+  title          String
+  slug           String         @unique
+  type           MediaAssetType
+  assetUrl       String
+  thumbnailUrl   String?
+  description    String?
+  domainSlug     String?
+  ageAppropriate AgeBand
+  license        String         @default("USAM Original")
+  source         String         @default("USAM Original")
+  attribution    String?
+  durationSeconds Int?
+  order          Int            @default(0)
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+
+  @@index([slug])
+  @@index([type])
+  @@index([ageAppropriate])
+  @@map("media_assets")
+}
+
+enum SimulationCategory {
+  ENTREPRENEURSHIP
+  FINANCIAL_LITERACY
+  DIGITAL_SAFETY
+  SCIENCE
+  CIVIC
+}
+
+// Simulation Engine — was "Missing" (Part 8: "nothing found that lets
+// a learner run an interactive entrepreneurship/science/digital-safety
+// scenario with branching outcomes or state"). v1 is a real branching
+// decision-tree model: one SimulationScenario has many
+// SimulationDecisionPoints, each with Json-encoded choice options that
+// point at another decision point id (or null = ending), mirroring the
+// already-real Story/StoryPage choiceOptions branching pattern.
+model SimulationScenario {
+  id             String              @id @default(uuid())
+  title          String
+  slug           String              @unique
+  category       SimulationCategory
+  description    String
+  ageAppropriate AgeBand
+  startNodeId    String?
+  isActive       Boolean             @default(true)
+  order          Int                 @default(0)
+  createdAt      DateTime            @default(now())
+
+  nodes SimulationDecisionPoint[]
+
+  @@index([slug])
+  @@index([category])
+  @@map("simulation_scenarios")
+}
+
+model SimulationDecisionPoint {
+  id            String   @id @default(uuid())
+  scenarioId    String
+  nodeKey       String
+  prompt        String
+  isEnding      Boolean  @default(false)
+  outcomeNote   String?
+  choiceOptions Json
+  createdAt     DateTime @default(now())
+
+  scenario SimulationScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  @@unique([scenarioId, nodeKey])
+  @@index([scenarioId])
+  @@map("simulation_decision_points")
+}
+
+// Visual Language Engine — was "Missing" (Part 8: "Zero trace anywhere
+// ... likely image-supported vocabulary/comprehension aids"). v1 is a
+// real image-paired vocabulary/concept card catalog: each card pairs a
+// word/concept with a real hosted image + a short caption, gated by
+// AgeBand, mirroring the flat-concept-table pattern used across
+// cross-curricular content.
+enum VisualLanguageCategory {
+  VOCABULARY
+  EMOTION
+  SEQUENCING
+  COMPREHENSION
+}
+
+model VisualLanguageCard {
+  id             String                  @id @default(uuid())
+  word           String
+  slug           String                  @unique
+  category       VisualLanguageCategory
+  imageUrl       String
+  caption        String
+  ageAppropriate AgeBand
+  order          Int                     @default(0)
+  isActive       Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@index([ageAppropriate])
+  @@map("visual_language_cards")
+}
