@@ -20,6 +20,7 @@ import { CurriculumBrowsePage } from '@/features/learning/pages/CurriculumBrowse
 import { ConceptDetailPage } from '@/features/learning/pages/ConceptDetailPage'
 import { LearningPathsPage } from '@/features/learning/pages/LearningPathsPage'
 import { LearningPathDetailPage } from '@/features/learning/pages/LearningPathDetailPage'
+import { FlashcardsStudyPage } from '@/features/learning/pages/FlashcardsStudyPage'
 import { ParentDashboardPage } from '@/features/parents/pages/ParentDashboardPage'
 import { ParentTimeLimitsPage } from '@/features/parents/pages/ParentTimeLimitsPage'
 import { VoiceChatPage } from '@/features/voice/pages/VoiceChatPage'
@@ -118,6 +119,7 @@ export function AppRouter() {
         <Route path="/learn/concepts/:id" element={<ConceptDetailPage />} />
         <Route path="/learn/paths" element={<LearningPathsPage />} />
         <Route path="/learn/paths/:id" element={<LearningPathDetailPage />} />
+        <Route path="/learn/flashcards" element={<FlashcardsStudyPage />} />
 
         {/* Projects */}
         <Route path="/projects" element={<ProjectsPage />} />

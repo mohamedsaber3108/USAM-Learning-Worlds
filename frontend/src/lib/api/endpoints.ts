@@ -460,6 +460,36 @@ export const charactersApi = {
     ),
 }
 
+// ==================== Flashcard Engine (spaced-repetition study cards) ====================
+export interface Flashcard {
+  id: string
+  domainId: string
+  front: string
+  back: string
+  isActive: boolean
+}
+
+export interface FlashcardStats {
+  totalReviewed: number
+  dueNow: number
+  mastered: number
+}
+
+export const flashcardsApi = {
+  listByDomain: (domainId: string) =>
+    apiClient.get<Flashcard[]>(`/flashcards/domain/${domainId}`),
+
+  getDueCards: (domainId?: string, limit?: number) =>
+    apiClient.get<Flashcard[]>('/flashcards/due', {
+      params: { domainId, limit },
+    }),
+
+  recordReview: (flashcardId: string, remembered: boolean) =>
+    apiClient.post(`/flashcards/${flashcardId}/review`, { remembered }),
+
+  getStats: () => apiClient.get<FlashcardStats>('/flashcards/stats'),
+}
+
 // ==================== Coding Sandbox (Pyodide/Sandpack — zero backend execution) ====================
 export interface CodingSandboxMission {
   activityId: string

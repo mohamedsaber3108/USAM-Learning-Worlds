@@ -162,6 +162,12 @@ export function CurriculumBrowsePage() {
             >
               Learning Paths →
             </Link>
+            <Link
+              to="/learn/flashcards"
+              className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
+            >
+              🗂️ Flashcards →
+            </Link>
           </div>
         </div>
       </header>
