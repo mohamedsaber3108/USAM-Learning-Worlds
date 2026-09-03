@@ -71,9 +71,9 @@ export function EnglishStrandsPage() {
       <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors">
-                ← Back
+                <span className="inline-block rtl:scale-x-[-1]">←</span> Back
               </Link>
               <h1 className="text-2xl font-heading font-bold text-white">🇬🇧 English Strands</h1>
             </div>
@@ -173,7 +173,7 @@ export function EnglishStrandsPage() {
                             </h3>
                             {strand.cefrLevel && (
                               <span
-                                className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                                className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
                                   CEFR_COLORS[strand.cefrLevel] || 'bg-gray-100 text-gray-800'
                                 }`}
                               >

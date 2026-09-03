@@ -465,7 +465,7 @@ export function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="text-sm font-semibold text-primary-600">
                       {run.finalScore ? `${run.finalScore}%` : '---'}
                     </p>

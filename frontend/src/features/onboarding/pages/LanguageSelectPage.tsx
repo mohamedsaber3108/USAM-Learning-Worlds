@@ -61,7 +61,7 @@ export function LanguageSelectPage() {
                 }`}
               >
                 {isSelected && (
-                  <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary-500 text-white flex items-center justify-center">
+                  <span className="absolute top-2 end-2 w-5 h-5 rounded-full bg-primary-500 text-white flex items-center justify-center">
                     <Check className="w-3 h-3" strokeWidth={3} />
                   </span>
                 )}

@@ -203,7 +203,7 @@ export function AdminExperimentsPage() {
                       disabled={statusMutation.isPending}
                       className="text-xs border border-surface-200 rounded-lg px-2 py-1 text-slate-600 hover:bg-surface-50 disabled:opacity-50"
                     >
-                      → {s}
+                      <span className="inline-block rtl:scale-x-[-1]">→</span> {s}
                     </button>
                   ))}
               </div>

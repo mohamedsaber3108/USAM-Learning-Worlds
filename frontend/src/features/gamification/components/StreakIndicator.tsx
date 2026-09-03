@@ -42,7 +42,7 @@ export function StreakIndicator({
         <Flame className={iconSize} strokeWidth={2} fill={isLive ? 'currentColor' : 'none'} />
         <span className={`font-display font-bold tabular-nums ${textSize}`}>{currentStreak}</span>
         {freezesAvailable > 0 && (
-          <span className="flex items-center gap-0.5 text-sky-500 ml-0.5" title={`${freezesAvailable} streak freeze(s) active`}>
+          <span className="flex items-center gap-0.5 text-sky-500 ms-0.5" title={`${freezesAvailable} streak freeze(s) active`}>
             <Snowflake className="w-3.5 h-3.5" strokeWidth={2} />
           </span>
         )}

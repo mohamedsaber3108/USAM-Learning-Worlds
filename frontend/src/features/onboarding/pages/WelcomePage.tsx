@@ -27,7 +27,7 @@ export function WelcomePage() {
             style={{ backgroundColor: '#F59E0B22' }}
           />
           <CharacterFace characterId="Azouz" size={96} />
-          <span className="absolute -top-1 -right-1 bg-secondary-400 rounded-full p-1.5 shadow">
+          <span className="absolute -top-1 -end-1 bg-secondary-400 rounded-full p-1.5 shadow">
             <Sparkles className="w-3.5 h-3.5 text-white" />
           </span>
         </motion.div>
@@ -39,7 +39,7 @@ export function WelcomePage() {
           {t('onboarding.welcome.subtitle')}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-start">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

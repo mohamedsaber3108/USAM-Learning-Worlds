@@ -69,7 +69,7 @@ export function ProgressPage() {
       {/* Header — one solid brand color, no rainbow gradient */}
       <header className="bg-primary-600 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
               <ArrowLeft className="w-4 h-4" strokeWidth={2} />
               Back
@@ -104,7 +104,7 @@ export function ProgressPage() {
               <p className="text-slate-500 text-xs font-medium mb-1">Current Level</p>
               <p className="text-5xl font-display font-extrabold text-primary-600">{progression?.level || 1}</p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-slate-500 text-xs font-medium mb-1">Total XP</p>
               <p className="text-4xl font-display font-extrabold text-slate-900">
                 {totalXP.toLocaleString()}
@@ -166,7 +166,7 @@ export function ProgressPage() {
                     strokeWidth={2}
                   />
                 ))}
-                <span className="text-xs text-slate-500 ml-1">
+                <span className="text-xs text-slate-500 ms-1">
                   {freezeStatus?.freezesAvailable ?? 0} active
                 </span>
               </div>
@@ -238,7 +238,7 @@ export function ProgressPage() {
               to="/achievements"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
-              View All →
+              View All <span className="inline-block rtl:scale-x-[-1]">→</span>
             </Link>
           </motion.div>
 
@@ -279,7 +279,7 @@ export function ProgressPage() {
               to="/missions"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
-              Browse →
+              Browse <span className="inline-block rtl:scale-x-[-1]">→</span>
             </Link>
           </motion.div>
         </div>
@@ -294,7 +294,7 @@ export function ProgressPage() {
                 to="/achievements"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
-                View All →
+                View All <span className="inline-block rtl:scale-x-[-1]">→</span>
               </Link>
             </div>
 
@@ -303,7 +303,7 @@ export function ProgressPage() {
                 {unlockedAchievements.slice(0, 5).map((achievement: any) => (
                   <div
                     key={achievement.id}
-                    className="flex items-center space-x-3 p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
                   >
                     <div className="icon-chip bg-secondary-50 text-secondary-600">
                       <Trophy className="w-5 h-5" strokeWidth={2} />
@@ -334,7 +334,7 @@ export function ProgressPage() {
                 to="/missions"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
-                View All →
+                View All <span className="inline-block rtl:scale-x-[-1]">→</span>
               </Link>
             </div>
 
@@ -353,7 +353,7 @@ export function ProgressPage() {
                         {new Date(run.startedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       {run.status === 'COMPLETED' ? (
                         <>
                           <p className="text-sm font-semibold text-success-600">

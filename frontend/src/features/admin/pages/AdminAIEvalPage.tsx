@@ -67,7 +67,7 @@ export function AdminAIEvalPage() {
             <button
               key={run.id}
               onClick={() => setSelectedRunId(run.id)}
-              className={`w-full text-left bg-white rounded-xl border px-4 py-3 text-sm transition-colors ${
+              className={`w-full text-start bg-white rounded-xl border px-4 py-3 text-sm transition-colors ${
                 selectedRunId === run.id
                   ? 'border-cyan-400 ring-1 ring-cyan-200'
                   : 'border-surface-200 hover:border-cyan-200'
@@ -119,7 +119,7 @@ export function AdminAIEvalPage() {
                     )}
                     <span className="font-mono text-xs text-slate-600">{res.caseId}</span>
                     {res.score != null && (
-                      <span className="text-xs text-slate-400 ml-auto">score {res.score.toFixed(2)}</span>
+                      <span className="text-xs text-slate-400 ms-auto">score {res.score.toFixed(2)}</span>
                     )}
                   </div>
                   {res.responseText && (

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, ChevronLeft } from 'lucide-react'
+import { Check, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { missionsApi, codingSandboxApi } from '@/lib/api/endpoints'
 import { CodeMissionRunner } from '@/features/coding/components/CodeMissionRunner'
 import { CharacterAvatar } from '@/features/characters/components/CharacterAvatar'
@@ -249,7 +249,7 @@ export function MissionPlayerPage() {
                 disabled={currentIndex === 0 || feedback !== null}
                 className="btn btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronLeft className="w-4 h-4" /> Previous
+                <ChevronLeft className="w-4 h-4 rtl:scale-x-[-1]" /> Previous
               </motion.button>
 
               {feedback === null ? (
@@ -276,7 +276,11 @@ export function MissionPlayerPage() {
                     ? 'Finishing...'
                     : currentIndex === activities.length - 1
                     ? 'Complete Mission'
-                    : 'Next →'}
+                    : (
+                      <span className="inline-flex items-center gap-1">
+                        Next <ChevronRight className="w-4 h-4 rtl:scale-x-[-1]" />
+                      </span>
+                    )}
                 </motion.button>
               )}
             </div>
@@ -620,7 +624,7 @@ function CodeActivity({
     <div className="space-y-4">
       <CodeMissionRunner mission={missionQuery.data} runId={runId} />
       <button type="button" onClick={onDone} className="btn btn-primary">
-        Continue →
+        Continue <span className="inline-block rtl:scale-x-[-1]">→</span>
       </button>
     </div>
   )

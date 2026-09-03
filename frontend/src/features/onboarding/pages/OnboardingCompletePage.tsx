@@ -35,7 +35,7 @@ export function OnboardingCompletePage() {
             style={{ backgroundColor: '#10B98122' }}
           />
           <CharacterFace characterId="Azouz" size={96} />
-          <span className="absolute -top-1 -right-1 bg-success-500 rounded-full p-1.5 shadow">
+          <span className="absolute -top-1 -end-1 bg-success-500 rounded-full p-1.5 shadow">
             <PartyPopper className="w-3.5 h-3.5 text-white" />
           </span>
         </motion.div>
@@ -50,7 +50,7 @@ export function OnboardingCompletePage() {
         {/* Checklist recap — every prior step, tied visually to this final
             screen via the same success-green token used across the app for
             correctness/mastery feedback (see tailwind.config.js). */}
-        <ul className="text-left space-y-2.5 mb-9 bg-success-50/60 rounded-2xl p-5">
+        <ul className="text-start space-y-2.5 mb-9 bg-success-50/60 rounded-2xl p-5">
           {checklist.map((item, i) => (
             <motion.li
               key={item}

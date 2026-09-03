@@ -44,7 +44,7 @@ export function CharacterAvatar({ name, size = 'md', locked = false, evolutionSt
     >
       <CharacterFace characterId={name} size={sizing.px} locked={locked} evolutionStage={evolutionStage ?? 1} />
       {locked && (
-        <span className="absolute -bottom-0.5 -right-0.5 bg-slate-600 rounded-full p-1 border-2 border-white">
+        <span className="absolute -bottom-0.5 -end-0.5 bg-slate-600 rounded-full p-1 border-2 border-white">
           <Lock className={`${sizing.lock} text-white`} strokeWidth={2.5} />
         </span>
       )}

@@ -38,7 +38,7 @@ export function ThinkingSkillConceptDetailPage() {
       <header className={`bg-gradient-to-r ${meta.gradient} shadow-pop`}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link to={`/thinking/${engine}`} className="text-white/90 hover:text-white transition-colors">
-            ← Back to {meta.title}
+            <span className="inline-block rtl:scale-x-[-1]">←</span> Back to {meta.title}
           </Link>
         </div>
       </header>
@@ -59,7 +59,7 @@ export function ThinkingSkillConceptDetailPage() {
             <div className="flex items-start justify-between mb-4">
               <h1 className="text-2xl font-heading font-bold text-gray-900">{concept.name}</h1>
               <span
-                className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
                   AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
                 }`}
               >

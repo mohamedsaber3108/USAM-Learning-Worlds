@@ -90,7 +90,7 @@ export function CharacterChatPage() {
       <header className="shadow-pop" style={{ backgroundColor: visual?.color ?? '#64748B' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
           <Link to="/characters" className="text-white/90 hover:text-white transition-colors">
-            ← Characters
+            <span className="inline-block rtl:scale-x-[-1]">←</span> Characters
           </Link>
           {character && <CharacterAvatar name={character.name} size="sm" evolutionStage={evolutionStage} />}
           <div>

@@ -184,7 +184,7 @@ export function CurriculumBrowsePage() {
       <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
                 <ArrowLeft className="w-4 h-4" strokeWidth={2} />
                 Back
@@ -365,7 +365,7 @@ function ConceptCard({ concept }: { concept: Concept; assumedUnlocked: boolean }
     >
       <div className="flex items-start justify-between mb-2">
         <h4 className="font-semibold text-gray-900 line-clamp-2">{concept.name}</h4>
-        <span className="text-xl ml-2">
+        <span className="text-xl ms-2">
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin text-gray-400" strokeWidth={2} />
           ) : unlocked ? (
