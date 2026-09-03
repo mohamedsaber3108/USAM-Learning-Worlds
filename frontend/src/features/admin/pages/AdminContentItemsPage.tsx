@@ -83,8 +83,8 @@ export function AdminContentItemsPage() {
     queryFn: () =>
       contentItemsApi
         .list({
-          status: statusFilter || undefined,
-          type: typeFilter || undefined,
+          ...(statusFilter ? { status: statusFilter } : {}),
+          ...(typeFilter ? { type: typeFilter } : {}),
           take: 50,
         })
         .then((r) => r.data),
@@ -102,8 +102,8 @@ export function AdminContentItemsPage() {
         type,
         title,
         content: parsedContent,
-        ageBand: ageBand || undefined,
-        difficulty: difficulty || undefined,
+        ...(ageBand ? { ageBand } : {}),
+        ...(difficulty ? { difficulty } : {}),
       })
     },
     onSuccess: () => {
