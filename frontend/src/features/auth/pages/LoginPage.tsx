@@ -4,11 +4,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import apiClient from '@/lib/api/client'
+import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 import type { AuthResponse } from '@/types'
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email('Please enter a valid email address, like you@example.com'),
+  password: z.string().min(8, 'Your password needs to be at least 8 characters'),
 })
 
 type LoginForm = z.infer<typeof loginSchema>
@@ -21,7 +22,7 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   })
@@ -39,7 +40,7 @@ export function LoginPage() {
 
       navigate('/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.')
+      setError(getFriendlyErrorMessage(err, 'We could not sign you in. Please try again.'))
     } finally {
       setLoading(false)
     }
@@ -98,10 +99,10 @@ export function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || isSubmitting}
               className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading || isSubmitting ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
