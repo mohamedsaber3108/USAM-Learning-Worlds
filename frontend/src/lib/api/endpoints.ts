@@ -524,6 +524,28 @@ export const flashcardsApi = {
   getStats: () => apiClient.get<FlashcardStats>('/flashcards/stats'),
 }
 
+// ==================== Visual Language Engine (image-paired vocabulary/emotion/sequencing cards) ====================
+export interface VisualLanguageCard {
+  id: string
+  word: string
+  slug: string
+  category: 'VOCABULARY' | 'EMOTION' | 'SEQUENCING' | 'COMPREHENSION'
+  imageUrl: string
+  caption: string
+  ageAppropriate: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
+  order: number
+  isActive: boolean
+}
+
+export const visualLanguageApi = {
+  list: (ageBand?: string, category?: string) =>
+    apiClient.get<VisualLanguageCard[]>('/visual-language', {
+      params: { ageBand, category },
+    }),
+
+  getBySlug: (slug: string) => apiClient.get<VisualLanguageCard>(`/visual-language/${slug}`),
+}
+
 // ==================== Coding Sandbox (Pyodide/Sandpack — zero backend execution) ====================
 export interface CodingSandboxMission {
   activityId: string

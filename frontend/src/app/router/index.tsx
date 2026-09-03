@@ -23,6 +23,7 @@ import { ConceptDetailPage } from '@/features/learning/pages/ConceptDetailPage'
 import { LearningPathsPage } from '@/features/learning/pages/LearningPathsPage'
 import { LearningPathDetailPage } from '@/features/learning/pages/LearningPathDetailPage'
 import { FlashcardsStudyPage } from '@/features/learning/pages/FlashcardsStudyPage'
+import { VisualLanguageStudyPage } from '@/features/learning/pages/VisualLanguageStudyPage'
 import { ParentTimeLimitsPage } from '@/features/parents/pages/ParentTimeLimitsPage'
 import { EnglishStrandsPage } from '@/features/english/pages/EnglishStrandsPage'
 import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
@@ -180,6 +181,7 @@ export function AppRouter() {
         <Route path="/learn/paths" element={<LearningPathsPage />} />
         <Route path="/learn/paths/:id" element={<LearningPathDetailPage />} />
         <Route path="/learn/flashcards" element={<FlashcardsStudyPage />} />
+        <Route path="/learn/visual-language" element={<VisualLanguageStudyPage />} />
 
         {/* Projects */}
         <Route path="/projects" element={<ProjectsPage />} />

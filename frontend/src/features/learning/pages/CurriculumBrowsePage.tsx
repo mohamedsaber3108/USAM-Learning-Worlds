@@ -20,6 +20,7 @@ import {
   Brain,
   Search,
   Code,
+  Sparkles,
 } from 'lucide-react'
 import { curriculumApi, learningApi, masteryApi, worldsApi, type WorldRecord } from '@/lib/api/endpoints'
 import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
@@ -205,6 +206,13 @@ export function CurriculumBrowsePage() {
             >
               <Layers className="w-4 h-4" strokeWidth={2} />
               Flashcards <ArrowRight className="w-4 h-4" strokeWidth={2} />
+            </Link>
+            <Link
+              to="/learn/visual-language"
+              className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none flex items-center gap-1"
+            >
+              <Sparkles className="w-4 h-4" strokeWidth={2} />
+              Visual Language <ArrowRight className="w-4 h-4" strokeWidth={2} />
             </Link>
           </div>
         </div>
