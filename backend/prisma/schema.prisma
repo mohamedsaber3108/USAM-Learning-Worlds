@@ -1011,9 +1011,22 @@ model Translation {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  // Translation QA Engine (v1, piggybacked on this table per
+  // USAM_KIDS_ENGINE_GAP_MATRIX.md "Arabic Educational Content Engine" /
+  // "Translation QA Engine" rows): a human-approval gate so content that
+  // was deliberately hand-written by a human (not machine-translated /
+  // LLM-hallucinated) can be marked and distinguished from placeholder or
+  // auto-translated rows (see TranslationService.autoTranslate, which
+  // still writes explicit [NEEDS_TRANSLATION:..] placeholders and never
+  // sets isHumanApproved).
+  isHumanApproved Boolean   @default(false)
+  approvedBy      String?
+  approvedAt      DateTime?
+
   @@unique([entityType, entityId, field, language])
   @@index([entityType, entityId])
   @@index([language])
+  @@index([isHumanApproved])
   @@map("translations")
 }
 

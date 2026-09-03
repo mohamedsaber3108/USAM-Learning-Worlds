@@ -41,6 +41,17 @@ export class TranslationController {
   }
 
   /**
+   * GET /translations/qa/stats?entityType=CHARACTER
+   * Translation QA Engine (v1): human-approval coverage stats.
+   * Registered before the dynamic :entityType/:entityId route below so
+   * "qa" is never mistaken for an entityType value.
+   */
+  @Get('qa/stats')
+  async getApprovalStats(@Query('entityType') entityType?: string) {
+    return this.translationService.getApprovalStats(entityType);
+  }
+
+  /**
    * GET /translations/:entityType/:entityId?language=ar
    * - With `language`: returns { [field]: string | null } resolved for that language.
    * - Without `language`: returns the full TranslatedEntity map (all fields x all languages).
@@ -103,5 +114,28 @@ export class TranslationController {
   @Post('batch')
   async batchUpsertTranslations(@Body() translations: CreateTranslationDto[]) {
     return this.translationService.batchCreateTranslations(translations);
+  }
+
+  /**
+   * POST /translations/:entityType/:entityId/:field/approve?language=ar-EG
+   * Translation QA Engine (v1): mark/unmark a translation as human-approved.
+   * Body: { isHumanApproved: boolean, approvedBy?: string }
+   */
+  @Post(':entityType/:entityId/:field/approve')
+  async setApproval(
+    @Param('entityType') entityType: string,
+    @Param('entityId') entityId: string,
+    @Param('field') field: string,
+    @Query('language') language: SupportedLanguage = 'ar-EG',
+    @Body() body: { isHumanApproved: boolean; approvedBy?: string },
+  ) {
+    return this.translationService.setApproval(
+      entityType,
+      entityId,
+      field,
+      language,
+      body.isHumanApproved,
+      body.approvedBy,
+    );
   }
 }

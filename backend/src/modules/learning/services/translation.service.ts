@@ -16,6 +16,12 @@ export interface CreateTranslationDto {
   field: string;
   language: SupportedLanguage;
   value: string;
+  // Translation QA Engine (v1): set true ONLY when the caller is a human
+  // deliberately writing/reviewing this exact value (e.g. hand-written
+  // Egyptian Arabic content, not a machine-translation or LLM output).
+  // approvedBy should identify who approved it (name/email/"seed-script").
+  isHumanApproved?: boolean;
+  approvedBy?: string;
 }
 
 export interface TranslatedEntity {
@@ -34,6 +40,10 @@ export class TranslationService {
    * Create or update translation
    */
   async upsertTranslation(dto: CreateTranslationDto) {
+    const isHumanApproved = dto.isHumanApproved ?? false;
+    const approvedBy = isHumanApproved ? dto.approvedBy ?? null : null;
+    const approvedAt = isHumanApproved ? new Date() : null;
+
     return this.prisma.translation.upsert({
       where: {
         entityType_entityId_field_language: {
@@ -49,11 +59,72 @@ export class TranslationService {
         field: dto.field,
         language: dto.language,
         value: dto.value,
+        isHumanApproved,
+        approvedBy,
+        approvedAt,
       },
       update: {
         value: dto.value,
+        isHumanApproved,
+        approvedBy,
+        approvedAt,
       },
     });
+  }
+
+  /**
+   * Translation QA Engine (v1): mark an existing translation row as
+   * human-approved (or revoke approval) without touching its value.
+   * This is the "controlled, not AI-hallucinated" gate the gap matrix
+   * calls for, applied directly to the existing Translation table.
+   */
+  async setApproval(
+    entityType: string,
+    entityId: string,
+    field: string,
+    language: SupportedLanguage,
+    isHumanApproved: boolean,
+    approvedBy?: string,
+  ) {
+    const existing = await this.prisma.translation.findUnique({
+      where: {
+        entityType_entityId_field_language: { entityType, entityId, field, language },
+      },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Translation not found');
+    }
+
+    return this.prisma.translation.update({
+      where: { id: existing.id },
+      data: {
+        isHumanApproved,
+        approvedBy: isHumanApproved ? approvedBy ?? null : null,
+        approvedAt: isHumanApproved ? new Date() : null,
+      },
+    });
+  }
+
+  /**
+   * Translation QA Engine (v1): coverage stats split by approval status,
+   * so it's possible to see how much Arabic content is real
+   * human-approved curriculum vs. still-placeholder/unapproved.
+   */
+  async getApprovalStats(entityType?: string) {
+    const where = entityType ? { entityType } : {};
+    const [total, approved] = await Promise.all([
+      this.prisma.translation.count({ where }),
+      this.prisma.translation.count({ where: { ...where, isHumanApproved: true } }),
+    ]);
+
+    return {
+      entityType: entityType ?? 'ALL',
+      total,
+      approved,
+      unapproved: total - approved,
+      approvalPercentage: total > 0 ? Math.round((approved / total) * 100) : 0,
+    };
   }
 
   /**
