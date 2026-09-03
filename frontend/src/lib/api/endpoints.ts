@@ -795,3 +795,15 @@ export const featureFlagsApi = {
     apiClient.patch(`/feature-flags/${key}`, { isEnabledGlobally }),
 }
 
+// ==================== Translations (localization QA) ====================
+// Backend: TranslationController (backend/src/modules/learning/translation.controller.ts),
+// real seeded rows across CHARACTER/DOMAIN/ACTIVITY/DIGITAL_LITERACY_CONCEPT/
+// SYSTEM (112 rows live). Returns the full per-field TranslatedEntity map
+// when `language` is omitted, or a single resolved value when passed.
+export const translationsApi = {
+  getEntity: (entityType: string, entityId: string, language?: string) =>
+    apiClient.get(
+      `/translations/${entityType}/${entityId}${language ? `?language=${language}` : ''}`,
+    ),
+}
+

@@ -1,10 +1,27 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { MessageCircle } from 'lucide-react'
-import { charactersApi, type CharacterSummary } from '@/lib/api/endpoints'
+import { charactersApi, translationsApi, type CharacterSummary } from '@/lib/api/endpoints'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { CHARACTER_VISUALS, getCharacterVisual } from '../lib/characterVisuals'
 import { LoadingState } from '@/components/common/CharacterState'
+
+/**
+ * Fetches the live human-approved Egyptian-Arabic personality blurb for one
+ * character id (GET /translations/CHARACTER/:id, field personalityAr) and
+ * falls back to the static CHARACTER_VISUALS.blurbAr copy when the backend
+ * has no row yet or the request fails — never blocks rendering.
+ */
+function useLiveArabicBlurb(entityId: string | undefined) {
+  const { data } = useQuery({
+    queryKey: ['translations', 'CHARACTER', entityId],
+    queryFn: () => translationsApi.getEntity('CHARACTER', entityId as string).then((r) => r.data),
+    enabled: !!entityId,
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  })
+  return data?.personalityAr?.['ar-EG'] ?? data?.personalityAr?.ar ?? null
+}
 
 /**
  * The full 15-character roster ordering + unlock hints for the fallback
@@ -40,6 +57,59 @@ interface RosterEntry {
   role: string
   unlocked: boolean
   unlockHint: string
+}
+
+function CharacterCard({ entry }: { entry: RosterEntry }) {
+  const visual = getCharacterVisual(entry.name)
+  const liveBlurbAr = useLiveArabicBlurb(entry.unlocked ? entry.id : undefined)
+  const blurbAr = liveBlurbAr ?? visual.blurbAr
+
+  const card = (
+    <div
+      className={`card p-5 flex items-start gap-4 transition-shadow ${
+        entry.unlocked ? 'hover:shadow-soft-md' : 'opacity-70'
+      }`}
+    >
+      <CharacterAvatar name={entry.name} size="lg" locked={!entry.unlocked} />
+      <div className="flex-1 min-w-0">
+        <h3 className="font-display font-bold text-slate-900 truncate flex items-baseline gap-2">
+          <span>{entry.name}</span>
+          {visual.nameAr && (
+            <span className="text-sm font-semibold text-slate-400" dir="rtl">
+              {visual.nameAr}
+            </span>
+          )}
+        </h3>
+        <p className="text-xs font-medium text-slate-400 mb-1">{entry.role}</p>
+        {entry.unlocked ? (
+          <div className="space-y-1">
+            <p className="text-sm text-slate-600">{visual.blurb}</p>
+            {blurbAr && (
+              <p className="text-sm text-slate-500" dir="rtl">
+                {blurbAr}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400 italic">{entry.unlockHint}</p>
+        )}
+        {entry.unlocked && entry.id && (
+          <span className="inline-flex items-center gap-1 mt-3 text-xs font-semibold text-primary-600">
+            <MessageCircle className="w-3.5 h-3.5" />
+            Chat now
+          </span>
+        )}
+      </div>
+    </div>
+  )
+
+  return entry.unlocked && entry.id ? (
+    <Link to={`/characters/${entry.id}/chat`} className="block">
+      {card}
+    </Link>
+  ) : (
+    <div>{card}</div>
+  )
 }
 
 export function CharacterGalleryPage() {
@@ -127,56 +197,9 @@ export function CharacterGalleryPage() {
       {loading && <LoadingState character="Codey" message="Codey is loading your character crew..." />}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {roster.map((entry) => {
-          const visual = getCharacterVisual(entry.name)
-          const card = (
-            <div
-              key={entry.name}
-              className={`card p-5 flex items-start gap-4 transition-shadow ${
-                entry.unlocked ? 'hover:shadow-soft-md' : 'opacity-70'
-              }`}
-            >
-              <CharacterAvatar name={entry.name} size="lg" locked={!entry.unlocked} />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-display font-bold text-slate-900 truncate flex items-baseline gap-2">
-                  <span>{entry.name}</span>
-                  {visual.nameAr && (
-                    <span className="text-sm font-semibold text-slate-400" dir="rtl">
-                      {visual.nameAr}
-                    </span>
-                  )}
-                </h3>
-                <p className="text-xs font-medium text-slate-400 mb-1">{entry.role}</p>
-                {entry.unlocked ? (
-                  <div className="space-y-1">
-                    <p className="text-sm text-slate-600">{visual.blurb}</p>
-                    {visual.blurbAr && (
-                      <p className="text-sm text-slate-500" dir="rtl">
-                        {visual.blurbAr}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-slate-400 italic">{entry.unlockHint}</p>
-                )}
-                {entry.unlocked && entry.id && (
-                  <span className="inline-flex items-center gap-1 mt-3 text-xs font-semibold text-primary-600">
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    Chat now
-                  </span>
-                )}
-              </div>
-            </div>
-          )
-
-          return entry.unlocked && entry.id ? (
-            <Link key={entry.name} to={`/characters/${entry.id}/chat`} className="block">
-              {card}
-            </Link>
-          ) : (
-            <div key={entry.name}>{card}</div>
-          )
-        })}
+        {roster.map((entry) => (
+          <CharacterCard key={entry.name} entry={entry} />
+        ))}
       </div>
 
       {!unlockedData && !listData && (
