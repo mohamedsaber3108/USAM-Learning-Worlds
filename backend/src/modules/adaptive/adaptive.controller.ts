@@ -1,6 +1,8 @@
 import { Controller, Get, Query, UseGuards, Param } from '@nestjs/common';
 import { ZPDCalculatorService } from './zpd-calculator.service';
 import { RecommendationService } from './recommendation.service';
+import { InterleavingService } from './interleaving.service';
+import { TransferService } from './transfer.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -10,7 +12,41 @@ export class AdaptiveController {
   constructor(
     private zpdCalculator: ZPDCalculatorService,
     private recommendations: RecommendationService,
+    private interleaving: InterleavingService,
+    private transfer: TransferService,
   ) {}
+
+  /**
+   * Interleaving Engine v1: build an interleaved (competency-alternating)
+   * multi-competency practice set, mixing review-due and struggling-focus
+   * competencies instead of blocking practice by a single competency.
+   */
+  @Get('interleaved-practice')
+  async getInterleavedPractice(
+    @CurrentUser() user: any,
+    @Query('limit') limit?: string,
+  ) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners can get an interleaved practice set');
+    }
+    const limitNum = limit ? parseInt(limit, 10) : 6;
+    return this.interleaving.getInterleavedPracticeSet(learnerId, limitNum);
+  }
+
+  /**
+   * Transfer Engine v1 (read-only view): concrete cross-competency
+   * transfer opportunities not yet primed for this learner — competencies
+   * they've mastered whose dependents haven't been primed yet.
+   */
+  @Get('transfer-opportunities')
+  async getTransferOpportunities(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners have transfer opportunities');
+    }
+    return this.transfer.listTransferOpportunities(learnerId);
+  }
 
   @Get('zpd')
   async getZPDProfile(@CurrentUser() user: any) {
