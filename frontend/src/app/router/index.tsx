@@ -47,6 +47,7 @@ import { AdminAuditLogPage } from '@/features/admin/pages/AdminAuditLogPage'
 import { AdminSafetyEscalationsPage } from '@/features/admin/pages/AdminSafetyEscalationsPage'
 import { AdminInterventionsPage } from '@/features/admin/pages/AdminInterventionsPage'
 import { AdminMisconceptionsPage } from '@/features/admin/pages/AdminMisconceptionsPage'
+import { AdminAIEvalPage } from '@/features/admin/pages/AdminAIEvalPage'
 import { LoadingState } from '@/components/common/CharacterState'
 
 /** Route-level code splitting for the heaviest pages in the bundle.
@@ -311,6 +312,14 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <AdminMisconceptionsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/ai-eval"
+          element={
+            <AdminRoute>
+              <AdminAIEvalPage />
             </AdminRoute>
           }
         />

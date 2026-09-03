@@ -1001,6 +1001,45 @@ export const misconceptionsApi = {
     }),
 }
 
+// AI Evaluation Harness — admin read-only history over AIEvalRun/AIEvalResult,
+// populated by backend/scripts/run-ai-eval.ts (run manually/via cron, not
+// triggered from this UI). See backend/src/modules/ai/admin-ai-eval.controller.ts.
+export interface AIEvalRunSummary {
+  id: string
+  startedAt: string
+  finishedAt: string | null
+  datasetVersion: string | null
+  totalCases: number
+  passedCases: number
+  passRate: number
+  averageScore: number | null
+  status: string
+  notes: string | null
+  resultCount: number
+}
+
+export interface AIEvalResultDetail {
+  id: string
+  caseId: string
+  passed: boolean
+  score: number | null
+  responseText: string | null
+  errorMessage: string | null
+  rubricBreakdown?: unknown
+}
+
+export interface AIEvalRunDetail extends Omit<AIEvalRunSummary, 'resultCount'> {
+  results: AIEvalResultDetail[]
+}
+
+export const aiEvalApi = {
+  listRuns: (limit?: number) =>
+    apiClient.get<{ runs: AIEvalRunSummary[] }>('/admin/ai-eval/runs', {
+      params: limit ? { limit } : undefined,
+    }),
+  getRun: (id: string) => apiClient.get<AIEvalRunDetail>(`/admin/ai-eval/runs/${id}`),
+}
+
 // Safety Escalation Queue — staff (MODERATOR/ADMIN) surface over
 // SafetyEscalation, the persisted record created whenever
 // CharacterSafetyService.evaluateSafety() resolves to
