@@ -7,6 +7,19 @@ export interface SearchResultItem {
   title: string;
   snippet: string;
   rank: number;
+  /**
+   * Only populated for type === 'activity'. There is no standalone
+   * "activity detail" page/route in the frontend — activities only ever
+   * render inside a specific Mission's activity list (MissionDetailPage /
+   * MissionPlayerPage). Without this, the frontend had nowhere correct to
+   * route an activity search hit and was falling back to the generic
+   * `/missions` browse list, silently discarding which mission the
+   * clicked activity actually belongs to. Resolved via mission_activities
+   * (an Activity can appear in more than one Mission in principle; we pick
+   * the lowest `order` row against an isActive mission so the link is
+   * deterministic and always resolves to a real, active mission).
+   */
+  missionId?: string | null;
 }
 
 const MAX_QUERY_LENGTH = 100;
@@ -61,7 +74,8 @@ export class SearchService {
               websearch_to_tsquery('english', ${q}),
               'MaxWords=25, MinWords=10, MaxFragments=1'
             ) AS snippet,
-            ts_rank(m."searchVector", websearch_to_tsquery('english', ${q})) AS rank
+            ts_rank(m."searchVector", websearch_to_tsquery('english', ${q})) AS rank,
+            NULL::text AS "missionId"
           FROM missions m
           WHERE m."searchVector" @@ websearch_to_tsquery('english', ${q})
             AND m."isActive" = true
@@ -78,7 +92,21 @@ export class SearchService {
               websearch_to_tsquery('english', ${q}),
               'MaxWords=25, MinWords=10, MaxFragments=1'
             ) AS snippet,
-            ts_rank(a."searchVector", websearch_to_tsquery('english', ${q})) AS rank
+            ts_rank(a."searchVector", websearch_to_tsquery('english', ${q})) AS rank,
+            -- Resolve to the specific Mission this Activity actually lives
+            -- under (via mission_activities), preferring the lowest `order`
+            -- row against an isActive mission, so the frontend can route
+            -- straight to /missions/:missionId instead of the generic
+            -- browse list. NULL here (no active mission links this
+            -- activity) is handled client-side as a fallback to /missions.
+            (
+              SELECT ma."missionId"
+              FROM mission_activities ma
+              JOIN missions mi ON mi.id = ma."missionId" AND mi."isActive" = true
+              WHERE ma."activityId" = a.id
+              ORDER BY ma."order" ASC
+              LIMIT 1
+            ) AS "missionId"
           FROM activities a
           WHERE a."searchVector" @@ websearch_to_tsquery('english', ${q})
             AND a."isActive" = true
@@ -95,7 +123,8 @@ export class SearchService {
               websearch_to_tsquery('english', ${q}),
               'MaxWords=25, MinWords=10, MaxFragments=1'
             ) AS snippet,
-            ts_rank(c."searchVector", websearch_to_tsquery('english', ${q})) AS rank
+            ts_rank(c."searchVector", websearch_to_tsquery('english', ${q})) AS rank,
+            NULL::text AS "missionId"
           FROM concepts c
           WHERE c."searchVector" @@ websearch_to_tsquery('english', ${q})
             AND c."isActive" = true
