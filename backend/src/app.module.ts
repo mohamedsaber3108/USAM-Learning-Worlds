@@ -39,6 +39,9 @@ import { InterventionModule } from './modules/interventions/intervention.module'
 import { AssessmentQualityModule } from './modules/assessment-quality/assessment-quality.module';
 import { SearchModule } from './modules/search/search.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { MediaModule } from './modules/media/media.module';
+import { SimulationModule } from './modules/simulation/simulation.module';
+import { VisualLanguageModule } from './modules/visual-language/visual-language.module';
 
 @Module({
   imports: [
@@ -97,6 +100,9 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     AssessmentQualityModule,
     SearchModule,
     AnalyticsModule,
+    MediaModule,
+    SimulationModule,
+    VisualLanguageModule,
   ],
   controllers: [AppController],
   providers: [
