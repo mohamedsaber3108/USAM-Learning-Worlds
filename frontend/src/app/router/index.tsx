@@ -34,6 +34,7 @@ import { ThinkingSkillsPage } from '@/features/thinking-skills/pages/ThinkingSki
 import { ThinkingSkillConceptDetailPage } from '@/features/thinking-skills/pages/ThinkingSkillConceptDetailPage'
 import { StoriesListPage } from '@/features/stories/pages/StoriesListPage'
 import { StoryReaderPage } from '@/features/stories/pages/StoryReaderPage'
+import { CreativityGalleryPage } from '@/features/creativity/pages/CreativityGalleryPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AdminRoute } from '@/components/common/AdminRoute'
 import { AppShell } from '@/components/layout/AppShell'
@@ -218,6 +219,7 @@ export function AppRouter() {
         />
         <Route path="/stories" element={<StoriesListPage />} />
         <Route path="/stories/:id" element={<StoryReaderPage />} />
+        <Route path="/creativity" element={<CreativityGalleryPage />} />
         <Route path="/characters/:id/chat" element={<CharacterChatPage />} />
 
         {/* Cosmetic Shop — real XP-spending economy (borders/badges/titles/themes) */}
