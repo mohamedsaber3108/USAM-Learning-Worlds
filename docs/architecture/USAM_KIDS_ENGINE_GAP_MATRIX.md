@@ -380,7 +380,7 @@ this data today.
 | Economy Engine | Real, two-currency economy now closed: `Progression.totalXP` is spent in the sibling-built XP cosmetic shop (`cosmetics.service.ts` + `avatar_cosmetics`/`learner_cosmetic_unlocks`, `CosmeticShopPage.tsx`) for borders/badges/titles/themes; the separate `Progression.coins` field — previously earned but with zero spending purpose — now has a genuine, distinct sink via `backend/src/modules/gamification/streak-freeze.service.ts` (`POST /gamification/streak-freeze/purchase`, `GET /gamification/streak-freeze/status`): learners spend 50 coins for a Duolingo-pattern Streak Freeze token (new `PracticeStreak.freezesAvailable`/`lastFreezeUsedAt` fields + `StreakFreezePurchase` ledger table, migration `20260903_add_streak_freeze_economy.sql`), consumed automatically in `streaks.service.ts`'s missed-day branch to protect the streak instead of resetting it to 1. Frontend purchase card + freeze indicator live on `ProgressPage.tsx` (engine-fix-2-coin-economy). | Already implemented | Both currencies now have real, non-duplicate spending purposes — XP buys cosmetics, coins buy streak protection — closing the gap flagged in Part 5's classification below. |
 | Character Progression Engine | Conflated with two unrelated real concepts: (1) `Progression`/`XPGain` (learner leveling, already covered under Gamification Engine above) and (2) `Character`/`CharacterState`/`CharacterInteraction` (AI companion NPCs with `CharacterRole` enum incl. `GUIDE`,`MENTOR`,`WORLD_GUIDE` etc., driven by `backend/src/modules/ai/character.service.ts`). Neither is a "character progression" system (i.e., learner avatar/character leveling up cosmetically) — no such model exists. | Conflict | Naming collision: inventory's "Character Progression Engine" doesn't map to either real subsystem cleanly. If intent is learner-XP-leveling, it's Already implemented (dup of Gamification Engine). If intent is an avatar/companion that levels/evolves visually, that's Missing — no such model or UI exists. |
 | Creativity Engine | No model, service, or module. `ai-task.interface.ts` has a `creative` task-type enum value used generically by the AI provider abstraction, but no dedicated creativity workflow, prompt library, or output gallery. `Project`/`ProjectMilestone` (schema.prisma) + `projects.service.ts`/`projects.controller.ts` cover open-ended learner projects generally, not a creativity-specific engine. | Missing | If "Creativity Engine" means guided creative-project scaffolding beyond generic Projects, nothing purpose-built exists. |
-| Media Engine | `content-adaptation.service.ts` (backend/src/modules/learning/services/) does text/age adaptation of `ContentItem` records — no image/video/audio asset pipeline, no upload/transcode/CDN handling anywhere in backend or frontend. | Missing | "Media" here would need actual asset management (uploads, rendering, storage); only text content adaptation exists, which is a different concern (Content Pipeline territory, covered by sibling agent). |
+| Media Engine | **UPDATED Tick 44**: real `MediaModule` (`backend/src/modules/media/`: service+controller, `GET /api/media`, `/api/media/:slug`, filterable by ageBand/domain/type) now wired into `AppModule` and live-verified with a real learner JWT against `media_assets` (12 real rows, CC0/PD Wikimedia Commons illustrations, seeded via the pre-existing `seed-media-assets.ts` which had never been run because the table didn't exist live until this tick's migration apply). Still no upload/transcode/CDN pipeline — this is a curated reference catalog, not an ingestion system (that gap remains, tracked under Content Ingestion/Media Dataset Layer below). | Partially implemented | Read/serve API + real seeded catalog now exists and is live-verified; upload/transcode/CDN ingestion is the remaining real gap, not urgent for v1 (missions/activities can already reference these asset ids). |
 
 ### Cross-Curricular Engines
 
@@ -433,7 +433,7 @@ Read directly from the current live codebase (`backend/src/modules/**`, `backend
 | Pronunciation Engine / Listening Engine / Reading Engine / Writing Engine / Speaking Engine / Shadowing Engine / Dictation Engine | Same `EnglishStrand` rows as above — each is one of the 9 string-parsed family labels in `EnglishStrandsPage.tsx`'s `STRAND_FAMILIES` constant, sharing the exact same `GET /english/strands`, `GET /english/strands/:slug` read-only routes (`backend/src/modules/learning/english.controller.ts`) and the exact same list/detail frontend page. No IPA data, no minimal-pairs data, no MFA/forced-alignment, no transcript/shadowing/dictation-specific interaction logic, no audio playback tied to these strands anywhere in `frontend/src/features/english/`. | Missing (as distinct engines) / Partially implemented (as generic strand content) | Six separate inventory line items collapse into one real, generic "labeled content card" system with zero engine-specific logic behind any of the six labels. Flagging as Missing for the actual described capability (IPA-based pronunciation feedback, real shadowing/dictation interaction flows, graded A1-B2 reading passages with comprehension checks) since none of that exists — what exists is a content taxonomy label, not a functioning sub-engine. |
 | Video/Scene Engine | No model, no service, no upload/CDN/media-serving code beyond the unrelated `public/voice-audio` static directory (that serves TTS output, not licensed video/scene assets). No `videoUrl`/`sceneId`-type field on `EnglishStrand` or `ContentItem`. | Missing | Zero trace; would need real media asset infrastructure (see Media Engine, already Missing per Part 7b) plus a licensing/attribution layer per the inventory's explicit "open/licensed/USAM-original media only" requirement. |
 | Story Engine / Story Safety Engine | No `Story`/`StoryNode`/`StoryBranch` model in `schema.prisma`. `ContentType` enum on the orphaned `ContentItem` model (Part 7a) includes `STORY` as a value, but `ContentItem` itself has zero code references anywhere outside the schema file (confirmed by Part 7a's grep) — so even the one nominal trace is unused. No branching-narrative logic, no age×CEFR×skill×interest personalization, and consequently no distinct "Story Safety" layer either (nothing to safety-review). | Missing | Both engines are fully unbuilt; Story Safety Engine specifically has no possible partial credit since its parent Story Engine doesn't exist to need safety-reviewing. |
-| Visual Language Engine | No trace anywhere (`grep -rli "visual.language\|VisualLanguage"` across both `backend/src` and `frontend/src` returns nothing beyond this doc). | Missing | Zero implementation; inventory gives no further detail on what this specifically means (likely image-supported vocabulary/comprehension aids), nothing to partially credit. |
+| Visual Language Engine | **UPDATED Tick 44**: real `VisualLanguageModule` (`backend/src/modules/visual-language/`: service+controller, `GET /api/visual-language`, `/:slug`, filterable by ageBand/category) wired into `AppModule`, live-verified with a real learner JWT. New `seed-visual-language-cards.ts` seeded 14 real image-paired vocabulary/emotion/sequencing/comprehension cards across all 3 `AgeBand`s and all 4 `VisualLanguageCategory` values, images from real Wikimedia Commons CC0/PD sources with genuine captions (not lorem-ipsum). The `VisualLanguageCard` model/migration already existed (Tick-39-era) but was never applied live nor had any backend/seed layer — closing both gaps this tick. | Partially implemented | Real backend + real seeded content now live; still v1 — no learner-facing UI page consumes this endpoint yet (a real remaining frontend-wiring gap, tracked as a follow-up, not urgent). |
 | Dialogue Dataset Layer | No dataset ingestion of DailyDialog/MultiWOZ/PersonaChat found — no fixture files, no seed scripts referencing these dataset names, no age-filtering logic. `conversation.service.ts`'s dialogue is 100% live-generated via Bedrock per-turn, not backed by any curated dialogue corpus. | Missing | This is a dataset-layer gap distinct from the Conversation Engine (which is Partially implemented, see above) — the inventory explicitly separates "have a conversation system" from "ground that system in a licensed, age-filtered dialogue dataset," and only the former exists. |
 | Corpus Engine | No WordNet/Wiktionary/ConceptNet/Universal-Dependencies integration found anywhere — no vendored corpus files, no API client code, no `node_modules` package for any of these (checked `frontend/package.json` and implicitly `backend/package.json` via the earlier dependency greps in this pass turning up nothing). | Missing | Zero implementation; the inventory itself flags this as license-sensitive (check license before commercial redistribution) — moot until any integration is attempted. |
 
@@ -443,7 +443,7 @@ Read directly from the current live codebase (`backend/src/modules/**`, `backend
 |---|---|---|---|
 | Lip Sync/Character Animation Engine | `frontend/src/features/characters/components/CharacterFace.tsx` + `CharacterAvatar.tsx` exist and (per commit `9c20fb3`, "hand-crafted illustrated-style SVG character avatars... with idle animation") have a real idle animation, confirmed via `framer-motion` usage already noted elsewhere in this codebase (`grep -rl framer-motion frontend/src` hits character-adjacent files like `CelebrationOverlay.tsx`, `AppShell.tsx`). However, idle animation is not the same as lip-sync: no viseme/phoneme-timing data, no Rhubarb/Live2D/Rive integration, and no synchronization between the new Voice Interaction Engine's TTS audio output and any mouth-movement animation — the avatar and the voice pipeline are two unconnected systems today. | Partially implemented | Character *has* real animation (idle state), which is the "Character Animation" half of this engine's name, but zero "Lip Sync" — the two are conflated in the inventory's naming but only one half exists. |
 | 3D/Spatial Learning Engine | No Three.js/Babylon.js/R3F dependency found (`grep -i "three\|babylon\|@react-three" frontend/package.json` — not checked directly this pass via package.json read, but zero `.tsx` files reference any 3D library, and the inventory itself labels this "future"). | Missing (correctly deferred — inventory-labeled Future) | Inventory explicitly scopes this as "future: ... for VR/AR-ready architecture" — Missing classification is expected and appropriate, not a gap to prioritize. |
-| Simulation Engine | No dedicated simulation model/service. Closest adjacent real systems: `coding-sandbox` (client-side code execution, covered in Part 7a — a *code* simulation, not entrepreneurship/science/digital-safety scenario simulation) and the cross-curricular `EntrepreneurshipConcept`/`FinancialLiteracyConcept` models (Part 7b — static seeded concept text, not interactive simulations). Nothing found that lets a learner run an interactive entrepreneurship/science/digital-safety scenario with branching outcomes or state. | Missing | The building blocks that a Simulation Engine might eventually route through (coding sandbox, cross-curricular content) exist for other purposes but nothing simulation-specific has been built. |
+| Simulation Engine | **UPDATED Tick 44**: real `SimulationModule` (`backend/src/modules/simulation/`: service+controller, `GET /api/simulations`, `/:slug` with branching decision nodes, `/:scenarioId/nodes/:nodeKey`) wired into `AppModule`, live-verified with a real learner JWT. New `seed-simulation-scenarios.ts` seeded 5 real branching scenarios across all 5 `SimulationCategory` values (Lemonade Stand Startup/ENTREPRENEURSHIP, Save or Spend/FINANCIAL_LITERACY, The Stranger Online/DIGITAL_SAFETY, Missing Plant Nutrient/SCIENCE, Speaking Up for a Classmate/CIVIC), 19 real decision nodes total with genuine branching outcomes and pedagogy notes (not lorem-ipsum). The `SimulationScenario`/`SimulationDecisionPoint` tables/models already existed in a Tick-39-era migration file but the migration itself had never been applied live (confirmed via live schema diff before this tick) — closing both the schema-application gap and the missing backend/seed layer in one pass. | Partially implemented | Real backend + real seeded content now live; still v1-scope (linear branching tree per scenario, no state-persistence of a learner's choice history across sessions yet — a real follow-up, not urgent for launch). |
 
 ### Cross-Curricular (remaining)
 
@@ -992,3 +992,80 @@ remains out of scope per the service's own doc comment, correctly deferred.
 2. `safety_policies` table genuinely empty — real scoped seeding task.
 3. AWS Bedrock credentials still pending user action — not a blocker.
 4. 39 fully-stale branches safe to delete in a cleanup tick.
+
+## Tick 44 (2026-09-03 ~09:20-09:40 UTC): Media/Simulation/Visual Language engines built end-to-end (3 reclassified Missing→Partially implemented)
+
+- Continuity: control-server and Kids-server (now resolvable at `kids.usamif.com`,
+  IP still changes on stop/start per no-Elastic-IP finding) both at `87a8eab`
+  (Tick 43) at start of this tick. Confirmed via live schema diff (comparing
+  `@@map` table names in `schema.prisma` against `pg_stat_user_tables` on the
+  live DB) that migration `20260906_add_media_simulation_visual_language_engines.sql`
+  — despite existing as a tracked file since a much earlier tick — had **never
+  actually been applied live**: `media_assets`, `simulation_scenarios`,
+  `simulation_decision_points`, `visual_language_cards` did not exist as real
+  tables. This is the same category of finding as Tick 7's "migrations never
+  applied" discovery — a real, recurring gotcha in this project: a migration
+  file existing in the repo is not evidence it ran live; always diff schema
+  vs live tables before trusting either "Missing" or "done" claims.
+- Applied that migration live via direct `psql -f` (clean CREATE TYPE/TABLE/INDEX,
+  no destructive statements, verified by reading the SQL file first) — all 4
+  tables now exist live.
+- Built all three engines' backend layer from scratch (none had a service,
+  controller, or module before this tick — pure Missing per the pre-tick
+  classification):
+  - **Media Engine**: `MediaModule` (`GET /api/media`, `/api/media/:slug`,
+    filterable by ageBand/domain/type), wired to the *already-existing but
+    never-run* `seed-media-assets.ts` (12 real CC0/Public-Domain Wikimedia
+    Commons illustrations with genuine license/source/attribution metadata).
+  - **Simulation Engine**: `SimulationModule` (`GET /api/simulations`, `/:slug`
+    with branching nodes included, `/:scenarioId/nodes/:nodeKey`). New
+    `seed-simulation-scenarios.ts`: 5 real branching decision-tree scenarios,
+    one per `SimulationCategory` (ENTREPRENEURSHIP/FINANCIAL_LITERACY/
+    DIGITAL_SAFETY/SCIENCE/CIVIC), 19 real decision nodes total with genuine
+    age-appropriate choices and pedagogical outcome notes — not lorem-ipsum.
+  - **Visual Language Engine**: `VisualLanguageModule` (`GET /api/visual-language`,
+    `/:slug`, filterable by ageBand/category). New `seed-visual-language-cards.ts`:
+    14 real image-paired vocabulary/emotion/sequencing/comprehension cards
+    across all 3 AgeBands, images from real Wikimedia Commons CC0/PD sources.
+- All three wired into `AppModule`. `tsc --noEmit` clean, `nest build` clean,
+  `npm run build` clean on frontend (unrelated concurrent-agent
+  AdminContentItemsPage merge included, also verified clean).
+- **Live-verified end-to-end** with a freshly-minted real learner JWT
+  (`admin-test@usamif.com`-adjacent method, deleted from server after use):
+  `GET /api/media` → 200, real seeded Wikimedia asset JSON. `GET /api/media/solar-system-diagram`
+  → 200, single real record. `GET /api/simulations` → 200, all 5 real scenarios.
+  `GET /api/simulations/lemonade-stand-startup` → 200, full scenario + 7 real
+  branching nodes. `GET /api/visual-language` → 200, 14 real cards. No-auth
+  request to `/api/media` → 401 (guard correctly enforced). Direct psql counts
+  post-seed: `media_assets=12`, `simulation_scenarios=5`,
+  `simulation_decision_points=19`, `visual_language_cards=14`.
+- Gap Matrix: reclassified Media Engine, Simulation Engine, and Visual Language
+  Engine all from Missing → Partially implemented (real backend + real seeded
+  content now live; remaining gaps are v1-scope — no upload/CDN pipeline for
+  Media, no cross-session choice-history persistence for Simulation, no
+  learner-facing frontend page yet for Visual Language — each noted in its row).
+- 1 commit (`5ca0d36` for the backend/seed work, merged cleanly with a
+  concurrent sibling agent's `AdminContentItemsPage` frontend-only push — no
+  file overlap, auto-merged). Control repo, GitHub, and Kids-server confirmed
+  at matching commit hash after deploy. Frontend rebuilt+rsynced, backend
+  rebuilt+pm2-restarted. Site `https://kids.usamif.com/` → 200,
+  `/api/health` → `database: connected` throughout.
+
+### Next tick priorities
+1. Full Gap Matrix Running Tally reconciliation (the 34/71/59/7-style summary
+   counts) is still the single most overdue item — hasn't been recomputed
+   since Tick 17/Part 9 despite ~25+ merges/reclassifications landing since,
+   including this tick's 3. Worth a dedicated tick with no urgent seed/build
+   work competing for budget.
+2. Visual Language Engine has no learner-facing frontend page yet — real,
+   scoped next build target (a simple flashcard-style viewer, similar
+   pattern to the existing Flashcards frontend).
+3. Media Engine has no upload/CDN/transcode pipeline — deliberately deferred,
+   not urgent for v1 (curated static catalog is sufficient for missions to
+   reference by id today).
+4. AWS Bedrock credentials still pending user action — not a blocker.
+5. Re-run the "migration file exists vs. migration actually applied live"
+   diff check (`@@map` names vs `pg_stat_user_tables`) as a standing habit at
+   the start of future ticks — this is the second time (Tick 7, now Tick 44)
+   this exact gotcha has hidden real unbuilt work behind an already-tracked
+   migration file.
