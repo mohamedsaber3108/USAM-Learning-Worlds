@@ -810,3 +810,39 @@ export const translationsApi = {
     ),
 }
 
+// ==================== Question Engine (gap matrix: QuestionTemplate) ====================
+// Curriculum-linked reusable question definitions (MCQ/FILL_BLANK/DRAG_DROP).
+// Admin-only browse/generate UI — the "generate" endpoint composes a real
+// missions Activity from a template so generated questions flow through the
+// existing delivery/mastery pipeline, not a parallel system.
+export interface QuestionTemplateRecord {
+  id: string
+  objectiveId: string
+  type: 'MCQ' | 'FILL_BLANK' | 'DRAG_DROP' | string
+  stem: string
+  options: string[] | null
+  correctAnswer: string
+  distractors: string[]
+  difficulty: string
+  isActive: boolean
+}
+
+export const questionsApi = {
+  listTemplates: (params?: { objectiveId?: string; type?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.objectiveId) qs.set('objectiveId', params.objectiveId)
+    if (params?.type) qs.set('type', params.type)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return apiClient.get<QuestionTemplateRecord[]>(`/questions/templates${suffix}`)
+  },
+
+  getTemplate: (id: string) => apiClient.get<QuestionTemplateRecord>(`/questions/templates/${id}`),
+
+  generateActivity: (data: {
+    templateId: string
+    distractorCount?: number
+    missionId?: string
+    order?: number
+  }) => apiClient.post('/questions/generate', data),
+}
+
