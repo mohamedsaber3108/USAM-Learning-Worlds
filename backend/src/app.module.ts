@@ -31,6 +31,7 @@ import { CreativityModule } from './modules/creativity/creativity.module';
 import { ProblemSolvingModule } from './modules/problem-solving/problem-solving.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
+import { ExperimentationModule } from './modules/experimentation/experimentation.module';
 import { MisconceptionModule } from './modules/misconceptions/misconception.module';
 import { ContentQaModule } from './modules/content-qa/content-qa.module';
 import { InterventionModule } from './modules/interventions/intervention.module';
@@ -87,6 +88,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     ProblemSolvingModule,
     AuditModule,
     FeatureFlagsModule,
+    ExperimentationModule,
     MisconceptionModule,
     ContentQaModule,
     InterventionModule,

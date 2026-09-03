@@ -82,6 +82,7 @@ model Learner {
   cognitiveLoadSignals  CognitiveLoadSignal[]
   interventions         InterventionRecommendation[]
   safetyEscalations     SafetyEscalation[]
+  experimentAssignments ExperimentAssignment[]
 
   @@index([userId])
   @@index([displayName])
@@ -1923,6 +1924,62 @@ model FeatureFlag {
 
   @@index([key])
   @@map("feature_flags")
+}
+
+// ==================== Experimentation Engine v1 ====================
+// Distinct from FeatureFlag above: FeatureFlag is simple global on/off +
+// per-learner allow-list, with no % rollout/bucketing and no outcome
+// tracking. Experiment/ExperimentAssignment add deterministic variant
+// bucketing (same learner always gets the same variant, no DB write
+// needed to compute it) and a durable assignment record.
+//
+// IMPORTANT — outcome measurement is explicitly OUT of scope here by
+// design: this pass does NOT build a parallel metrics/analytics system.
+// Per the platform inventory's own caveat ("A/B test learning outcomes,
+// not just engagement, not just page views"), analyzing an experiment's
+// effect on learning outcomes should query the existing LearningEvent
+// table (learnerId + type + entityType/entityId + createdAt), joined
+// against ExperimentAssignment.learnerId/variant — NOT a bespoke
+// event/metric table bolted onto this module. That join query is future
+// work (e.g. an admin experiment-results endpoint); this v1 only ships
+// the assignment primitive it would depend on.
+model Experiment {
+  id          String           @id @default(uuid())
+  key         String           @unique
+  name        String
+  description String?
+  variants    Json // e.g. ["control", "treatment"] or [{"name":"control","weight":1}, ...]
+  status      ExperimentStatus @default(DRAFT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  assignments ExperimentAssignment[]
+
+  @@index([key])
+  @@map("experiments")
+}
+
+enum ExperimentStatus {
+  DRAFT
+  RUNNING
+  PAUSED
+  COMPLETED
+}
+
+model ExperimentAssignment {
+  id           String     @id @default(uuid())
+  learnerId    String
+  experimentId String
+  variant      String
+  assignedAt   DateTime   @default(now())
+
+  learner    Learner    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, experimentId])
+  @@index([experimentId])
+  @@index([learnerId])
+  @@map("experiment_assignments")
 }
 
 // ==================== AI Evaluation Harness v1 ====================
