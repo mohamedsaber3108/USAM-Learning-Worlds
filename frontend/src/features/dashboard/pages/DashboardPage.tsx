@@ -29,7 +29,7 @@ import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
-import { LoadingState, EmptyState } from '@/components/common/CharacterState'
+import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
 
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
 // `labelKey` resolves against dashboard.quickActions.* in both locales.
@@ -89,7 +89,12 @@ export function DashboardPage() {
     }
   }, [user, navigate])
 
-  const { data: progression, isLoading: progressionLoading } = useQuery({
+  const {
+    data: progression,
+    isLoading: progressionLoading,
+    isError: progressionIsError,
+    refetch: refetchProgression,
+  } = useQuery({
     queryKey: ['progression'],
     queryFn: () => gamificationApi.getProgression().then(res => res.data),
   })
@@ -177,6 +182,23 @@ export function DashboardPage() {
     return (
       <div className="min-h-screen bg-surface-50 flex items-center justify-center">
         <LoadingState character="Azouz" message="Azouz is getting your dashboard ready..." size={96} />
+      </div>
+    )
+  }
+
+  // The dashboard's core stat is the progression query — if that fails we
+  // have nothing meaningful to show (level/XP hero card would be blank
+  // zeros), so replace the whole page with a real retry state instead of
+  // silently rendering a dashboard full of "0"s and "---"s.
+  if (progressionIsError) {
+    return (
+      <div className="min-h-screen bg-surface-50 flex items-center justify-center px-4">
+        <ErrorState
+          character="Azouz"
+          title="Hmm, your dashboard didn't load"
+          message="No worries — this happens sometimes. Let's give it another try."
+          onRetry={() => refetchProgression()}
+        />
       </div>
     )
   }
