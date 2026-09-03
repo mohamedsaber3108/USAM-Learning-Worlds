@@ -180,7 +180,7 @@ export function ProjectPage({
           <ProjectWorkspace project={project} canEdit={canEdit} />
           {onAddArtifact && (
             <Button onClick={onAddArtifact} variant="outline" className="w-full">
-              <FileText className="mr-2 size-4" />
+              <FileText className="me-2 size-4" />
               Add Artifact
             </Button>
           )}
@@ -267,7 +267,7 @@ function ProjectWorkspace({ project, canEdit }: { project: Project; canEdit: boo
         </h2>
         {canEdit && (
           <Button variant="outline" size="sm">
-            <Play className="mr-2 size-4" />
+            <Play className="me-2 size-4" />
             Open Workspace
           </Button>
         )}
@@ -399,7 +399,7 @@ function ReflectionsSection({
         <h2 className="font-display text-lg font-semibold">Reflections</h2>
         {canEdit && onAddReflection && (
           <Button onClick={onAddReflection} variant="outline" size="sm">
-            <MessageSquare className="mr-2 size-4" />
+            <MessageSquare className="me-2 size-4" />
             Add Reflection
           </Button>
         )}
