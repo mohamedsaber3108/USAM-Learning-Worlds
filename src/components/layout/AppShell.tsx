@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="aurora-bg min-h-dvh">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+        className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
       >
         Skip to content
       </a>
@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         >
           <Brand />
-          <nav aria-label="Places" className="mt-4 flex-1 space-y-1.5 overflow-y-auto pr-1">
+          <nav aria-label="Places" className="mt-4 flex-1 space-y-1.5 overflow-y-auto pe-1">
             {primary.map((item) => (
               <NavItem
                 key={item.to}
@@ -100,7 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               to="/profile"
               aria-label="Notifications and profile"
-              className="ml-auto grid size-11 place-items-center rounded-xl bg-surface"
+              className="ms-auto grid size-11 place-items-center rounded-xl bg-surface"
             >
               <Bell className="size-5" />
             </Link>
