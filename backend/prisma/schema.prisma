@@ -963,6 +963,15 @@ model ContentItem {
   generatedBy String?
   validatedBy String?
   validatedAt DateTime?
+  // Content Provenance Engine v1: gives provenance metadata a home for
+  // future content, even though ContentItem itself is mostly orphaned
+  // today (see gap matrix). sourceType classifies how the row came to
+  // exist; createdBy names the actor (seed script name, AI job id, or
+  // human author id) — free-text, not an FK, since authors span seed
+  // scripts, AI generation jobs, and (eventually) human CMS users with
+  // no single identity table today.
+  sourceType  ContentSourceType @default(SEEDED)
+  createdBy   String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
@@ -974,7 +983,14 @@ model ContentItem {
   @@index([domainId])
   @@index([ageBand])
   @@index([generatedBy])
+  @@index([sourceType])
   @@map("content_items")
+}
+
+enum ContentSourceType {
+  SEEDED
+  AI_GENERATED
+  HUMAN_AUTHORED
 }
 
 enum ContentType {
