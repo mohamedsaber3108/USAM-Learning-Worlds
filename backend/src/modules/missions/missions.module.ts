@@ -6,9 +6,10 @@ import { ActivityEvaluator } from './evaluators/activity-evaluator';
 import { MasteryModule } from '../mastery/mastery.module';
 import { AuthModule } from '../auth/auth.module';
 import { AdaptiveModule } from '../adaptive/adaptive.module';
+import { MisconceptionModule } from '../misconceptions/misconception.module';
 
 @Module({
-  imports: [MasteryModule, AuthModule, AdaptiveModule],
+  imports: [MasteryModule, AuthModule, AdaptiveModule, MisconceptionModule],
   controllers: [MissionsController, AdminMissionsController],
   providers: [MissionsService, ActivityEvaluator],
   exports: [MissionsService],

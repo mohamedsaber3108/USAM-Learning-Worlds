@@ -3,6 +3,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { MasteryService } from '../mastery/mastery.service';
 import { ActivityEvaluator } from './evaluators/activity-evaluator';
 import { CognitiveLoadService } from '../adaptive/cognitive-load.service';
+import { MisconceptionService } from '../misconceptions/misconception.service';
 
 @Injectable()
 export class MissionsService {
@@ -11,6 +12,7 @@ export class MissionsService {
     private masteryService: MasteryService,
     private activityEvaluator: ActivityEvaluator,
     private cognitiveLoadService: CognitiveLoadService,
+    private misconceptionService: MisconceptionService,
   ) {}
 
   /**
@@ -228,6 +230,25 @@ export class MissionsService {
         timeOnTaskSeconds: cognitiveLoadInput.timeOnTaskSeconds,
         pauseCount: cognitiveLoadInput.pauseCount,
       });
+    }
+
+    // Misconception Engine: on a wrong answer, record the pattern for later
+    // review/insight surfacing. Best-effort, never blocks submission.
+    if (!evaluation.correct) {
+      const wrongAnswerValue =
+        typeof response === 'object' && response !== null
+          ? (response as any).answer ?? (response as any).value ?? JSON.stringify(response)
+          : response;
+      void this.misconceptionService.recordWrongAnswer(
+        wrongAnswerValue,
+        {
+          questionTemplateId: activity.generatedFromTemplateId ?? null,
+          activityId,
+        },
+        [activity.title, activity.objective?.name, activity.objective?.competency?.name].filter(
+          Boolean,
+        ) as string[],
+      );
     }
 
     // DIAGNOSTIC activities inform placement/starting point but should not
