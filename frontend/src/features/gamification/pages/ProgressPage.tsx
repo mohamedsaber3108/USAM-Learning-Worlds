@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Flame, Trophy, Target, CheckCircle2, Snowflake, Coins } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, streakFreezeApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 
 export function ProgressPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
 
   const {
@@ -72,9 +74,9 @@ export function ProgressPage() {
           <div className="flex items-center gap-4">
             <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
               <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-              Back
+              {t('progressPage.back')}
             </Link>
-            <h1 className="text-2xl font-display font-bold text-white">My Progress</h1>
+            <h1 className="text-2xl font-display font-bold text-white">{t('progressPage.title')}</h1>
           </div>
         </div>
       </header>
@@ -82,12 +84,12 @@ export function ProgressPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {progressionLoading ? (
-          <LoadingState character="Azouz" message="Azouz is tallying up your progress..." />
+          <LoadingState character="Azouz" message={t('progressPage.loading')} />
         ) : progressionIsError ? (
           <ErrorState
             character="Azouz"
-            title="Hmm, your progress didn't load"
-            message="No worries — this happens sometimes. Let's give it another try."
+            title={t('progressPage.errorTitle')}
+            message={t('progressPage.errorMessage')}
             onRetry={() => refetchProgression()}
           />
         ) : (
@@ -101,11 +103,11 @@ export function ProgressPage() {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-slate-500 text-xs font-medium mb-1">Current Level</p>
+              <p className="text-slate-500 text-xs font-medium mb-1">{t('progressPage.currentLevel')}</p>
               <p className="text-5xl font-display font-extrabold text-primary-600">{progression?.level || 1}</p>
             </div>
             <div className="text-end">
-              <p className="text-slate-500 text-xs font-medium mb-1">Total XP</p>
+              <p className="text-slate-500 text-xs font-medium mb-1">{t('progressPage.totalXp')}</p>
               <p className="text-4xl font-display font-extrabold text-slate-900">
                 {totalXP.toLocaleString()}
               </p>
@@ -115,9 +117,9 @@ export function ProgressPage() {
           {/* XP Progress */}
           <div>
             <div className="flex justify-between text-sm text-slate-500 mb-2">
-              <span>Progress to Level {(progression?.level || 1) + 1}</span>
+              <span>{t('progressPage.progressToLevel', { level: (progression?.level || 1) + 1 })}</span>
               <span>
-                {progression?.xpInCurrentLevel || 0} / {progression?.xpForNextLevel || 100} XP
+                {progression?.xpInCurrentLevel || 0} / {progression?.xpForNextLevel || 100} {t('progressPage.xpSuffix')}
               </span>
             </div>
             <div className="progress-track">
@@ -142,9 +144,9 @@ export function ProgressPage() {
                 <Snowflake className="w-5 h-5" strokeWidth={2} />
               </div>
               <div>
-                <p className="font-display font-semibold text-slate-900">Streak Freeze</p>
+                <p className="font-display font-semibold text-slate-900">{t('progressPage.streakFreeze.title')}</p>
                 <p className="text-xs text-slate-500">
-                  Protects your streak if you miss a day — spend coins, not XP.
+                  {t('progressPage.streakFreeze.description')}
                 </p>
               </div>
             </div>
@@ -153,7 +155,7 @@ export function ProgressPage() {
               <div className="flex items-center gap-1.5 text-sm text-slate-600">
                 <Coins className="w-4 h-4 text-amber-500" strokeWidth={2} />
                 <span className="font-semibold">{freezeStatus?.coins ?? progression?.coins ?? 0}</span>
-                <span className="text-slate-400">coins</span>
+                <span className="text-slate-400">{t('progressPage.streakFreeze.coins')}</span>
               </div>
 
               <div className="flex items-center gap-1.5">
@@ -167,7 +169,7 @@ export function ProgressPage() {
                   />
                 ))}
                 <span className="text-xs text-slate-500 ms-1">
-                  {freezeStatus?.freezesAvailable ?? 0} active
+                  {freezeStatus?.freezesAvailable ?? 0} {t('progressPage.streakFreeze.active')}
                 </span>
               </div>
 
@@ -181,20 +183,20 @@ export function ProgressPage() {
                 onClick={() => purchaseFreeze.mutate()}
               >
                 {freezeStatus?.atCap
-                  ? 'Max held'
-                  : `Buy Streak Freeze — ${freezeStatus?.costCoins ?? 50} coins`}
+                  ? t('progressPage.streakFreeze.maxHeld')
+                  : t('progressPage.streakFreeze.buy', { cost: freezeStatus?.costCoins ?? 50 })}
               </button>
             </div>
           </div>
 
           {purchaseFreeze.isError && (
             <p className="text-xs text-danger-600 mt-3">
-              {(purchaseFreeze.error as any)?.response?.data?.message || 'Could not purchase freeze.'}
+              {(purchaseFreeze.error as any)?.response?.data?.message || t('progressPage.streakFreeze.purchaseError')}
             </p>
           )}
           {purchaseFreeze.isSuccess && (
             <p className="text-xs text-success-600 mt-3">
-              Streak Freeze purchased! It'll auto-apply the next time you miss a practice day.
+              {t('progressPage.streakFreeze.purchaseSuccess')}
             </p>
           )}
         </motion.div>
@@ -214,9 +216,9 @@ export function ProgressPage() {
             <p className="text-3xl font-display font-extrabold text-slate-900">
               {streakCount}
             </p>
-            <p className="text-sm text-slate-500 mt-1">Day Streak</p>
+            <p className="text-sm text-slate-500 mt-1">{t('progressPage.dayStreak')}</p>
             <p className="text-xs text-slate-400 mt-1">
-              Best: {streak?.longestStreak || 0}
+              {t('progressPage.best', { count: streak?.longestStreak || 0 })}
             </p>
           </motion.div>
 
@@ -233,12 +235,12 @@ export function ProgressPage() {
             <p className="text-3xl font-display font-extrabold text-slate-900">
               {unlockedAchievements.length}
             </p>
-            <p className="text-sm text-slate-500 mt-1">Achievements</p>
+            <p className="text-sm text-slate-500 mt-1">{t('progressPage.achievements')}</p>
             <Link
               to="/achievements"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
-              View All <span className="inline-block rtl:scale-x-[-1]">→</span>
+              {t('progressPage.viewAll')} <span className="inline-block rtl:scale-x-[-1]">→</span>
             </Link>
           </motion.div>
 
@@ -255,9 +257,9 @@ export function ProgressPage() {
             <p className="text-3xl font-display font-extrabold text-slate-900">
               {masteredCount}
             </p>
-            <p className="text-sm text-slate-500 mt-1">Mastered</p>
+            <p className="text-sm text-slate-500 mt-1">{t('progressPage.mastered')}</p>
             <p className="text-xs text-slate-400 mt-1">
-              {learningCount} learning
+              {t('progressPage.learningSuffix', { count: learningCount })}
             </p>
           </motion.div>
 
@@ -274,12 +276,12 @@ export function ProgressPage() {
             <p className="text-3xl font-display font-extrabold text-slate-900">
               {completedMissions}
             </p>
-            <p className="text-sm text-slate-500 mt-1">Completed</p>
+            <p className="text-sm text-slate-500 mt-1">{t('progressPage.completed')}</p>
             <Link
               to="/missions"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
-              Browse <span className="inline-block rtl:scale-x-[-1]">→</span>
+              {t('progressPage.browse')} <span className="inline-block rtl:scale-x-[-1]">→</span>
             </Link>
           </motion.div>
         </div>
@@ -289,12 +291,12 @@ export function ProgressPage() {
           {/* Recent Achievements */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-display font-semibold">Recent Achievements</h2>
+              <h2 className="text-xl font-display font-semibold">{t('progressPage.recentAchievements')}</h2>
               <Link
                 to="/achievements"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
-                View All <span className="inline-block rtl:scale-x-[-1]">→</span>
+                {t('progressPage.viewAll')} <span className="inline-block rtl:scale-x-[-1]">→</span>
               </Link>
             </div>
 
@@ -321,7 +323,7 @@ export function ProgressPage() {
               </div>
             ) : (
               <p className="text-slate-500 text-center py-8">
-                No achievements yet. Keep learning!
+                {t('progressPage.noAchievements')}
               </p>
             )}
           </div>
@@ -329,12 +331,12 @@ export function ProgressPage() {
           {/* Recent Missions */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-display font-semibold">Recent Missions</h2>
+              <h2 className="text-xl font-display font-semibold">{t('progressPage.recentMissions')}</h2>
               <Link
                 to="/missions"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
-                View All <span className="inline-block rtl:scale-x-[-1]">→</span>
+                {t('progressPage.viewAll')} <span className="inline-block rtl:scale-x-[-1]">→</span>
               </Link>
             </div>
 
@@ -347,7 +349,7 @@ export function ProgressPage() {
                   >
                     <div className="flex-1">
                       <p className="font-medium text-slate-900">
-                        {run.mission?.title || 'Mission'}
+                        {run.mission?.title || t('progressPage.mission')}
                       </p>
                       <p className="text-xs text-slate-500">
                         {new Date(run.startedAt).toLocaleDateString()}
@@ -360,11 +362,11 @@ export function ProgressPage() {
                             {run.finalScore}%
                           </p>
                           <p className="text-xs text-slate-500">
-                            +{run.xpEarned} XP
+                            {t('progressPage.xpEarned', { xp: run.xpEarned })}
                           </p>
                         </>
                       ) : (
-                        <p className="text-sm text-slate-500">In Progress</p>
+                        <p className="text-sm text-slate-500">{t('progressPage.inProgress')}</p>
                       )}
                     </div>
                   </div>
@@ -372,7 +374,7 @@ export function ProgressPage() {
               </div>
             ) : (
               <p className="text-slate-500 text-center py-8">
-                No missions yet. Start your first mission!
+                {t('progressPage.noMissions')}
               </p>
             )}
           </div>

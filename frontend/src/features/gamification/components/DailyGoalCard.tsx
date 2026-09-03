@@ -1,4 +1,5 @@
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Target } from 'lucide-react'
 import { THEME_HEX } from '../../../lib/theme/colors'
 
@@ -29,6 +30,7 @@ export interface DailyGoalCardProps {
  * emerald means "correctness/mastery feedback only".
  */
 export function DailyGoalCard({ data, isLoading }: DailyGoalCardProps) {
+  const { t } = useTranslation()
   if (isLoading || !data) {
     return (
       <div className="card animate-pulse">
@@ -49,7 +51,7 @@ export function DailyGoalCard({ data, isLoading }: DailyGoalCardProps) {
     <div className="card">
       <div className="flex items-center gap-2 mb-4">
         <Target className="w-5 h-5 text-primary-600" strokeWidth={2} />
-        <h3>Today's Goal</h3>
+        <h3>{t('dailyGoal.title')}</h3>
       </div>
 
       <div className="flex items-center gap-5">
@@ -74,9 +76,9 @@ export function DailyGoalCard({ data, isLoading }: DailyGoalCardProps) {
 
         <div className="flex-1 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Minutes</span>
+            <span className="text-slate-500">{t('dailyGoal.minutes')}</span>
             <span className="font-semibold text-slate-800">
-              {progress.minutesSpent} / {goal.targetMinutes} min
+              {t('dailyGoal.minutesValue', { spent: progress.minutesSpent, target: goal.targetMinutes })}
             </span>
           </div>
           <div className="progress-track">
@@ -87,9 +89,9 @@ export function DailyGoalCard({ data, isLoading }: DailyGoalCardProps) {
           </div>
 
           <div className="flex justify-between text-sm mt-3">
-            <span className="text-slate-500">Activities</span>
+            <span className="text-slate-500">{t('dailyGoal.activities')}</span>
             <span className="font-semibold text-slate-800">
-              {progress.activitiesCompleted} / {goal.targetActivities}
+              {t('dailyGoal.activitiesValue', { completed: progress.activitiesCompleted, target: goal.targetActivities })}
             </span>
           </div>
           <div className="progress-track">
@@ -104,7 +106,7 @@ export function DailyGoalCard({ data, isLoading }: DailyGoalCardProps) {
       {goalMet && (
         <p className="text-xs text-success-600 font-medium mt-4 flex items-center gap-1">
           <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2} />
-          Goal complete for today — nice work!
+          {t('dailyGoal.goalComplete')}
         </p>
       )}
     </div>

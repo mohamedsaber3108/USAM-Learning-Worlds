@@ -3,20 +3,22 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import apiClient from '@/lib/api/client'
 import type { AuthResponse } from '@/types'
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-})
-
-type LoginForm = z.infer<typeof loginSchema>
-
 export function LoginPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const loginSchema = z.object({
+    email: z.string().email(t('auth.validation.invalidEmail')),
+    password: z.string().min(8, t('auth.validation.passwordMinLength')),
+  })
+
+  type LoginForm = z.infer<typeof loginSchema>
 
   const {
     register,
@@ -39,7 +41,7 @@ export function LoginPage() {
 
       navigate('/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.')
+      setError(err.response?.data?.message || t('auth.login.genericError'))
     } finally {
       setLoading(false)
     }
@@ -52,9 +54,9 @@ export function LoginPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back
+              {t('auth.login.welcomeBack')}
             </h1>
-            <p className="text-gray-600">Sign in to continue your learning journey</p>
+            <p className="text-gray-600">{t('auth.login.subtitle')}</p>
           </div>
 
           {/* Error Message */}
@@ -68,13 +70,13 @@ export function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                {t('auth.login.emailLabel')}
               </label>
               <input
                 {...register('email')}
                 type="email"
                 className="input"
-                placeholder="you@example.com"
+                placeholder={t('auth.login.emailPlaceholder')}
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
@@ -83,13 +85,13 @@ export function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                {t('auth.login.passwordLabel')}
               </label>
               <input
                 {...register('password')}
                 type="password"
                 className="input"
-                placeholder="••••••••"
+                placeholder={t('auth.login.passwordPlaceholder')}
               />
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
@@ -101,16 +103,16 @@ export function LoginPage() {
               disabled={loading}
               className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('auth.login.submitting') : t('auth.login.submit')}
             </button>
           </form>
 
           {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              {t('auth.login.noAccount')}{' '}
               <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-                Sign up
+                {t('auth.login.signUp')}
               </Link>
             </p>
           </div>
@@ -118,9 +120,9 @@ export function LoginPage() {
 
         {/* Demo Info */}
         <div className="mt-6 p-4 bg-white/50 backdrop-blur rounded-lg text-center text-sm text-gray-600">
-          <p className="font-medium mb-2">Demo Account:</p>
-          <p>Email: learner@test.com</p>
-          <p>Password: password123</p>
+          <p className="font-medium mb-2">{t('auth.login.demoAccountLabel')}</p>
+          <p>{t('auth.login.demoEmailLabel')}</p>
+          <p>{t('auth.login.demoPasswordLabel')}</p>
         </div>
       </div>
     </div>
