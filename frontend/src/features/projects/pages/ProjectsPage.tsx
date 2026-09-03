@@ -1,12 +1,22 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, FolderKanban, Plus, Star, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, FolderKanban, Plus, Star, Sparkles, X, Globe2, ExternalLink } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
 
-function NewProjectModal({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+function NewProjectModal({
+  onClose,
+  onCreated,
+  initialTitle = '',
+  initialDescription = '',
+}: {
+  onClose: () => void
+  onCreated: (id: string) => void
+  initialTitle?: string
+  initialDescription?: string
+}) {
+  const [title, setTitle] = useState(initialTitle)
+  const [description, setDescription] = useState(initialDescription)
   const [type, setType] = useState('INDEPENDENT')
 
   const create = useMutation({
@@ -66,10 +76,16 @@ export function ProjectsPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showModal, setShowModal] = useState(false)
+  const [adopted, setAdopted] = useState<{ title: string; description: string } | null>(null)
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['my-projects'],
     queryFn: () => projectsApi.getMy().then(res => res.data),
+  })
+
+  const { data: challenges } = useQuery({
+    queryKey: ['real-world-challenges'],
+    queryFn: () => projectsApi.listRealWorldChallenges().then(res => res.data),
   })
 
   return (
@@ -101,6 +117,44 @@ export function ProjectsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {challenges && challenges.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Globe2 className="w-5 h-5 text-secondary-600" strokeWidth={2} />
+              <h2 className="font-display font-bold text-lg text-slate-900">Real-World Challenges</h2>
+              <span className="text-xs text-slate-500">Adopt one and make it your own project</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {challenges.map((c: any) => (
+                <div key={c.id} className="card border border-secondary-100 bg-secondary-50/30">
+                  <h3 className="font-display font-semibold text-sm text-slate-900 mb-1">{c.title}</h3>
+                  <p className="text-xs text-slate-600 mb-3 line-clamp-3">{c.description}</p>
+                  <div className="flex items-center justify-between">
+                    {c.externalSourceUrl && (
+                      <a
+                        href={c.externalSourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary-600 hover:underline"
+                      >
+                        Source <ExternalLink className="w-3 h-3" strokeWidth={2} />
+                      </a>
+                    )}
+                    <button
+                      className="btn btn-sm bg-secondary-600 text-white hover:bg-secondary-700 shadow-none text-xs px-2 py-1"
+                      onClick={() => {
+                        setAdopted({ title: c.title, description: c.description })
+                        setShowModal(true)
+                      }}
+                    >
+                      Adopt
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -146,9 +200,12 @@ export function ProjectsPage() {
 
       {showModal && (
         <NewProjectModal
-          onClose={() => setShowModal(false)}
+          onClose={() => { setShowModal(false); setAdopted(null) }}
+          initialTitle={adopted?.title ?? ''}
+          initialDescription={adopted?.description ?? ''}
           onCreated={(id) => {
             setShowModal(false)
+            setAdopted(null)
             queryClient.invalidateQueries({ queryKey: ['my-projects'] })
             navigate(`/projects/${id}`)
           }}

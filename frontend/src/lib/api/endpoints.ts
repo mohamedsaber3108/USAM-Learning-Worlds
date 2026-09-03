@@ -153,6 +153,13 @@ export const projectsApi = {
 
   listCollaborators: (id: string) =>
     apiClient.get(`/projects/${id}/collaborators`),
+
+  // Real-World Challenge Engine: surfaces Project rows flagged
+  // isRealWorldChallenge=true (externally-sourced project prompts a
+  // learner can adopt and turn into their own real project), backed by
+  // GET /projects/real-world-challenges/list (projects.controller.ts).
+  listRealWorldChallenges: () =>
+    apiClient.get('/projects/real-world-challenges/list'),
 }
 
 // ==================== Rubrics ====================
