@@ -79,7 +79,7 @@ export function MissionCompletePage() {
 
           {/* Feedback */}
           {result.feedback && (
-            <div className="mb-8 p-6 bg-primary-50 rounded-card text-left">
+            <div className="mb-8 p-6 bg-primary-50 rounded-card text-start">
               <h3 className="font-display font-semibold text-slate-900 mb-2">Feedback</h3>
               <p className="text-slate-700">{result.feedback}</p>
             </div>

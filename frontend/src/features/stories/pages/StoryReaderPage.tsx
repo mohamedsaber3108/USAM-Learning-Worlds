@@ -69,7 +69,7 @@ export function StoryReaderPage() {
             <p className="text-xs text-gray-400 mb-4">
               Page {currentPage.pageNumber} of {story.pages.length}
               {currentPage.safetyReviewed && (
-                <span className="ml-2 text-emerald-600">✓ Safety reviewed</span>
+                <span className="ms-2 text-emerald-600">✓ Safety reviewed</span>
               )}
             </p>
 

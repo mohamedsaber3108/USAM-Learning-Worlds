@@ -166,7 +166,7 @@ export function ProgressPage() {
                     strokeWidth={2}
                   />
                 ))}
-                <span className="text-xs text-slate-500 ml-1">
+                <span className="text-xs text-slate-500 ms-1">
                   {freezeStatus?.freezesAvailable ?? 0} active
                 </span>
               </div>

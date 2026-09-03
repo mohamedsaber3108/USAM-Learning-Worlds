@@ -357,7 +357,7 @@ function ConceptCard({ concept }: { concept: Concept; assumedUnlocked: boolean }
     >
       <div className="flex items-start justify-between mb-2">
         <h4 className="font-semibold text-gray-900 line-clamp-2">{concept.name}</h4>
-        <span className="text-xl ml-2">
+        <span className="text-xl ms-2">
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin text-gray-400" strokeWidth={2} />
           ) : unlocked ? (

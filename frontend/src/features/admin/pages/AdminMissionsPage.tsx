@@ -266,25 +266,25 @@ export function AdminMissionsPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 border-b border-slate-200">
-                  <th className="py-2 pr-2">Title</th>
-                  <th className="py-2 pr-2">Type</th>
-                  <th className="py-2 pr-2">Order</th>
-                  <th className="py-2 pr-2">Active</th>
-                  <th className="py-2 pr-2 text-right">Actions</th>
+                <tr className="text-start text-slate-500 border-b border-slate-200">
+                  <th className="py-2 pe-2">Title</th>
+                  <th className="py-2 pe-2">Type</th>
+                  <th className="py-2 pe-2">Order</th>
+                  <th className="py-2 pe-2">Active</th>
+                  <th className="py-2 pe-2 text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((mission) => (
                   <tr key={mission.id} className="border-b border-slate-100">
-                    <td className="py-2 pr-2 font-medium text-slate-800">{mission.title}</td>
-                    <td className="py-2 pr-2">{mission.type}</td>
-                    <td className="py-2 pr-2">{mission.order}</td>
-                    <td className="py-2 pr-2">{mission.isActive ? 'Yes' : 'No'}</td>
-                    <td className="py-2 pr-2 text-right">
+                    <td className="py-2 pe-2 font-medium text-slate-800">{mission.title}</td>
+                    <td className="py-2 pe-2">{mission.type}</td>
+                    <td className="py-2 pe-2">{mission.order}</td>
+                    <td className="py-2 pe-2">{mission.isActive ? 'Yes' : 'No'}</td>
+                    <td className="py-2 pe-2 text-end">
                       <button
                         onClick={() => openEditForm(mission)}
-                        className="text-primary-600 hover:text-primary-800 mr-3"
+                        className="text-primary-600 hover:text-primary-800 me-3"
                         aria-label="Edit"
                       >
                         <Pencil className="w-4 h-4 inline" strokeWidth={2} />

@@ -167,7 +167,7 @@ function FirstMissionCelebration({ onDismiss }: { onDismiss: () => void }) {
         <div className="icon-chip bg-success-50 text-success-600 flex-shrink-0">
           <PartyPopper className="w-5 h-5" strokeWidth={2} />
         </div>
-        <p className="font-semibold text-sm text-slate-800 pr-1">{firstMissionCopy()}</p>
+        <p className="font-semibold text-sm text-slate-800 pe-1">{firstMissionCopy()}</p>
       </div>
     </motion.div>
   )

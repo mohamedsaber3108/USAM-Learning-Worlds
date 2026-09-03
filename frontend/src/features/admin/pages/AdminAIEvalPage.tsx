@@ -119,7 +119,7 @@ export function AdminAIEvalPage() {
                     )}
                     <span className="font-mono text-xs text-slate-600">{res.caseId}</span>
                     {res.score != null && (
-                      <span className="text-xs text-slate-400 ml-auto">score {res.score.toFixed(2)}</span>
+                      <span className="text-xs text-slate-400 ms-auto">score {res.score.toFixed(2)}</span>
                     )}
                   </div>
                   {res.responseText && (
