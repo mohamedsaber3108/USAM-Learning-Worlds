@@ -25,6 +25,7 @@ import { HallucinationControlService } from './services/hallucination-control.se
 import { PromptTemplateService } from './services/prompt-template.service';
 import { EnglishLearningModule } from '../english-learning/grammar-check.module';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { AIEvalService } from './ai-eval.service';
 import { AdminAIEvalController } from './admin-ai-eval.controller';
 import { MemoryGovernanceService } from './memory-governance.service';
@@ -33,7 +34,7 @@ import { SafetyPolicyService } from './services/safety-policy.service';
 import { AdminSafetyPolicyController } from './admin-safety-policy.controller';
 
 @Module({
-  imports: [EnglishLearningModule, AuthModule],
+  imports: [EnglishLearningModule, AuthModule, NotificationsModule],
   controllers: [
     AIController,
     CharacterController,

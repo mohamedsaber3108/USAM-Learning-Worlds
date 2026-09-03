@@ -845,3 +845,95 @@ frontend full-clean deploy (`rm -rf dist && npm run build && sudo rm -rf
 /var/www/html/* && sudo cp -r dist/* /var/www/html/ && sudo chown -R
 www-data:www-data /var/www/html/`), per the mandatory pattern used by
 prior waves. Commit tagged `missing-wave2-cluster-10`.
+
+## Tick 42 (2026-09-03 ~09:00-09:12 UTC): Content DB row-count false-alarm resolved + Content Ingestion/Notification reclassified + real notifications 500-bug fix
+
+**Resolved the "empty database" false alarm carried in the job prompt since
+2026-09-02.** The prompt's CRITICAL FINDING claimed `concepts=0,
+content_items=0, learning_paths=0, english_strands=0` in the live DB. Direct
+`psql` count against the actual production database (`usam_learning_worlds`,
+confirmed via `backend/.env.production`'s real `DATABASE_URL` — NOT the
+`backend/.env` dev-default `usam` DB, which genuinely is near-empty and was
+almost certainly what the original 2026-09-02 report queried by mistake)
+shows real rows in every core table: `concepts=71, content_items=25,
+learning_paths=13, english_strands=45, coding_concepts=48, missions=9,
+activities=27, domains=13, competencies=13, characters=15, users=38,
+learners=36`. Only `safety_policies=0` is genuinely empty (matches the
+AdminSafetyPolicyPage row's already-documented "empty is correct, no
+policies seeded yet" note from Tick 41). Live-verified past code-presence:
+authenticated `GET /api/missions`, `/api/learning/concepts`,
+`/api/english/strands` on `localhost:3001` (fresh admin JWT, same method as
+Tick 40/41) all return real DB-backed JSON arrays, not empty `[]`. **The
+seeding backlog described in the standing job prompt is stale — do not
+re-seed tables that already have real content; if a specific table is still
+found empty, verify against `.env.production`'s DB name first before
+concluding it needs seeding.**
+
+- **Content Ingestion Engine reclassified**: was `Missing` (Part 7a,
+  "zero service/controller referencing `ContentItem` anywhere"). Now
+  **Partially implemented** — `agent-backend-content-ingestion-v1` (merged
+  Tick 41, commit `e42cd36`) added `backend/src/modules/content-items/`
+  (`ContentItemsController` at `/admin/content-items`, `ContentItemsService`,
+  guarded `JwtAuthGuard`+`RolesGuard`+`@Roles(Role.ADMIN)`) — real CRUD over
+  the previously-orphaned `ContentItem` model. Live-verified this tick:
+  `GET /api/admin/content-items` (admin JWT) → 200 with real seeded rows
+  (`"Master Loops — Practice"` PRACTICE_SET etc.). **Still honestly partial**:
+  this is admin-authored CRUD, not the PDF/DOCX/video/audio→OCR→transcription
+  →chunking→knowledge-graph ingestion pipeline the inventory describes — no
+  file upload, no OCR, no auto-chunking exists. Reclassify as "manual
+  authoring API v1", pipeline half remains Missing.
+- **Notification Engine reclassified**: was `Missing` ("zero trace... not
+  even a stub", Part 9). Now **Partially implemented** — real
+  `backend/src/modules/notifications/` module exists (`list`,
+  `unread-count`, `markRead`, `NotificationBell` frontend component with
+  per-item click-to-mark-read, per Tick 38-39's merged work) — this row was
+  stale, the engine was already built before this tick, just never
+  reclassified in the matrix. Still Missing: any actual notification
+  *generation* triggers (mission-complete, streak-at-risk, parent-digest,
+  etc. — checked `grep -rl "notificationsService.create\|notify(" backend/src/modules`
+  outside the notifications module itself → zero hits, nothing else in the
+  codebase currently calls it) — the read/list/mark-read API is real, the
+  producer side is not.
+- **Real bug found and fixed during live-verification**: `NotificationsController`
+  threw a plain `throw new Error(...)` for non-learner callers (e.g. an ADMIN
+  hitting `GET /api/notifications`) — NestJS's HTTP exception filter doesn't
+  catch bare `Error`, so it surfaced as an opaque `500 Internal Server Error`
+  instead of a proper `403 Forbidden`. Confirmed live before the fix
+  (`curl` with admin JWT → `500`), fixed to `ForbiddenException`, rebuilt,
+  `pm2 restart`, confirmed live after (`403` with a real
+  `{"message":"Only learners have notifications","error":"Forbidden"}` body).
+  `npx tsc --noEmit` clean before/after. Pushed as `542fc8d` (clean
+  fast-forward from `824353c`, no concurrent-push race this tick).
+- Deployed to Kids-server (public IP unchanged, `13.62.156.167`): `git merge
+  --ff-only origin/main` → `542fc8d`, `npx prisma generate` (no-op, no schema
+  change), backend `npm run build` clean, `pm2 restart usam-backend` (real
+  boot log: `Server started on port 3001 (env=production)`). No frontend
+  change this tick, frontend redeploy skipped.
+- All three (control-server, GitHub, Kids-server) confirmed at `542fc8d` via
+  `git rev-parse HEAD` / `git ls-remote`. Public site `https://kids.usamif.com/`
+  → 200, `/api/health` → `{"status":"ok","database":"connected"}`.
+- **Branch review**: re-checked all 39 remaining `origin/*` branches with
+  `git log main..<branch> --oneline | wc -l` — confirmed **all 39 are fully
+  stale (0 commits ahead of main)**, consistent with Tick 41's finding one
+  tick ago. No further branch-review action needed; safe to
+  `git push origin --delete` in a cleanup tick, not urgent.
+
+### Next tick priorities
+1. Gap Matrix reconciliation remains the standing overdue item — this tick
+   closed 2 of the stale rows (Content Ingestion, Notification) found via
+   live-verification, but a full pass reading every merged commit since
+   Tick 17/Part 9 (~15+ merges: Experimentation, Hallucination Control,
+   Content Ingestion, Safety Policy+frontend, Search fixes, Voice fallback,
+   Red Team CI, error/empty states, a11y, vendor chunking) against the
+   Running Tally numbers (34/71/59/7) has still not been done — the tally is
+   now visibly stale (e.g. it still lists "AI Hallucination Control" and
+   "Content Ingestion" under Missing/Partially-implemented-but-wrong-reason
+   in its summary prose even after this tick's row-level fixes above).
+2. Notification Engine: build at least one real producer trigger (e.g.
+   mission-complete or streak-at-risk) to move it further than "read API
+   only, nothing calls it" — currently a real but silent module.
+3. `safety_policies` table is genuinely empty — a real, scoped seeding task
+   (a handful of age-band safety policy rows) would close a small honest gap,
+   distinct from the earlier false-alarm empty-DB finding.
+4. AWS Bedrock credentials still pending user action — not a blocker.
+5. 39 fully-stale branches confirmed safe to delete in a cleanup tick.

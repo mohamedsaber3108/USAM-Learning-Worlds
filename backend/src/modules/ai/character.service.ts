@@ -18,6 +18,7 @@ import { CharacterSafetyService } from './services/character-safety.service';
 import { pickFallbackLine } from './services/character-fallback-responses';
 import { PromptTemplateService } from './services/prompt-template.service';
 import { HallucinationControlService } from './services/hallucination-control.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 /** Fallback copy shown instead of the raw AI text when the safety layer intervenes. */
 const SAFETY_FALLBACK_BLOCKED =
@@ -64,6 +65,7 @@ export class CharacterService {
     private characterSafety: CharacterSafetyService,
     private promptTemplates: PromptTemplateService,
     private hallucinationControl: HallucinationControlService,
+    private notifications: NotificationsService,
   ) {}
 
   /**
@@ -179,13 +181,32 @@ export class CharacterService {
       Atlas: () => distinctDomainCount >= 2,
     };
 
-    return allCharacters.filter((c) => {
+    const unlocked = allCharacters.filter((c) => {
       if (CharacterService.CORE_CHARACTER_NAMES.includes(c.name)) {
         return true;
       }
       const evaluator = unlockEvaluators[c.name];
       return evaluator ? evaluator() : false;
     });
+
+    // Real trigger: fire a CHARACTER_UNLOCKED notification for any
+    // non-core character that just became unlocked. emitCharacterUnlocked
+    // dedupes on (learnerId, CHARACTER_UNLOCKED, characterId) so calling
+    // this on every read of this method (there's no separate "unlock
+    // event" elsewhere - unlock status is derived live from real progress
+    // signals above, not stored) never double-notifies for the same
+    // character. Fire-and-forget: notification delivery must never break
+    // the unlocked-characters read path itself.
+    for (const c of unlocked) {
+      if (CharacterService.CORE_CHARACTER_NAMES.includes(c.name)) continue;
+      this.notifications
+        .emitCharacterUnlocked(learnerId, c.name, c.id)
+        .catch((err) =>
+          this.logger.warn(`emitCharacterUnlocked failed for ${c.name}: ${err?.message}`),
+        );
+    }
+
+    return unlocked;
   }
 
   /**
