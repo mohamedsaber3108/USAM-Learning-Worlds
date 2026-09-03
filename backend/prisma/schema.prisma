@@ -1308,6 +1308,16 @@ model AvatarCosmetic {
   isDefault       Boolean           @default(false)
   createdAt       DateTime          @default(now())
 
+  // Asset Management Engine v1 (gap matrix's own suggestion): per-asset
+  // provenance metadata. All cosmetics shipped to date are hand-built by
+  // the USAM team (no external art assets), so these are nullable text
+  // fields rather than a full license-registry FK — enough to answer
+  // "where did this come from and can we redistribute it" without
+  // building an asset pipeline.
+  license         String?
+  source          String?
+  attribution     String?
+
   unlocks         LearnerCosmeticUnlock[]
 
   @@index([category])
