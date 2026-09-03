@@ -133,7 +133,7 @@ function LeaderboardCard({
           </div>
           <div className="flex gap-2">
             <Button onClick={() => onShow(leaderboard.id)} variant="outline" size="sm">
-              <Eye className="mr-2 size-4" />
+              <Eye className="me-2 size-4" />
               Show
             </Button>
             <Button onClick={() => onOptOut(leaderboard.id)} variant="outline" size="sm">

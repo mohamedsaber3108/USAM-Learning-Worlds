@@ -214,7 +214,7 @@ function FeedbackPanel({
                 )}
               >
                 <span className="font-medium">{c.label}</span>
-                <span className="ml-2 text-xs text-muted-foreground">
+                <span className="ms-2 text-xs text-muted-foreground">
                   {met ? "met" : "not yet"}
                 </span>
                 <p className="mt-1 text-xs text-muted-foreground">{c.lookFor}</p>

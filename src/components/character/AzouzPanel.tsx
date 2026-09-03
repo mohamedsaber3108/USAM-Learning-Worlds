@@ -65,7 +65,7 @@ export function AzouzPanel({ compact = false }: { compact?: boolean }) {
           <MessageBubble key={m.id} message={m} />
         ))}
         {voice === "thinking" && (
-          <div className="flex gap-1 pl-1" aria-hidden>
+          <div className="flex gap-1 ps-1" aria-hidden>
             {[0, 1, 2].map((i) => (
               <span
                 key={i}

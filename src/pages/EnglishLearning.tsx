@@ -105,7 +105,7 @@ export function EnglishLearning() {
                       className="flex-1"
                       onClick={() => handleStartPractice(strand)}
                     >
-                      <MessageSquare className="mr-2 size-4" />
+                      <MessageSquare className="me-2 size-4" />
                       Practice
                     </Button>
                   </div>
