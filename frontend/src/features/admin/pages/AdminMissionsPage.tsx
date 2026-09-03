@@ -158,7 +158,7 @@ export function AdminMissionsPage() {
           <div className="card mb-6 relative">
             <button
               onClick={closeForm}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              className="absolute top-4 right-4 min-w-11 min-h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 rounded-full"
               aria-label="Close form"
             >
               <X className="w-5 h-5" />
