@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ShieldCheck, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react'
 import { parentsApi } from '@/lib/api/endpoints'
+import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 
 interface ChildLink {
   relationshipId: string
@@ -23,7 +24,13 @@ export function ParentDashboardPage() {
   const [selectedLearnerId, setSelectedLearnerId] = useState<string | null>(null)
 
   // Real endpoint: GET /parents/children
-  const { data: children, isLoading: childrenLoading, error: childrenError } = useQuery<ChildLink[]>({
+  const {
+    data: children,
+    isLoading: childrenLoading,
+    isError: childrenIsError,
+    error: childrenError,
+    refetch: refetchChildren,
+  } = useQuery<ChildLink[]>({
     queryKey: ['parents-children'],
     queryFn: () => parentsApi.getChildren().then(res => res.data),
   })
@@ -35,7 +42,7 @@ export function ParentDashboardPage() {
   const learnerId = activeChild?.learner.id
 
   // Real endpoint: GET /parents/children/:learnerId/dashboard
-  const { data: dashboard, isLoading: dashboardLoading } = useQuery({
+  const { data: dashboard, isLoading: dashboardLoading, isError: dashboardIsError, refetch: refetchDashboard } = useQuery({
     queryKey: ['parent-child-dashboard', learnerId],
     queryFn: () => parentsApi.getChildDashboard(learnerId as string).then(res => res.data),
     enabled: !!learnerId,
@@ -83,9 +90,20 @@ export function ParentDashboardPage() {
           </div>
         )}
 
-        {childrenLoading && <p className="text-slate-500 text-sm">Loading children…</p>}
+        {childrenLoading && (
+          <LoadingState character="Luma" message="Luma is pulling up your family overview..." />
+        )}
 
-        {!childrenLoading && !isForbidden && children && children.length === 0 && (
+        {childrenIsError && !isForbidden && (
+          <ErrorState
+            character="Azouz"
+            title="Couldn't load your children"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetchChildren()}
+          />
+        )}
+
+        {!childrenLoading && !childrenIsError && !isForbidden && children && children.length === 0 && (
           <div className="parent-panel p-4">
             <p className="text-slate-500 text-sm">No children are linked to this guardian account yet.</p>
           </div>
@@ -130,7 +148,18 @@ export function ParentDashboardPage() {
               </Link>
             </div>
 
-            {dashboardLoading && <p className="text-slate-500 text-sm">Loading dashboard…</p>}
+            {dashboardLoading && (
+              <LoadingState character="Luma" message="Luma is putting together this dashboard..." />
+            )}
+
+            {dashboardIsError && (
+              <ErrorState
+                character="Azouz"
+                title="Hmm, that dashboard didn't load"
+                message="No worries — this happens sometimes. Let's give it another try."
+                onRetry={() => refetchDashboard()}
+              />
+            )}
 
             {dashboard && (
               <>

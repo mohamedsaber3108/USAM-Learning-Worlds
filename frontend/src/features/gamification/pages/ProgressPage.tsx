@@ -4,11 +4,17 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Flame, Trophy, Target, CheckCircle2, Snowflake, Coins } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, streakFreezeApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
+import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 
 export function ProgressPage() {
   const queryClient = useQueryClient()
 
-  const { data: progression } = useQuery({
+  const {
+    data: progression,
+    isLoading: progressionLoading,
+    isError: progressionIsError,
+    refetch: refetchProgression,
+  } = useQuery({
     queryKey: ['progression'],
     queryFn: () => gamificationApi.getProgression().then(res => res.data),
   })
@@ -75,6 +81,17 @@ export function ProgressPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {progressionLoading ? (
+          <LoadingState character="Azouz" message="Azouz is tallying up your progress..." />
+        ) : progressionIsError ? (
+          <ErrorState
+            character="Azouz"
+            title="Hmm, your progress didn't load"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetchProgression()}
+          />
+        ) : (
+        <>
         {/* Level & XP */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -360,6 +377,8 @@ export function ProgressPage() {
             )}
           </div>
         </div>
+        </>
+        )}
       </main>
     </div>
   )
