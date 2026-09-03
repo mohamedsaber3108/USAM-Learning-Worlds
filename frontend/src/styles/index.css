@@ -9,7 +9,22 @@
 
   body {
     @apply bg-surface-100 text-gray-900 antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', 'Tahoma', 'Segoe UI', sans-serif;
+  }
+
+  /* Arabic (dir="rtl") gets a font stack with real Arabic glyph coverage —
+     Inter/Manrope only cover Latin, so without this Arabic text falls back
+     to whatever generic sans-serif the OS/browser picks, which can look
+     inconsistent. Tahoma/Segoe UI/system fonts are safe, widely-available
+     choices with clean Arabic rendering; no new webfont download needed. */
+  html[dir='rtl'] body {
+    font-family: 'Tahoma', 'Segoe UI', 'Noto Sans Arabic', 'Inter', sans-serif;
+  }
+
+  html[dir='rtl'] h1,
+  html[dir='rtl'] h2,
+  html[dir='rtl'] h3 {
+    font-family: 'Tahoma', 'Segoe UI', 'Noto Sans Arabic', 'Manrope', sans-serif;
   }
 
   h1, h2, h3 {

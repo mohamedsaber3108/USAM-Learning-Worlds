@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, Rocket, BookOpen } from 'lucide-react'
 
 export function WelcomePage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   return (
@@ -23,37 +25,36 @@ export function WelcomePage() {
         </motion.div>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
-          Welcome to USAM Learning Worlds!
+          {t('onboarding.welcome.title')}
         </h1>
         <p className="text-gray-600 text-lg mb-8">
-          A place where you'll go on missions, build cool projects, and level up
-          your skills in coding, English, and more — one fun step at a time.
+          {t('onboarding.welcome.subtitle')}
         </p>
 
         <div className="grid grid-cols-2 gap-4 mb-8 text-left">
           <div className="flex items-start gap-3 p-4 bg-primary-50 rounded-xl">
             <Rocket className="w-6 h-6 text-primary-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-700">
-              Complete missions and earn XP as you learn
+              {t('onboarding.welcome.missionsPoint')}
             </p>
           </div>
           <div className="flex items-start gap-3 p-4 bg-secondary-50 rounded-xl">
             <BookOpen className="w-6 h-6 text-secondary-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-700">
-              Get help from your own learning guide
+              {t('onboarding.welcome.guidePoint')}
             </p>
           </div>
         </div>
 
         <p className="text-gray-500 text-sm mb-6">
-          First, let's get to know you a little — it only takes a minute!
+          {t('onboarding.welcome.getToKnow')}
         </p>
 
         <button
           onClick={() => navigate('/onboarding/age')}
           className="btn btn-primary w-full py-3 text-lg"
         >
-          Let's Get Started
+          {t('onboarding.welcome.getStarted')}
         </button>
       </motion.div>
     </div>

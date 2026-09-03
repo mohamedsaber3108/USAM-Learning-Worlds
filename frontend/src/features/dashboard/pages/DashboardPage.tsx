@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
@@ -23,66 +24,28 @@ import {
 } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, cosmeticsApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
-import { useAgeAdaptation, type CopyTone } from '@/lib/hooks/useAgeAdaptation'
+import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
+// `labelKey` resolves against dashboard.quickActions.* in both locales.
 const quickActions = [
-  { to: '/learn', label: 'Learn', icon: BookOpen, tint: 'bg-primary-50 text-primary-600' },
-  { to: '/missions', label: 'Missions', icon: Target, tint: 'bg-accent-50 text-accent-600' },
-  { to: '/projects', label: 'Projects', icon: Palette, tint: 'bg-secondary-50 text-secondary-600' },
-  { to: '/community', label: 'Community', icon: Sparkles, tint: 'bg-primary-50 text-primary-600' },
-  { to: '/achievements', label: 'Achievements', icon: Trophy, tint: 'bg-warning-50 text-warning-600' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: BarChart3, tint: 'bg-success-50 text-success-600' },
-  { to: '/voice-chat', label: 'Voice Chat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
-  { to: '/english', label: 'English', icon: Languages, tint: 'bg-accent-50 text-accent-600' },
+  { to: '/learn', labelKey: 'learn', icon: BookOpen, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/missions', labelKey: 'missions', icon: Target, tint: 'bg-accent-50 text-accent-600' },
+  { to: '/projects', labelKey: 'projects', icon: Palette, tint: 'bg-secondary-50 text-secondary-600' },
+  { to: '/community', labelKey: 'community', icon: Sparkles, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/achievements', labelKey: 'achievements', icon: Trophy, tint: 'bg-warning-50 text-warning-600' },
+  { to: '/leaderboard', labelKey: 'leaderboard', icon: BarChart3, tint: 'bg-success-50 text-success-600' },
+  { to: '/voice-chat', labelKey: 'voiceChat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/english', labelKey: 'english', icon: Languages, tint: 'bg-accent-50 text-accent-600' },
 ]
 
-// Age-adaptive copy — REAL different strings per band, not a shared string
-// with a class swap. Keyed on copyTone so the mapping is explicit and
-// auditable in one place per usage site.
-const GREETING_SUBTEXT: Record<CopyTone, string> = {
-  'encouraging-simple': "Let's have some fun learning today!",
-  'encouraging-balanced': 'Ready to continue your learning journey?',
-  'encouraging-mature': "Ready to keep building on your progress?",
-}
-
-const LEVEL_CARD_HELPTEXT: Record<CopyTone, (xpInLevel: number, xpForNext: number) => string> = {
-  'encouraging-simple': (xp, next) => `${xp} of ${next} stars to your next level!`,
-  'encouraging-balanced': (xp, next) => `${xp} / ${next} XP to next level`,
-  'encouraging-mature': (xp, next) => `${xp} / ${next} XP to next level`,
-}
-
-const XP_CELEBRATION: Record<CopyTone, string> = {
-  'encouraging-simple': 'Awesome job!',
-  'encouraging-balanced': 'Great progress!',
-  'encouraging-mature': "Nice work - you're building real momentum",
-}
-
-const STREAK_CELEBRATION: Record<CopyTone, string> = {
-  'encouraging-simple': 'You did it!',
-  'encouraging-balanced': "You're on a roll!",
-  'encouraging-mature': 'Consistency is paying off',
-}
-
-const MASTERY_HEADING: Record<CopyTone, string> = {
-  'encouraging-simple': 'What you know so far',
-  'encouraging-balanced': 'Mastery Progress',
-  'encouraging-mature': 'Mastery Breakdown',
-}
-
-const QUICK_ACTIONS_HEADING: Record<CopyTone, string> = {
-  'encouraging-simple': 'What to do next',
-  'encouraging-balanced': 'Quick Actions',
-  'encouraging-mature': 'Quick Actions',
-}
-
-const VIEW_PROGRESS_LABEL: Record<CopyTone, string> = {
-  'encouraging-simple': 'See My Progress',
-  'encouraging-balanced': 'View Full Progress',
-  'encouraging-mature': 'View Full Progress',
-}
+// Age-adaptive copy now lives in frontend/src/lib/i18n/locales/{en,ar}.ts
+// under dashboard.*.{copyTone} — see t() calls below keyed on adapt.copyTone.
+// (Previously these were English-only Record<CopyTone,string> maps defined
+// here; kept as i18next resource keys instead so Arabic gets real per-band
+// copy too, not just a translated shared string.)
 
 // Real per-equipped-cosmetic rendering — not a settings toggle. These maps
 // translate the AvatarCosmetic.iconOrStyleKey seeded in the backend into
@@ -108,6 +71,7 @@ const THEME_ACCENT_CHIP_CLASS: Record<string, string> = {
 }
 
 export function DashboardPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const userStr = localStorage.getItem('user')
   const user = userStr ? JSON.parse(userStr) : null
@@ -230,7 +194,7 @@ export function DashboardPage() {
                 adapt.density === 'simple' ? 'text-3xl' : 'text-2xl'
               }`}
             >
-              Welcome back, {user?.displayName || 'Learner'}
+              {t('dashboard.welcomeBack', { name: user?.displayName || t('dashboard.defaultLearnerName') })}
               {/* Equipped TITLE cosmetic renders as real text next to the
                   learner's name — the whole point of "spend your XP". */}
               {equippedTitleName && (
@@ -240,7 +204,7 @@ export function DashboardPage() {
                 </span>
               )}
             </h2>
-            <p className="text-slate-500 text-sm">{GREETING_SUBTEXT[adapt.copyTone]}</p>
+            <p className="text-slate-500 text-sm">{t(`dashboard.greetingSubtext.${adapt.copyTone}`)}</p>
           </div>
         </motion.div>
 
@@ -265,7 +229,7 @@ export function DashboardPage() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-slate-500 mb-1">Level</p>
+                <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.levelLabel')}</p>
                 <p
                   className={`font-display font-extrabold text-slate-900 ${
                     adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
@@ -274,10 +238,10 @@ export function DashboardPage() {
                   {progression?.level || 1}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  {LEVEL_CARD_HELPTEXT[adapt.copyTone](
-                    progression?.xpInCurrentLevel || 0,
-                    progression?.xpForNextLevel || 100
-                  )}
+                  {t(`dashboard.levelHelptext.${adapt.copyTone}`, {
+                    xp: progression?.xpInCurrentLevel || 0,
+                    next: progression?.xpForNextLevel || 100,
+                  })}
                 </p>
               </div>
               <div className={adapt.density === 'simple' ? 'w-16 h-16' : 'w-14 h-14'}>
@@ -302,7 +266,7 @@ export function DashboardPage() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-slate-500 mb-1">Total XP</p>
+                <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.totalXpLabel')}</p>
                 <p
                   className={`font-display font-extrabold text-slate-900 ${
                     adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
@@ -315,9 +279,9 @@ export function DashboardPage() {
                     a hidden duplicate. Older bands get a real Rank card
                     below (showRankCard). */}
                 {!showRankCard ? (
-                  <p className="text-xs text-slate-500 mt-1">{XP_CELEBRATION[adapt.copyTone]}</p>
+                  <p className="text-xs text-slate-500 mt-1">{t(`dashboard.xpCelebration.${adapt.copyTone}`)}</p>
                 ) : (
-                  <p className="text-xs text-slate-500 mt-1">Rank #{rank?.rank || '---'}</p>
+                  <p className="text-xs text-slate-500 mt-1">{t('dashboard.rankLabel', { rank: rank?.rank || '---' })}</p>
                 )}
               </div>
               <div className={`icon-chip ${themeChipClass}`}>
@@ -335,7 +299,7 @@ export function DashboardPage() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1">Streak</p>
+                  <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.streakLabel')}</p>
                   <p
                     className={`font-display font-extrabold text-slate-900 ${
                       adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
@@ -345,8 +309,8 @@ export function DashboardPage() {
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
                     {showBestStreakDetail
-                      ? `Best: ${streak?.longestStreak || 0} days`
-                      : STREAK_CELEBRATION[adapt.copyTone]}
+                      ? t('dashboard.bestStreak', { days: streak?.longestStreak || 0 })
+                      : t(`dashboard.streakCelebration.${adapt.copyTone}`)}
                   </p>
                 </div>
                 <div className="icon-chip bg-accent-50 text-accent-600">
@@ -367,12 +331,12 @@ export function DashboardPage() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1">Rank</p>
+                  <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.rank')}</p>
                   <p className="text-3xl font-display font-extrabold text-slate-900">
                     #{rank?.rank || '---'}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    {adapt.density === 'detailed' ? 'Among all active learners' : 'Keep climbing!'}
+                    {adapt.density === 'detailed' ? t('dashboard.rankAmongAll') : t('dashboard.rankKeepClimbing')}
                   </p>
                 </div>
                 <div className="icon-chip bg-primary-50 text-primary-600">
@@ -395,19 +359,19 @@ export function DashboardPage() {
               <div className="card">
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-primary-600" strokeWidth={2} />
-                  <h3>{MASTERY_HEADING[adapt.copyTone]}</h3>
+                  <h3>{t(`dashboard.masteryHeading.${adapt.copyTone}`)}</h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Mastered</span>
+                    <span className="text-slate-500">{t('dashboard.mastered')}</span>
                     <span className="font-semibold text-success-600">{masteredCount}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Learning</span>
+                    <span className="text-slate-500">{t('dashboard.learning')}</span>
                     <span className="font-semibold text-primary-600">{learningCount}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">To Explore</span>
+                    <span className="text-slate-500">{t('dashboard.toExplore')}</span>
                     <span className="font-semibold text-slate-500">{toExploreCount}</span>
                   </div>
                 </div>
@@ -417,19 +381,19 @@ export function DashboardPage() {
             <div className="card">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-primary-600" strokeWidth={2} />
-                <h3>{QUICK_ACTIONS_HEADING[adapt.copyTone]}</h3>
+                <h3>{t(`dashboard.quickActionsHeading.${adapt.copyTone}`)}</h3>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {/* Younger learners see fewer quick-action tiles at once —
                     the full 8 is genuinely overwhelming icon-soup for an
                     8-9 year old versus a curated top set. */}
                 {(adapt.density === 'simple' ? quickActions.slice(0, 4) : quickActions).map(
-                  ({ to, label, icon: Icon, tint }) => (
+                  ({ to, labelKey, icon: Icon, tint }) => (
                     <Link key={to} to={to} className="quick-action">
                       <div className={`icon-chip ${tint}`}>
                         <Icon className="w-5 h-5" strokeWidth={2} />
                       </div>
-                      <p className="font-medium text-slate-700 text-sm">{label}</p>
+                      <p className="font-medium text-slate-700 text-sm">{t(`dashboard.quickActions.${labelKey}`)}</p>
                     </Link>
                   )
                 )}
@@ -438,13 +402,13 @@ export function DashboardPage() {
                     <div className="icon-chip bg-primary-50 text-primary-600">
                       <Users2 className="w-5 h-5" strokeWidth={2} />
                     </div>
-                    <p className="font-medium text-slate-700 text-sm">Parent Dashboard</p>
+                    <p className="font-medium text-slate-700 text-sm">{t('dashboard.parentDashboard')}</p>
                   </Link>
                 )}
               </div>
               <Link to="/progress" className="btn btn-primary w-full mt-3">
                 <TrendingUp className="w-4 h-4" strokeWidth={2} />
-                {VIEW_PROGRESS_LABEL[adapt.copyTone]}
+                {t(`dashboard.viewProgress.${adapt.copyTone}`)}
               </Link>
             </div>
           </div>
@@ -456,7 +420,7 @@ export function DashboardPage() {
           <div className="card">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="w-5 h-5 text-primary-600" strokeWidth={2} />
-              <h3>Recent Missions</h3>
+              <h3>{t('dashboard.recentMissions')}</h3>
             </div>
             <div className="space-y-2">
               {recentMissions.slice(0, adapt.density === 'simple' ? 3 : 5).map((run: any) => (
@@ -473,7 +437,7 @@ export function DashboardPage() {
                     <div>
                       <h4 className="font-medium text-sm text-slate-800">{run.mission?.title || 'Mission'}</h4>
                       <p className="text-xs text-slate-500">
-                        {run.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+                        {run.status === 'COMPLETED' ? t('dashboard.missionCompleted') : t('dashboard.missionInProgress')}
                       </p>
                     </div>
                   </div>

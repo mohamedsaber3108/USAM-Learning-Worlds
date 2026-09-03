@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import {
   Sparkles,
   Compass,
@@ -57,15 +58,16 @@ const LANDING_CHARACTERS: LandingCharacter[] = [
 ]
 
 const SUBJECTS = [
-  { icon: Calculator, label: 'Mathematics' },
-  { icon: FlaskConical, label: 'Science' },
-  { icon: Languages, label: 'Language' },
-  { icon: Code2, label: 'Technology' },
-  { icon: Palette, label: 'Arts & Creativity' },
-  { icon: Globe2, label: 'Social Studies' },
+  { icon: Calculator, key: 'mathematics' },
+  { icon: FlaskConical, key: 'science' },
+  { icon: Languages, key: 'language' },
+  { icon: Code2, key: 'technology' },
+  { icon: Palette, key: 'arts' },
+  { icon: Globe2, key: 'socialStudies' },
 ]
 
 export function LandingPage() {
+  const { t } = useTranslation()
   const [selected, setSelected] = useState<PreferredCharacterName | null>(null)
 
   const selectedCharacter = LANDING_CHARACTERS.find((c) => c.name === selected) ?? null
@@ -87,13 +89,13 @@ export function LandingPage() {
           <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center shadow-soft">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
-          <span className="font-display font-bold text-lg text-slate-900">USAM Learning Worlds</span>
+          <span className="font-display font-bold text-lg text-slate-900">{t('common.appName')}</span>
         </div>
         <Link
           to="/login"
           className="text-sm font-semibold text-primary-700 hover:text-primary-800"
         >
-          Log in
+          {t('landing.logIn')}
         </Link>
       </header>
 
@@ -107,8 +109,7 @@ export function LandingPage() {
           transition={{ duration: 0.4 }}
           className="text-3xl sm:text-5xl font-display font-bold text-slate-900 leading-tight"
         >
-          Learning worlds kids{' '}
-          <span className="text-primary-600">actually</span> want to explore
+          {t('landing.heroTitle')}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 12 }}
@@ -116,9 +117,7 @@ export function LandingPage() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto"
         >
-          A bilingual (Arabic & English) learning adventure for ages 8–14 —
-          missions, characters, and real subjects like math, science, coding,
-          and language, guided by a cast of friendly mentors.
+          {t('landing.heroSubtitle')}
         </motion.p>
 
         {/* Character strip */}
@@ -151,10 +150,10 @@ export function LandingPage() {
       <section className="max-w-2xl mx-auto px-4 sm:px-6 pb-12">
         <div className="card p-5 sm:p-8">
           <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-900 text-center">
-            Try it now — pick your favorite guide
+            {t('landing.tryTitle')}
           </h2>
           <p className="text-sm text-slate-500 text-center mt-1 mb-6">
-            No account needed. Tap a character to meet them.
+            {t('landing.trySubtitle')}
           </p>
 
           <div className="grid grid-cols-4 gap-2 sm:gap-4">
@@ -209,14 +208,13 @@ export function LandingPage() {
               className="btn btn-primary w-full sm:w-auto px-8 py-3 text-base"
             >
               {selectedCharacter
-                ? `Start learning with ${selectedCharacter.name}`
-                : 'Start Learning'}
-              <ArrowRight className="w-4 h-4" />
+                ? t('landing.startLearningWith', { name: selectedCharacter.name })
+                : t('landing.startLearning')}
+              <ArrowRight className="w-4 h-4 rtl:scale-x-[-1]" />
             </Link>
             {!selectedCharacter && (
               <p className="text-xs text-slate-400 mt-2">
-                Tip: pick a character above first — we'll introduce you to them
-                right after you sign up.
+                {t('landing.tip')}
               </p>
             )}
           </div>
@@ -261,13 +259,13 @@ export function LandingPage() {
           Subjects covered
         </h3>
         <div className="flex flex-wrap justify-center gap-3">
-          {SUBJECTS.map(({ icon: Icon, label }) => (
+          {SUBJECTS.map(({ icon: Icon, key }) => (
             <span
-              key={label}
+              key={key}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-surface-200 shadow-soft text-sm font-medium text-slate-700"
             >
               <Icon className="w-4 h-4 text-primary-600" />
-              {label}
+              {t(`landing.subjects.${key}`)}
             </span>
           ))}
         </div>
@@ -278,13 +276,13 @@ export function LandingPage() {
       {/* ---------------------------------------------------------------- */}
       <section className="max-w-2xl mx-auto px-4 sm:px-6 pb-16 text-center">
         <Link to="/register" className="btn btn-primary w-full sm:w-auto px-10 py-3.5 text-base">
-          Start Learning
-          <ArrowRight className="w-4 h-4" />
+          {t('landing.startLearning')}
+          <ArrowRight className="w-4 h-4 rtl:scale-x-[-1]" />
         </Link>
         <p className="text-xs text-slate-400 mt-3">
           Already have an account?{' '}
           <Link to="/login" className="text-primary-600 font-semibold hover:text-primary-700">
-            Log in
+            {t('landing.logIn')}
           </Link>
         </p>
       </section>

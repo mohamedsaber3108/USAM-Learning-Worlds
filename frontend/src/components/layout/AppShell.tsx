@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import {
   Home,
   BookOpen,
@@ -23,6 +24,7 @@ import {
   FolderKanban,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
+import { LanguageToggle } from './LanguageToggle'
 
 /**
  * AppShell — the one persistent navigation frame for every authenticated page.
@@ -50,7 +52,6 @@ import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 
 interface NavItem {
   key: string
-  label: string
   icon: typeof Home
   to: string
   // Which route prefixes should highlight this tab as active
@@ -60,14 +61,12 @@ interface NavItem {
 const primaryNav: NavItem[] = [
   {
     key: 'home',
-    label: 'Home',
     icon: Home,
     to: '/dashboard',
     match: (p) => p === '/' || p === '/dashboard',
   },
   {
     key: 'learn',
-    label: 'Learn',
     icon: BookOpen,
     to: '/learn',
     match: (p) =>
@@ -75,21 +74,18 @@ const primaryNav: NavItem[] = [
   },
   {
     key: 'missions',
-    label: 'Missions',
     icon: Target,
     to: '/missions',
     match: (p) => p.startsWith('/missions'),
   },
   {
     key: 'community',
-    label: 'Community',
     icon: Users2,
     to: '/community',
     match: (p) => p.startsWith('/community'),
   },
   {
     key: 'profile',
-    label: 'Profile',
     icon: UserCircle2,
     to: '/parents',
     match: (p) => p.startsWith('/parents'),
@@ -97,25 +93,25 @@ const primaryNav: NavItem[] = [
 ]
 
 interface MoreItem {
-  label: string
+  key: string
   to: string
   icon: typeof Trophy
-  description: string
 }
 
 const moreItems: MoreItem[] = [
-  { label: 'Shop', to: '/shop', icon: ShoppingBag, description: 'Spend XP on borders, badges, titles & themes' },
-  { label: 'My Journey', to: '/insights', icon: Zap, description: 'Your activity timeline, patterns & stats' },
-  { label: 'My Portfolio', to: '/portfolio', icon: FolderKanban, description: 'Your best showcased projects, all in one place' },
-  { label: 'Achievements', to: '/achievements', icon: Trophy, description: 'Badges & milestones' },
-  { label: 'Leaderboard', to: '/leaderboard', icon: BarChart3, description: 'See how you rank' },
-  { label: 'Progress', to: '/progress', icon: TrendingUp, description: 'Your mastery over time' },
-  { label: 'Voice Chat', to: '/voice-chat', icon: Mic, description: 'Talk with your AI coach' },
-  { label: 'Characters', to: '/characters', icon: Sparkles, description: 'Meet your mentor team' },
-  { label: 'Time Limits', to: '/parents', icon: Timer, description: "Manage a learner's screen time (via Parent Dashboard)" },
+  { key: 'shop', to: '/shop', icon: ShoppingBag },
+  { key: 'myJourney', to: '/insights', icon: Zap },
+  { key: 'myPortfolio', to: '/portfolio', icon: FolderKanban },
+  { key: 'achievements', to: '/achievements', icon: Trophy },
+  { key: 'leaderboard', to: '/leaderboard', icon: BarChart3 },
+  { key: 'progress', to: '/progress', icon: TrendingUp },
+  { key: 'voiceChat', to: '/voice-chat', icon: Mic },
+  { key: 'characters', to: '/characters', icon: Sparkles },
+  { key: 'timeLimits', to: '/parents', icon: Timer },
 ]
 
 export function AppShell() {
+  const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const [moreOpen, setMoreOpen] = useState(false)
@@ -163,14 +159,14 @@ export function AppShell() {
       <header className="bg-primary-600 shadow-soft sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link to="/dashboard" className="text-xl font-display font-bold text-white">
-            USAM Learning Worlds
+            {t('common.appName')}
           </Link>
           <button
             onClick={handleLogout}
             className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
           >
-            <LogOut className="w-4 h-4" />
-            Logout
+            <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
+            {t('common.logout')}
           </button>
         </div>
       </header>
@@ -223,7 +219,7 @@ export function AppShell() {
                   strokeWidth={2}
                 />
                 <span className={`relative ${navLabelSizeClass} ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
-                  {item.label}
+                  {t(`nav.${item.key}`)}
                 </span>
               </Link>
             )
@@ -248,7 +244,7 @@ export function AppShell() {
               strokeWidth={2}
             />
             <span className={`relative ${navLabelSizeClass} ${isMoreActive ? 'text-primary-600' : 'text-slate-400'}`}>
-              More
+              {t('nav.more')}
             </span>
           </button>
         </div>
@@ -279,11 +275,11 @@ export function AppShell() {
               aria-label="More navigation"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display font-bold text-slate-900">More</h3>
+                <h3 className="font-display font-bold text-slate-900">{t('more.title')}</h3>
                 <button
                   onClick={() => setMoreOpen(false)}
                   className="icon-chip bg-surface-100 text-slate-500"
-                  aria-label="Close"
+                  aria-label={t('more.close')}
                 >
                   <X className="w-4 h-4" strokeWidth={2} />
                 </button>
@@ -296,15 +292,15 @@ export function AppShell() {
                       key={item.to}
                       to={item.to}
                       onClick={() => setMoreOpen(false)}
-                      className="quick-action !items-start !text-left"
+                      className="quick-action !items-start ltr:!text-left rtl:!text-right"
                     >
                       <div className="icon-chip bg-primary-50 text-primary-600">
                         <Icon className="w-5 h-5" strokeWidth={2} />
                       </div>
                       <div>
-                        <p className="font-medium text-slate-700 text-sm">{item.label}</p>
+                        <p className="font-medium text-slate-700 text-sm">{t(`more.${item.key}`)}</p>
                         {isDetailedDensity && (
-                          <p className="text-xs text-slate-400">{item.description}</p>
+                          <p className="text-xs text-slate-400">{t(`more.${item.key}Desc`)}</p>
                         )}
                       </div>
                     </Link>
@@ -314,30 +310,33 @@ export function AppShell() {
                   <Link
                     to="/parents"
                     onClick={() => setMoreOpen(false)}
-                    className="quick-action !items-start !text-left"
+                    className="quick-action !items-start ltr:!text-left rtl:!text-right"
                   >
                     <div className="icon-chip bg-secondary-50 text-secondary-600">
                       <Palette className="w-5 h-5" strokeWidth={2} />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-700 text-sm">Parent Dashboard</p>
-                      {isDetailedDensity && <p className="text-xs text-slate-400">Guardian controls</p>}
+                      <p className="font-medium text-slate-700 text-sm">{t('more.parentDashboard')}</p>
+                      {isDetailedDensity && <p className="text-xs text-slate-400">{t('more.parentDashboardDesc')}</p>}
                     </div>
                   </Link>
                 )}
                 <Link
                   to="/english"
                   onClick={() => setMoreOpen(false)}
-                  className="quick-action !items-start !text-left"
+                  className="quick-action !items-start ltr:!text-left rtl:!text-right"
                 >
                   <div className="icon-chip bg-accent-50 text-accent-600">
                     <Languages className="w-5 h-5" strokeWidth={2} />
                   </div>
                   <div>
-                    <p className="font-medium text-slate-700 text-sm">English</p>
-                    {isDetailedDensity && <p className="text-xs text-slate-400">Strands & AI coach</p>}
+                    <p className="font-medium text-slate-700 text-sm">{t('more.english')}</p>
+                    {isDetailedDensity && <p className="text-xs text-slate-400">{t('more.englishDesc')}</p>}
                   </div>
                 </Link>
+                {/* Language toggle — EN/AR, persisted in localStorage. Spans
+                    both columns so it reads as a distinct settings row. */}
+                <LanguageToggle />
               </div>
             </motion.div>
           </>
