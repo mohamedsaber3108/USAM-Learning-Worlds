@@ -20,7 +20,7 @@ import {
   Brain,
   Search,
 } from 'lucide-react'
-import { curriculumApi, learningApi, masteryApi } from '@/lib/api/endpoints'
+import { curriculumApi, learningApi, masteryApi, worldsApi, type WorldRecord } from '@/lib/api/endpoints'
 import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
 
 interface Domain {
@@ -118,29 +118,40 @@ export function CurriculumBrowsePage() {
     )
   }, [mastery])
 
-  // Build the world-path domain list: real name, real unlock signal, and
-  // real masteredCount/conceptCount progress per domain.
+  // Real World Engine data: 7 seeded worlds (Numeria, Verdantia, Circuit
+  // City, Prisma Isles, Wordhaven, Gearhollow, The Riddle Reach), each tied
+  // to one Domain, with server-computed per-learner unlock status (mastery
+  // + mission-completion signal from worlds.service.ts). Previously this
+  // page derived a client-side "world path" purely from raw domains with
+  // no real unlock logic at all — the actual World model/engine was never
+  // wired to any frontend surface (Tick 26 dead-frontend-bug finding #9).
+  const { data: worlds, isLoading: worldsLoading } = useQuery({
+    queryKey: ['worlds-for-learner'],
+    queryFn: () => worldsApi.list().then(res => res.data as WorldRecord[]),
+  })
+
+  // Build the world-path list straight from real World rows: real name,
+  // real server-computed unlock signal, real per-domain concept/mastered
+  // counts (still sourced from the domain aggregates already fetched).
   const worldPathDomains: WorldPathDomain[] = useMemo(() => {
-    if (!domains) return []
-    const engagementByName = new Map(
+    if (!worlds) return []
+    const masteryByDomainName = new Map(
       (masteryByDomain ?? []).map(d => [d.domain, d])
     )
-    return domains.map((domain, index) => {
-      const engagement = engagementByName.get(domain.name)
-      // A domain is unlocked once the learner has any real engagement with
-      // it (MasteryRecord rows exist), same as the character-unlock signal.
-      // The very first domain (alphabetical, matching backend ordering) is
-      // always unlocked as the learner's entry point into the path.
-      const isUnlocked = !!engagement || index === 0
-      return {
-        id: domain.id,
-        name: domain.name,
-        isUnlocked,
-        conceptCount: conceptCountsByDomainId?.[domain.id] ?? 0,
-        masteredCount: engagement?.masteredCount ?? 0,
-      }
-    })
-  }, [domains, masteryByDomain, conceptCountsByDomainId])
+    return worlds
+      .slice()
+      .sort((a, b) => a.order - b.order)
+      .map((world) => {
+        const engagement = masteryByDomainName.get(world.domain.name)
+        return {
+          id: world.domain.id,
+          name: world.name,
+          isUnlocked: world.isUnlocked,
+          conceptCount: conceptCountsByDomainId?.[world.domain.id] ?? 0,
+          masteredCount: engagement?.masteredCount ?? 0,
+        }
+      })
+  }, [worlds, masteryByDomain, conceptCountsByDomainId])
 
   // Group concepts -> competencies (domains -> competencies -> concepts)
   const competencyGroups = useMemo(() => {
@@ -256,7 +267,7 @@ export function CurriculumBrowsePage() {
         {/* World path domain navigation - replaces the flat icon-tile grid */}
         <div className="card mb-6">
           <h2 className="text-lg font-heading font-semibold mb-4">Your Learning Path</h2>
-          {domainsLoading ? (
+          {domainsLoading || worldsLoading ? (
             <p className="text-gray-600">Loading domains...</p>
           ) : (
             <WorldPathMap

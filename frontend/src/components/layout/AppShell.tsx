@@ -22,10 +22,13 @@ import {
   ShoppingBag,
   Zap,
   FolderKanban,
+  Settings,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { LanguageToggle } from './LanguageToggle'
 import { PageTransition } from '@/components/motion/PageTransition'
+import { NotificationBell } from './NotificationBell'
+import { SearchBar } from './SearchBar'
 
 /**
  * AppShell — the one persistent navigation frame for every authenticated page.
@@ -162,13 +165,17 @@ export function AppShell() {
           <Link to="/dashboard" className="text-xl font-display font-bold text-white">
             {t('common.appName')}
           </Link>
-          <button
-            onClick={handleLogout}
-            className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
-          >
-            <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
-            {t('common.logout')}
-          </button>
+          <div className="flex items-center gap-2">
+            <SearchBar />
+            <NotificationBell />
+            <button
+              onClick={handleLogout}
+              className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
+            >
+              <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
+              {t('common.logout')}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -356,6 +363,36 @@ export function AppShell() {
                       {isDetailedDensity && <p className="text-xs text-slate-400">{t('more.parentDashboardDesc')}</p>}
                     </div>
                   </Link>
+                )}
+                {user?.role === 'ADMIN' && (
+                  <>
+                    <Link
+                      to="/admin/missions"
+                      onClick={() => setMoreOpen(false)}
+                      className="quick-action !items-start ltr:!text-left rtl:!text-right"
+                    >
+                      <div className="icon-chip bg-slate-100 text-slate-600">
+                        <Settings className="w-5 h-5" strokeWidth={2} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">Admin: Missions</p>
+                        {isDetailedDensity && <p className="text-xs text-slate-400">Content Studio CRUD</p>}
+                      </div>
+                    </Link>
+                    <Link
+                      to="/admin/feature-flags"
+                      onClick={() => setMoreOpen(false)}
+                      className="quick-action !items-start ltr:!text-left rtl:!text-right"
+                    >
+                      <div className="icon-chip bg-slate-100 text-slate-600">
+                        <Zap className="w-5 h-5" strokeWidth={2} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">Admin: Feature Flags</p>
+                        {isDetailedDensity && <p className="text-xs text-slate-400">Toggle gated features</p>}
+                      </div>
+                    </Link>
+                  </>
                 )}
                 <Link
                   to="/english"
