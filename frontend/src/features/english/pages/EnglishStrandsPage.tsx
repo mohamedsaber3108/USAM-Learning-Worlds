@@ -73,7 +73,7 @@ export function EnglishStrandsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors">
-                ← Back
+                <span className="inline-block rtl:scale-x-[-1]">←</span> Back
               </Link>
               <h1 className="text-2xl font-heading font-bold text-white">🇬🇧 English Strands</h1>
             </div>

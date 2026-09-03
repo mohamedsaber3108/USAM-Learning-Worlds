@@ -94,7 +94,7 @@ export function EnglishCoachPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/english" className="text-white/90 hover:text-white transition-colors">
-                ← Strands
+                <span className="inline-block rtl:scale-x-[-1]">←</span> Strands
               </Link>
               <h1 className="text-2xl font-heading font-bold text-white">🧑‍🏫 English Coach</h1>
             </div>

@@ -105,7 +105,7 @@ export function ThinkingSkillsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/learn" className="text-white/90 hover:text-white transition-colors">
-                ← Back
+                <span className="inline-block rtl:scale-x-[-1]">←</span> Back
               </Link>
               <h1 className="text-2xl font-heading font-bold text-white">
                 {meta.icon} {meta.title}

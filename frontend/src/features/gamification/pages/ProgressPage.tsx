@@ -238,7 +238,7 @@ export function ProgressPage() {
               to="/achievements"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
-              View All →
+              View All <span className="inline-block rtl:scale-x-[-1]">→</span>
             </Link>
           </motion.div>
 
@@ -279,7 +279,7 @@ export function ProgressPage() {
               to="/missions"
               className="text-xs text-primary-600 hover:text-primary-700 mt-1 inline-block"
             >
-              Browse →
+              Browse <span className="inline-block rtl:scale-x-[-1]">→</span>
             </Link>
           </motion.div>
         </div>
@@ -294,7 +294,7 @@ export function ProgressPage() {
                 to="/achievements"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
-                View All →
+                View All <span className="inline-block rtl:scale-x-[-1]">→</span>
               </Link>
             </div>
 
@@ -334,7 +334,7 @@ export function ProgressPage() {
                 to="/missions"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
-                View All →
+                View All <span className="inline-block rtl:scale-x-[-1]">→</span>
               </Link>
             </div>
 

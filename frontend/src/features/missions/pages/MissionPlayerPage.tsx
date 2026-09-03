@@ -624,7 +624,7 @@ function CodeActivity({
     <div className="space-y-4">
       <CodeMissionRunner mission={missionQuery.data} runId={runId} />
       <button type="button" onClick={onDone} className="btn btn-primary">
-        Continue →
+        Continue <span className="inline-block rtl:scale-x-[-1]">→</span>
       </button>
     </div>
   )

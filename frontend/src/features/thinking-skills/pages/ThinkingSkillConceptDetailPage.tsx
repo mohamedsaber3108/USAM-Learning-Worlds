@@ -38,7 +38,7 @@ export function ThinkingSkillConceptDetailPage() {
       <header className={`bg-gradient-to-r ${meta.gradient} shadow-pop`}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link to={`/thinking/${engine}`} className="text-white/90 hover:text-white transition-colors">
-            ← Back to {meta.title}
+            <span className="inline-block rtl:scale-x-[-1]">←</span> Back to {meta.title}
           </Link>
         </div>
       </header>
