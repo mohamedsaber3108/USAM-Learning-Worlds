@@ -22,14 +22,21 @@ import { CodingCoachService } from './services/coding-coach.service';
 import { HallucinationControlService } from './services/hallucination-control.service';
 import { PromptTemplateService } from './services/prompt-template.service';
 import { EnglishLearningModule } from '../english-learning/grammar-check.module';
+import { AuthModule } from '../auth/auth.module';
+import { AIEvalService } from './ai-eval.service';
+import { AdminAIEvalController } from './admin-ai-eval.controller';
+import { MemoryGovernanceService } from './memory-governance.service';
+import { MemoryGovernanceController } from './memory-governance.controller';
 
 @Module({
-  imports: [EnglishLearningModule],
+  imports: [EnglishLearningModule, AuthModule],
   controllers: [
     AIController,
     CharacterController,
     CodingCoachController,
     EnglishCoachController,
+    AdminAIEvalController,
+    MemoryGovernanceController,
   ],
   providers: [
     // Legacy services (kept for backward compatibility)
@@ -51,6 +58,10 @@ import { EnglishLearningModule } from '../english-learning/grammar-check.module'
     CodingCoachService,
     HallucinationControlService,
     PromptTemplateService,
+
+    // AI Evaluation Harness + Memory Governance
+    AIEvalService,
+    MemoryGovernanceService,
   ],
   exports: [
     // Export both old and new for gradual migration

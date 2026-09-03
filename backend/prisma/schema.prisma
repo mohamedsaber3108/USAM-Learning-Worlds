@@ -44,19 +44,19 @@ enum UserStatus {
 }
 
 model Learner {
-  id                String        @id @default(uuid())
-  userId            String        @unique
-  firstName         String
-  lastName          String?
-  displayName       String        @unique
-  ageBand           AgeBand?
-  avatarUrl         String?
-  dateOfBirth       DateTime?
-  status            LearnerStatus @default(ACTIVE)
-  preferences       Json?
-  leaderboardOptIn  Boolean       @default(false)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  firstName        String
+  lastName         String?
+  displayName      String        @unique
+  ageBand          AgeBand?
+  avatarUrl        String?
+  dateOfBirth      DateTime?
+  status           LearnerStatus @default(ACTIVE)
+  preferences      Json?
+  leaderboardOptIn Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   guardianships         Guardianship[]
@@ -79,6 +79,7 @@ model Learner {
   projectCollaborations ProjectCollaborator[]
   researchNotes         ResearchNote[]
   creativitySubmissions CreativitySubmission[]
+  cognitiveLoadSignals  CognitiveLoadSignal[]
 
   @@index([userId])
   @@index([displayName])
@@ -98,15 +99,15 @@ enum LearnerStatus {
 }
 
 model Guardian {
-  id            String    @id @default(uuid())
-  userId        String    @unique
-  firstName     String
-  lastName      String
-  phone         String?
-  relationship  String?
-  controls      Json?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  firstName    String
+  lastName     String
+  phone        String?
+  relationship String?
+  controls     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   guardianships Guardianship[]
@@ -116,14 +117,14 @@ model Guardian {
 }
 
 model Guardianship {
-  id           String              @id @default(uuid())
+  id           String               @id @default(uuid())
   guardianId   String
   learnerId    String
   relationship GuardianRelationship
-  status       GuardianshipStatus  @default(PENDING)
+  status       GuardianshipStatus   @default(PENDING)
   consentedAt  DateTime?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 
   guardian Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
   learner  Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
@@ -204,13 +205,13 @@ model Competency {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  skill            Skill                     @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  concepts         Concept[]
-  objectives       LearningObjective[]
-  masteryRecords   MasteryRecord[]
-  prerequisites    CompetencyPrerequisite[] @relation("competency")
-  dependents       CompetencyPrerequisite[] @relation("prerequisite")
-  projects         Project[]
+  skill          Skill                    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  concepts       Concept[]
+  objectives     LearningObjective[]
+  masteryRecords MasteryRecord[]
+  prerequisites  CompetencyPrerequisite[] @relation("competency")
+  dependents     CompetencyPrerequisite[] @relation("prerequisite")
+  projects       Project[]
 
   @@index([skillId])
   @@map("competencies")
@@ -227,11 +228,11 @@ model LearningObjective {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  competency   Competency     @relation(fields: [competencyId], references: [id], onDelete: Cascade)
-  concept      Concept?       @relation(fields: [conceptId], references: [id], onDelete: Cascade)
-  activities   Activity[]
-  contentItems ContentItem[]
-  projects     Project[]
+  competency        Competency         @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  concept           Concept?           @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  activities        Activity[]
+  contentItems      ContentItem[]
+  projects          Project[]
   questionTemplates QuestionTemplate[]
 
   @@index([competencyId])
@@ -240,16 +241,16 @@ model LearningObjective {
 }
 
 model Activity {
-  id                String         @id @default(uuid())
-  objectiveId       String
-  type              ActivityType
-  title             String
-  description       String?
-  content           Json
-  difficulty        DifficultyLevel @default(MEDIUM)
-  assessmentPurpose AssessmentPurpose @default(FORMATIVE)
-  order             Int            @default(0)
-  isActive          Boolean        @default(true)
+  id                      String            @id @default(uuid())
+  objectiveId             String
+  type                    ActivityType
+  title                   String
+  description             String?
+  content                 Json
+  difficulty              DifficultyLevel   @default(MEDIUM)
+  assessmentPurpose       AssessmentPurpose @default(FORMATIVE)
+  order                   Int               @default(0)
+  isActive                Boolean           @default(true)
   generatedFromTemplateId String?
   // Bloom Engine (SMALL, manual-tagging version — see gap matrix Bloom
   // Engine row). Each seeded activity below is manually tagged with the
@@ -258,14 +259,16 @@ model Activity {
   // future content remains genuinely Missing; this field + the
   // /missions/activities/by-bloom-level/:level filter are the real,
   // small, honest slice: manual data + a real filter over it.
-  bloomLevel        BloomLevel?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  bloomLevel              BloomLevel?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
 
-  objective        LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
-  attempts         ActivityAttempt[]
-  missionActivities MissionActivity[]
-  generatedFromTemplate QuestionTemplate? @relation("GeneratedFromTemplate", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
+  objective             LearningObjective      @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  attempts              ActivityAttempt[]
+  missionActivities     MissionActivity[]
+  generatedFromTemplate QuestionTemplate?      @relation("GeneratedFromTemplate", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
+  cognitiveLoadSignals  CognitiveLoadSignal[]
+  misconceptionPatterns MisconceptionPattern[]
 
   @@index([objectiveId])
   @@index([type])
@@ -346,20 +349,20 @@ enum MasteryState {
 }
 
 model Evidence {
-  id             String       @id @default(uuid())
-  learnerId      String
-  competencyId   String
-  masteryId      String
-  type           EvidenceType
-  success        Boolean
-  score          Float?
-  context        Json?
-  attemptId      String?
-  createdAt      DateTime     @default(now())
+  id           String       @id @default(uuid())
+  learnerId    String
+  competencyId String
+  masteryId    String
+  type         EvidenceType
+  success      Boolean
+  score        Float?
+  context      Json?
+  attemptId    String?
+  createdAt    DateTime     @default(now())
 
-  learner  Learner       @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  mastery  MasteryRecord @relation(fields: [masteryId], references: [id], onDelete: Cascade)
-  attempt  ActivityAttempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+  learner Learner          @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  mastery MasteryRecord    @relation(fields: [masteryId], references: [id], onDelete: Cascade)
+  attempt ActivityAttempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
 
   @@index([learnerId])
   @@index([masteryId])
@@ -385,18 +388,18 @@ enum EvidenceType {
 // ============================================
 
 model Mission {
-  id                String   @id @default(uuid())
-  worldId           String?
-  title             String
-  description       String
-  type              MissionType
-  estimatedMinutes  Int?
-  order             Int      @default(0)
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String      @id @default(uuid())
+  worldId          String?
+  title            String
+  description      String
+  type             MissionType
+  estimatedMinutes Int?
+  order            Int         @default(0)
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
-  world             World?             @relation(fields: [worldId], references: [id], onDelete: SetNull)
+  world             World?            @relation(fields: [worldId], references: [id], onDelete: SetNull)
   runs              MissionRun[]
   missionActivities MissionActivity[]
 
@@ -443,19 +446,20 @@ enum MissionType {
 }
 
 model MissionRun {
-  id                 String          @id @default(uuid())
-  learnerId          String
-  missionId          String
-  status             MissionRunStatus @default(IN_PROGRESS)
-  currentStageIndex  Int             @default(0)
-  startedAt          DateTime        @default(now())
-  completedAt        DateTime?
-  updatedAt          DateTime        @updatedAt
+  id                String           @id @default(uuid())
+  learnerId         String
+  missionId         String
+  status            MissionRunStatus @default(IN_PROGRESS)
+  currentStageIndex Int              @default(0)
+  startedAt         DateTime         @default(now())
+  completedAt       DateTime?
+  updatedAt         DateTime         @updatedAt
 
-  learner  Learner           @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  mission  Mission           @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  attempts ActivityAttempt[]
-  reflections MissionReflection[]
+  learner              Learner               @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  mission              Mission               @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  attempts             ActivityAttempt[]
+  reflections          MissionReflection[]
+  cognitiveLoadSignals CognitiveLoadSignal[]
 
   @@index([learnerId])
   @@index([missionId])
@@ -479,9 +483,10 @@ model ActivityAttempt {
   feedback   String?
   createdAt  DateTime @default(now())
 
-  run      MissionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
-  activity Activity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  evidence Evidence[]
+  run                  MissionRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
+  activity             Activity              @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  evidence             Evidence[]
+  cognitiveLoadSignals CognitiveLoadSignal[]
 
   @@index([runId])
   @@index([activityId])
@@ -507,9 +512,9 @@ model Project {
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
-  learner       Learner              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  competency    Competency?          @relation(fields: [competencyId], references: [id], onDelete: SetNull)
-  objective     LearningObjective?   @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
+  learner       Learner               @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  competency    Competency?           @relation(fields: [competencyId], references: [id], onDelete: SetNull)
+  objective     LearningObjective?    @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
   milestones    ProjectMilestone[]
   collaborators ProjectCollaborator[]
   researchNotes ResearchNote[]
@@ -597,13 +602,13 @@ model Progression {
 }
 
 model XPGain {
-  id             String   @id @default(uuid())
-  learnerId      String
-  amount         Int
-  source         XPSource
-  sourceId       String
-  reason         String?
-  createdAt      DateTime @default(now())
+  id        String   @id @default(uuid())
+  learnerId String
+  amount    Int
+  source    XPSource
+  sourceId  String
+  reason    String?
+  createdAt DateTime @default(now())
 
   progression Progression @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
@@ -623,17 +628,17 @@ enum XPSource {
 }
 
 model PracticeStreak {
-  id                String   @id @default(uuid())
-  learnerId         String   @unique
-  currentStreak     Int      @default(0)
-  longestStreak     Int      @default(0)
-  lastPracticeDate  DateTime
+  id               String    @id @default(uuid())
+  learnerId        String    @unique
+  currentStreak    Int       @default(0)
+  longestStreak    Int       @default(0)
+  lastPracticeDate DateTime
   // Coin-spending economy: learners buy freeze tokens (see StreakFreezePurchase)
   // that get consumed here instead of the streak resetting on a missed day.
-  freezesAvailable  Int      @default(0)
-  lastFreezeUsedAt  DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  freezesAvailable Int       @default(0)
+  lastFreezeUsedAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([learnerId])
   @@map("practice_streaks")
@@ -644,11 +649,11 @@ model PracticeStreak {
 // token that protects their streak the next time they miss a practice day.
 // One row per purchase gives a real, auditable ledger of coin spend.
 model StreakFreezePurchase {
-  id         String   @id @default(uuid())
-  learnerId  String
-  coinsCost  Int
-  purchasedAt DateTime @default(now())
-  usedAt     DateTime?
+  id          String    @id @default(uuid())
+  learnerId   String
+  coinsCost   Int
+  purchasedAt DateTime  @default(now())
+  usedAt      DateTime?
 
   @@index([learnerId])
   @@map("streak_freeze_purchases")
@@ -659,15 +664,15 @@ model StreakFreezePurchase {
 // ============================================
 
 model Character {
-  id           String   @id @default(uuid())
-  name         String   @unique
+  id           String        @id @default(uuid())
+  name         String        @unique
   role         CharacterRole
   personality  Json
-  systemPrompt String   @db.Text
+  systemPrompt String        @db.Text
   avatarUrl    String?
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   conversations Conversation[]
   interactions  CharacterInteraction[]
@@ -716,16 +721,16 @@ model AIUsageLog {
 }
 
 model ModerationLog {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   contentType    String
-  contentPreview String   @db.Text
+  contentPreview String    @db.Text
   flagged        Boolean
   categories     String[]
   severity       String
   action         String
   reviewedBy     String?
   reviewedAt     DateTime?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
 
   @@index([flagged])
   @@index([severity])
@@ -734,18 +739,18 @@ model ModerationLog {
 }
 
 model QuarantinedContent {
-  id         String    @id @default(uuid())
-  entityType String
-  entityId   String
-  reason     String    @db.Text
-  severity   String
-  categories String[]
-  status     String
-  reviewedBy String?
-  reviewedAt DateTime?
-  reviewNotes String?  @db.Text
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  entityType  String
+  entityId    String
+  reason      String    @db.Text
+  severity    String
+  categories  String[]
+  status      String
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  reviewNotes String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([entityType, entityId])
   @@index([status])
@@ -768,9 +773,9 @@ model Conversation {
   startedAt       DateTime           @default(now())
   endedAt         DateTime?
 
-  learner  Learner              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  character Character            @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  messages ConversationMessage[]
+  learner   Learner               @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  character Character             @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  messages  ConversationMessage[]
 
   @@index([learnerId])
   @@index([characterId])
@@ -780,20 +785,20 @@ model Conversation {
 }
 
 model ConversationMessage {
-  id               String   @id @default(uuid())
+  id               String      @id @default(uuid())
   conversationId   String
   role             MessageRole
-  content          String   @db.Text
+  content          String      @db.Text
   metadata         Json?
   moderationResult Json?
-  createdAt        DateTime @default(now())
+  createdAt        DateTime    @default(now())
   /// AI Memory Governance: number of days this message may be retained
   /// before a purge job/query is allowed to delete it. Defaults to 180
   /// days for conversation transcripts (longer than ephemeral
   /// LearnerContext snapshots since parents/moderators may need to
   /// review a conversation after the fact), per docs/architecture/
   /// USAM_KIDS_ENGINE_GAP_MATRIX.md "AI Memory Governance" row.
-  retentionDays    Int      @default(180)
+  retentionDays    Int         @default(180)
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
@@ -842,23 +847,23 @@ model CharacterState {
 }
 
 model LearnerContext {
-  id                   String   @id @default(uuid())
-  learnerId            String
-  sessionId            String?
-  ageBand              AgeBand
-  currentDomainId      String?
-  currentMissionId     String?
-  currentActivityId    String?
-  masterySnapshot      Json
-  preferencesSnapshot  Json?
-  generatedAt          DateTime @default(now())
+  id                  String   @id @default(uuid())
+  learnerId           String
+  sessionId           String?
+  ageBand             AgeBand
+  currentDomainId     String?
+  currentMissionId    String?
+  currentActivityId   String?
+  masterySnapshot     Json
+  preferencesSnapshot Json?
+  generatedAt         DateTime @default(now())
   /// AI Memory Governance: number of days this snapshot may be retained
   /// before a purge job/query is allowed to delete it. Defaults to 90
   /// days - context snapshots are ephemeral personalization inputs, not
   /// permanent records, per docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md
   /// "AI Memory Governance" row (no retention-policy metadata existed
   /// before this field).
-  retentionDays        Int      @default(90)
+  retentionDays       Int      @default(90)
 
   learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
@@ -868,17 +873,17 @@ model LearnerContext {
   @@map("learner_contexts")
 }
 
- // AI Prompt/Policy Engine (small, real version): a versioned,
- // centrally-managed store for the system prompts that were previously
- // hardcoded inline in character.service.ts / moderation.service.ts /
- // coding-coach.service.ts / english-coach.service.ts. Each row is one
- // named template (`key`) with a `version` number and `changelog` text
- // describing what changed at that version, plus `isActive` so a
- // template can be soft-disabled (falling back to the caller's inline
- // default) without deleting history. Not a full policy-approval/A-B
- // testing platform - a real, small "read the prompt from a table
- // instead of a string literal" refactor. See docs/architecture/
- // USAM_KIDS_ENGINE_GAP_MATRIX.md "AI Prompt/Policy Engine" row.
+// AI Prompt/Policy Engine (small, real version): a versioned,
+// centrally-managed store for the system prompts that were previously
+// hardcoded inline in character.service.ts / moderation.service.ts /
+// coding-coach.service.ts / english-coach.service.ts. Each row is one
+// named template (`key`) with a `version` number and `changelog` text
+// describing what changed at that version, plus `isActive` so a
+// template can be soft-disabled (falling back to the caller's inline
+// default) without deleting history. Not a full policy-approval/A-B
+// testing platform - a real, small "read the prompt from a table
+// instead of a string literal" refactor. See docs/architecture/
+// USAM_KIDS_ENGINE_GAP_MATRIX.md "AI Prompt/Policy Engine" row.
 model PromptTemplate {
   id        String   @id @default(uuid())
   key       String   @unique
@@ -1095,18 +1100,18 @@ enum ScaffoldLevel {
 // ============================================
 
 model ContentItem {
-  id          String          @id @default(uuid())
+  id          String            @id @default(uuid())
   type        ContentType
   title       String
   content     Json
   metadata    Json?
-  language    String          @default("en")
+  language    String            @default("en")
   ageBand     AgeBand?
   domainId    String?
   objectiveId String?
   difficulty  DifficultyLevel?
-  status      ContentStatus   @default(DRAFT)
-  version     Int             @default(1)
+  status      ContentStatus     @default(DRAFT)
+  version     Int               @default(1)
   generatedBy String?
   validatedBy String?
   validatedAt DateTime?
@@ -1119,8 +1124,8 @@ model ContentItem {
   // no single identity table today.
   sourceType  ContentSourceType @default(SEEDED)
   createdBy   String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   domain    Domain?            @relation(fields: [domainId], references: [id], onDelete: SetNull)
   objective LearningObjective? @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
@@ -1306,15 +1311,15 @@ enum EnglishStrandFamily {
 }
 
 model EnglishStrand {
-  id          String              @id @default(uuid())
-  name        String              @unique
-  slug        String              @unique
+  id          String               @id @default(uuid())
+  name        String               @unique
+  slug        String               @unique
   description String?
   cefrLevel   String?
   strandType  EnglishStrandFamily?
-  order       Int                 @default(0)
-  isActive    Boolean             @default(true)
-  createdAt   DateTime            @default(now())
+  order       Int                  @default(0)
+  isActive    Boolean              @default(true)
+  createdAt   DateTime             @default(now())
 
   @@index([slug])
   @@index([strandType])
@@ -1338,15 +1343,15 @@ model CodingConcept {
 }
 
 model AILiteracyConcept {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  slug            String   @unique
-  description     String?
-  ageAppropriate  AgeBand
-  category        String
-  order           Int      @default(0)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  ageAppropriate AgeBand
+  category       String
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   @@index([slug])
   @@index([ageAppropriate])
@@ -1354,15 +1359,15 @@ model AILiteracyConcept {
 }
 
 model CommunicationSkillConcept {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  slug            String   @unique
-  description     String?
-  ageAppropriate  AgeBand
-  category        String
-  order           Int      @default(0)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  ageAppropriate AgeBand
+  category       String
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   @@index([slug])
   @@index([category])
@@ -1371,15 +1376,15 @@ model CommunicationSkillConcept {
 }
 
 model EntrepreneurshipConcept {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  slug            String   @unique
-  description     String?
-  category        String
-  ageAppropriate  AgeBand
-  order           Int      @default(0)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String
+  ageAppropriate AgeBand
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   @@index([slug])
   @@index([category])
@@ -1387,15 +1392,15 @@ model EntrepreneurshipConcept {
 }
 
 model FinancialLiteracyConcept {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  slug            String   @unique
-  description     String?
-  category        String
-  ageAppropriate  AgeBand
-  order           Int      @default(0)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String
+  ageAppropriate AgeBand
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   @@index([slug])
   @@index([category])
@@ -1403,15 +1408,15 @@ model FinancialLiteracyConcept {
 }
 
 model DigitalLiteracyConcept {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  slug            String   @unique
-  description     String?
-  category        String
-  ageAppropriate  AgeBand
-  order           Int      @default(0)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String
+  ageAppropriate AgeBand
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   @@index([slug])
   @@index([category])
@@ -1423,15 +1428,15 @@ model DigitalLiteracyConcept {
 // scratch. Mirrors AILiteracyConcept/DigitalLiteracyConcept exactly: a flat,
 // age-banded concept table with no relations, served read-only.
 model CareerExplorationConcept {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  slug            String   @unique
-  description     String?
-  category        String
-  ageAppropriate  AgeBand
-  order           Int      @default(0)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String
+  ageAppropriate AgeBand
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   @@index([slug])
   @@index([category])
@@ -1450,12 +1455,12 @@ enum ReflectionPromptKind {
 }
 
 model ReflectionPrompt {
-  id        String                @id @default(uuid())
+  id        String               @id @default(uuid())
   text      String
   kind      ReflectionPromptKind
-  isActive  Boolean               @default(true)
-  order     Int                   @default(0)
-  createdAt DateTime              @default(now())
+  isActive  Boolean              @default(true)
+  order     Int                  @default(0)
+  createdAt DateTime             @default(now())
 
   responses MissionReflection[]
 
@@ -1472,9 +1477,9 @@ model MissionReflection {
   note         String?
   createdAt    DateTime @default(now())
 
-  learner   Learner          @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  missionRun MissionRun      @relation(fields: [missionRunId], references: [id], onDelete: Cascade)
-  prompt    ReflectionPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  learner    Learner          @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  missionRun MissionRun       @relation(fields: [missionRunId], references: [id], onDelete: Cascade)
+  prompt     ReflectionPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
 
   @@index([learnerId])
   @@index([missionRunId])
@@ -1493,13 +1498,13 @@ enum CosmeticCategory {
 }
 
 model AvatarCosmetic {
-  id              String            @id @default(uuid())
-  name            String            @unique
-  category        CosmeticCategory
-  xpCost          Int
-  iconOrStyleKey  String
-  isDefault       Boolean           @default(false)
-  createdAt       DateTime          @default(now())
+  id             String           @id @default(uuid())
+  name           String           @unique
+  category       CosmeticCategory
+  xpCost         Int
+  iconOrStyleKey String
+  isDefault      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
 
   // Asset Management Engine v1 (gap matrix's own suggestion): per-asset
   // provenance metadata. All cosmetics shipped to date are hand-built by
@@ -1507,25 +1512,25 @@ model AvatarCosmetic {
   // fields rather than a full license-registry FK — enough to answer
   // "where did this come from and can we redistribute it" without
   // building an asset pipeline.
-  license         String?
-  source          String?
-  attribution     String?
+  license     String?
+  source      String?
+  attribution String?
 
-  unlocks         LearnerCosmeticUnlock[]
+  unlocks LearnerCosmeticUnlock[]
 
   @@index([category])
   @@map("avatar_cosmetics")
 }
 
 model LearnerCosmeticUnlock {
-  id          String         @id @default(uuid())
-  learnerId   String
-  cosmeticId  String
-  unlockedAt  DateTime       @default(now())
-  isEquipped  Boolean        @default(false)
+  id         String   @id @default(uuid())
+  learnerId  String
+  cosmeticId String
+  unlockedAt DateTime @default(now())
+  isEquipped Boolean  @default(false)
 
-  learner     Learner        @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  cosmetic    AvatarCosmetic @relation(fields: [cosmeticId], references: [id], onDelete: Cascade)
+  learner  Learner        @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  cosmetic AvatarCosmetic @relation(fields: [cosmeticId], references: [id], onDelete: Cascade)
 
   @@unique([learnerId, cosmeticId])
   @@index([learnerId])
@@ -1555,17 +1560,17 @@ model LearnerCosmeticUnlock {
 // Bedrock-LLM half of ModerationService being down in production.
 // ============================================
 model Story {
-  id          String   @id @default(uuid())
-  title       String
-  summary     String
-  ageBand     AgeBand
-  domainId    String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  title     String
+  summary   String
+  ageBand   AgeBand
+  domainId  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  domain      Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  pages       StoryPage[]
+  domain Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  pages  StoryPage[]
 
   @@index([domainId])
   @@index([ageBand])
@@ -1573,26 +1578,25 @@ model Story {
 }
 
 model StoryPage {
-  id                String    @id @default(uuid())
-  storyId           String
-  pageNumber        Int
-  text              String
+  id               String    @id @default(uuid())
+  storyId          String
+  pageNumber       Int
+  text             String
   // Array of { label: string, nextPageNumber: number | null } — 2-3
   // entries for a branching page, or [] for an ending page.
-  choiceOptions     Json
+  choiceOptions    Json
   // Story Safety Engine fields — this page's `text` was run through the
   // deterministic PII backstop at authoring time.
-  safetyReviewed    Boolean   @default(false)
-  safetyReviewedAt  DateTime?
-  safetyNotes       String?
+  safetyReviewed   Boolean   @default(false)
+  safetyReviewedAt DateTime?
+  safetyNotes      String?
 
-  story             Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
   @@unique([storyId, pageNumber])
   @@index([storyId])
   @@map("story_pages")
 }
-
 
 // ============================================
 // QUESTION ENGINE (real MCQ/fill-blank/drag-drop template system)
@@ -1605,20 +1609,21 @@ enum QuestionType {
 }
 
 model QuestionTemplate {
-  id             String            @id @default(uuid())
-  objectiveId    String
-  type           QuestionType
-  stem           String            @db.Text
-  options        Json?
-  correctAnswer  String
-  distractors    Json
-  difficulty     DifficultyLevel   @default(MEDIUM)
-  isActive       Boolean           @default(true)
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  id            String          @id @default(uuid())
+  objectiveId   String
+  type          QuestionType
+  stem          String          @db.Text
+  options       Json?
+  correctAnswer String
+  distractors   Json
+  difficulty    DifficultyLevel @default(MEDIUM)
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
-  objective      LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
-  generatedActivities Activity[]   @relation("GeneratedFromTemplate")
+  objective             LearningObjective      @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  generatedActivities   Activity[]             @relation("GeneratedFromTemplate")
+  misconceptionPatterns MisconceptionPattern[]
 
   @@index([objectiveId])
   @@index([type])
@@ -1626,34 +1631,34 @@ model QuestionTemplate {
 }
 
 model Flashcard {
-  id          String   @id @default(uuid())
-  domainId    String
-  front       String   @db.Text
-  back        String   @db.Text
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  domainId  String
+  front     String   @db.Text
+  back      String   @db.Text
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  domain      Domain            @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  reviews     FlashcardReview[]
+  domain  Domain            @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  reviews FlashcardReview[]
 
   @@index([domainId])
   @@map("flashcards")
 }
 
 model FlashcardReview {
-  id              String    @id @default(uuid())
-  learnerId       String
-  flashcardId     String
-  confidence      Float     @default(0.0)
-  reviewCount     Int       @default(0)
-  lastReviewedAt  DateTime?
-  nextReviewDue   DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id @default(uuid())
+  learnerId      String
+  flashcardId    String
+  confidence     Float     @default(0.0)
+  reviewCount    Int       @default(0)
+  lastReviewedAt DateTime?
+  nextReviewDue  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  learner         Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  flashcard       Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+  learner   Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  flashcard Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
 
   @@unique([learnerId, flashcardId])
   @@index([learnerId])
@@ -1662,14 +1667,14 @@ model FlashcardReview {
 }
 
 model DailyGoal {
-  id                String   @id @default(uuid())
-  learnerId         String   @unique
-  targetMinutes     Int      @default(15)
-  targetActivities  Int      @default(3)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String   @id @default(uuid())
+  learnerId        String   @unique
+  targetMinutes    Int      @default(15)
+  targetActivities Int      @default(3)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  learner           Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
   @@map("daily_goals")
 }
@@ -1683,16 +1688,16 @@ enum NotificationType {
 }
 
 model Notification {
-  id         String            @id @default(uuid())
-  learnerId  String
-  type       NotificationType
-  title      String
-  body       String
-  data       Json?
-  isRead     Boolean           @default(false)
-  createdAt  DateTime          @default(now())
+  id        String           @id @default(uuid())
+  learnerId String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
 
-  learner    Learner           @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
   @@index([learnerId])
   @@index([learnerId, isRead])
@@ -1712,15 +1717,15 @@ model Notification {
 // project metadata, and submissions are simple text/note responses to a
 // specific prompt rather than a full multi-milestone Project lifecycle.
 model CreativityPrompt {
-  id          String   @id @default(uuid())
-  title       String   @unique
-  slug        String   @unique
-  prompt      String
-  domainId    String?
-  ageBand     AgeBand
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  title     String   @unique
+  slug      String   @unique
+  prompt    String
+  domainId  String?
+  ageBand   AgeBand
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   domain      Domain?                @relation(fields: [domainId], references: [id], onDelete: SetNull)
   submissions CreativitySubmission[]
@@ -1835,4 +1840,153 @@ model FeatureFlag {
 
   @@index([key])
   @@map("feature_flags")
+}
+
+// ==================== AI Evaluation Harness v1 ====================
+// Backs backend/scripts/run-ai-eval.ts and GET /api/admin/ai-eval/runs.
+model AIEvalRun {
+  id             String         @id @default(uuid())
+  startedAt      DateTime       @default(now())
+  finishedAt     DateTime?
+  datasetVersion String
+  totalCases     Int
+  passedCases    Int            @default(0)
+  averageScore   Float          @default(0)
+  status         String         @default("running")
+  notes          String?
+  results        AIEvalResult[]
+
+  @@index([startedAt])
+  @@map("ai_eval_runs")
+}
+
+model AIEvalResult {
+  id             String    @id @default(uuid())
+  runId          String
+  run            AIEvalRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  caseId         String
+  domain         String
+  method         String
+  score          Float
+  passed         Boolean
+  criteriaTotal  Int
+  criteriaPassed Int
+  criteriaDetail Json
+  responseText   String?
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+
+  @@index([runId])
+  @@index([domain])
+  @@index([caseId])
+  @@map("ai_eval_results")
+}
+
+// ==================== Cognitive Load Engine v1 ====================
+// Per-attempt pacing/fatigue signal, distinct from ZPD's mastery-based
+// difficulty targeting. Written by cognitive-load.service.ts recordSignal().
+model CognitiveLoadSignal {
+  id                String           @id @default(uuid())
+  learnerId         String
+  learner           Learner          @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  activityId        String
+  activity          Activity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  missionRunId      String?
+  missionRun        MissionRun?      @relation(fields: [missionRunId], references: [id], onDelete: SetNull)
+  attemptId         String?
+  attempt           ActivityAttempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+  hintCount         Int              @default(0)
+  timeOnTaskSeconds Int              @default(0)
+  pauseCount        Int              @default(0)
+  createdAt         DateTime         @default(now())
+
+  @@index([learnerId])
+  @@index([activityId])
+  @@index([missionRunId])
+  @@index([createdAt])
+  @@map("cognitive_load_signals")
+}
+
+// ==================== Computational Thinking Engine ====================
+// Zero-trace engine per USAM_KIDS_ENGINE_GAP_MATRIX.md — built from scratch,
+// matching CareerExplorationConcept's shape. Distinct from the pre-existing,
+// unused CodingConcept model.
+model ComputationalThinkingConcept {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String
+  ageAppropriate AgeBand
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("computational_thinking_concepts")
+}
+
+// ==================== Critical Thinking Engine ====================
+// Zero-trace engine per USAM_KIDS_ENGINE_GAP_MATRIX.md — built from scratch,
+// matching ComputationalThinkingConcept's shape.
+model CriticalThinkingConcept {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String
+  ageAppropriate AgeBand
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("critical_thinking_concepts")
+}
+
+// ==================== Content QA Engine v1 ====================
+// General content-quality checks over Activity/Mission rows (completeness,
+// readability-for-age-band, missing-field detection). See
+// content-qa.service.ts for the scan logic that writes rows here.
+model ContentQAFlag {
+  id         String    @id @default(uuid())
+  entityType String
+  entityId   String
+  flagType   String
+  severity   String
+  detail     String?
+  detectedAt DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([entityType, entityId])
+  @@index([flagType])
+  @@index([resolvedAt])
+  @@index([severity])
+  @@map("content_qa_flags")
+}
+
+// ==================== Misconception Engine v1 ====================
+// Tracks recurring WRONG-answer patterns per QuestionTemplate/Activity.
+model MisconceptionPattern {
+  id                 String            @id @default(uuid())
+  questionTemplateId String?
+  questionTemplate   QuestionTemplate? @relation(fields: [questionTemplateId], references: [id], onDelete: Cascade)
+  activityId         String?
+  activity           Activity?         @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  wrongAnswerValue   String
+  frequencyCount     Int               @default(1)
+  description        String?
+  isLabeled          Boolean           @default(false)
+  firstSeenAt        DateTime          @default(now())
+  lastSeenAt         DateTime          @default(now())
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@unique([questionTemplateId, activityId, wrongAnswerValue])
+  @@index([questionTemplateId])
+  @@index([activityId])
+  @@index([frequencyCount])
+  @@map("misconception_patterns")
 }
