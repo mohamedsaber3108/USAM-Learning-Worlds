@@ -167,7 +167,7 @@ export function SearchBar() {
       {debounced.length >= 2 && (
         <div
           role="listbox"
-          className="absolute right-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lift border border-surface-200 z-50"
+          className="absolute end-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lift border border-surface-200 z-50"
         >
           {groupedResults.length === 0 && (
             <div className="px-4 py-6 text-center text-sm text-slate-400">No results</div>

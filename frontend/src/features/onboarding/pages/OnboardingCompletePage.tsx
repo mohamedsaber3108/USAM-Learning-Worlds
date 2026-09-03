@@ -35,7 +35,7 @@ export function OnboardingCompletePage() {
             style={{ backgroundColor: '#10B98122' }}
           />
           <CharacterFace characterId="Azouz" size={96} />
-          <span className="absolute -top-1 -right-1 bg-success-500 rounded-full p-1.5 shadow">
+          <span className="absolute -top-1 -end-1 bg-success-500 rounded-full p-1.5 shadow">
             <PartyPopper className="w-3.5 h-3.5 text-white" />
           </span>
         </motion.div>

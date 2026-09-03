@@ -173,7 +173,7 @@ export function EnglishStrandsPage() {
                             </h3>
                             {strand.cefrLevel && (
                               <span
-                                className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                                className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
                                   CEFR_COLORS[strand.cefrLevel] || 'bg-gray-100 text-gray-800'
                                 }`}
                               >

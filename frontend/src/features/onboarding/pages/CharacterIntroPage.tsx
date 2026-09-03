@@ -94,7 +94,7 @@ export function CharacterIntroPage() {
                   style={{ backgroundColor: `${visual.color}22` }}
                 />
                 <CharacterFace characterId={current.name} size={112} />
-                <span className="absolute -top-1 -right-1 bg-secondary-400 rounded-full p-1.5 shadow">
+                <span className="absolute -top-1 -end-1 bg-secondary-400 rounded-full p-1.5 shadow">
                   <Star className="w-3.5 h-3.5 text-white" fill="currentColor" />
                 </span>
               </motion.div>

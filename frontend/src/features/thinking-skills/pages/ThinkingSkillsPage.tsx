@@ -198,7 +198,7 @@ export function ThinkingSkillsPage() {
                               {concept.name}
                             </h3>
                             <span
-                              className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                              className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
                                 AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
                               }`}
                             >

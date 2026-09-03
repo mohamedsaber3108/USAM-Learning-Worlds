@@ -59,7 +59,7 @@ export function ThinkingSkillConceptDetailPage() {
             <div className="flex items-start justify-between mb-4">
               <h1 className="text-2xl font-heading font-bold text-gray-900">{concept.name}</h1>
               <span
-                className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
                   AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
                 }`}
               >
