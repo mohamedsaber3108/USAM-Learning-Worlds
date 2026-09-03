@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { ArrowLeft, Map, ListChecks, CheckCircle2, ArrowRight, Square } from 'lucide-react'
 import { learningApi } from '@/lib/api/endpoints'
 
 export function LearningPathDetailPage() {
@@ -24,10 +25,14 @@ export function LearningPathDetailPage() {
       <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Link to="/learn/paths" className="text-white/90 hover:text-white transition-colors">
-              ← All Paths
+            <Link to="/learn/paths" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
+              <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+              All Paths
             </Link>
-            <h1 className="text-2xl font-heading font-bold text-white">🗺️ Learning Path</h1>
+            <h1 className="text-2xl font-heading font-bold text-white flex items-center gap-2">
+              <Map className="w-6 h-6" strokeWidth={2} />
+              Learning Path
+            </h1>
           </div>
         </div>
       </header>
@@ -75,7 +80,10 @@ export function LearningPathDetailPage() {
 
             {/* Ordered path nodes */}
             <div className="card">
-              <h3 className="text-lg font-heading font-semibold mb-4">📋 Path Steps</h3>
+              <h3 className="text-lg font-heading font-semibold mb-4 flex items-center gap-2">
+                <ListChecks className="w-5 h-5" strokeWidth={2} />
+                Path Steps
+              </h3>
               <ol className="space-y-3">
                 {path.nodes?.map((node: any, idx: number) => {
                   const isCompleted = completedSet.has(node.id)
@@ -104,7 +112,13 @@ export function LearningPathDetailPage() {
                         </p>
                       </div>
                       <span className="text-xl">
-                        {isCompleted ? '✅' : isCurrent ? '➡️' : '⬜'}
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-5 h-5 text-success-600" strokeWidth={2} />
+                        ) : isCurrent ? (
+                          <ArrowRight className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                        ) : (
+                          <Square className="w-5 h-5 text-gray-400" strokeWidth={2} />
+                        )}
                       </span>
                     </li>
                   )

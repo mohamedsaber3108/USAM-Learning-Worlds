@@ -10,6 +10,19 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // CRITICAL: trust the nginx reverse proxy in front of this app so
+  // Express/NestJS reads the REAL client IP from X-Forwarded-For (set by
+  // nginx: proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for)
+  // instead of seeing every request as coming from the proxy's own IP.
+  //
+  // Without this, ThrottlerGuard (rate limiting on /api/auth/login,
+  // /api/auth/register) buckets ALL users behind nginx into ONE shared
+  // IP — meaning a handful of login attempts from ANY user exhausts the
+  // limit for EVERY user on the site (confirmed real-world symptom:
+  // widespread "can't sign in" reports, 429 Too Many Requests on login).
+  // '1' = trust exactly one hop (our own nginx), not an open-ended chain.
+  app.set('trust proxy', 1);
+
   // Security headers
   app.use(helmet());
 

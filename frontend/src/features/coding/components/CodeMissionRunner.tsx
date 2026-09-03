@@ -10,7 +10,7 @@
  *   timedOut } — see backend/src/modules/coding-sandbox/.
  */
 import { useState } from 'react'
-import { Play, Loader2 } from 'lucide-react'
+import { Play, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { runPython } from './PyodideRunner'
 import { SandpackMission } from './SandpackMission'
 import { codingSandboxApi, type CodingSandboxMission } from '@/lib/api/endpoints'
@@ -138,8 +138,13 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
           </p>
           <ul className="space-y-1 text-sm">
             {gradeResult.outcomes.map((o) => (
-              <li key={o.id} className={o.passed ? 'text-green-600' : 'text-red-600'}>
-                {o.passed ? '✓' : '✗'} {o.description}
+              <li key={o.id} className={o.passed ? 'text-green-600 flex items-center gap-1.5' : 'text-red-600 flex items-center gap-1.5'}>
+                {o.passed ? (
+                  <CheckCircle2 className="w-4 h-4" strokeWidth={2} />
+                ) : (
+                  <XCircle className="w-4 h-4" strokeWidth={2} />
+                )}
+                {o.description}
               </li>
             ))}
           </ul>
