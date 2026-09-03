@@ -94,7 +94,7 @@ export class SearchService {
             ) AS snippet,
             ts_rank(a."searchVector", websearch_to_tsquery('english', ${q})) AS rank,
             -- Resolve to the specific Mission this Activity actually lives
-            -- under (via mission_activities), preferring the lowest `order`
+            -- under (via mission_activities), preferring the lowest 'order'
             -- row against an isActive mission, so the frontend can route
             -- straight to /missions/:missionId instead of the generic
             -- browse list. NULL here (no active mission links this
