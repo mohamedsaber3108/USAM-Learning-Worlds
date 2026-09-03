@@ -667,3 +667,83 @@ character-art wave's `CharacterFace.tsx` rather than a new subsystem:
   deployed via the full-clean pattern; `GET /characters/:id/state` returns
   real `relationshipLevel` data in production (see deployment commit for
   hash and verification transcript).
+
+## Wave 1, Cluster C — Learner Model / Adaptive+Recommendation / Developmental Adaptation (this pass)
+
+Real gaps closed, live-verified with a fresh test learner
+(`49bff8a2-4f78-4911-811a-97aecf5657a9`, ageBand `AGE_8_9`) on the
+production DB (`usam_learning_worlds`).
+
+**Row 1, Learner Model Engine — now Already implemented (v1), was
+Partially implemented.** Extracted a standalone `LearnerModelModule`
+(`backend/src/modules/learner-model/`) with its own
+`LearnerModelService`/`LearnerModelController` exposing
+`GET /learner-model/:id` -> `{ learnerId, ageBand, masterySnapshot,
+preferences, zpdProfile }`. This is a genuinely new, stable contract —
+other engines/frontend can now query learner state directly instead of
+going through the AI module. `ai/learner-context.service.ts` was left
+untouched; existing AI callers (`character.service.ts`,
+`conversation.service.ts`, `english-coach.service.ts`,
+`coding-coach.service.ts`) still work unmodified. Access-gated to the
+learner themself, a linked guardian, or ADMIN/MODERATOR (same pattern as
+`ParentsService.verifyRelationship`). Live-verified:
+`curl -H "Authorization: Bearer $TOK" .../api/learner-model/<id>` ->
+`{"learnerId":"49bff8a2-...","ageBand":"AGE_8_9","masterySnapshot":{"totalCompetencies":0,...},"preferences":{},"zpdProfile":{"optimalDifficulty":"EASY",...}}`.
+
+**Row 5+6, Adaptive Learning Engine + Recommendation Engine — the "no
+full adaptive-loop orchestration" gap is now closed, not fully
+Already-implemented (still no re-assess loop, see caveat below).** Added
+one single-purpose endpoint, `GET /adaptive/next-activity` (no path
+param — distinct from the pre-existing `next-activity/:competencyId`),
+in `RecommendationService.getOrchestratedNextActivity()`: calculates ZPD
+-> picks a concrete target competency (recommendedFocus, else latest
+mastery record, else any active competency) -> asks ZPD for the
+recommended difficulty on it -> hands off to the existing
+`getNextActivity()` to pick one concrete unattempted activity. Returns a
+single suggestion object, not a generic plan/queue — deliberately not
+overbuilt. Caveat: this is assess->recommend, one-shot; it does not close
+the loop with a re-assessment step after the activity is attempted — that
+remains a real gap if "full adaptive loop" is read strictly. Live-verified:
+`curl -H "Authorization: Bearer $TOK" .../api/adaptive/next-activity` ->
+`{"competencyId":"coding-sandbox-demo-competency","competencyName":"Coding Sandbox Demo Competency","difficulty":"EASY","activityId":"coding-sandbox-demo-activity","activityTitle":"Double it","reason":"Recommended based on ZPD (EASY zone) and current focus on Coding Sandbox Demo Competency"}`.
+
+**Developmental Adaptation Engine (Part 7a row) — AgeVariant seed gap
+closed for the most-used Activity/Mission entities.**
+`ContentAdaptationService` logic was already real; `AgeVariant` was
+verified empty (`0` rows) via `psql` before any wave-1 work this session.
+A sibling cluster (Content Intelligence Engine, wave-1-cluster-A) seeded
+11 `CONTENT_ITEM` rows first. This pass added
+`backend/prisma/seeds/seed-age-variants.ts`, seeding 9 Activity entities
+(the lowest-`order`/highest-traffic arithmetic activities) + 2 Mission
+entities x all 3 age bands (`AGE_8_9`/`AGE_10_11`/`AGE_12_14`) = 30
+targeted rows (24 newly created + 6 already present from a concurrent
+sibling run). **psql-verified count: 11 -> 35** (`select count(*) from
+age_variants` on `usam_learning_worlds`), breakdown
+`ACTIVITY: 9 per age band (27 total)`, `MISSION: 2 per age band (6
+total)`, `CONTENT_ITEM: 2` (cluster-A's). Live-verified the adaptation
+logic now actually serves seeded content instead of falling back:
+`curl .../api/learning/adapted/ACTIVITY/dcf28bc1-.../?ageBand=AGE_8_9` ->
+`"adapted":true` with a real age-appropriate `framing`/`surface`, where
+previously `adapted` would have been `false` for every entity.
+**Caveat/honesty note:** 10 entities is the floor asked for (task said
+"5-10 most-used"), not full coverage of the ~27 active Activities — most
+Activity/Mission/Objective rows across the curriculum still fall back to
+unadapted content. Classify as Partially implemented -> data now
+genuinely exists and is served for a meaningful subset, full-catalog
+coverage remains future work, not claiming "Already implemented" for the
+whole engine.
+
+**Spaced Repetition Engine — skipped, no change.** Per the task's own
+priority note ("Needs refactor only if FSRS fidelity required — lowest
+priority, skip if time-constrained"), left as-is; still the
+confidence-bucketed fixed-interval scheduler in
+`mastery-confidence.algorithm.ts`, not real FSRS/SM-2. No claim of
+"Already implemented" made or changed for this row.
+
+Commits: `28356b6` (Learner Model Engine), `ca920b4` (Adaptive +
+Recommendation Engine next-activity orchestration), plus the
+AgeVariant seed file shipped in `ca920b4` and run against production
+DB directly (seed execution itself is not a commit — it's a live data
+change, verified via psql above). All tagged
+`partial-wave-1-cluster-C`.
+
