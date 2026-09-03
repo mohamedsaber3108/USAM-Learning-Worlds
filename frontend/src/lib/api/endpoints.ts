@@ -752,6 +752,11 @@ export interface SearchResultItem {
   title: string
   snippet: string
   rank: number
+  // Only set for type === 'activity' — the specific Mission this activity
+  // lives under (there's no standalone activity detail route; activities
+  // only render inside a Mission's page). Null/undefined means no active
+  // mission links it, in which case callers should fall back to /missions.
+  missionId?: string | null
 }
 
 export const searchApi = {
