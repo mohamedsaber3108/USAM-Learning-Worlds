@@ -568,3 +568,102 @@ Cumulative classification counts across Parts 1, 4, 7a, 7b, 8, and 9 of this fil
 ## Engines still requiring explicit re-verification / not yet independently classified
 
 The following inventory items were touched only as naming cross-references above (pointing back to an already-scored row) rather than independently re-verified with fresh code reads this pass, and a follow-up pass with time/access could usefully confirm they don't hide a distinct sub-finding: **Story Branching Engine, World State Engine, Bloom Engine, Localization CMS, Evaluation Engine** (all cross-referenced to other rows in Part 9 above). Additionally, **`character-safety.service.ts` was read only through its pattern-definition section this pass** (Part 8, Child Safety Engine row) — a follow-up should read the rest of that file to confirm or deny whether grooming-detection, self-harm-escalation, and bullying-classification pattern sets exist further in the file (as parent-bypass detection does) before that row's "Missing" sub-claims are treated as final. No engine from the full 171-item inventory is being left completely unclassified by this pass — Parts 1/4/7a/7b/8/9 collectively address all 171 named items, several via explicit duplicate cross-reference rather than fresh independent evidence.
+
+## Conflict resolution pass (partial-wave-1-conflicts)
+
+The 7 rows classified **Conflict** above (tallied at line ~564) have each been
+resolved — either by clarifying the naming collision in this document
+(no code needed, the real engine already covers the intent) or, for the one
+genuine split with a missing interpretation, by shipping a small real
+feature. No new subsystem was built; this pass deliberately closed at most
+one code gap per the assigned scope.
+
+1. **Game Learning Engine — Resolved, duplicate of Mission Engine.**
+   The inventory's "Game Learning Engine" and "Mission Engine" describe the
+   same real subsystem: `Mission`/`MissionRun`/`ActivityAttempt`
+   (`backend/prisma/schema.prisma`) served by
+   `backend/src/modules/missions/missions.service.ts` +
+   `missions.controller.ts`. There is exactly one game-loop concept in the
+   codebase, not two. Classification: **Already implemented, filed under
+   Mission Engine** — no separate "Game Learning Engine" work is needed.
+
+2. **Character Progression Engine — split into two resolved halves.**
+   - *Learner-XP-leveling interpretation*: **Resolved, duplicate of
+     Gamification Engine** (`modules/gamification/gamification.controller.ts`
+     — progression, award-xp, leaderboard, rank, achievements, streak). This
+     is Already implemented; no separate build needed.
+   - *Avatar/companion visual-leveling interpretation* (the genuine gap):
+     confirmed **Missing** prior to this pass — no model or UI made a
+     companion visually change as the relationship deepened, even though the
+     real relationship data already existed
+     (`CharacterState.relationshipLevel`, 1-5, computed in
+     `backend/src/modules/ai/character.service.ts`'s `getCharacterState`
+     from real interaction counts, but never surfaced anywhere visually).
+     **Closed this pass** (see "Character visual evolution" below) — this is
+     the one genuine-gap Conflict actually built.
+
+3. **Motivation Engine — Resolved, overlapping with Gamification, no build.**
+   No distinct adaptive/predictive "Motivation Engine" exists nor was one
+   built. Confirmed this remains the Gamification Engine's motivational layer
+   (XP/streaks/leaderboard/achievements) rather than a separate behavioral
+   engine — clarified here per scope, no code changes, matching the original
+   row's own recommendation.
+
+4. **Learning Science Engine — Resolved, decomposed into its 6 named
+   techniques, each already scored under its own row.** Mastery learning
+   (`mastery.service.ts`), ZPD (`zpd-calculator.service.ts`), and scaffolding
+   (`ContentAdaptationService.scaffoldLevel`) are independently
+   Already-implemented/Partially-implemented; interleaving and cognitive
+   load remain independently Missing; spaced/retrieval practice remains a
+   naive stand-in (`mastery-confidence.algorithm.ts`). No single "Learning
+   Science Engine" row or build is appropriate — this bundle name is a
+   meta-label over 6 already-tracked rows, not an 8th thing to build.
+
+5. **Content Recommendation Engine — Resolved, duplicate of Recommendation
+   Engine.** Same class, same file
+   (`backend/src/modules/adaptive/recommendation.service.ts`,
+   `getReviewRecommendations()` covers the "content-specific" half). One
+   engine wearing two inventory names — filed under Recommendation Engine
+   (Partially implemented, Part 1 row 6). No separate build needed.
+
+6. **Multi-Agent Learning Engine's naming-vs-reality note — Resolved,
+   already folded into its own Missing row.** Confirmed no
+   orchestrator/agent-router/graph abstraction exists (correctly deferred
+   per the inventory's own "don't over-architect early" guidance); this was
+   never double-counted against the Conflict tally and needs no further
+   action.
+
+7. **Coding/English coaching reachability — Resolved, already fixed in a
+   prior pass.** `CodingCoachController` and `EnglishCoachController`
+   (`backend/src/modules/ai/{coding-coach,english-coach}.controller.ts`) now
+   expose `CodingCoachService`/`EnglishCoachService` over HTTP and are
+   registered in `ai.module.ts`'s `controllers:` array (see commit
+   `caabd86`, "expose CodingCoachService and EnglishCoachService via new
+   controllers"). Verified still wired as of this pass — no regression, no
+   further action needed.
+
+### Character visual evolution (the one genuine gap closed this pass)
+
+Built a small, real "avatar levels up visually" feature reusing the existing
+character-art wave's `CharacterFace.tsx` rather than a new subsystem:
+
+- **Backend**: no schema/service change needed — `CharacterState
+  .relationshipLevel` (1-5) already existed and is already returned by the
+  live `GET /characters/:id/state` route
+  (`character.controller.ts` → `character.service.ts#getCharacterState`).
+- **Frontend**:
+  - `charactersApi.getState(id)` added
+    (`frontend/src/lib/api/endpoints.ts`) to call that existing route.
+  - `CharacterFace.tsx` gained an `evolutionStage?: 1|2|3|4|5` prop and a new
+    `EvolutionGlow` sub-component: stage 1-2 renders unchanged; stage 3-4
+    adds a soft pulsing amber glow ring behind the character; stage 5 adds
+    the glow ring plus a small rotating sparkle accent. Purely additive —
+    no existing per-character SVG path was touched.
+  - `CharacterAvatar.tsx` passes `evolutionStage` through to `CharacterFace`.
+  - `CharacterChatPage.tsx` fetches real state via `charactersApi.getState`,
+    passes the live `relationshipLevel` as `evolutionStage` to the header
+    avatar, and shows a "Relationship level N/5" line once state exists.
+- **Live verification**: frontend built clean (`tsc && vite build`) and
+  deployed via the full-clean pattern; `GET /characters/:id/state` returns
+  real `relationshipLevel` data in production (see deployment commit for
+  hash and verification transcript).

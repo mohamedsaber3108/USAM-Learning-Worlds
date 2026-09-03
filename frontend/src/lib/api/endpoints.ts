@@ -418,6 +418,26 @@ export const charactersApi = {
 
   getById: (id: string) => apiClient.get<CharacterSummary>(`/characters/${id}`),
 
+  /**
+   * Per-learner relationship state for a character (GET /characters/:id/state).
+   * Backed by CharacterService.getCharacterState — real relationshipLevel
+   * (1-5, derived from interaction count) used to drive the companion's
+   * visual evolution stage in CharacterFace (see engine gap matrix,
+   * "Character Progression Engine" Conflict row — avatar/companion visual
+   * leveling interpretation).
+   */
+  getState: (id: string) =>
+    apiClient.get<{
+      state: {
+        characterId: string;
+        characterName: string;
+        characterRole: string;
+        relationshipLevel: number;
+        interactionCount: number;
+        lastInteraction?: string;
+      };
+    }>(`/characters/${id}/state`),
+
   chat: (id: string, message: string, context?: Record<string, unknown>) =>
     apiClient.post<{ response: { message: string; mood?: string; suggestedActions?: string[] } }>(
       `/characters/${id}/chat`,
@@ -469,7 +489,7 @@ export const codingSandboxApi = {
 //   - FinancialLiteracyConcept (19 rows, financial_literacy_concepts)
 // Served by backend/src/modules/cross-curricular/cross-curricular.controller.ts,
 // mounted at `/api/cross-curricular`.
-export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy'
+export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy' | 'career-exploration'
 
 export interface CrossCurricularConcept {
   id: string
@@ -490,3 +510,39 @@ export const crossCurricularApi = {
   getConcept: (category: CrossCurricularCategory, slug: string) =>
     apiClient.get<CrossCurricularConcept>(`/cross-curricular/${category}/${slug}`),
 }
+
+// ==================== Metacognition / Reflection ====================
+// Real data backed by ReflectionPrompt + MissionReflection Prisma models
+// (backend/prisma/seeds/seed-reflection-prompts.ts, 3 seeded prompts).
+// Served by backend/src/modules/reflection/reflection.controller.ts,
+// mounted at `/api/reflection`. Shown to learners right after a mission
+// completes (see MissionCompletePage.tsx).
+export interface ReflectionPrompt {
+  id: string
+  text: string
+  kind: 'FEELING' | 'DIFFICULTY' | 'STRATEGY'
+  isActive: boolean
+  order: number
+  createdAt: string
+}
+
+export interface MissionReflection {
+  id: string
+  learnerId: string
+  missionRunId: string
+  promptId: string
+  rating: number
+  note: string | null
+  createdAt: string
+}
+
+export const reflectionApi = {
+  getPrompts: () => apiClient.get<ReflectionPrompt[]>('/reflection/prompts'),
+
+  submitResponse: (data: { missionRunId: string; promptId: string; rating: number; note?: string }) =>
+    apiClient.post<MissionReflection>('/reflection/responses', data),
+
+  getResponsesForRun: (missionRunId: string) =>
+    apiClient.get<MissionReflection[]>('/reflection/responses/by-run', { params: { missionRunId } }),
+}
+

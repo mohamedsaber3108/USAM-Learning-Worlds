@@ -16,6 +16,12 @@ export interface CharacterAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   /** Locked characters render as a grayed silhouette with a lock badge. */
   locked?: boolean
+  /**
+   * Real relationship-derived visual-leveling stage (1-5), from
+   * GET /characters/:id/state's relationshipLevel. Omit for contexts with
+   * no per-learner state (e.g. gallery cards before any chat has happened).
+   */
+  evolutionStage?: 1 | 2 | 3 | 4 | 5
   className?: string
 }
 
@@ -26,7 +32,7 @@ const SIZE_MAP: Record<NonNullable<CharacterAvatarProps['size']>, { box: string;
   xl: { box: 'w-24 h-24', px: 96, lock: 'w-5 h-5' },
 }
 
-export function CharacterAvatar({ name, size = 'md', locked = false, className = '' }: CharacterAvatarProps) {
+export function CharacterAvatar({ name, size = 'md', locked = false, evolutionStage, className = '' }: CharacterAvatarProps) {
   const visual = getCharacterVisual(name)
   const sizing = SIZE_MAP[size]
 
@@ -36,7 +42,7 @@ export function CharacterAvatar({ name, size = 'md', locked = false, className =
       style={{ backgroundColor: locked ? '#E2E8F0' : `${visual.color}22` }}
       aria-label={locked ? `${name} (locked)` : name}
     >
-      <CharacterFace characterId={name} size={sizing.px} locked={locked} />
+      <CharacterFace characterId={name} size={sizing.px} locked={locked} evolutionStage={evolutionStage ?? 1} />
       {locked && (
         <span className="absolute -bottom-0.5 -right-0.5 bg-slate-600 rounded-full p-1 border-2 border-white">
           <Lock className={`${sizing.lock} text-white`} strokeWidth={2.5} />

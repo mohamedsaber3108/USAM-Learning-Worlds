@@ -21,6 +21,18 @@ export interface CharacterFaceProps {
   locked?: boolean
   /** Disable idle animation (e.g. for reduced-motion or tiny thumbnails). */
   animate?: boolean
+  /**
+   * Companion visual-leveling stage, 1-5, derived from the real
+   * `CharacterState.relationshipLevel` (backend/src/modules/ai/character.service.ts
+   * getCharacterState, floor(interactionCount/10)+1 capped at 5). This is the
+   * "avatar/companion levels up visually" interpretation of the
+   * inventory's "Character Progression Engine" — the naming-collision's
+   * genuine-gap half (see docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md).
+   * Stage 1-2: base design. Stage 3-4: adds a soft milestone glow ring.
+   * Stage 5: glow ring + a small sparkle accent — a real, subtle,
+   * relationship-driven rendering change, not a new subsystem.
+   */
+  evolutionStage?: 1 | 2 | 3 | 4 | 5
   className?: string
 }
 
@@ -542,7 +554,61 @@ const DEFAULT: FaceRenderer = ({ uid, animate }) => (
 
 let uidCounter = 0
 
-export function CharacterFace({ characterId, size = 64, locked = false, animate = true, className = '' }: CharacterFaceProps) {
+/**
+ * Milestone glow ring — a soft pulsing halo behind the character body once
+ * the learner's relationship with them reaches stage 3+ (30+ interactions).
+ * Purely additive: renders behind the existing Renderer output, never
+ * touches per-character SVG paths.
+ */
+function EvolutionGlow({ uid, stage, animate }: { uid: string; stage: number; animate: boolean }) {
+  if (stage < 3) return null
+  const glowProps = animate
+    ? {
+        animate: { opacity: [0.35, 0.65, 0.35], scale: [1, 1.06, 1] },
+        transition: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' as const },
+      }
+    : { opacity: 0.5 }
+  return (
+    <>
+      <defs>
+        <radialGradient id={`glow-${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FDE68A" stopOpacity={0.9} />
+          <stop offset="100%" stopColor="#FDE68A" stopOpacity={0} />
+        </radialGradient>
+      </defs>
+      <motion.circle
+        cx="60"
+        cy="64"
+        r="52"
+        fill={`url(#glow-${uid})`}
+        style={{ transformOrigin: '60px 64px' }}
+        {...glowProps}
+      />
+      {stage >= 5 && (
+        <motion.path
+          d="M96 22l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z"
+          fill="#FDE047"
+          {...(animate
+            ? {
+                animate: { opacity: [0.5, 1, 0.5], rotate: [0, 20, 0] },
+                transition: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' as const },
+              }
+            : {})}
+          style={{ transformOrigin: '99px 30px' }}
+        />
+      )}
+    </>
+  )
+}
+
+export function CharacterFace({
+  characterId,
+  size = 64,
+  locked = false,
+  animate = true,
+  evolutionStage = 1,
+  className = '',
+}: CharacterFaceProps) {
   const key = characterId.toLowerCase()
   const Renderer = RENDERERS[key] ?? DEFAULT
   // Stable-enough unique id per mount so gradient ids never collide across
@@ -563,6 +629,7 @@ export function CharacterFace({ characterId, size = 64, locked = false, animate 
       role="img"
       aria-hidden="true"
     >
+      {!locked && <EvolutionGlow uid={uid} stage={evolutionStage} animate={animate} />}
       {Renderer({ uid, animate: animate && !locked })}
     </svg>
   )

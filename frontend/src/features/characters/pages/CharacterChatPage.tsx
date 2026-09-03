@@ -37,6 +37,18 @@ export function CharacterChatPage() {
     enabled: !!id,
   })
 
+  // Real relationship-derived visual-leveling stage — see CharacterFace's
+  // evolutionStage doc. Backed by GET /characters/:id/state
+  // (CharacterService.getCharacterState); harmless 404/500 falls back to
+  // stage 1 (base design) via the catch below.
+  const { data: stateData } = useQuery({
+    queryKey: ['characters', id, 'state'],
+    queryFn: () => charactersApi.getState(id!).then((r) => r.data),
+    enabled: !!id,
+    retry: false,
+  })
+  const evolutionStage = (stateData?.state?.relationshipLevel ?? 1) as 1 | 2 | 3 | 4 | 5
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -80,13 +92,18 @@ export function CharacterChatPage() {
           <Link to="/characters" className="text-white/90 hover:text-white transition-colors">
             ← Characters
           </Link>
-          {character && <CharacterAvatar name={character.name} size="sm" />}
+          {character && <CharacterAvatar name={character.name} size="sm" evolutionStage={evolutionStage} />}
           <div>
             <h1 className="text-xl font-heading font-bold text-white leading-tight">
               {characterLoading ? 'Loading...' : character?.name ?? 'Character'}
             </h1>
             {character?.role && (
               <p className="text-xs text-white/80 leading-tight">{character.role}</p>
+            )}
+            {stateData?.state && evolutionStage >= 2 && (
+              <p className="text-[11px] text-white/70 leading-tight mt-0.5">
+                Relationship level {evolutionStage}/5
+              </p>
             )}
           </div>
         </div>
