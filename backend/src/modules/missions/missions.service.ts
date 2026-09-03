@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { MasteryService } from '../mastery/mastery.service';
 import { ActivityEvaluator } from './evaluators/activity-evaluator';
@@ -190,7 +190,7 @@ export class MissionsService {
         where: { runId, activityId },
       });
       if (existingSummativeAttempt) {
-        throw new Error('This is a summative assessment — it has already been submitted and cannot be retaken in this run.');
+        throw new BadRequestException('This is a summative assessment — it has already been submitted and cannot be retaken in this run.');
       }
     }
 
