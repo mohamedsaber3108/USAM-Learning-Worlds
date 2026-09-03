@@ -59,7 +59,7 @@ export function SearchBar() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="p-2 rounded-full text-white hover:bg-white/10 transition-colors"
+        className="p-2 min-w-11 min-h-11 flex items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
         aria-label="Search"
       >
         <Search className="w-5 h-5" />
@@ -78,7 +78,11 @@ export function SearchBar() {
           placeholder="Search missions, activities..."
           className="bg-transparent text-white placeholder-white/50 text-sm outline-none flex-1 min-w-0"
         />
-        <button onClick={handleClose} aria-label="Close search">
+        <button
+          onClick={handleClose}
+          aria-label="Close search"
+          className="min-w-11 min-h-11 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-full"
+        >
           <X className="w-4 h-4 text-white/70" />
         </button>
       </div>

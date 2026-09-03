@@ -7,6 +7,25 @@
     @apply border-surface-200;
   }
 
+  /* Global focus-visible safety net — many interactive elements across the
+     app rely on component-level focus:ring utilities, but plain <button>,
+     <a>, and <Link> elements without those utility classes had no visible
+     keyboard-focus indicator at all. This additive baseline guarantees every
+     focusable element gets a visible outline on keyboard focus (not on
+     mouse click, via :focus-visible) without touching per-component markup
+     or layout. Component-level focus:ring/focus-visible:ring utilities still
+     apply on top of this and look consistent with the brand ring color. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role='button']:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid theme('colors.primary.500');
+    outline-offset: 2px;
+  }
+
   body {
     @apply bg-surface-100 text-gray-900 antialiased;
     font-family: 'Inter', 'Tahoma', 'Segoe UI', sans-serif;

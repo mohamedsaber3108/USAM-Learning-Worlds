@@ -88,7 +88,7 @@ export function CreativityGalleryPage() {
       {ageBands.length > 1 && (
         <div className="flex gap-2 mb-4 flex-wrap">
           <button
-            className={`px-3 py-1 rounded-full text-sm border ${
+            className={`px-3 py-1 min-h-11 rounded-full text-sm border ${
               ageFilter === '' ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300'
             }`}
             onClick={() => setAgeFilter('')}
@@ -98,7 +98,7 @@ export function CreativityGalleryPage() {
           {ageBands.map((band) => (
             <button
               key={band}
-              className={`px-3 py-1 rounded-full text-sm border ${
+              className={`px-3 py-1 min-h-11 rounded-full text-sm border ${
                 ageFilter === band ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300'
               }`}
               onClick={() => setAgeFilter(band)}

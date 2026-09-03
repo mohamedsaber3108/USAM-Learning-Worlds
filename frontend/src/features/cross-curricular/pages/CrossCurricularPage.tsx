@@ -158,7 +158,7 @@ export function CrossCurricularPage() {
             {AGE_BANDS.map((band) => (
               <button
                 key={band.value}
-                className={`px-3 py-1 rounded text-sm font-medium ${
+                className={`px-3 py-1 min-h-11 rounded text-sm font-medium ${
                   ageBandFilter === band.value
                     ? 'bg-primary-600 text-white'
                     : AGE_BAND_COLORS[band.value] || 'bg-gray-100 text-gray-700'

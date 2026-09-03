@@ -170,7 +170,8 @@ export function AppShell() {
             <NotificationBell />
             <button
               onClick={handleLogout}
-              className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
+              aria-label={t('common.logout')}
+              className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40 focus-visible:ring-2 focus-visible:ring-white/60"
             >
               <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
               {t('common.logout')}
