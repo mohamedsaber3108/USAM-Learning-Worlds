@@ -25,6 +25,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { ModerationService, ModerationResult } from '../moderation.service';
+import { SafetyPolicyService } from './safety-policy.service';
+import { AgeBand } from '@prisma/client';
 
 /**
  * The 5 explicit character-safety states. Every evaluateSafety() call
@@ -87,6 +89,7 @@ export class CharacterSafetyService {
   constructor(
     private prisma: PrismaService,
     private moderation: ModerationService,
+    private safetyPolicy: SafetyPolicyService,
   ) {}
 
   /**
@@ -162,10 +165,47 @@ export class CharacterSafetyService {
    * but this is intentionally defensive about shape since it may be fed
    * raw DB rows or in-memory message objects.
    */
-  checkEmotionalDependencyRisk(conversationHistory: any[]): boolean {
+  /**
+   * Simple, deterministic, rule-based check for emotional-dependency risk
+   * across a conversation history. Not a new ML model - just pattern
+   * matching for concerning phrases plus a session-length/frequency
+   * heuristic, per the "do not rely only on LLM prompt" requirement.
+   *
+   * conversationHistory entries are expected to loosely look like
+   * { role: 'learner' | 'character', content: string, createdAt?: string|Date }
+   * but this is intentionally defensive about shape since it may be fed
+   * raw DB rows or in-memory message objects.
+   *
+   * `ageBand`, if provided, is used to read the session-length/message-
+   * count thresholds from the versioned SafetyPolicy table (AI Prompt/
+   * Policy Engine) instead of the hardcoded MAX_HEALTHY_* constants -
+   * those constants remain as the inline fallback if no ageBand is
+   * given or no active policy exists for that band yet, so this method
+   * never hard-fails or silently loosens because the policy table is
+   * empty/unmigrated.
+   */
+  async checkEmotionalDependencyRisk(
+    conversationHistory: any[],
+    ageBand?: AgeBand,
+  ): Promise<boolean> {
     if (!Array.isArray(conversationHistory) || conversationHistory.length === 0) {
       return false;
     }
+
+    const maxSessionMinutes = ageBand
+      ? await this.safetyPolicy.getRule(
+          ageBand,
+          'maxHealthySessionMinutes',
+          MAX_HEALTHY_SESSION_MINUTES,
+        )
+      : MAX_HEALTHY_SESSION_MINUTES;
+    const maxMessagesPerSession = ageBand
+      ? await this.safetyPolicy.getRule(
+          ageBand,
+          'maxHealthyMessagesPerSession',
+          MAX_HEALTHY_MESSAGES_PER_SESSION,
+        )
+      : MAX_HEALTHY_MESSAGES_PER_SESSION;
 
     let dependencyPhraseHits = 0;
     const timestamps: Date[] = [];
@@ -201,7 +241,7 @@ export class CharacterSafetyService {
     }
 
     // Excessive session length / message frequency as a secondary signal.
-    if (conversationHistory.length > MAX_HEALTHY_MESSAGES_PER_SESSION) {
+    if (conversationHistory.length > maxMessagesPerSession) {
       return true;
     }
 
@@ -209,12 +249,12 @@ export class CharacterSafetyService {
       timestamps.sort((a, b) => a.getTime() - b.getTime());
       const spanMinutes =
         (timestamps[timestamps.length - 1].getTime() - timestamps[0].getTime()) / 60000;
-      if (spanMinutes > MAX_HEALTHY_SESSION_MINUTES) {
+      if (spanMinutes > maxSessionMinutes) {
         return true;
       }
     }
 
-    return dependencyPhraseHits >= 1 && conversationHistory.length > MAX_HEALTHY_MESSAGES_PER_SESSION / 2;
+    return dependencyPhraseHits >= 1 && conversationHistory.length > maxMessagesPerSession / 2;
   }
 
   /**
