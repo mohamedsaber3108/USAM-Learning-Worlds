@@ -175,13 +175,17 @@ export function MissionPlayerPage() {
         <motion.div
           key={currentActivity.id}
           initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={
+            feedback?.correct === false
+              ? { opacity: 1, y: 0, x: [0, -4, 3, -2, 1, 0] }
+              : { opacity: 1, y: 0, x: 0 }
+          }
           transition={{ duration: 0.2 }}
-          className={`card border-2 transition-colors duration-300 ${
+          className={`card border-2 transition-[border-color,box-shadow] duration-300 ${
             feedback?.correct === true
-              ? 'border-success-300'
+              ? 'border-success-300 shadow-glow-success'
               : feedback?.correct === false
-              ? 'border-error-300'
+              ? 'border-error-300 shadow-glow-error'
               : 'border-surface-200/70'
           }`}
         >
@@ -214,6 +218,7 @@ export function MissionPlayerPage() {
               activity={currentActivity}
               answer={answers[currentActivity.id]}
               disabled={feedback !== null}
+              feedback={feedback}
               onChange={(value) =>
                 setAnswers({ ...answers, [currentActivity.id]: value })
               }
@@ -237,24 +242,32 @@ export function MissionPlayerPage() {
           {/* Submit / Continue Buttons */}
           {currentActivity.type !== 'CODE' && currentActivity.type !== 'coding' && (
             <div className="mt-6 flex justify-between items-center">
-              <button
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                 onClick={() => currentIndex > 0 && setCurrentIndex(currentIndex - 1)}
                 disabled={currentIndex === 0 || feedback !== null}
                 className="btn btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4" /> Previous
-              </button>
+              </motion.button>
 
               {feedback === null ? (
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                   onClick={handleSubmit}
                   disabled={submitMutation.isPending}
                   className="btn btn-primary disabled:opacity-50"
                 >
                   {submitMutation.isPending ? 'Checking...' : 'Check'}
-                </button>
+                </motion.button>
               ) : (
-                <button
+                <motion.button
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 480, damping: 24 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={handleAdvance}
                   disabled={completeMutation.isPending}
                   className="btn btn-primary disabled:opacity-50"
@@ -264,7 +277,7 @@ export function MissionPlayerPage() {
                     : currentIndex === activities.length - 1
                     ? 'Complete Mission'
                     : 'Next →'}
-                </button>
+                </motion.button>
               )}
             </div>
           )}
@@ -374,9 +387,9 @@ function FeedbackBanner({ feedback }: { feedback: AnswerFeedback }) {
       }`}
     >
       <motion.span
-        initial={{ scale: 0.4, opacity: 0 }}
-        animate={{ scale: [0.4, 1.15, 1], opacity: 1 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
+        initial={{ scale: 0.3, opacity: 0, rotate: feedback.correct ? -8 : 0 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 480, damping: 20, mass: 0.6 }}
         className={`flex-shrink-0 rounded-full p-1.5 ${
           feedback.correct ? 'bg-success-500' : 'bg-error-500'
         }`}
@@ -387,10 +400,14 @@ function FeedbackBanner({ feedback }: { feedback: AnswerFeedback }) {
           <X className="w-4 h-4 text-white" strokeWidth={3} />
         )}
       </motion.span>
-      <div>
+      <motion.div
+        initial={{ opacity: 0, x: -6 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.08, duration: 0.22, ease: 'easeOut' }}
+      >
         <p className="font-semibold text-sm">{feedback.correct ? 'Correct!' : 'Not quite'}</p>
         {feedback.feedback && <p className="text-sm opacity-90 mt-0.5">{feedback.feedback}</p>}
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
@@ -401,11 +418,13 @@ function ActivityContent({
   answer,
   onChange,
   disabled,
+  feedback,
 }: {
   activity: any
   answer: any
   onChange: (value: any) => void
   disabled?: boolean
+  feedback?: AnswerFeedback | null
 }) {
   const type = activity.type?.toLowerCase()
   const options = activity.content?.options || activity.options || []
@@ -415,27 +434,60 @@ function ActivityContent({
     case 'multiple_choice':
       return (
         <div className="space-y-3">
-          {options.map((option: string, index: number) => (
-            <label
-              key={index}
-              className={`block p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                answer === option
-                  ? 'border-primary-600 bg-primary-50'
-                  : 'border-surface-200 hover:border-surface-300'
-              } ${disabled ? 'opacity-70 pointer-events-none' : ''}`}
-            >
-              <input
-                type="radio"
-                name="answer"
-                value={option}
-                checked={answer === option}
-                onChange={(e) => onChange(e.target.value)}
-                disabled={disabled}
-                className="mr-3"
-              />
-              <span className="text-slate-900">{option}</span>
-            </label>
-          ))}
+          {options.map((option: string, index: number) => {
+            const isSelected = answer === option
+            const isResolved = feedback !== null && feedback !== undefined
+            const resolvedCorrect = isResolved && isSelected && feedback?.correct === true
+            const resolvedWrong = isResolved && isSelected && feedback?.correct === false
+            return (
+              <motion.label
+                key={index}
+                whileHover={disabled ? {} : { scale: 1.01 }}
+                whileTap={disabled ? {} : { scale: 0.99 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                className={`relative flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors duration-150 ${
+                  resolvedCorrect
+                    ? 'border-success-400 bg-success-50'
+                    : resolvedWrong
+                    ? 'border-error-400 bg-error-50'
+                    : isSelected
+                    ? 'border-primary-500 bg-primary-50 shadow-glow-primary'
+                    : 'border-surface-200 hover:border-primary-300 hover:bg-primary-50/30'
+                } ${disabled ? 'cursor-default' : ''}`}
+              >
+                <span
+                  className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors duration-150 ${
+                    resolvedCorrect
+                      ? 'border-success-500 bg-success-500'
+                      : resolvedWrong
+                      ? 'border-error-500 bg-error-500'
+                      : isSelected
+                      ? 'border-primary-600 bg-primary-600'
+                      : 'border-surface-300'
+                  }`}
+                >
+                  {(isSelected || resolvedCorrect || resolvedWrong) && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                      className="w-2 h-2 rounded-full bg-white"
+                    />
+                  )}
+                </span>
+                <input
+                  type="radio"
+                  name="answer"
+                  value={option}
+                  checked={isSelected}
+                  onChange={(e) => onChange(e.target.value)}
+                  disabled={disabled}
+                  className="sr-only"
+                />
+                <span className="text-slate-900">{option}</span>
+              </motion.label>
+            )
+          })}
         </div>
       )
 
@@ -444,7 +496,13 @@ function ActivityContent({
       return (
         <input
           type="text"
-          className="input"
+          className={`input transition-shadow duration-200 ${
+            feedback?.correct === true
+              ? 'border-success-300 focus:ring-success-300'
+              : feedback?.correct === false
+              ? 'border-error-300 focus:ring-error-300'
+              : ''
+          }`}
           placeholder="Type your answer..."
           value={answer || ''}
           disabled={disabled}
@@ -466,28 +524,41 @@ function ActivityContent({
 
     case 'true_false':
       return (
-        <div className="space-y-3">
-          {['True', 'False'].map((option) => (
-            <label
-              key={option}
-              className={`block p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                answer === option
-                  ? 'border-primary-600 bg-primary-50'
-                  : 'border-surface-200 hover:border-surface-300'
-              } ${disabled ? 'opacity-70 pointer-events-none' : ''}`}
-            >
-              <input
-                type="radio"
-                name="answer"
-                value={option}
-                checked={answer === option}
-                onChange={(e) => onChange(e.target.value)}
-                disabled={disabled}
-                className="mr-3"
-              />
-              <span className="text-slate-900">{option}</span>
-            </label>
-          ))}
+        <div className="grid grid-cols-2 gap-3">
+          {['True', 'False'].map((option) => {
+            const isSelected = answer === option
+            const isResolved = feedback !== null && feedback !== undefined
+            const resolvedCorrect = isResolved && isSelected && feedback?.correct === true
+            const resolvedWrong = isResolved && isSelected && feedback?.correct === false
+            return (
+              <motion.label
+                key={option}
+                whileHover={disabled ? {} : { scale: 1.02 }}
+                whileTap={disabled ? {} : { scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                className={`flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer font-medium transition-colors duration-150 ${
+                  resolvedCorrect
+                    ? 'border-success-400 bg-success-50 text-success-800'
+                    : resolvedWrong
+                    ? 'border-error-400 bg-error-50 text-error-800'
+                    : isSelected
+                    ? 'border-primary-500 bg-primary-50 text-primary-800 shadow-glow-primary'
+                    : 'border-surface-200 text-slate-700 hover:border-primary-300 hover:bg-primary-50/30'
+                } ${disabled ? 'cursor-default' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="answer"
+                  value={option}
+                  checked={isSelected}
+                  onChange={(e) => onChange(e.target.value)}
+                  disabled={disabled}
+                  className="sr-only"
+                />
+                {option}
+              </motion.label>
+            )
+          })}
         </div>
       )
 
