@@ -124,7 +124,7 @@ export function WorldPathSkeleton() {
   return (
     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-0 px-2 animate-pulse" role="status" aria-label="Loading domains">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex flex-col items-center gap-2 sm:mr-6">
+        <div key={i} className="flex flex-col items-center gap-2 sm:me-6">
           <div className="w-14 h-14 rounded-full bg-surface-100" />
           <Bar className="h-3 w-16" />
         </div>

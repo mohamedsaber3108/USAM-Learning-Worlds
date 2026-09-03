@@ -69,7 +69,7 @@ export function StoryReaderPage() {
             <p className="text-xs text-gray-400 mb-4">
               Page {currentPage.pageNumber} of {story.pages.length}
               {currentPage.safetyReviewed && (
-                <span className="ml-2 text-emerald-600">✓ Safety reviewed</span>
+                <span className="ms-2 text-emerald-600">✓ Safety reviewed</span>
               )}
             </p>
 
@@ -83,7 +83,7 @@ export function StoryReaderPage() {
                   <button
                     key={idx}
                     onClick={() => choose(choice.nextPageNumber)}
-                    className="w-full text-left px-4 py-3 rounded-lg border-2 border-primary-200 hover:border-primary-500 hover:bg-primary-50 transition-colors font-medium text-gray-800"
+                    className="w-full text-start px-4 py-3 rounded-lg border-2 border-primary-200 hover:border-primary-500 hover:bg-primary-50 transition-colors font-medium text-gray-800"
                   >
                     {choice.label}
                   </button>
@@ -114,7 +114,7 @@ export function StoryReaderPage() {
                 }}
                 className="mt-4 text-sm text-gray-500 hover:text-gray-700"
               >
-                ← Go back a page
+                <span className="inline-block rtl:scale-x-[-1]">←</span> Go back a page
               </button>
             )}
           </div>

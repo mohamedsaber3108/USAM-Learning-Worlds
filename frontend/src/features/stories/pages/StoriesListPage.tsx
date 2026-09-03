@@ -69,7 +69,7 @@ export function StoriesListPage() {
                   <h2 className="text-lg font-heading font-bold text-gray-900">
                     {story.domain?.icon || '📖'} {story.title}
                   </h2>
-                  <span className="ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold bg-primary-100 text-primary-800">
+                  <span className="ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold bg-primary-100 text-primary-800">
                     {AGE_LABEL[story.ageBand] || story.ageBand}
                   </span>
                 </div>

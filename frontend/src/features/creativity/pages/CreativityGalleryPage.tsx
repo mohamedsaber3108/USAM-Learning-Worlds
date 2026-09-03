@@ -114,7 +114,7 @@ export function CreativityGalleryPage() {
           <button
             key={p.id}
             onClick={() => setSelectedPrompt(p)}
-            className={`text-left rounded-xl border p-4 hover:shadow-md transition ${
+            className={`text-start rounded-xl border p-4 hover:shadow-md transition ${
               selectedPrompt?.id === p.id ? 'border-purple-500 ring-2 ring-purple-200' : 'border-gray-200'
             }`}
           >

@@ -129,7 +129,7 @@ export function AdminMissionsPage() {
       <header className="bg-primary-600 shadow-soft">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
                 <ArrowLeft className="w-4 h-4" strokeWidth={2} />
                 Back
@@ -158,7 +158,7 @@ export function AdminMissionsPage() {
           <div className="card mb-6 relative">
             <button
               onClick={closeForm}
-              className="absolute top-4 right-4 min-w-11 min-h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 rounded-full"
+              className="absolute top-4 end-4 min-w-11 min-h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 rounded-full"
               aria-label="Close form"
             >
               <X className="w-5 h-5" />
@@ -266,25 +266,25 @@ export function AdminMissionsPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 border-b border-slate-200">
-                  <th className="py-2 pr-2">Title</th>
-                  <th className="py-2 pr-2">Type</th>
-                  <th className="py-2 pr-2">Order</th>
-                  <th className="py-2 pr-2">Active</th>
-                  <th className="py-2 pr-2 text-right">Actions</th>
+                <tr className="text-start text-slate-500 border-b border-slate-200">
+                  <th className="py-2 pe-2">Title</th>
+                  <th className="py-2 pe-2">Type</th>
+                  <th className="py-2 pe-2">Order</th>
+                  <th className="py-2 pe-2">Active</th>
+                  <th className="py-2 pe-2 text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((mission) => (
                   <tr key={mission.id} className="border-b border-slate-100">
-                    <td className="py-2 pr-2 font-medium text-slate-800">{mission.title}</td>
-                    <td className="py-2 pr-2">{mission.type}</td>
-                    <td className="py-2 pr-2">{mission.order}</td>
-                    <td className="py-2 pr-2">{mission.isActive ? 'Yes' : 'No'}</td>
-                    <td className="py-2 pr-2 text-right">
+                    <td className="py-2 pe-2 font-medium text-slate-800">{mission.title}</td>
+                    <td className="py-2 pe-2">{mission.type}</td>
+                    <td className="py-2 pe-2">{mission.order}</td>
+                    <td className="py-2 pe-2">{mission.isActive ? 'Yes' : 'No'}</td>
+                    <td className="py-2 pe-2 text-end">
                       <button
                         onClick={() => openEditForm(mission)}
-                        className="text-primary-600 hover:text-primary-800 mr-3"
+                        className="text-primary-600 hover:text-primary-800 me-3"
                         aria-label="Edit"
                       >
                         <Pencil className="w-4 h-4 inline" strokeWidth={2} />

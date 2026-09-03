@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export interface XPProgressBarProps {
   /** 0-100, current progress toward the next level. */
@@ -23,6 +24,8 @@ export interface XPProgressBarProps {
  * motion/decoration.
  */
 export function XPProgressBar({ value, label, caption, className = '' }: XPProgressBarProps) {
+  const { i18n } = useTranslation()
+  const isRtl = i18n.dir() === 'rtl'
   const clamped = Math.max(0, Math.min(100, value || 0))
   const [shimmerKey, setShimmerKey] = useState(0)
   const [prevValue, setPrevValue] = useState(clamped)
@@ -54,9 +57,9 @@ export function XPProgressBar({ value, label, caption, className = '' }: XPProgr
           {shimmerKey > 0 && (
             <motion.span
               key={shimmerKey}
-              className="absolute inset-y-0 left-0 w-1/3 bg-white/40 skew-x-[-20deg]"
-              initial={{ x: '-120%' }}
-              animate={{ x: '220%' }}
+              className="absolute inset-y-0 start-0 w-1/3 bg-white/40 skew-x-[-20deg] rtl:skew-x-[20deg]"
+              initial={{ x: isRtl ? '120%' : '-120%' }}
+              animate={{ x: isRtl ? '-220%' : '220%' }}
               transition={{ duration: 1.1, ease: 'easeOut' }}
             />
           )}

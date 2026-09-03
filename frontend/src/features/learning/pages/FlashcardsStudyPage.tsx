@@ -88,7 +88,7 @@ export function FlashcardsStudyPage() {
     <div className="min-h-screen bg-surface-50">
       <header className="bg-primary-600 shadow-soft">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             <Link to="/learn" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
               <ArrowLeft className="w-4 h-4" strokeWidth={2} />
               Back

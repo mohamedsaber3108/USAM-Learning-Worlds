@@ -167,7 +167,7 @@ export function SearchBar() {
       {debounced.length >= 2 && (
         <div
           role="listbox"
-          className="absolute right-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lift border border-surface-200 z-50"
+          className="absolute end-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-lift border border-surface-200 z-50"
         >
           {groupedResults.length === 0 && (
             <div className="px-4 py-6 text-center text-sm text-slate-400">No results</div>
@@ -189,7 +189,7 @@ export function SearchBar() {
                     ref={(el) => (itemRefs.current[index] = el)}
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => handleSelect(item)}
-                    className={`block w-full text-left px-4 py-3 border-b border-surface-50 last:border-0 ${
+                    className={`block w-full text-start px-4 py-3 border-b border-surface-50 last:border-0 ${
                       isActive ? 'bg-primary-50' : 'hover:bg-surface-50'
                     }`}
                   >

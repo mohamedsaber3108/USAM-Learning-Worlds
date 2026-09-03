@@ -24,7 +24,7 @@ export function LearningPathDetailPage() {
     <div className="min-h-screen">
       <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             <Link to="/learn/paths" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
               <ArrowLeft className="w-4 h-4" strokeWidth={2} />
               All Paths
