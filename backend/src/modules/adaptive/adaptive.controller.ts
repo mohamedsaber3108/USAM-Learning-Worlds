@@ -54,6 +54,23 @@ export class AdaptiveController {
     return { activityId };
   }
 
+  /**
+   * Full adaptive-loop orchestration in one call: calculate the
+   * learner's ZPD, then hand it straight to the recommendation engine
+   * to pick one concrete next activity. Closes the "no full
+   * adaptive-loop orchestration" gap with a single-purpose endpoint
+   * (not a generic framework).
+   */
+  @Get('next-activity')
+  async getNextActivityOrchestrated(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners can get a next-activity suggestion');
+    }
+
+    return this.recommendations.getOrchestratedNextActivity(learnerId);
+  }
+
   @Get('learning-path/:skillId')
   async getLearningPath(
     @CurrentUser() user: any,

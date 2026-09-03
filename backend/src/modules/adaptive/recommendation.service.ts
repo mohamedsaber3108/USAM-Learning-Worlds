@@ -310,4 +310,105 @@ export class RecommendationService {
       currentProgress: totalCompetencies > 0 ? masteredCount / totalCompetencies : 0,
     };
   }
+
+  /**
+   * Single-purpose adaptive-loop orchestration: ZPD calculation ->
+   * recommendation -> one concrete next-activity suggestion.
+   *
+   * Chain:
+   *   1. Calculate ZPD profile (struggling/recommended-focus competencies,
+   *      optimal difficulty).
+   *   2. Pick the top recommended-focus competency (falls back to any
+   *      competency with an in-progress mastery record, then to any
+   *      active competency) so there is always a concrete target.
+   *   3. Ask ZPD for the recommended difficulty on that competency and
+   *      hand off to getNextActivity() to pick one unattempted activity.
+   *
+   * Returns a single concrete suggestion, not a generic plan/queue.
+   */
+  async getOrchestratedNextActivity(learnerId: string): Promise<{
+    competencyId: string | null;
+    competencyName: string | null;
+    difficulty: string | null;
+    activityId: string | null;
+    activityTitle: string | null;
+    reason: string;
+  }> {
+    const zpd = await this.zpdCalculator.calculateZPD(learnerId);
+
+    const targetCompetency = await this.pickTargetCompetency(learnerId, zpd);
+
+    if (!targetCompetency) {
+      return {
+        competencyId: null,
+        competencyName: null,
+        difficulty: null,
+        activityId: null,
+        activityTitle: null,
+        reason: 'No competencies available to recommend an activity for yet.',
+      };
+    }
+
+    const difficulty = await this.zpdCalculator.getRecommendedDifficulty(
+      learnerId,
+      targetCompetency.id,
+    );
+
+    const activityId = await this.getNextActivity(learnerId, targetCompetency.id);
+
+    let activityTitle: string | null = null;
+    if (activityId) {
+      const activity = await this.prisma.activity.findUnique({
+        where: { id: activityId },
+        select: { title: true },
+      });
+      activityTitle = activity?.title || null;
+    }
+
+    return {
+      competencyId: targetCompetency.id,
+      competencyName: targetCompetency.name,
+      difficulty,
+      activityId,
+      activityTitle,
+      reason: activityId
+        ? `Recommended based on ZPD (${zpd.optimalDifficulty} zone) and current focus on ${targetCompetency.name}`
+        : `No unattempted ${difficulty} activity found for ${targetCompetency.name}`,
+    };
+  }
+
+  /**
+   * Pick a concrete competency to target for the orchestrated
+   * next-activity suggestion: prefer ZPD's recommendedFocus, fall back
+   * to any competency the learner has mastery data for, then to any
+   * active competency (new learner case).
+   */
+  private async pickTargetCompetency(
+    learnerId: string,
+    zpd: { recommendedFocus: string[] },
+  ): Promise<{ id: string; name: string } | null> {
+    if (zpd.recommendedFocus.length > 0) {
+      const competency = await this.prisma.competency.findFirst({
+        where: { name: zpd.recommendedFocus[0] },
+      });
+      if (competency) {
+        return { id: competency.id, name: competency.name };
+      }
+    }
+
+    const masteryRecord = await this.prisma.masteryRecord.findFirst({
+      where: { learnerId },
+      include: { competency: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+    if (masteryRecord) {
+      return { id: masteryRecord.competencyId, name: masteryRecord.competency.name };
+    }
+
+    const anyCompetency = await this.prisma.competency.findFirst({
+      where: { isActive: true },
+      orderBy: { order: 'asc' },
+    });
+    return anyCompetency ? { id: anyCompetency.id, name: anyCompetency.name } : null;
+  }
 }
