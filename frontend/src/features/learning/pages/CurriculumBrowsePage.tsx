@@ -24,6 +24,7 @@ import {
 import { curriculumApi, learningApi, masteryApi, worldsApi, type WorldRecord } from '@/lib/api/endpoints'
 import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
 import { ErrorState } from '@/components/common/CharacterState'
+import { WorldPathSkeleton, CardGridSkeleton } from '@/components/common/Skeleton'
 
 interface Domain {
   id: string
@@ -281,7 +282,7 @@ export function CurriculumBrowsePage() {
               onRetry={() => refetchDomains()}
             />
           ) : domainsLoading || worldsLoading ? (
-            <p className="text-gray-600">Loading domains...</p>
+            <WorldPathSkeleton />
           ) : (
             <WorldPathMap
               domains={worldPathDomains}
@@ -304,10 +305,7 @@ export function CurriculumBrowsePage() {
             onRetry={() => refetchConcepts()}
           />
         ) : conceptsLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-gray-600">Loading concepts...</p>
-          </div>
+          <CardGridSkeleton count={6} />
         ) : competencyGroups.length > 0 ? (
           <div className="space-y-6">
             {competencyGroups.map(group => (

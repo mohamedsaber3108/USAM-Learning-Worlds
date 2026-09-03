@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Target, Clock } from 'lucide-react'
 import { missionsApi } from '@/lib/api/endpoints'
-import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
+import { EmptyState, ErrorState } from '@/components/common/CharacterState'
+import { CardGridSkeleton } from '@/components/common/Skeleton'
 
 export function MissionsBrowsePage() {
   const [filters, setFilters] = useState({
@@ -106,9 +107,13 @@ export function MissionsBrowsePage() {
           </div>
         </div>
 
-        {/* Mission Grid */}
+        {/* Mission Grid — a card-grid-shaped skeleton instead of a centered
+            LoadingState blob: the previous blob was ~5rem tall vs. the real
+            multi-row card grid, so it caused a visible page jump on every
+            filter change/first load of this page (one of the top-traffic
+            surfaces in the app). */}
         {isLoading ? (
-          <LoadingState character="Zein" message="Zein is scouting out missions for you..." />
+          <CardGridSkeleton count={6} />
         ) : isError ? (
           <ErrorState
             character="Azouz"
