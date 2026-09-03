@@ -51,7 +51,7 @@ export function StoriesListPage() {
               <Link
                 key={story.id}
                 to={`/stories/${story.id}`}
-                className="card hover:shadow-lg transition-shadow block"
+                className="card hover:shadow-soft-hover transition-shadow block"
               >
                 <div className="flex items-start justify-between mb-2">
                   <h2 className="text-lg font-heading font-bold text-gray-900">

@@ -191,7 +191,7 @@ export function ThinkingSkillsPage() {
                         <Link
                           key={concept.id}
                           to={`/thinking/${engine}/${concept.slug}`}
-                          className="card hover:shadow-lg transition-shadow block"
+                          className="card hover:shadow-soft-hover transition-shadow block"
                         >
                           <div className="flex items-start justify-between mb-2">
                             <h3 className="font-semibold text-gray-900 line-clamp-2">

@@ -2,12 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Sparkles, Flame, PartyPopper } from 'lucide-react'
 import type { MilestoneResult } from '@/lib/hooks/useMilestoneDetection'
+import { CONFETTI_PALETTE, THEME_HEX } from '@/lib/theme/colors'
 
 const AUTO_DISMISS_MS = 3600
-
-const CONFETTI_COLORS = [
-  '#4f46e5', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899',
-]
 
 interface ConfettiPiece {
   id: number
@@ -30,7 +27,7 @@ function useConfettiPieces(count = 42): ConfettiPiece[] {
           x: Math.cos(angle) * distance,
           y: Math.sin(angle) * distance - 40, // slight upward bias
           rotate: Math.random() * 360,
-          color: CONFETTI_COLORS[id % CONFETTI_COLORS.length] || '#4f46e5',
+          color: CONFETTI_PALETTE[id % CONFETTI_PALETTE.length] || THEME_HEX.primary600,
           size: 6 + Math.random() * 8,
           delay: Math.random() * 0.15,
         }
@@ -88,7 +85,7 @@ function LevelUpCelebration({ level, onDismiss }: { level: number; onDismiss: ()
         ))}
 
         <motion.div
-          className="relative z-10 bg-white rounded-2xl px-8 py-7 shadow-2xl text-center max-w-xs"
+          className="relative z-10 bg-white rounded-2xl px-8 py-7 shadow-soft-lg text-center max-w-xs"
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
@@ -124,7 +121,7 @@ function StreakCelebration({ days, onDismiss }: { days: 7 | 14 | 30 | 100; onDis
       aria-label="Streak milestone celebration"
     >
       <motion.div
-        className="relative bg-white rounded-2xl px-8 py-7 shadow-2xl text-center max-w-xs overflow-visible"
+        className="relative bg-white rounded-2xl px-8 py-7 shadow-soft-lg text-center max-w-xs overflow-visible"
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
@@ -166,7 +163,7 @@ function FirstMissionCelebration({ onDismiss }: { onDismiss: () => void }) {
       role="status"
       aria-label="First mission celebration"
     >
-      <div className="flex items-center gap-3 bg-white rounded-full shadow-xl px-5 py-3 border border-success-100 cursor-pointer">
+      <div className="flex items-center gap-3 bg-white rounded-full shadow-soft-lg px-5 py-3 border border-success-100 cursor-pointer">
         <div className="icon-chip bg-success-50 text-success-600 flex-shrink-0">
           <PartyPopper className="w-5 h-5" strokeWidth={2} />
         </div>
@@ -202,7 +199,7 @@ function MasteryCelebration({ count, onDismiss }: { count: number; onDismiss: ()
           />
         ))}
         <motion.div
-          className="relative z-10 bg-white rounded-2xl px-8 py-7 shadow-2xl text-center max-w-xs"
+          className="relative z-10 bg-white rounded-2xl px-8 py-7 shadow-soft-lg text-center max-w-xs"
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}

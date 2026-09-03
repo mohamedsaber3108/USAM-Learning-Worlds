@@ -29,7 +29,7 @@ function NewProjectModal({
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-card shadow-lg max-w-md w-full p-6">
+      <div className="bg-white rounded-card shadow-soft-lg max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display font-bold text-lg text-slate-900">New Project</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
@@ -163,7 +163,7 @@ export function ProjectsPage() {
         ) : projects && projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((project: any) => (
-              <Link key={project.id} to={`/projects/${project.id}`} className="card hover:shadow-md transition-shadow">
+              <Link key={project.id} to={`/projects/${project.id}`} className="card hover:shadow-soft-hover transition-shadow">
                 <h3 className="font-display font-semibold text-lg text-slate-900 mb-2">
                   {project.title}
                 </h3>
