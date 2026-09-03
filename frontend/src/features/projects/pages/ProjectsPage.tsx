@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, FolderKanban, Plus, Star, X, Globe2, ExternalLink } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
 import { EmptyState, LoadingState } from '@/components/common/CharacterState'
+import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 
 function NewProjectModal({
   onClose,
@@ -27,6 +28,10 @@ function NewProjectModal({
       onCreated(project.id)
     },
   })
+
+  const createErrorMessage = create.isError
+    ? getFriendlyErrorMessage(create.error, 'We could not create your project. Please try again.')
+    : null
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
@@ -65,6 +70,11 @@ function NewProjectModal({
             <option value="COLLABORATIVE">Collaborative</option>
           </select>
         </div>
+        {createErrorMessage && (
+          <p className="mt-3 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-control px-3 py-2">
+            {createErrorMessage}
+          </p>
+        )}
         <button
           className="btn btn-primary w-full mt-5"
           disabled={!title.trim() || !description.trim() || create.isPending}

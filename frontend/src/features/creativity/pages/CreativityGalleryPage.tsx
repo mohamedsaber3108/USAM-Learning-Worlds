@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { creativityApi, type CreativityPromptRecord } from '@/lib/api/endpoints'
 import { LoadingState } from '@/components/common/CharacterState'
+import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 
 /**
  * Creativity Engine — guided creative-project-prompt gallery.
@@ -64,6 +65,10 @@ export function CreativityGalleryPage() {
       queryClient.invalidateQueries({ queryKey: ['creativity-gallery', selectedPrompt?.id] })
     },
   })
+
+  const submitErrorMessage = submitMutation.isError
+    ? getFriendlyErrorMessage(submitMutation.error, 'We could not save your creation. Please try again.')
+    : null
 
   const ageBands = useMemo(() => {
     const set = new Set<string>()
@@ -147,7 +152,13 @@ export function CreativityGalleryPage() {
               onChange={(e) => setDraft(e.target.value)}
               rows={5}
               className="w-full border rounded-lg px-3 py-2 text-sm"
+              aria-invalid={draft.trim().length === 0}
             />
+            {draft.length === 0 && (
+              <p className="text-xs text-gray-400">
+                Write a little something before you submit — even a sentence is a great start!
+              </p>
+            )}
             <label className="flex items-center gap-2 text-sm text-gray-600">
               <input
                 type="checkbox"
@@ -156,6 +167,11 @@ export function CreativityGalleryPage() {
               />
               Share this in the public gallery for this prompt
             </label>
+            {submitErrorMessage && (
+              <p className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
+                {submitErrorMessage}
+              </p>
+            )}
             <button
               disabled={!draft.trim() || submitMutation.isPending}
               onClick={() => submitMutation.mutate()}
