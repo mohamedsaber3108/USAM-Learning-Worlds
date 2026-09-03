@@ -49,6 +49,66 @@ jobs:
           JWT_REFRESH_SECRET: ci_test_secret_not_real
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_placeholder
 
+  # Regression-prevention smoke suite: boots the REAL app against a REAL
+  # Postgres database and hits health/register/login/missions over HTTP.
+  # Added after two incidents that unit tests and mocked suites above did
+  # NOT catch: 21 tables silently missing from production (schema drift),
+  # and a trust-proxy misconfig that locked every user out of login via
+  # the throttle guard. Both fail loudly here. See
+  # backend/test/smoke/critical-paths.spec.ts for detail.
+  smoke:
+    name: Smoke (critical paths, real DB)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: usam_smoke
+          POSTGRES_USER: usam
+          POSTGRES_PASSWORD: usam_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U usam"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://usam:usam_ci_password@localhost:5432/usam_smoke?schema=public
+      JWT_ACCESS_SECRET: ci_test_secret_not_real
+      JWT_REFRESH_SECRET: ci_test_secret_not_real
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Apply schema to smoke database
+        # schema.prisma is the source of truth; the manually-applied
+        # prisma/migrations/*.sql files predate real migration history
+        # (see scripts/check-migrations-applied.ts). `db push` builds a
+        # fresh schema straight from schema.prisma, which is exactly the
+        # drift-free baseline this suite needs against an ephemeral DB.
+        run: npx prisma db push --skip-generate --accept-data-loss
+
+      - name: Critical-path smoke tests
+        run: npm test -- --config test/smoke/jest-smoke.json --forceExit
+
   frontend:
     name: Frontend (lint, typecheck, build)
     runs-on: ubuntu-latest
