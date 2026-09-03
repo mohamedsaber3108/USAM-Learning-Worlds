@@ -36,6 +36,7 @@ import { ContentQaModule } from './modules/content-qa/content-qa.module';
 import { InterventionModule } from './modules/interventions/intervention.module';
 import { AssessmentQualityModule } from './modules/assessment-quality/assessment-quality.module';
 import { SearchModule } from './modules/search/search.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { SearchModule } from './modules/search/search.module';
     InterventionModule,
     AssessmentQualityModule,
     SearchModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
