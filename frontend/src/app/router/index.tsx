@@ -43,6 +43,7 @@ import { AdminRoute } from '@/components/common/AdminRoute'
 import { AppShell } from '@/components/layout/AppShell'
 import { LandingPage } from '@/features/landing/pages/LandingPage'
 import { AdminMissionsPage } from '@/features/admin/pages/AdminMissionsPage'
+import { AdminFeatureFlagsPage } from '@/features/admin/pages/AdminFeatureFlagsPage'
 
 /** Branch "/" on auth state: signed-in visitors go straight to the app
  * (their previous behavior, unchanged); first-time/signed-out visitors get
@@ -187,6 +188,14 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <AdminMissionsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/feature-flags"
+          element={
+            <AdminRoute>
+              <AdminFeatureFlagsPage />
             </AdminRoute>
           }
         />

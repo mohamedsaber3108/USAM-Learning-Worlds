@@ -713,3 +713,78 @@ export const storiesApi = {
   getStory: (id: string) => apiClient.get<StoryDetail>(`/stories/${id}`),
 }
 
+// ==================== Notifications ====================
+export interface NotificationRecord {
+  id: string
+  type: string
+  title: string
+  body: string
+  isRead: boolean
+  createdAt: string
+  data?: Record<string, unknown> | null
+}
+
+export const notificationsApi = {
+  list: (unreadOnly?: boolean) =>
+    apiClient.get<NotificationRecord[]>('/notifications', { params: unreadOnly ? { unreadOnly: 'true' } : undefined }),
+
+  unreadCount: () => apiClient.get<{ count: number }>('/notifications/unread-count'),
+
+  markRead: (id: string) => apiClient.post(`/notifications/${id}/read`),
+
+  markAllRead: () => apiClient.post('/notifications/read-all'),
+}
+
+// ==================== Search ====================
+export interface SearchResultItem {
+  type: 'mission' | 'activity' | 'concept'
+  id: string
+  title: string
+  snippet: string
+  rank: number
+}
+
+export const searchApi = {
+  search: (q: string, limit?: number) =>
+    apiClient.get<{ query: string; results: SearchResultItem[] }>('/search', { params: { q, limit } }),
+}
+
+// ==================== Worlds (World Engine) ====================
+// Real data backed by the `World` Prisma model (one per major Domain),
+// seeded via backend/prisma/seeds/seed-worlds.ts (7 worlds: Numeria,
+// Verdantia, Circuit City, Prisma Isles, Wordhaven, Gearhollow, The Riddle
+// Reach). Served by worlds.controller.ts, mounted at `/api/worlds`.
+// Per-learner unlock status is computed server-side (domain-engagement +
+// mission-completion signal), not derived client-side.
+export interface WorldRecord {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  order: number
+  isActive: boolean
+  unlockCondition?: string | null
+  domain: { id: string; name: string; slug: string }
+  missionCount: number
+  isUnlocked: boolean
+}
+
+export const worldsApi = {
+  list: () => apiClient.get<WorldRecord[]>('/worlds'),
+  getOne: (id: string) => apiClient.get('/worlds/' + id),
+}
+
+// ==================== Feature Flags (admin) ====================
+export interface FeatureFlagRecord {
+  key: string
+  description?: string | null
+  isEnabledGlobally: boolean
+}
+
+export const featureFlagsApi = {
+  list: () => apiClient.get<FeatureFlagRecord[]>('/feature-flags'),
+
+  toggle: (key: string, isEnabledGlobally: boolean) =>
+    apiClient.patch(`/feature-flags/${key}`, { isEnabledGlobally }),
+}
+
