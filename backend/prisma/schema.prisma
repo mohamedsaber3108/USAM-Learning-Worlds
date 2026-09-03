@@ -81,6 +81,7 @@ model Learner {
   creativitySubmissions CreativitySubmission[]
   cognitiveLoadSignals  CognitiveLoadSignal[]
   interventions         InterventionRecommendation[]
+  safetyEscalations     SafetyEscalation[]
 
   @@index([userId])
   @@index([displayName])
@@ -739,6 +740,38 @@ model ModerationLog {
   @@index([severity])
   @@index([createdAt])
   @@map("moderation_logs")
+}
+
+// SafetyEscalation records a real, persisted, actionable escalation
+// whenever CharacterSafetyService.evaluateSafety() resolves to the
+// 'escalation_required' SafetyState. Previously that state was only
+// written into the generic ModerationLog free-form fields with no
+// assignee/status/resolution workflow — i.e. HIGH-severity character
+// safety events for children had nowhere real to escalate to. This
+// model is the fix: a first-class queue a moderator/admin can list,
+// claim (assignedTo), and resolve.
+model SafetyEscalation {
+  id            String                 @id @default(uuid())
+  learnerId     String
+  triggerReason String                 @db.Text
+  safetyState   String
+  status        SafetyEscalationStatus @default(OPEN)
+  assignedTo    String?
+  resolvedAt    DateTime?
+  createdAt     DateTime               @default(now())
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([learnerId])
+  @@index([createdAt])
+  @@map("safety_escalations")
+}
+
+enum SafetyEscalationStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
 }
 
 model QuarantinedContent {
