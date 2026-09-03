@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditLogService } from '../audit/audit-log.service';
 
 @Injectable()
 export class ParentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditLog: AuditLogService,
+  ) {}
 
   /**
    * Get parent's children
@@ -256,14 +260,24 @@ export class ParentsService {
       where: { id: learnerId },
     });
 
-    const preferences = (learner?.preferences as any) || {};
-    preferences.timeLimits = limits;
+    const preferencesBefore = (learner?.preferences as any) || {};
+    const preferences = { ...preferencesBefore, timeLimits: limits };
 
     await this.prisma.learner.update({
       where: { id: learnerId },
       data: {
         preferences: preferences as any,
       },
+    });
+
+    await this.auditLog.record({
+      actorUserId: parentId,
+      actorRole: 'GUARDIAN',
+      action: 'SET_TIME_LIMITS',
+      targetType: 'Learner',
+      targetId: learnerId,
+      before: preferencesBefore.timeLimits ?? null,
+      after: limits,
     });
 
     return { success: true, limits };

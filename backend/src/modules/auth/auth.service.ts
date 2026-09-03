@@ -5,6 +5,7 @@ import { PrismaService } from '../../database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { AgeBand } from '@prisma/client';
 import { RegisterDto, LoginDto } from './dto';
+import { AuditLogService } from '../audit/audit-log.service';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +13,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private auditLog: AuditLogService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -172,9 +174,21 @@ export class AuthService {
       throw new NotFoundException('Learner profile not found for this account');
     }
 
+    const previousAgeBand = user.learner.ageBand;
+
     const learner = await this.prisma.learner.update({
       where: { id: user.learner.id },
       data: { ageBand },
+    });
+
+    await this.auditLog.record({
+      actorUserId: userId,
+      actorRole: 'LEARNER',
+      action: 'UPDATE_AGE_BAND',
+      targetType: 'Learner',
+      targetId: user.learner.id,
+      before: { ageBand: previousAgeBand },
+      after: { ageBand },
     });
 
     return { learner };

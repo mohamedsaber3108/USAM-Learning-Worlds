@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { ModerationService } from '../ai/moderation.service';
+import { AuditLogService } from '../audit/audit-log.service';
 
 @Injectable()
 export class CommunityService {
   constructor(
     private prisma: PrismaService,
     private moderation: ModerationService,
+    private auditLog: AuditLogService,
   ) {}
 
   /**
@@ -104,6 +106,15 @@ export class CommunityService {
       moderatorId,
       data.notes,
     );
+
+    await this.auditLog.record({
+      actorUserId: moderatorId,
+      actorRole: 'MODERATOR',
+      action: `REVIEW_CONTENT_${data.decision}`,
+      targetType: 'QuarantinedContent',
+      targetId: contentId,
+      after: { decision: data.decision, notes: data.notes ?? null },
+    });
 
     return { success: true };
   }
