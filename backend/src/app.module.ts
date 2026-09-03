@@ -40,6 +40,9 @@ import { AssessmentQualityModule } from './modules/assessment-quality/assessment
 import { SearchModule } from './modules/search/search.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { DifficultyCalibrationModule } from './modules/difficulty-calibration/difficulty-calibration.module';
+import { MediaModule } from './modules/media/media.module';
+import { SimulationModule } from './modules/simulation/simulation.module';
+import { VisualLanguageModule } from './modules/visual-language/visual-language.module';
 
 @Module({
   imports: [
@@ -99,6 +102,9 @@ import { DifficultyCalibrationModule } from './modules/difficulty-calibration/di
     SearchModule,
     AnalyticsModule,
     DifficultyCalibrationModule,
+    MediaModule,
+    SimulationModule,
+    VisualLanguageModule,
   ],
   controllers: [AppController],
   providers: [
