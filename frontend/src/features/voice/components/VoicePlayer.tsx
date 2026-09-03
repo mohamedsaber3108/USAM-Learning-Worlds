@@ -24,7 +24,7 @@ export function VoicePlayer({ audioUrl, autoPlay = true }: VoicePlayerProps) {
   if (!audioUrl) return null
 
   return (
-    <div className="mt-2">
+    <div className="mt-3 bg-primary-50/50 border border-primary-100 rounded-control p-2">
       <audio ref={audioRef} controls src={audioUrl} className="w-full">
         Your browser does not support the audio element.
       </audio>

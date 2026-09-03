@@ -62,29 +62,44 @@ export function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRecorderPr
   }, [])
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={isRecording ? stopRecording : startRecording}
-        className={`w-20 h-20 rounded-full flex items-center justify-center text-white shadow-pop transition-all ${
-          isRecording
-            ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-            : 'bg-primary-500 hover:bg-primary-600'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        aria-pressed={isRecording}
-        aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-      >
-        {isRecording ? (
-          <Square className="w-8 h-8" strokeWidth={2} fill="currentColor" />
-        ) : (
-          <Mic className="w-8 h-8" strokeWidth={2} />
-        )}
-      </button>
-      <p className="text-sm text-gray-600">
-        {isRecording ? 'Recording... tap to stop' : 'Tap to speak'}
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative flex items-center justify-center">
+        {/* Idle/active ring — quiet primary halo at rest, warm accent pulse while recording */}
+        <span
+          className={`absolute inline-flex h-28 w-28 rounded-full transition-colors duration-300 ${
+            isRecording ? 'bg-accent-100 animate-pulse' : 'bg-primary-50'
+          }`}
+          aria-hidden="true"
+        />
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={isRecording ? stopRecording : startRecording}
+          className={`relative w-20 h-20 rounded-full flex items-center justify-center text-white transition-all duration-200
+            focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-white
+            active:scale-95 ${
+            isRecording
+              ? 'bg-accent-500 hover:bg-accent-600 shadow-glow-primary focus:ring-accent-200'
+              : 'bg-primary-500 hover:bg-primary-600 shadow-soft-md hover:shadow-soft-hover focus:ring-primary-200'
+          } ${disabled ? 'opacity-50 cursor-not-allowed hover:bg-primary-500' : ''}`}
+          aria-pressed={isRecording}
+          aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+        >
+          {isRecording ? (
+            <Square className="w-7 h-7" strokeWidth={2} fill="currentColor" />
+          ) : (
+            <Mic className="w-8 h-8" strokeWidth={2} />
+          )}
+        </button>
+      </div>
+      <p className={`text-sm font-medium transition-colors ${isRecording ? 'text-accent-600' : 'text-slate-500'}`}>
+        {isRecording ? 'Recording — tap to stop' : 'Tap to speak'}
       </p>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm font-medium text-error-600 bg-error-50 border border-error-100 rounded-control px-3 py-1.5">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

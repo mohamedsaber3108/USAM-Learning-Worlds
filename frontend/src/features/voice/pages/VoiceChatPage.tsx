@@ -4,10 +4,12 @@
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Mic2, ArrowLeft } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Mic2, ArrowLeft, Info, Sparkles } from 'lucide-react'
 import { VoiceRecorder } from '../components/VoiceRecorder'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { voiceApi, VoiceTurnResult } from '../api/voiceApi'
+import { EmptyState } from '@/components/common/CharacterState'
 
 interface Turn extends VoiceTurnResult {
   id: string
@@ -47,27 +49,35 @@ export function VoiceChatPage() {
     }
   }
 
+  const orderedTurns = turns.slice().reverse()
+
   return (
-    <div className="min-h-screen">
-      <header className="bg-gradient-to-r from-primary-500 via-primary-600 to-secondary-500 shadow-pop">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-heading font-extrabold text-white drop-shadow-sm flex items-center gap-2">
-            <Mic2 className="w-6 h-6" strokeWidth={2} />
-            Voice Chat
-          </h1>
-          <Link
-            to="/dashboard"
-            className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none flex items-center gap-1"
-          >
-            <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-            Dashboard
-          </Link>
+    <div className="min-h-screen bg-surface-50">
+      {/* Header — one solid brand color, no rainbow gradient, matches Community/Dashboard chrome */}
+      <header className="bg-primary-600 shadow-soft">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-1 text-white/90 hover:text-white transition-colors text-sm font-medium"
+              >
+                <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+                Back
+              </Link>
+              <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
+                <Mic2 className="w-5 h-5" strokeWidth={2} />
+                Voice Chat
+              </h1>
+            </div>
+          </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Conversation setup */}
         <div className="card mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">
             Conversation ID
           </label>
           <input
@@ -75,41 +85,92 @@ export function VoiceChatPage() {
             value={conversationId}
             onChange={(e) => setConversationId(e.target.value)}
             placeholder="Existing conversation ID (create one via the text chat first)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="input"
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Voice turns are routed through the same conversation/AI pipeline
-            as typed messages — no separate voice conversation logic.
-          </p>
+          <div className="flex items-start gap-2 mt-3 bg-primary-50 border border-primary-100 rounded-control p-3">
+            <Info className="w-4 h-4 text-primary-600 flex-shrink-0 mt-0.5" strokeWidth={2} />
+            <p className="text-xs text-primary-800">
+              Voice turns are routed through the same conversation/AI pipeline as typed
+              messages — no separate voice conversation logic.
+            </p>
+          </div>
         </div>
 
-        <div className="card mb-6 flex flex-col items-center py-8">
+        {/* Recorder surface — the hero interaction, given real visual weight */}
+        <div className="stat-card-hero flex flex-col items-center py-10 mb-8">
           <VoiceRecorder
             onRecordingComplete={handleRecordingComplete}
             disabled={isProcessing}
           />
-          {isProcessing && (
-            <p className="mt-4 text-sm text-primary-600 animate-pulse">
-              Transcribing, thinking, and synthesizing speech...
+          <AnimatePresence>
+            {isProcessing && (
+              <motion.p
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-5 text-sm font-medium text-primary-700 flex items-center gap-1.5"
+              >
+                <Sparkles className="w-4 h-4" strokeWidth={2} />
+                Transcribing, thinking, and synthesizing speech…
+              </motion.p>
+            )}
+          </AnimatePresence>
+          {error && (
+            <p className="mt-4 text-sm font-medium text-error-600 bg-error-50 border border-error-100 rounded-control px-3 py-1.5">
+              {error}
             </p>
           )}
-          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
         </div>
 
-        <div className="space-y-4">
-          {turns
-            .slice()
-            .reverse()
-            .map((turn) => (
-              <div key={turn.id} className="card">
-                <p className="text-sm text-gray-500 mb-1">You said:</p>
-                <p className="font-medium mb-3">{turn.transcript}</p>
-                <p className="text-sm text-gray-500 mb-1">AI response:</p>
-                <p className="font-medium mb-3">{turn.aiResponseText}</p>
-                <VoicePlayer audioUrl={turn.resolvedAudioUrl} />
-              </div>
+        {/* Turn history */}
+        <h2 className="text-lg font-display font-bold text-slate-900 mb-4">Conversation</h2>
+
+        {orderedTurns.length === 0 ? (
+          <EmptyState
+            character="Codey"
+            title="No turns yet"
+            message="Tap the microphone above and say something to start a voice round trip."
+          />
+        ) : (
+          <div className="space-y-5">
+            {orderedTurns.map((turn, idx) => (
+              <motion.div
+                key={turn.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: idx === 0 ? 0 : 0 }}
+                className="card"
+              >
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-secondary-100 text-secondary-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      You
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-0.5">
+                        You said
+                      </p>
+                      <p className="text-slate-800 font-medium">{turn.transcript}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      AI
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-0.5">
+                        AI response
+                      </p>
+                      <p className="text-slate-800 font-medium">{turn.aiResponseText}</p>
+                      <VoicePlayer audioUrl={turn.resolvedAudioUrl} />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             ))}
-        </div>
+          </div>
+        )}
       </main>
     </div>
   )
