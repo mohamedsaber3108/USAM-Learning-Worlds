@@ -25,6 +25,19 @@ export class CreateProjectDto {
   @IsString()
   @IsOptional()
   objectiveId?: string;
+
+  /**
+   * Real curriculum Domain.id values this project explicitly draws on.
+   * Cross-Domain/Interdisciplinary Project Engine: a project with 2+
+   * distinct domainIds is flagged isCrossDomain server-side (see
+   * ProjectsService.createProject) -- the author declares which real
+   * domains a project spans, distinct from the untagged, domain-agnostic
+   * default every project had before this field existed.
+   */
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  domainIds?: string[];
 }
 
 export class UpdateProjectDto {
@@ -56,4 +69,9 @@ export class UpdateProjectDto {
   @IsString()
   @IsOptional()
   objectiveId?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  domainIds?: string[];
 }

@@ -60,6 +60,13 @@ export class ProjectsController {
     return this.projectsService.listRealWorldChallenges();
   }
 
+  @Get('cross-domain/list')
+  async listCrossDomainProjects(@Query('limit') limit?: string) {
+    return this.projectsService.listCrossDomainProjects(
+      limit ? parseInt(limit, 10) : 20,
+    );
+  }
+
   @Get('portfolio/:learnerId')
   async getPortfolio(
     @CurrentUser() user: any,

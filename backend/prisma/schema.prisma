@@ -515,6 +515,8 @@ model Project {
   objectiveId          String?
   isRealWorldChallenge Boolean           @default(false)
   externalSourceUrl    String?
+  domainIds            String[]          @default([])
+  isCrossDomain        Boolean           @default(false)
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
@@ -529,6 +531,7 @@ model Project {
   @@index([state])
   @@index([competencyId])
   @@index([isRealWorldChallenge])
+  @@index([isCrossDomain])
   @@map("projects")
 }
 

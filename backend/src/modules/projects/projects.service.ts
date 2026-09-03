@@ -18,8 +18,16 @@ export class ProjectsService {
       tags?: string[];
       competencyId?: string;
       objectiveId?: string;
+      domainIds?: string[];
     },
   ) {
+    // Cross-Domain/Interdisciplinary Project Engine: a project is flagged
+    // isCrossDomain when the author explicitly tags 2+ distinct real
+    // curriculum domains. Dedupe defensively so a caller sending the same
+    // domainId twice doesn't falsely trip the cross-domain flag.
+    const domainIds = Array.from(new Set(data.domainIds || []));
+    const isCrossDomain = domainIds.length >= 2;
+
     const project = await this.prisma.project.create({
       data: {
         learnerId,
@@ -30,6 +38,8 @@ export class ProjectsService {
         skills: data.tags || [],
         competencyId: data.competencyId,
         objectiveId: data.objectiveId,
+        domainIds,
+        isCrossDomain,
       },
     });
 
@@ -118,6 +128,7 @@ export class ProjectsService {
       tags: string[];
       competencyId: string;
       objectiveId: string;
+      domainIds: string[];
     }>,
   ) {
     // Verify ownership
@@ -129,6 +140,17 @@ export class ProjectsService {
       throw new ForbiddenException('Not authorized to update this project');
     }
 
+    // Cross-Domain/Interdisciplinary Project Engine: recompute isCrossDomain
+    // whenever domainIds is part of the update, same rule as create (2+
+    // distinct real Domain.id values = cross-domain).
+    const domainUpdate =
+      data.domainIds !== undefined
+        ? {
+            domainIds: Array.from(new Set(data.domainIds)),
+            isCrossDomain: Array.from(new Set(data.domainIds)).length >= 2,
+          }
+        : {};
+
     return this.prisma.project.update({
       where: { id: projectId },
       data: {
@@ -139,6 +161,7 @@ export class ProjectsService {
         skills: data.tags,
         competencyId: data.competencyId,
         objectiveId: data.objectiveId,
+        ...domainUpdate,
       },
     });
   }
@@ -438,5 +461,44 @@ export class ProjectsService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  /**
+   * Cross-Domain/Interdisciplinary Project Engine: real public projects
+   * explicitly tagged as spanning 2+ curriculum domains, with those domains'
+   * real names/colors/icons resolved for display (domainIds is a raw
+   * String[] on Project, not a Prisma relation, so we resolve names via a
+   * single batched Domain query rather than N+1 lookups or a join table).
+   */
+  async listCrossDomainProjects(limit = 20) {
+    const projects = await this.prisma.project.findMany({
+      where: { isCrossDomain: true, visibility: 'PUBLIC' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        state: true,
+        domainIds: true,
+        skills: true,
+        createdAt: true,
+        learner: { select: { displayName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(limit, 50),
+    });
+
+    const allDomainIds = Array.from(new Set(projects.flatMap((p) => p.domainIds)));
+    const domains = allDomainIds.length
+      ? await this.prisma.domain.findMany({
+          where: { id: { in: allDomainIds } },
+          select: { id: true, name: true, icon: true, color: true },
+        })
+      : [];
+    const domainMap = new Map(domains.map((d) => [d.id, d]));
+
+    return projects.map((p) => ({
+      ...p,
+      domains: p.domainIds.map((id) => domainMap.get(id)).filter(Boolean),
+    }));
   }
 }
