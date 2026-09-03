@@ -34,6 +34,7 @@ import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module
 import { ExperimentationModule } from './modules/experimentation/experimentation.module';
 import { MisconceptionModule } from './modules/misconceptions/misconception.module';
 import { ContentQaModule } from './modules/content-qa/content-qa.module';
+import { ContentItemsModule } from './modules/content-items/content-items.module';
 import { InterventionModule } from './modules/interventions/intervention.module';
 import { AssessmentQualityModule } from './modules/assessment-quality/assessment-quality.module';
 import { SearchModule } from './modules/search/search.module';
@@ -91,6 +92,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     ExperimentationModule,
     MisconceptionModule,
     ContentQaModule,
+    ContentItemsModule,
     InterventionModule,
     AssessmentQualityModule,
     SearchModule,
