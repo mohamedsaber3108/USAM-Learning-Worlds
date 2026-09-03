@@ -922,3 +922,24 @@ export const analyticsApi = {
     apiClient.get<AnalyticsOverview>('/admin/analytics/overview', { params: { days } }),
 }
 
+// Audit Engine — staff-only read side over AdminAuditLog. Real call sites:
+// guardian time-limit changes, community moderation review, learner
+// age-band changes. See backend/src/modules/audit/audit-log.service.ts.
+export interface AuditLogEntry {
+  id: string
+  actorUserId: string
+  actorRole: string
+  action: string
+  targetType: string
+  targetId: string
+  before: unknown
+  after: unknown
+  metadata: unknown
+  createdAt: string
+}
+
+export const auditApi = {
+  getLogs: (params?: { action?: string; targetType?: string; take?: number }) =>
+    apiClient.get<AuditLogEntry[]>('/audit/logs', { params }),
+}
+
