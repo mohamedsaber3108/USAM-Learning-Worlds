@@ -4,6 +4,7 @@
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Mic2, ArrowLeft } from 'lucide-react'
 import { VoiceRecorder } from '../components/VoiceRecorder'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { voiceApi, VoiceTurnResult } from '../api/voiceApi'
@@ -50,14 +51,16 @@ export function VoiceChatPage() {
     <div className="min-h-screen">
       <header className="bg-gradient-to-r from-primary-500 via-primary-600 to-secondary-500 shadow-pop">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-heading font-extrabold text-white drop-shadow-sm">
-            🎙️ Voice Chat
+          <h1 className="text-2xl font-heading font-extrabold text-white drop-shadow-sm flex items-center gap-2">
+            <Mic2 className="w-6 h-6" strokeWidth={2} />
+            Voice Chat
           </h1>
           <Link
             to="/dashboard"
-            className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
+            className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none flex items-center gap-1"
           >
-            ← Dashboard
+            <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+            Dashboard
           </Link>
         </div>
       </header>

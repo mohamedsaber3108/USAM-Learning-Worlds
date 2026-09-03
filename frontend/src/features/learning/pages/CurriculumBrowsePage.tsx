@@ -1,6 +1,22 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Layers,
+  Puzzle,
+  Loader2,
+  Lock,
+  Unlock,
+  Bot,
+  Lightbulb,
+  DollarSign,
+  Shield,
+  Compass,
+  MessageCircle,
+} from 'lucide-react'
 import { curriculumApi, learningApi, masteryApi } from '@/lib/api/endpoints'
 import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
 
@@ -151,22 +167,27 @@ export function CurriculumBrowsePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors">
-                ← Back
+              <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
+                <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+                Back
               </Link>
-              <h1 className="text-2xl font-heading font-bold text-white">📚 Curriculum</h1>
+              <h1 className="text-2xl font-heading font-bold text-white flex items-center gap-2">
+                <BookOpen className="w-6 h-6" strokeWidth={2} />
+                Curriculum
+              </h1>
             </div>
             <Link
               to="/learn/paths"
               className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
             >
-              Learning Paths →
+              Learning Paths <ArrowRight className="w-4 h-4 inline" strokeWidth={2} />
             </Link>
             <Link
               to="/learn/flashcards"
-              className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
+              className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none flex items-center gap-1"
             >
-              🗂️ Flashcards →
+              <Layers className="w-4 h-4" strokeWidth={2} />
+              Flashcards <ArrowRight className="w-4 h-4" strokeWidth={2} />
             </Link>
           </div>
         </div>
@@ -179,23 +200,29 @@ export function CurriculumBrowsePage() {
         <div className="card mb-2">
           <h2 className="text-lg font-heading font-semibold mb-3">Cross-Curricular</h2>
           <div className="flex flex-wrap gap-3">
-            <Link to="/cross-curricular/ai-literacy" className="btn bg-violet-600 text-white hover:bg-violet-700 shadow-none">
-              🤖 AI Literacy
+            <Link to="/cross-curricular/ai-literacy" className="btn bg-violet-600 text-white hover:bg-violet-700 shadow-none flex items-center gap-1.5">
+              <Bot className="w-4 h-4" strokeWidth={2} />
+              AI Literacy
             </Link>
-            <Link to="/cross-curricular/entrepreneurship" className="btn bg-amber-600 text-white hover:bg-amber-700 shadow-none">
-              💡 Entrepreneurship
+            <Link to="/cross-curricular/entrepreneurship" className="btn bg-amber-600 text-white hover:bg-amber-700 shadow-none flex items-center gap-1.5">
+              <Lightbulb className="w-4 h-4" strokeWidth={2} />
+              Entrepreneurship
             </Link>
-            <Link to="/cross-curricular/financial-literacy" className="btn bg-emerald-600 text-white hover:bg-emerald-700 shadow-none">
-              💰 Financial Literacy
+            <Link to="/cross-curricular/financial-literacy" className="btn bg-emerald-600 text-white hover:bg-emerald-700 shadow-none flex items-center gap-1.5">
+              <DollarSign className="w-4 h-4" strokeWidth={2} />
+              Financial Literacy
             </Link>
-            <Link to="/cross-curricular/digital-literacy" className="btn bg-sky-600 text-white hover:bg-sky-700 shadow-none">
-              🛡️ Digital Literacy
+            <Link to="/cross-curricular/digital-literacy" className="btn bg-sky-600 text-white hover:bg-sky-700 shadow-none flex items-center gap-1.5">
+              <Shield className="w-4 h-4" strokeWidth={2} />
+              Digital Literacy
             </Link>
-            <Link to="/cross-curricular/career-exploration" className="btn bg-rose-600 text-white hover:bg-rose-700 shadow-none">
-              🧭 Career Exploration
+            <Link to="/cross-curricular/career-exploration" className="btn bg-rose-600 text-white hover:bg-rose-700 shadow-none flex items-center gap-1.5">
+              <Compass className="w-4 h-4" strokeWidth={2} />
+              Career Exploration
             </Link>
-            <Link to="/cross-curricular/communication-skills" className="btn bg-fuchsia-600 text-white hover:bg-fuchsia-700 shadow-none">
-              🗣️ Communication Skills
+            <Link to="/cross-curricular/communication-skills" className="btn bg-fuchsia-600 text-white hover:bg-fuchsia-700 shadow-none flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4" strokeWidth={2} />
+              Communication Skills
             </Link>
           </div>
         </div>
@@ -231,8 +258,9 @@ export function CurriculumBrowsePage() {
           <div className="space-y-6">
             {competencyGroups.map(group => (
               <div key={group.competencyId} className="card">
-                <h3 className="text-lg font-heading font-semibold mb-4 text-gray-900">
-                  🧩 {group.competencyName}
+                <h3 className="text-lg font-heading font-semibold mb-4 text-gray-900 flex items-center gap-2">
+                  <Puzzle className="w-5 h-5" strokeWidth={2} />
+                  {group.competencyName}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {group.concepts.map(concept => {
@@ -277,7 +305,15 @@ function ConceptCard({ concept }: { concept: Concept; assumedUnlocked: boolean }
     >
       <div className="flex items-start justify-between mb-2">
         <h4 className="font-semibold text-gray-900 line-clamp-2">{concept.name}</h4>
-        <span className="text-xl ml-2">{isLoading ? '⏳' : unlocked ? '🔓' : '🔒'}</span>
+        <span className="text-xl ml-2">
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400" strokeWidth={2} />
+          ) : unlocked ? (
+            <Unlock className="w-5 h-5 text-success-600" strokeWidth={2} />
+          ) : (
+            <Lock className="w-5 h-5 text-gray-400" strokeWidth={2} />
+          )}
+        </span>
       </div>
       {concept.description && (
         <p className="text-sm text-gray-600 line-clamp-2 mb-3">{concept.description}</p>

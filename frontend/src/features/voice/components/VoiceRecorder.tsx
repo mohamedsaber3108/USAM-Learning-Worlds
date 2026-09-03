@@ -4,6 +4,7 @@
  * (see docs/architecture/USAM_OSS_INTEGRATION_PLAN.md Section 3).
  */
 import { useCallback, useRef, useState } from 'react'
+import { Mic, Square } from 'lucide-react'
 
 interface VoiceRecorderProps {
   onRecordingComplete: (blob: Blob) => void
@@ -66,7 +67,7 @@ export function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRecorderPr
         type="button"
         disabled={disabled}
         onClick={isRecording ? stopRecording : startRecording}
-        className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl shadow-pop transition-all ${
+        className={`w-20 h-20 rounded-full flex items-center justify-center text-white shadow-pop transition-all ${
           isRecording
             ? 'bg-red-500 hover:bg-red-600 animate-pulse'
             : 'bg-primary-500 hover:bg-primary-600'
@@ -74,7 +75,11 @@ export function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRecorderPr
         aria-pressed={isRecording}
         aria-label={isRecording ? 'Stop recording' : 'Start recording'}
       >
-        {isRecording ? '⏹️' : '🎤'}
+        {isRecording ? (
+          <Square className="w-8 h-8" strokeWidth={2} fill="currentColor" />
+        ) : (
+          <Mic className="w-8 h-8" strokeWidth={2} />
+        )}
       </button>
       <p className="text-sm text-gray-600">
         {isRecording ? 'Recording... tap to stop' : 'Tap to speak'}
