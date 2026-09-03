@@ -158,6 +158,15 @@ export function FlashcardsStudyPage() {
                 exit={{ rotateY: -90, opacity: 0 }}
                 transition={{ duration: 0.25 }}
                 onClick={() => setFlipped((f) => !f)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setFlipped((f) => !f)
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={flipped ? 'Card back. Press to flip back to front.' : 'Card front. Press to reveal answer.'}
                 className="card w-full max-w-xl min-h-[220px] flex items-center justify-center text-center p-8 cursor-pointer select-none"
               >
                 <p className="text-xl font-heading font-semibold text-slate-900">
