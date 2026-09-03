@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import helmet from 'helmet';
 import * as compression from 'compression';
+import { httpLoggerMiddleware } from './common/logging/http-logger.middleware';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -25,6 +26,12 @@ async function bootstrap() {
 
   // Security headers
   app.use(helmet());
+
+  // Observability Engine v1: structured (JSON) request/response access
+  // log via pino-http, correlated by x-request-id. Placed after helmet
+  // (so security headers are set first) but before compression/static
+  // so every request — including static assets — gets logged.
+  app.use(httpLoggerMiddleware);
 
   // Serve synthesized voice-turn audio (Voice Pipeline v1). Not under the
   // /api prefix — plain static files, same pattern as any other public
