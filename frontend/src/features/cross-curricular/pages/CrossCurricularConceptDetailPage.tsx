@@ -9,6 +9,7 @@ const CATEGORY_META: Record<CrossCurricularCategory, { title: string; icon: stri
   'digital-literacy': { title: 'Digital Literacy', icon: '🛡️', gradient: 'from-sky-500 to-cyan-500' },
   'career-exploration': { title: 'Career Exploration', icon: '🧭', gradient: 'from-rose-500 to-pink-500' },
   'communication-skills': { title: 'Communication Skills', icon: '🗣️', gradient: 'from-fuchsia-500 to-purple-500' },
+  'coding-concepts': { title: 'Coding Concepts', icon: '💻', gradient: 'from-slate-600 to-indigo-600' },
 }
 
 const AGE_BAND_COLORS: Record<string, string> = {
@@ -61,13 +62,19 @@ export function CrossCurricularConceptDetailPage() {
           <div className="card">
             <div className="flex items-start justify-between mb-4">
               <h1 className="text-2xl font-heading font-bold text-gray-900">{concept.name}</h1>
-              <span
-                className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
-                  AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                {concept.ageAppropriate}
-              </span>
+              {concept.ageAppropriate ? (
+                <span
+                  className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                    AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {concept.ageAppropriate}
+                </span>
+              ) : concept.difficulty != null ? (
+                <span className="ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold bg-indigo-100 text-indigo-800">
+                  {'★'.repeat(concept.difficulty)}
+                </span>
+              ) : null}
             </div>
             <p className="text-sm text-gray-500 mb-4">{concept.category}</p>
             {concept.description && (

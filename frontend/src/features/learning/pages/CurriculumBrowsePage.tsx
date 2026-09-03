@@ -19,6 +19,7 @@ import {
   Puzzle as PuzzleIcon,
   Brain,
   Search,
+  Code,
 } from 'lucide-react'
 import { curriculumApi, learningApi, masteryApi, worldsApi, type WorldRecord } from '@/lib/api/endpoints'
 import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
@@ -257,6 +258,10 @@ export function CurriculumBrowsePage() {
             <Link to="/cross-curricular/communication-skills" className="btn bg-fuchsia-600 text-white hover:bg-fuchsia-700 shadow-none flex items-center gap-1.5">
               <MessageCircle className="w-4 h-4" strokeWidth={2} />
               Communication Skills
+            </Link>
+            <Link to="/cross-curricular/coding-concepts" className="btn bg-slate-700 text-white hover:bg-slate-800 shadow-none flex items-center gap-1.5">
+              <Code className="w-4 h-4" strokeWidth={2} />
+              Coding Concepts
             </Link>
           </div>
         </div>

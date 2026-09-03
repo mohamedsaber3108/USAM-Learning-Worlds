@@ -35,7 +35,8 @@ type CrossCurricularCategory =
   | 'financial-literacy'
   | 'digital-literacy'
   | 'career-exploration'
-  | 'communication-skills';
+  | 'communication-skills'
+  | 'coding-concepts';
 
 @Controller('cross-curricular')
 @UseGuards(JwtAuthGuard)
@@ -149,6 +150,26 @@ export class CrossCurricularController {
   }
 
   /**
+   * List Coding Concepts, optionally filtered by category (e.g. "loops",
+   * "variables"). Real data from `coding_concepts` (48 seeded rows) — the
+   * model existed with real seeded content but had ZERO delivery route
+   * (only `coding-coach.service.ts`'s AI challenge-generator looked it up
+   * by id; there was no way for a learner to browse the concept list
+   * itself). Note: this model has no `ageAppropriate` column (uses
+   * `difficulty: Int` instead), so it does not take the `ageBand` filter
+   * the other cross-curricular endpoints use.
+   */
+  @Get('coding-concepts')
+  async listCodingConcepts(@Query('category') category?: string) {
+    const where = category ? { category, isActive: true } : { isActive: true };
+
+    return this.prisma.codingConcept.findMany({
+      where,
+      orderBy: [{ difficulty: 'asc' }, { order: 'asc' }],
+    });
+  }
+
+  /**
    * Single concept detail by category + slug, e.g.
    * GET /cross-curricular/ai-literacy/what-is-artificial-intelligence
    */
@@ -187,6 +208,11 @@ export class CrossCurricularController {
         break;
       case 'communication-skills':
         concept = await this.prisma.communicationSkillConcept.findUnique({
+          where: { slug },
+        });
+        break;
+      case 'coding-concepts':
+        concept = await this.prisma.codingConcept.findUnique({
           where: { slug },
         });
         break;

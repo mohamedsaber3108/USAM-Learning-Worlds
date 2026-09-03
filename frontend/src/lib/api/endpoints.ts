@@ -568,7 +568,7 @@ export const codingSandboxApi = {
 //   - FinancialLiteracyConcept (19 rows, financial_literacy_concepts)
 // Served by backend/src/modules/cross-curricular/cross-curricular.controller.ts,
 // mounted at `/api/cross-curricular`.
-export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy' | 'career-exploration' | 'communication-skills'
+export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy' | 'career-exploration' | 'communication-skills' | 'coding-concepts'
 
 export interface CrossCurricularConcept {
   id: string
@@ -576,7 +576,10 @@ export interface CrossCurricularConcept {
   slug: string
   description: string | null
   category: string
-  ageAppropriate: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
+  /** Absent (undefined) on CodingConcept rows, which use `difficulty` instead. */
+  ageAppropriate?: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
+  /** Only present on CodingConcept rows (1-5 scale). */
+  difficulty?: number
   order: number
   isActive: boolean
   createdAt: string

@@ -53,6 +53,23 @@ const CATEGORY_META: Record<
     icon: '🗣️',
     gradient: 'from-fuchsia-500 to-purple-500',
   },
+  'coding-concepts': {
+    title: 'Coding Concepts',
+    icon: '💻',
+    gradient: 'from-slate-600 to-indigo-600',
+  },
+}
+
+/** CodingConcept has no ageAppropriate column (uses difficulty:Int instead),
+ * so its category hides the age-band filter/badges the other five models use. */
+const HAS_AGE_BAND: Record<CrossCurricularCategory, boolean> = {
+  'ai-literacy': true,
+  entrepreneurship: true,
+  'financial-literacy': true,
+  'digital-literacy': true,
+  'career-exploration': true,
+  'communication-skills': true,
+  'coding-concepts': false,
 }
 
 const AGE_BANDS = [
@@ -81,6 +98,7 @@ export function CrossCurricularPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   const meta = category ? CATEGORY_META[category] : undefined
+  const showAgeBand = category ? HAS_AGE_BAND[category] : true
 
   const { data: concepts, isLoading, isError } = useQuery({
     queryKey: ['cross-curricular', category, ageBandFilter],
@@ -133,6 +151,7 @@ export function CrossCurricularPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Age band filter */}
+        {showAgeBand && (
         <div className="card mb-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-medium text-gray-700">Age Band:</span>
@@ -151,6 +170,7 @@ export function CrossCurricularPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Sub-category tabs (derived from real `category` field on the model) */}
         {subCategories.length > 0 && (
@@ -215,13 +235,19 @@ export function CrossCurricularPage() {
                             <h3 className="font-semibold text-gray-900 line-clamp-2">
                               {concept.name}
                             </h3>
-                            <span
-                              className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
-                                AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              {concept.ageAppropriate.replace('AGE_', '').replace('_', '-')}
-                            </span>
+                            {concept.ageAppropriate ? (
+                              <span
+                                className={`ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                                  AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {concept.ageAppropriate.replace('AGE_', '').replace('_', '-')}
+                              </span>
+                            ) : concept.difficulty != null ? (
+                              <span className="ml-2 shrink-0 px-2 py-1 rounded text-xs font-bold bg-indigo-100 text-indigo-800">
+                                {'★'.repeat(concept.difficulty)}
+                              </span>
+                            ) : null}
                           </div>
                           {concept.description && (
                             <p className="text-sm text-gray-600 line-clamp-3">{concept.description}</p>
