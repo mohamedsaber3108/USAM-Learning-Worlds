@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -262,5 +262,109 @@ export class ProjectsService {
     });
 
     return { success: true, message: 'Project showcased!' };
+  }
+
+  // ==================== Collaboration Engine ====================
+  // Small, real version: 2+ learners co-membered on one Project with
+  // shared edit/comment access, per docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md.
+
+  async addCollaborator(
+    projectId: string,
+    ownerLearnerId: string,
+    collaboratorLearnerId: string,
+    role: 'EDITOR' | 'COMMENTER' = 'EDITOR',
+  ) {
+    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) throw new NotFoundException('Project not found');
+    if (project.learnerId !== ownerLearnerId) {
+      throw new ForbiddenException('Only the project owner can add collaborators');
+    }
+    if (collaboratorLearnerId === ownerLearnerId) {
+      throw new BadRequestException('Owner is already on the project');
+    }
+    return this.prisma.projectCollaborator.upsert({
+      where: { projectId_learnerId: { projectId, learnerId: collaboratorLearnerId } },
+      create: { projectId, learnerId: collaboratorLearnerId, role, invitedBy: ownerLearnerId },
+      update: { role },
+    });
+  }
+
+  async listCollaborators(projectId: string) {
+    return this.prisma.projectCollaborator.findMany({
+      where: { projectId },
+      include: { learner: { select: { id: true, displayName: true } } },
+    });
+  }
+
+  async removeCollaborator(projectId: string, ownerLearnerId: string, collaboratorLearnerId: string) {
+    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) throw new NotFoundException('Project not found');
+    if (project.learnerId !== ownerLearnerId) {
+      throw new ForbiddenException('Only the project owner can remove collaborators');
+    }
+    await this.prisma.projectCollaborator.deleteMany({ where: { projectId, learnerId: collaboratorLearnerId } });
+    return { success: true };
+  }
+
+  /** True if learnerId is the owner OR a collaborator - used to gate shared edit access. */
+  async hasProjectAccess(projectId: string, learnerId: string): Promise<boolean> {
+    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return false;
+    if (project.learnerId === learnerId) return true;
+    const collab = await this.prisma.projectCollaborator.findUnique({
+      where: { projectId_learnerId: { projectId, learnerId } },
+    });
+    return !!collab;
+  }
+
+  // ==================== Research Engine ====================
+  // Minimal real version: sourced notes/citations attached to a Project.
+
+  async addResearchNote(
+    projectId: string,
+    learnerId: string,
+    data: { content: string; sourceTitle?: string; sourceUrl?: string },
+  ) {
+    const hasAccess = await this.hasProjectAccess(projectId, learnerId);
+    if (!hasAccess) throw new ForbiddenException('No access to this project');
+    return this.prisma.researchNote.create({
+      data: { projectId, learnerId, ...data },
+    });
+  }
+
+  async listResearchNotes(projectId: string, learnerId: string) {
+    const hasAccess = await this.hasProjectAccess(projectId, learnerId);
+    if (!hasAccess) throw new ForbiddenException('No access to this project');
+    return this.prisma.researchNote.findMany({
+      where: { projectId },
+      orderBy: { createdAt: 'desc' },
+      include: { learner: { select: { id: true, displayName: true } } },
+    });
+  }
+
+  async deleteResearchNote(noteId: string, learnerId: string) {
+    const note = await this.prisma.researchNote.findUnique({ where: { id: noteId } });
+    if (!note || note.learnerId !== learnerId) throw new ForbiddenException('Not authorized');
+    await this.prisma.researchNote.delete({ where: { id: noteId } });
+    return { success: true };
+  }
+
+  // ==================== Real-World Challenge Engine ====================
+  // Surfaces Project.isRealWorldChallenge/externalSourceUrl (added directly
+  // to the existing Project model, not a new system).
+
+  async listRealWorldChallenges() {
+    return this.prisma.project.findMany({
+      where: { isRealWorldChallenge: true, visibility: 'PUBLIC' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        externalSourceUrl: true,
+        state: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

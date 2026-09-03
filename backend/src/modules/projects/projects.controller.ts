@@ -55,6 +55,11 @@ export class ProjectsController {
     });
   }
 
+  @Get('real-world-challenges/list')
+  async listRealWorldChallenges() {
+    return this.projectsService.listRealWorldChallenges();
+  }
+
   @Get('portfolio/:learnerId')
   async getPortfolio(
     @CurrentUser() user: any,
@@ -107,5 +112,51 @@ export class ProjectsController {
     }
 
     return this.projectsService.showcaseProject(id, learnerId);
+  }
+
+  // ==================== Collaboration Engine ====================
+
+  @Post(':id/collaborators')
+  async addCollaborator(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: { learnerId: string; role?: 'EDITOR' | 'COMMENTER' },
+  ) {
+    return this.projectsService.addCollaborator(id, user.learner?.id, body.learnerId, body.role);
+  }
+
+  @Get(':id/collaborators')
+  async listCollaborators(@Param('id') id: string) {
+    return this.projectsService.listCollaborators(id);
+  }
+
+  @Delete(':id/collaborators/:learnerId')
+  async removeCollaborator(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Param('learnerId') learnerId: string,
+  ) {
+    return this.projectsService.removeCollaborator(id, user.learner?.id, learnerId);
+  }
+
+  // ==================== Research Engine ====================
+
+  @Post(':id/research-notes')
+  async addResearchNote(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: { content: string; sourceTitle?: string; sourceUrl?: string },
+  ) {
+    return this.projectsService.addResearchNote(id, user.learner?.id, body);
+  }
+
+  @Get(':id/research-notes')
+  async listResearchNotes(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.projectsService.listResearchNotes(id, user.learner?.id);
+  }
+
+  @Delete('research-notes/:noteId')
+  async deleteResearchNote(@CurrentUser() user: any, @Param('noteId') noteId: string) {
+    return this.projectsService.deleteResearchNote(noteId, user.learner?.id);
   }
 }

@@ -34,7 +34,8 @@ type CrossCurricularCategory =
   | 'entrepreneurship'
   | 'financial-literacy'
   | 'digital-literacy'
-  | 'career-exploration';
+  | 'career-exploration'
+  | 'communication-skills';
 
 @Controller('cross-curricular')
 @UseGuards(JwtAuthGuard)
@@ -130,6 +131,24 @@ export class CrossCurricularController {
   }
 
   /**
+   * List Communication Skill concepts, optionally filtered by age band.
+   * Real data from `communication_skill_concepts`
+   * (backend/prisma/seeds/seed-communication-skills.ts, ~12 seeded rows
+   * covering speaking/listening/presenting/active-listening/body-language).
+   */
+  @Get('communication-skills')
+  async listCommunicationSkills(@Query('ageBand') ageBand?: AgeBand) {
+    const where = ageBand
+      ? { ageAppropriate: ageBand, isActive: true }
+      : { isActive: true };
+
+    return this.prisma.communicationSkillConcept.findMany({
+      where,
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  /**
    * Single concept detail by category + slug, e.g.
    * GET /cross-curricular/ai-literacy/what-is-artificial-intelligence
    */
@@ -163,6 +182,11 @@ export class CrossCurricularController {
         break;
       case 'career-exploration':
         concept = await this.prisma.careerExplorationConcept.findUnique({
+          where: { slug },
+        });
+        break;
+      case 'communication-skills':
+        concept = await this.prisma.communicationSkillConcept.findUnique({
           where: { slug },
         });
         break;
