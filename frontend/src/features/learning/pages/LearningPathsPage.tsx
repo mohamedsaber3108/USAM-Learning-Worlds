@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Map } from 'lucide-react'
 import { curriculumApi, learningApi } from '@/lib/api/endpoints'
+import { ErrorState } from '@/components/common/CharacterState'
 
 interface LearningPath {
   id: string
@@ -22,7 +23,7 @@ export function LearningPathsPage() {
     queryFn: () => curriculumApi.getDomains().then(res => res.data),
   })
 
-  const { data: paths, isLoading } = useQuery({
+  const { data: paths, isLoading, isError, refetch } = useQuery({
     queryKey: ['learning-paths', domainId],
     queryFn: () =>
       learningApi.getPaths(domainId ? { domainId } : undefined).then(res => res.data as LearningPath[]),
@@ -59,7 +60,14 @@ export function LearningPathsPage() {
           </select>
         </div>
 
-        {isLoading ? (
+        {isError ? (
+          <ErrorState
+            character="Azouz"
+            title="Couldn't load learning paths"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetch()}
+          />
+        ) : isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>

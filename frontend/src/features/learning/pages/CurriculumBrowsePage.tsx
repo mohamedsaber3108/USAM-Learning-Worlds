@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { curriculumApi, learningApi, masteryApi, worldsApi, type WorldRecord } from '@/lib/api/endpoints'
 import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
+import { ErrorState } from '@/components/common/CharacterState'
 
 interface Domain {
   id: string
@@ -59,12 +60,12 @@ interface DomainMasteryAggregate {
 export function CurriculumBrowsePage() {
   const [selectedDomainId, setSelectedDomainId] = useState<string>('')
 
-  const { data: domains, isLoading: domainsLoading } = useQuery({
+  const { data: domains, isLoading: domainsLoading, isError: domainsIsError, refetch: refetchDomains } = useQuery({
     queryKey: ['curriculum-domains'],
     queryFn: () => curriculumApi.getDomains().then(res => res.data as Domain[]),
   })
 
-  const { data: concepts, isLoading: conceptsLoading } = useQuery({
+  const { data: concepts, isLoading: conceptsLoading, isError: conceptsIsError, refetch: refetchConcepts } = useQuery({
     queryKey: ['learning-concepts-for-domain', selectedDomainId],
     queryFn: () =>
       learningApi.getConceptsForDomain(selectedDomainId).then(res => res.data as Concept[]),
@@ -272,7 +273,14 @@ export function CurriculumBrowsePage() {
         {/* World path domain navigation - replaces the flat icon-tile grid */}
         <div className="card mb-6">
           <h2 className="text-lg font-heading font-semibold mb-4">Your Learning Path</h2>
-          {domainsLoading || worldsLoading ? (
+          {domainsIsError ? (
+            <ErrorState
+              character="Azouz"
+              title="Couldn't load your learning worlds"
+              message="No worries — this happens sometimes. Let's give it another try."
+              onRetry={() => refetchDomains()}
+            />
+          ) : domainsLoading || worldsLoading ? (
             <p className="text-gray-600">Loading domains...</p>
           ) : (
             <WorldPathMap
@@ -288,6 +296,13 @@ export function CurriculumBrowsePage() {
           <div className="text-center py-12">
             <p className="text-gray-600 text-lg">Pick a domain above to browse its concepts</p>
           </div>
+        ) : conceptsIsError ? (
+          <ErrorState
+            character="Azouz"
+            title="Couldn't load these concepts"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetchConcepts()}
+          />
         ) : conceptsLoading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
