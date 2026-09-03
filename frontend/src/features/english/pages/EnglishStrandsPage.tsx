@@ -1,34 +1,35 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { englishApi, type EnglishStrand } from '@/lib/api/endpoints'
+import { englishApi, type EnglishStrand, type EnglishStrandFamily } from '@/lib/api/endpoints'
 
-// The 9 real strand families seeded in `english_strands`
-// (backend/prisma/seeds/seed-english-coding.ts). Strand `name` is
-// formatted as "<Family>: <Topic> (<CEFR>)", e.g.
-// "Vocabulary: Everyday Words (A1)" — we group by the family prefix.
-const STRAND_FAMILIES = [
-  'Vocabulary',
-  'Grammar',
-  'Pronunciation',
-  'Listening',
-  'Reading',
-  'Writing',
-  'Speaking',
-  'Shadowing',
-  'Dictation',
-] as const
+// The 9 real strand families, backed by the `EnglishStrand.strandType`
+// enum column (migration `20260903_add_english_strand_type_column.sql`).
+// Previously this page grouped strands by regex-parsing `name`
+// ("<Family>: <Topic> (<CEFR>)") client-side - that fragile parsing is
+// gone; `strand.strandType` is now a real, queryable server-side value.
+const STRAND_FAMILIES: { value: EnglishStrandFamily; label: string }[] = [
+  { value: 'VOCABULARY', label: 'Vocabulary' },
+  { value: 'GRAMMAR', label: 'Grammar' },
+  { value: 'PRONUNCIATION', label: 'Pronunciation' },
+  { value: 'LISTENING', label: 'Listening' },
+  { value: 'READING', label: 'Reading' },
+  { value: 'WRITING', label: 'Writing' },
+  { value: 'SPEAKING', label: 'Speaking' },
+  { value: 'SHADOWING', label: 'Shadowing' },
+  { value: 'DICTATION', label: 'Dictation' },
+]
 
-const FAMILY_ICON: Record<string, string> = {
-  Vocabulary: '📖',
-  Grammar: '✏️',
-  Pronunciation: '🗣️',
-  Listening: '👂',
-  Reading: '📚',
-  Writing: '✍️',
-  Speaking: '💬',
-  Shadowing: '🎭',
-  Dictation: '⌨️',
+const FAMILY_ICON: Record<EnglishStrandFamily, string> = {
+  VOCABULARY: '📖',
+  GRAMMAR: '✏️',
+  PRONUNCIATION: '🗣️',
+  LISTENING: '👂',
+  READING: '📚',
+  WRITING: '✍️',
+  SPEAKING: '💬',
+  SHADOWING: '🎭',
+  DICTATION: '⌨️',
 }
 
 const CEFR_COLORS: Record<string, string> = {
@@ -40,14 +41,9 @@ const CEFR_COLORS: Record<string, string> = {
   C2: 'bg-purple-200 text-purple-900',
 }
 
-function familyOf(strand: EnglishStrand): string {
-  const match = strand.name.match(/^([^:]+):/)
-  return match?.[1] ? match[1].trim() : strand.name
-}
-
 export function EnglishStrandsPage() {
   const [cefrFilter, setCefrFilter] = useState('')
-  const [activeFamily, setActiveFamily] = useState<string | null>(null)
+  const [activeFamily, setActiveFamily] = useState<EnglishStrandFamily | null>(null)
 
   const { data: strands, isLoading, isError } = useQuery({
     queryKey: ['english-strands', cefrFilter],
@@ -57,14 +53,17 @@ export function EnglishStrandsPage() {
         .then((res) => res.data),
   })
 
+  // Group by the real `strandType` column instead of regex-parsing `name`.
   const grouped: Record<string, EnglishStrand[]> = {}
   for (const strand of strands || []) {
-    const fam = familyOf(strand)
+    const fam = strand.strandType || 'VOCABULARY'
     if (!grouped[fam]) grouped[fam] = []
     grouped[fam]!.push(strand)
   }
 
-  const familiesToShow = activeFamily ? [activeFamily] : STRAND_FAMILIES
+  const familiesToShow = activeFamily
+    ? STRAND_FAMILIES.filter((f) => f.value === activeFamily)
+    : STRAND_FAMILIES
 
   return (
     <div className="min-h-screen">
@@ -115,7 +114,7 @@ export function EnglishStrandsPage() {
           </div>
         </div>
 
-        {/* Strand family tabs (the 9 strand types) */}
+        {/* Strand family tabs (the 9 strand types, filtered server-side by strandType) */}
         <div className="card mb-6">
           <div className="flex flex-wrap gap-2">
             <button
@@ -128,13 +127,13 @@ export function EnglishStrandsPage() {
             </button>
             {STRAND_FAMILIES.map((fam) => (
               <button
-                key={fam}
+                key={fam.value}
                 className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                  activeFamily === fam ? 'bg-secondary-600 text-white' : 'bg-gray-100 text-gray-700'
+                  activeFamily === fam.value ? 'bg-secondary-600 text-white' : 'bg-gray-100 text-gray-700'
                 }`}
-                onClick={() => setActiveFamily(fam)}
+                onClick={() => setActiveFamily(fam.value)}
               >
-                {FAMILY_ICON[fam]} {fam}
+                {FAMILY_ICON[fam.value]} {fam.label}
               </button>
             ))}
           </div>
@@ -156,12 +155,12 @@ export function EnglishStrandsPage() {
         {!isLoading && !isError && (
           <div className="space-y-8">
             {familiesToShow.map((fam) => {
-              const items = grouped[fam] || []
+              const items = grouped[fam.value] || []
               if (items.length === 0) return null
               return (
-                <section key={fam}>
+                <section key={fam.value}>
                   <h2 className="text-xl font-heading font-bold text-gray-900 mb-3">
-                    {FAMILY_ICON[fam]} {fam}
+                    {FAMILY_ICON[fam.value]} {fam.label}
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {items

@@ -26,15 +26,20 @@ export class EnglishController {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * List English strands, optionally filtered by CEFR level.
-   * Real data from the `english_strands` table (45 rows, 9 strand
-   * families x CEFR A1-B2 progression).
+   * List English strands, optionally filtered by CEFR level or by the
+   * real `strandType` enum column (VOCABULARY/GRAMMAR/PRONUNCIATION/
+   * LISTENING/READING/WRITING/SPEAKING/SHADOWING/DICTATION), replacing
+   * the frontend's previous name-string-parsing (see gap matrix's
+   * Vocabulary Engine row).
    */
   @Get('strands')
-  async listStrands(@Query('cefrLevel') cefrLevel?: string) {
-    const where = cefrLevel
-      ? { cefrLevel, isActive: true }
-      : { isActive: true };
+  async listStrands(
+    @Query('cefrLevel') cefrLevel?: string,
+    @Query('strandType') strandType?: string,
+  ) {
+    const where: any = { isActive: true };
+    if (cefrLevel) where.cefrLevel = cefrLevel;
+    if (strandType) where.strandType = strandType;
 
     return this.prisma.englishStrand.findMany({
       where,
