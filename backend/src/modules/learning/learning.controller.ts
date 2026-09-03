@@ -69,6 +69,45 @@ export class LearningController {
     return this.conceptService.removePrerequisite(id, prereqId);
   }
 
+  // ============================================
+  // COMPETENCY-LEVEL PREREQUISITES (closes the CompetencyPrerequisite
+  // traversal gap flagged in the Knowledge Graph Engine row of the gap
+  // matrix — mirrors the Concept-level endpoints above)
+  // ============================================
+
+  @Get('competencies/:id/prerequisites')
+  async getCompetencyPrerequisiteChain(@Param('id') id: string): Promise<any> {
+    return this.conceptService.getCompetencyPrerequisiteChain(id);
+  }
+
+  @Get('competencies/:id/unlock-status')
+  async getCompetencyUnlockStatus(@Param('id') id: string, @Request() req: any) {
+    const learnerId = req.user.learner?.id;
+    return this.conceptService.getCompetencyUnlockStatus(id, learnerId);
+  }
+
+  @Get('competencies/:id/shortest-unlock-path')
+  async getCompetencyShortestUnlockPath(@Param('id') id: string, @Request() req: any) {
+    const learnerId = req.user.learner?.id;
+    return this.conceptService.getCompetencyShortestUnlockPath(id, learnerId);
+  }
+
+  @Post('competencies/:id/prerequisites')
+  async addCompetencyPrerequisite(
+    @Param('id') id: string,
+    @Body() body: { prerequisiteId: string; type?: PrerequisiteType }
+  ) {
+    return this.conceptService.addCompetencyPrerequisite(id, body.prerequisiteId, body.type);
+  }
+
+  @Delete('competencies/:id/prerequisites/:prereqId')
+  async removeCompetencyPrerequisite(
+    @Param('id') id: string,
+    @Param('prereqId') prereqId: string
+  ) {
+    return this.conceptService.removeCompetencyPrerequisite(id, prereqId);
+  }
+
   @Get('skills/:skillId/concepts')
   async getConceptsForSkill(@Param('skillId') skillId: string) {
     return this.conceptService.getConceptsForSkill(skillId);
