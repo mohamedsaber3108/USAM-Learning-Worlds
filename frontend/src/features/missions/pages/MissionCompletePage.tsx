@@ -2,10 +2,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { PartyPopper, Star, ThumbsUp, Zap, ArrowLeft } from 'lucide-react'
 import { useCountUp } from '@/lib/hooks/useCountUp'
+import { ReflectionQuickCheck } from '@/features/missions/components/ReflectionQuickCheck'
 
 export function MissionCompletePage() {
   const location = useLocation()
   const result = location.state?.result
+  const runId = location.state?.runId
 
   if (!result) {
     return (
@@ -82,6 +84,9 @@ export function MissionCompletePage() {
               <p className="text-slate-700">{result.feedback}</p>
             </div>
           )}
+
+          {/* Metacognition: quick self-reflection check-in */}
+          {runId && <ReflectionQuickCheck runId={runId} />}
 
           {/* Next Steps */}
           <div className="space-y-3">

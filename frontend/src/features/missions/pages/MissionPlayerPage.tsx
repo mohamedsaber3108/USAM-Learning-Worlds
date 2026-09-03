@@ -38,7 +38,7 @@ export function MissionPlayerPage() {
     mutationFn: () => missionsApi.complete(runId!),
     onSuccess: (response) => {
       navigate('/missions/complete', {
-        state: { result: response.data },
+        state: { result: response.data, runId },
       })
     },
   })
