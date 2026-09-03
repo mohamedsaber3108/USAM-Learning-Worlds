@@ -33,6 +33,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
 import { MisconceptionModule } from './modules/misconceptions/misconception.module';
 import { ContentQaModule } from './modules/content-qa/content-qa.module';
+import { InterventionModule } from './modules/interventions/intervention.module';
 import { SearchModule } from './modules/search/search.module';
 
 @Module({
@@ -86,6 +87,7 @@ import { SearchModule } from './modules/search/search.module';
     FeatureFlagsModule,
     MisconceptionModule,
     ContentQaModule,
+    InterventionModule,
     SearchModule,
   ],
   controllers: [AppController],

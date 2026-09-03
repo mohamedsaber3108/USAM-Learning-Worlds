@@ -124,11 +124,19 @@ export class ContentQaService {
    * same entityType/entityId/flagType so re-running the scan doesn't
    * spam duplicates.
    */
-  async scanAndPersist(): Promise<ContentQAScanResult> {
+  async scanAndPersist(): Promise<ContentQAScanResult & { flagsAutoResolved: number }> {
     const { activitiesScanned, missionsScanned, candidates } = await this.scan();
 
     let created = 0;
     let alreadyOpen = 0;
+
+    // Build a lookup of every candidate this scan actually found, keyed
+    // the same way as the DB unique-ish tuple, so we can tell which
+    // currently-open flags are now stale (their underlying condition no
+    // longer holds) vs. still genuinely open.
+    const candidateKey = (c: { entityType: string; entityId: string; flagType: string }) =>
+      `${c.entityType}::${c.entityId}::${c.flagType}`;
+    const candidateKeys = new Set(candidates.map(candidateKey));
 
     for (const candidate of candidates) {
       const existingOpen = await this.prisma.contentQAFlag.findFirst({
@@ -157,9 +165,40 @@ export class ContentQaService {
       created++;
     }
 
+    // Auto-resolve: any currently-open flag whose (entityType, entityId,
+    // flagType) tuple was NOT reproduced by this fresh scan means the
+    // underlying issue is fixed (e.g. the AgeVariant coverage gap that
+    // previously required a manual `resolvedAt` UPDATE — see Tick 20's
+    // progress note). Only auto-resolve entities this scan actually
+    // looked at (still-active Activity/Mission rows), so a flag on a row
+    // that was soft-deleted/deactivated isn't silently closed as if fixed.
+    const openFlags = await this.prisma.contentQAFlag.findMany({
+      where: { resolvedAt: null },
+      select: { id: true, entityType: true, entityId: true, flagType: true },
+    });
+    const scannedEntityIds = {
+      ACTIVITY: new Set((await this.prisma.activity.findMany({ where: { isActive: true }, select: { id: true } })).map((a) => a.id)),
+      MISSION: new Set((await this.prisma.mission.findMany({ where: { isActive: true }, select: { id: true } })).map((m) => m.id)),
+    } as Record<string, Set<string>>;
+
+    const staleIds = openFlags
+      .filter((f) => scannedEntityIds[f.entityType]?.has(f.entityId))
+      .filter((f) => !candidateKeys.has(candidateKey(f)))
+      .map((f) => f.id);
+
+    let autoResolved = 0;
+    if (staleIds.length > 0) {
+      const result = await this.prisma.contentQAFlag.updateMany({
+        where: { id: { in: staleIds } },
+        data: { resolvedAt: new Date() },
+      });
+      autoResolved = result.count;
+    }
+
     this.logger.log(
       `Content QA scan: ${activitiesScanned} activities, ${missionsScanned} missions scanned, ` +
-        `${candidates.length} issues found (${created} new flags, ${alreadyOpen} already open).`,
+        `${candidates.length} issues found (${created} new flags, ${alreadyOpen} already open, ` +
+        `${autoResolved} auto-resolved as fixed).`,
     );
 
     return {
@@ -169,6 +208,7 @@ export class ContentQaService {
       flagsFound: candidates.length,
       flagsCreated: created,
       flagsAlreadyOpen: alreadyOpen,
+      flagsAutoResolved: autoResolved,
       candidates,
     };
   }

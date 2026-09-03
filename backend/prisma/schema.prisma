@@ -80,6 +80,7 @@ model Learner {
   researchNotes         ResearchNote[]
   creativitySubmissions CreativitySubmission[]
   cognitiveLoadSignals  CognitiveLoadSignal[]
+  interventions         InterventionRecommendation[]
 
   @@index([userId])
   @@index([displayName])
@@ -212,6 +213,7 @@ model Competency {
   prerequisites  CompetencyPrerequisite[] @relation("competency")
   dependents     CompetencyPrerequisite[] @relation("prerequisite")
   projects       Project[]
+  interventions  InterventionRecommendation[]
 
   @@index([skillId])
   @@map("competencies")
@@ -1969,6 +1971,45 @@ model ContentQAFlag {
 
 // ==================== Misconception Engine v1 ====================
 // Tracks recurring WRONG-answer patterns per QuestionTemplate/Activity.
+enum InterventionStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum InterventionTrigger {
+  CONSECUTIVE_WRONG_SAME_COMPETENCY
+  LOW_MASTERY_REPEATED_ATTEMPTS
+}
+
+// Intervention Engine — reactive "learner is stuck" detection, distinct
+// from the proactive ZPD difficulty-tiering and spaced-repetition
+// review-scheduling engines (both real, already credited elsewhere).
+// Fires when a real struggle PATTERN is detected across attempts (not a
+// single wrong answer), and records a concrete recommended next action
+// so a parent/staff member (or a future auto-remediation flow) has
+// something actionable to act on, not just a raw signal.
+model InterventionRecommendation {
+  id                String              @id @default(uuid())
+  learnerId         String
+  competencyId      String
+  triggerType       InterventionTrigger
+  triggerDetail     String
+  recommendedAction String
+  status            InterventionStatus  @default(OPEN)
+  createdAt         DateTime            @default(now())
+  acknowledgedAt    DateTime?
+  resolvedAt        DateTime?
+
+  learner    Learner    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([competencyId])
+  @@index([status])
+  @@map("intervention_recommendations")
+}
+
 model MisconceptionPattern {
   id                 String            @id @default(uuid())
   questionTemplateId String?

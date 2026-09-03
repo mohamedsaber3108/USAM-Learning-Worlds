@@ -4,6 +4,7 @@ import { MasteryService } from '../mastery/mastery.service';
 import { ActivityEvaluator } from './evaluators/activity-evaluator';
 import { CognitiveLoadService } from '../adaptive/cognitive-load.service';
 import { MisconceptionService } from '../misconceptions/misconception.service';
+import { InterventionService } from '../interventions/intervention.service';
 
 @Injectable()
 export class MissionsService {
@@ -13,6 +14,7 @@ export class MissionsService {
     private activityEvaluator: ActivityEvaluator,
     private cognitiveLoadService: CognitiveLoadService,
     private misconceptionService: MisconceptionService,
+    private interventionService: InterventionService,
   ) {}
 
   /**
@@ -275,6 +277,14 @@ export class MissionsService {
           assessmentPurpose: activity.assessmentPurpose,
         },
         attempt.id,
+      );
+
+      // Intervention Engine: best-effort reactive struggle-pattern check,
+      // never blocks submission. Runs AFTER evidence is recorded so the
+      // low-mastery trigger sees the just-updated MasteryRecord.
+      void this.interventionService.evaluateAfterAttempt(
+        learnerId,
+        activity.objective.competencyId,
       );
     }
 

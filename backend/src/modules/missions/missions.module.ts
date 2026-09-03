@@ -7,9 +7,10 @@ import { MasteryModule } from '../mastery/mastery.module';
 import { AuthModule } from '../auth/auth.module';
 import { AdaptiveModule } from '../adaptive/adaptive.module';
 import { MisconceptionModule } from '../misconceptions/misconception.module';
+import { InterventionModule } from '../interventions/intervention.module';
 
 @Module({
-  imports: [MasteryModule, AuthModule, AdaptiveModule, MisconceptionModule],
+  imports: [MasteryModule, AuthModule, AdaptiveModule, MisconceptionModule, InterventionModule],
   controllers: [MissionsController, AdminMissionsController],
   providers: [MissionsService, ActivityEvaluator],
   exports: [MissionsService],
