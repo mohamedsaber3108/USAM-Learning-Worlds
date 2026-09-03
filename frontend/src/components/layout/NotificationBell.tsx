@@ -12,7 +12,10 @@ import { notificationsApi } from '@/lib/api/endpoints'
  *
  * Polls unread-count every 30s (cheap: single COUNT query), opens a
  * dropdown with the real notification list on click, marks-all-read on
- * open (matches the common inbox-bell UX pattern).
+ * open (matches the common inbox-bell UX pattern). Individual unread
+ * items are also click-to-mark-read for finer-grained control, with an
+ * unread highlight so a batch open doesn't instantly hide which items
+ * were new.
  */
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
@@ -32,6 +35,13 @@ export function NotificationBell() {
 
   const markAllRead = useMutation({
     mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    },
+  })
+
+  const markRead = useMutation({
+    mutationFn: (id: string) => notificationsApi.markRead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
@@ -71,7 +81,13 @@ export function NotificationBell() {
               <div className="px-4 py-6 text-center text-sm text-slate-400">No notifications yet</div>
             )}
             {notifications?.map((n) => (
-              <div key={n.id} className="px-4 py-3 border-b border-surface-50 last:border-0">
+              <div
+                key={n.id}
+                onClick={() => !n.isRead && markRead.mutate(n.id)}
+                className={`px-4 py-3 border-b border-surface-50 last:border-0 cursor-pointer transition-colors ${
+                  n.isRead ? '' : 'bg-primary-50/60 hover:bg-primary-50'
+                }`}
+              >
                 <div className="text-sm font-semibold text-slate-700">{n.title}</div>
                 <div className="text-xs text-slate-500 mt-0.5">{n.body}</div>
                 <div className="text-[10px] text-slate-400 mt-1">
