@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, FolderKanban, Plus, Star, Sparkles, X, Globe2, ExternalLink } from 'lucide-react'
+import { ArrowLeft, FolderKanban, Plus, Star, X, Globe2, ExternalLink } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
+import { EmptyState, LoadingState } from '@/components/common/CharacterState'
 
 function NewProjectModal({
   onClose,
@@ -160,10 +161,7 @@ export function ProjectsPage() {
           </div>
         )}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-slate-600">Loading projects...</p>
-          </div>
+          <LoadingState character="Codey" message="Codey is gathering your projects..." />
         ) : projects && projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((project: any) => (
@@ -189,16 +187,13 @@ export function ProjectsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="icon-chip bg-primary-50 text-primary-600 w-16 h-16 mx-auto mb-4">
-              <Sparkles className="w-8 h-8" strokeWidth={2} />
-            </div>
-            <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">No Projects Yet</h2>
-            <p className="text-slate-600 mb-6">Start creating your portfolio!</p>
-            <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-              Create Your First Project
-            </button>
-          </div>
+          <EmptyState
+            character="Codey"
+            title="No Projects Yet"
+            message="Every great builder starts with an empty canvas. Create your first project and start your portfolio!"
+            actionLabel="Create Your First Project"
+            onAction={() => setShowModal(true)}
+          />
         )}
       </main>
 

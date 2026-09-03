@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { BookOpen } from 'lucide-react'
 import { storiesApi } from '@/lib/api/endpoints'
+import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
 
 // Story Engine list page (gap matrix cluster-8) — small, real branching
 // story library, not a full authoring platform. Each card links into
@@ -13,7 +14,7 @@ const AGE_LABEL: Record<string, string> = {
 }
 
 export function StoriesListPage() {
-  const { data: stories, isLoading, isError } = useQuery({
+  const { data: stories, isLoading, isError, refetch } = useQuery({
     queryKey: ['stories'],
     queryFn: () => storiesApi.listStories().then((res) => res.data),
   })
@@ -34,18 +35,29 @@ export function StoriesListPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-          </div>
+          <LoadingState character="Zara" message="Zara is pulling stories from the shelf..." />
         )}
 
         {isError && (
-          <div className="card text-center py-8">
-            <p className="text-gray-700">Could not load stories right now.</p>
-          </div>
+          <ErrorState
+            character="Zara"
+            title="Couldn't load the stories"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetch()}
+          />
         )}
 
-        {!isLoading && !isError && (
+        {!isLoading && !isError && (stories || []).length === 0 && (
+          <EmptyState
+            character="Zara"
+            title="No stories here yet"
+            message="Zara is still writing your first choose-your-path adventure. Check back soon, or explore a mission while you wait!"
+            actionLabel="Explore Missions"
+            actionTo="/missions"
+          />
+        )}
+
+        {!isLoading && !isError && (stories || []).length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(stories || []).map((story) => (
               <Link
@@ -67,12 +79,6 @@ export function StoriesListPage() {
                 </p>
               </Link>
             ))}
-
-            {(stories || []).length === 0 && (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-600 text-lg">No stories available yet</p>
-              </div>
-            )}
           </div>
         )}
       </main>

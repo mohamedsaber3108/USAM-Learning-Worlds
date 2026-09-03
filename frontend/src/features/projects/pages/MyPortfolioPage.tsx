@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, FolderKanban, Star, Sparkles } from 'lucide-react'
+import { ArrowLeft, FolderKanban, Star } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
+import { EmptyState, LoadingState } from '@/components/common/CharacterState'
 
 /**
  * My Portfolio — a learner's own collected showcased work in one place.
@@ -44,10 +45,7 @@ export function MyPortfolioPage() {
         </p>
 
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-slate-600">Loading your portfolio...</p>
-          </div>
+          <LoadingState character="Mira" message="Mira is gathering your best work..." />
         ) : showcased.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {showcased.map((project: any) => (
@@ -67,16 +65,13 @@ export function MyPortfolioPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="icon-chip bg-primary-50 text-primary-600 w-16 h-16 mx-auto mb-4">
-              <Sparkles className="w-8 h-8" strokeWidth={2} />
-            </div>
-            <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">Nothing Showcased Yet</h2>
-            <p className="text-slate-600 mb-6">Finish a project and showcase it to see it here!</p>
-            <Link to="/projects" className="btn btn-primary">
-              Go to My Projects
-            </Link>
-          </div>
+          <EmptyState
+            character="Mira"
+            title="Nothing Showcased Yet"
+            message="Finish a project and showcase it to see your best work shine here!"
+            actionLabel="Go to My Projects"
+            actionTo="/projects"
+          />
         )}
       </main>
     </div>
