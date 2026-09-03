@@ -10,13 +10,17 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 registrations / 15 min / IP
+  @Throttle({ default: { limit: 20, ttl: 900000 } }) // 20 registrations / 15 min / IP — raised from 5:
+  // this is a family platform where multiple kids/guardians on the same
+  // home network share one public IP (NAT), so 5 was too easy for normal
+  // sibling sign-ups to trip. Still blocks real brute-force/spam patterns.
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
   @Post('login')
-  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts / 15 min / IP
+  @Throttle({ default: { limit: 20, ttl: 900000 } }) // 20 attempts / 15 min / IP — same
+  // shared-household-IP reasoning as register above.
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
