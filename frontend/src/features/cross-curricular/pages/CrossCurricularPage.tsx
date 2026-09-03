@@ -38,6 +38,11 @@ const CATEGORY_META: Record<
     icon: '💰',
     gradient: 'from-emerald-500 to-teal-500',
   },
+  'digital-literacy': {
+    title: 'Digital Literacy',
+    icon: '🛡️',
+    gradient: 'from-sky-500 to-cyan-500',
+  },
 }
 
 const AGE_BANDS = [

@@ -182,6 +182,9 @@ export function CurriculumBrowsePage() {
             <Link to="/cross-curricular/financial-literacy" className="btn bg-emerald-600 text-white hover:bg-emerald-700 shadow-none">
               💰 Financial Literacy
             </Link>
+            <Link to="/cross-curricular/digital-literacy" className="btn bg-sky-600 text-white hover:bg-sky-700 shadow-none">
+              🛡️ Digital Literacy
+            </Link>
           </div>
         </div>
       </div>
