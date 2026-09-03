@@ -42,6 +42,13 @@ jobs:
           JWT_REFRESH_SECRET: ci_test_secret_not_real
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_placeholder
 
+      - name: Red-team safety tests
+        run: npm test -- --config test/red-team/jest-red-team.json
+        env:
+          JWT_ACCESS_SECRET: ci_test_secret_not_real
+          JWT_REFRESH_SECRET: ci_test_secret_not_real
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_placeholder
+
   frontend:
     name: Frontend (lint, typecheck, build)
     runs-on: ubuntu-latest
