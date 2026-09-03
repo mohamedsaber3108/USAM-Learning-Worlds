@@ -132,6 +132,13 @@ export const ar: TranslationKeys = {
     tip: 'نصيحة: اختار شخصية الأول من فوق — هنعرّفك عليها أول ما تسجّل.',
   },
   onboarding: {
+    stepLabels: {
+      language: 'اللغة',
+      welcome: 'أهلاً بيك',
+      age: 'عنك',
+      character: 'مرشدينك',
+      complete: 'خلصنا',
+    },
     welcome: {
       title: 'أهلاً بيك في عالم يوسام للتعلّم!',
       subtitle:
