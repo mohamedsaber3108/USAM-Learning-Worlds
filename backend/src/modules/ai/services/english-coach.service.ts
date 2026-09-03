@@ -138,6 +138,33 @@ export class EnglishCoachService {
       temperature: 0.8,
     });
 
+    // v1 low-confidence-answer escalation: if the AI's own generated
+    // response reads as hedged/uncertain ("I'm not sure...", "I think it
+    // might be...") on what looks like a genuine factual/educational
+    // question, don't just hand the shaky answer to the child - swap in
+    // the safe teacher-escalation hedge and persist a real,
+    // actionable SafetyEscalation record so a moderator/teacher can
+    // review what was almost said. See HallucinationControlService for
+    // the heuristic and docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md
+    // ("AI Hallucination Control") for the gap this closes.
+    const lowConfidence = await this.hallucinationControl.flagLowConfidenceIfNeeded({
+      learnerId: request.learnerId,
+      question: request.userMessage,
+      answerText: response.content,
+      source: 'english-coach.conversation',
+    });
+    if (lowConfidence) {
+      return {
+        response: lowConfidence.hedge,
+        cefrLevel,
+        topic: request.topic,
+        suggestedVocabulary: [],
+        groundedIn: groundedInFromContext(context as any),
+        lowConfidenceHedge: true,
+        matchedHedgingPhrases: lowConfidence.matchedPhrases,
+      };
+    }
+
     return {
       response: response.content,
       cefrLevel,
