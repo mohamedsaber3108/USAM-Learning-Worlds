@@ -13,7 +13,7 @@ import {
   AITaskType,
   AIContext,
 } from './interfaces/ai-task.interface';
-import { LearnerContext, CharacterContext } from './interfaces/learner-context.interface';
+import { LearnerContext, CharacterContext, RetrievedContextItem } from './interfaces/learner-context.interface';
 import { CharacterSafetyService } from './services/character-safety.service';
 import { pickFallbackLine } from './services/character-fallback-responses';
 import { PromptTemplateService } from './services/prompt-template.service';
@@ -438,9 +438,11 @@ export class CharacterService {
     }
 
     // Get learner context and character state (character itself was
-    // already fetched above, before the safety check).
+    // already fetched above, before the safety check). Pass the raw
+    // learner input through as the retrieval-grounding query so
+    // buildContext can attach real cited Concept/ContentItem hits.
     const [learnerCtx, characterState] = await Promise.all([
-      this.learnerContext.buildContext(learnerId),
+      this.learnerContext.buildContext(learnerId, undefined, input),
       this.getCharacterState(characterId, learnerId),
     ]);
 
@@ -612,6 +614,11 @@ export class CharacterService {
     if (learnerCtx.currentActivity?.id) ids.add(`activity:${learnerCtx.currentActivity.id}`);
     if (learnerCtx.currentProject?.id) ids.add(`project:${learnerCtx.currentProject.id}`);
 
+    // Retrieval-grounding v1 hits (Concept/ContentItem rows keyword-
+    // matched against the learner's question) are cited too - same
+    // sourceTag format the AI prompt was told to reference.
+    (learnerCtx.retrievedContext ?? []).forEach((item) => ids.add(item.sourceTag));
+
     return Array.from(ids);
   }
 
@@ -662,6 +669,12 @@ export class CharacterService {
 7. Celebrate effort and growth, not just correctness`,
     );
 
+    // Retrieval-grounding v1: real Concept/ContentItem rows keyword-
+    // matched against the learner's question (LearnerContextService.
+    // retrieveGroundingContext, reusing SearchService's tsvector
+    // pattern). Absent when nothing matched or no question was given.
+    const retrievalBlock = this.formatRetrievedContext(learnerContext.retrievedContext);
+
     return `${basePrompt}
 
 ${ageInstruction}
@@ -680,7 +693,31 @@ ${guidelines}
 
 ${this.hallucinationControl.getPromptGuardrail()}
 
+${retrievalBlock}
+
 Respond as ${character.name} in character, keeping responses concise (2-3 sentences for ages 8-9, up to 5 sentences for ages 12-14).`;
+  }
+
+  /**
+   * Format the retrieval-grounding hits into a prompt block that
+   * explicitly instructs the AI to cite the sourceTag when it draws on
+   * an item, and to NOT invent facts beyond what's given. Returns ''
+   * (no block at all) when there's nothing retrieved - never fabricates
+   * a "no sources" filler that could confuse the model.
+   */
+  private formatRetrievedContext(items?: RetrievedContextItem[]): string {
+    if (!items || items.length === 0) {
+      return '';
+    }
+
+    const lines = items
+      .map((item) => `- [${item.sourceTag}] ${item.title}: ${item.snippet}`)
+      .join('\n');
+
+    return `RELEVANT CURRICULUM CONTENT (retrieved by keyword match on the learner's question):
+${lines}
+
+When your answer draws on one of the items above, mention it naturally and cite it by appending its tag in the form (source: <tag>) exactly once, e.g. "(source: ${items[0].sourceTag})". Never cite a tag that isn't listed above, and never invent facts not supported by these snippets or your general knowledge - if you're unsure, say so instead of guessing.`;
   }
 
   /**
