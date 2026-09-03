@@ -43,6 +43,11 @@ const CATEGORY_META: Record<
     icon: '🛡️',
     gradient: 'from-sky-500 to-cyan-500',
   },
+  'career-exploration': {
+    title: 'Career Exploration',
+    icon: '🧭',
+    gradient: 'from-rose-500 to-pink-500',
+  },
 }
 
 const AGE_BANDS = [

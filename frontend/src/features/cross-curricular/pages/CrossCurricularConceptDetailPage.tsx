@@ -7,6 +7,7 @@ const CATEGORY_META: Record<CrossCurricularCategory, { title: string; icon: stri
   entrepreneurship: { title: 'Entrepreneurship', icon: '💡', gradient: 'from-amber-500 to-orange-500' },
   'financial-literacy': { title: 'Financial Literacy', icon: '💰', gradient: 'from-emerald-500 to-teal-500' },
   'digital-literacy': { title: 'Digital Literacy', icon: '🛡️', gradient: 'from-sky-500 to-cyan-500' },
+  'career-exploration': { title: 'Career Exploration', icon: '🧭', gradient: 'from-rose-500 to-pink-500' },
 }
 
 const AGE_BAND_COLORS: Record<string, string> = {

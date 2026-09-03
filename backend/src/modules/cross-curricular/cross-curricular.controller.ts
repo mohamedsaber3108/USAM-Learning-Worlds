@@ -7,6 +7,10 @@
  *   - AILiteracyConcept        (18 rows, table ai_literacy_concepts)
  *   - EntrepreneurshipConcept  (15 rows, table entrepreneurship_concepts)
  *   - FinancialLiteracyConcept (19 rows, table financial_literacy_concepts)
+ *   - DigitalLiteracyConcept   (28 rows, table digital_literacy_concepts)
+ *   - CareerExplorationConcept (13 rows, table career_exploration_concepts —
+ *     built from scratch this pass, was a zero-trace "Missing" engine per
+ *     USAM_KIDS_ENGINE_GAP_MATRIX.md Part 7b)
  *
  * Follows the same convention as EnglishController
  * (backend/src/modules/learning/english.controller.ts): thin, read-only,
@@ -29,7 +33,8 @@ type CrossCurricularCategory =
   | 'ai-literacy'
   | 'entrepreneurship'
   | 'financial-literacy'
-  | 'digital-literacy';
+  | 'digital-literacy'
+  | 'career-exploration';
 
 @Controller('cross-curricular')
 @UseGuards(JwtAuthGuard)
@@ -104,6 +109,27 @@ export class CrossCurricularController {
   }
 
   /**
+   * List Career Exploration concepts, optionally filtered by age band.
+   * Real data from `career_exploration_concepts`
+   * (backend/prisma/seeds/seed-career-exploration.ts, 13 seeded rows
+   * covering roles like scientist, engineer, artist, entrepreneur, doctor,
+   * teacher, etc. — what they do plus what school subjects help you get
+   * there). Was a zero-trace "Missing" engine per
+   * USAM_KIDS_ENGINE_GAP_MATRIX.md Part 7b before this pass.
+   */
+  @Get('career-exploration')
+  async listCareerExploration(@Query('ageBand') ageBand?: AgeBand) {
+    const where = ageBand
+      ? { ageAppropriate: ageBand, isActive: true }
+      : { isActive: true };
+
+    return this.prisma.careerExplorationConcept.findMany({
+      where,
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  /**
    * Single concept detail by category + slug, e.g.
    * GET /cross-curricular/ai-literacy/what-is-artificial-intelligence
    */
@@ -132,6 +158,11 @@ export class CrossCurricularController {
         break;
       case 'digital-literacy':
         concept = await this.prisma.digitalLiteracyConcept.findUnique({
+          where: { slug },
+        });
+        break;
+      case 'career-exploration':
+        concept = await this.prisma.careerExplorationConcept.findUnique({
           where: { slug },
         });
         break;

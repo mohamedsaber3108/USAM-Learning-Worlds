@@ -72,6 +72,7 @@ model Learner {
   pathProgress          LearningPathProgress[]
   learningEvents        LearningEvent[]
   cosmeticUnlocks       LearnerCosmeticUnlock[]
+  missionReflections    MissionReflection[]
 
   @@index([userId])
   @@index([displayName])
@@ -380,6 +381,7 @@ model MissionRun {
   learner  Learner           @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   mission  Mission           @relation(fields: [missionId], references: [id], onDelete: Cascade)
   attempts ActivityAttempt[]
+  reflections MissionReflection[]
 
   @@index([learnerId])
   @@index([missionId])
@@ -417,21 +419,26 @@ model ActivityAttempt {
 // ============================================
 
 model Project {
-  id          String         @id @default(uuid())
-  learnerId   String
-  title       String
-  description String?
-  state       ProjectState   @default(DRAFT)
-  visibility  ProjectVisibility @default(PRIVATE)
-  skills      String[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id           String         @id @default(uuid())
+  learnerId    String
+  title        String
+  description  String?
+  state        ProjectState   @default(DRAFT)
+  visibility   ProjectVisibility @default(PRIVATE)
+  skills       String[]
+  competencyId String?
+  objectiveId  String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   learner    Learner            @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  competency Competency?        @relation(fields: [competencyId], references: [id], onDelete: SetNull)
+  objective  LearningObjective? @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
   milestones ProjectMilestone[]
 
   @@index([learnerId])
   @@index([state])
+  @@index([competencyId])
   @@map("projects")
 }
 
@@ -736,6 +743,8 @@ enum ConversationType {
   PROJECT_GUIDANCE
   CASUAL
   ROLEPLAY
+  DEBATE
+  INTERVIEW
 }
 
 enum ConversationStatus {
@@ -1098,17 +1107,31 @@ model RubricCriterion {
 // PHASE 4: DOMAIN-SPECIFIC STRUCTURES (5 tables)
 // ============================================
 
+enum EnglishStrandFamily {
+  VOCABULARY
+  GRAMMAR
+  PRONUNCIATION
+  LISTENING
+  READING
+  WRITING
+  SPEAKING
+  SHADOWING
+  DICTATION
+}
+
 model EnglishStrand {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  slug        String   @unique
+  id          String              @id @default(uuid())
+  name        String              @unique
+  slug        String              @unique
   description String?
   cefrLevel   String?
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  strandType  EnglishStrandFamily?
+  order       Int                 @default(0)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
 
   @@index([slug])
+  @@index([strandType])
   @@map("english_strands")
 }
 
@@ -1190,6 +1213,69 @@ model DigitalLiteracyConcept {
   @@index([slug])
   @@index([category])
   @@map("digital_literacy_concepts")
+}
+
+// ==================== Career Exploration Engine ====================
+// Zero-trace engine per USAM_KIDS_ENGINE_GAP_MATRIX.md Part 7b — built from
+// scratch. Mirrors AILiteracyConcept/DigitalLiteracyConcept exactly: a flat,
+// age-banded concept table with no relations, served read-only.
+model CareerExplorationConcept {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?
+  category        String
+  ageAppropriate  AgeBand
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("career_exploration_concepts")
+}
+
+// ==================== Metacognition Engine ====================
+// Zero-trace engine per USAM_KIDS_ENGINE_GAP_MATRIX.md Part 7b — built from
+// scratch. A minimal real reflection system: a small bank of quick-reflection
+// prompts ("How did that feel?" / "What was tricky?") shown after mission
+// completion, plus a per-learner response log storing self-ratings.
+enum ReflectionPromptKind {
+  FEELING
+  DIFFICULTY
+  STRATEGY
+}
+
+model ReflectionPrompt {
+  id        String                @id @default(uuid())
+  text      String
+  kind      ReflectionPromptKind
+  isActive  Boolean               @default(true)
+  order     Int                   @default(0)
+  createdAt DateTime              @default(now())
+
+  responses MissionReflection[]
+
+  @@index([kind])
+  @@map("reflection_prompts")
+}
+
+model MissionReflection {
+  id           String   @id @default(uuid())
+  learnerId    String
+  missionRunId String
+  promptId     String
+  rating       Int
+  note         String?
+  createdAt    DateTime @default(now())
+
+  learner   Learner          @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  missionRun MissionRun      @relation(fields: [missionRunId], references: [id], onDelete: Cascade)
+  prompt    ReflectionPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([missionRunId])
+  @@map("mission_reflections")
 }
 
 // ==================== Cosmetic Shop (XP-spending economy) ====================
