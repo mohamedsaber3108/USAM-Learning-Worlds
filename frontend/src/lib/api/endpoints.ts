@@ -877,6 +877,38 @@ export const experimentsApi = {
     apiClient.patch<ExperimentRecord>(`/experiments/${key}/status`, { status }),
 }
 
+// ==================== Safety Policy Engine (read-only history viewer) ====================
+// Backend: AdminSafetyPolicyController (backend/src/modules/ai/admin-safety-policy.controller.ts)
+// over SafetyPolicyService, a versioned/auditable per-ageBand table that
+// moderation.service.ts / character-safety.service.ts fall back from if a
+// row is missing (never hard-fails safety-critical paths). ADMIN-only,
+// read-only — no create/edit endpoint exists server-side (policy authoring
+// is via seed scripts today). Had zero frontend consumer despite being a
+// real audit-trail surface — same bug class as Audit Log/Experimentation.
+export type AgeBandKey = 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
+
+export interface SafetyPolicyRecord {
+  id: string
+  ageBand: AgeBandKey
+  policyVersion: number
+  isActive: boolean
+  rules: Record<string, unknown>
+  createdAt: string
+}
+
+export const safetyPolicyApi = {
+  list: (ageBand?: AgeBandKey) =>
+    apiClient.get<SafetyPolicyRecord[]>('/admin/safety-policies', {
+      params: ageBand ? { ageBand } : undefined,
+    }),
+
+  getActive: (ageBand: AgeBandKey) =>
+    apiClient.get<SafetyPolicyRecord | null>(`/admin/safety-policies/${ageBand}/active`),
+
+  getVersion: (ageBand: AgeBandKey, version: number) =>
+    apiClient.get<SafetyPolicyRecord>(`/admin/safety-policies/${ageBand}/versions/${version}`),
+}
+
 // ==================== Translations (localization QA) ====================
 // Backend: TranslationController (backend/src/modules/learning/translation.controller.ts),
 // real seeded rows across CHARACTER/DOMAIN/ACTIVITY/DIGITAL_LITERACY_CONCEPT/
