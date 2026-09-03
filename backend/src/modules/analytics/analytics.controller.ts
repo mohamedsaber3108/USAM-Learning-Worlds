@@ -38,4 +38,19 @@ export class AnalyticsController {
   async getDailyActivity(@Query('days', new DefaultValuePipe(30), ParseIntPipe) days: number) {
     return this.analytics.getDailyActivity(this.clampDays(days));
   }
+
+  @Get('retention-cohorts')
+  async getRetentionCohorts(
+    @Query('cohortWeeks', new DefaultValuePipe(8), ParseIntPipe) cohortWeeks: number,
+    @Query('weeksTracked', new DefaultValuePipe(6), ParseIntPipe) weeksTracked: number,
+  ) {
+    const cw = Math.min(Math.max(cohortWeeks, 1), 26);
+    const wt = Math.min(Math.max(weeksTracked, 1), 12);
+    return this.analytics.getRetentionCohorts(cw, wt);
+  }
+
+  @Get('stickiness')
+  async getStickiness(@Query('days', new DefaultValuePipe(30), ParseIntPipe) days: number) {
+    return this.analytics.getStickiness(this.clampDays(days));
+  }
 }
