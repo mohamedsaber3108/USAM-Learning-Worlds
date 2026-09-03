@@ -37,6 +37,18 @@ export interface CharacterResponse {
    * Absent/false on normal AI-generated responses.
    */
   isFallback?: boolean;
+  /**
+   * Retrieval/citation grounding: real IDs of the Mission/Activity/Project
+   * records that were actually folded into this response's prompt context
+   * (via LearnerContextService + the caller-supplied missionId/activityId/
+   * projectId). Empty/absent when the response was pure free chat with no
+   * mission/activity content referenced. This does NOT claim a full RAG
+   * pipeline exists (see AI Hallucination Control row in the gap matrix -
+   * that remains a real, separate, larger gap) - it's a lightweight,
+   * honest citation of which real content rows informed the reply, so a
+   * response can be traced back to the actual curriculum data it drew on.
+   */
+  groundedIn?: string[];
 }
 
 @Injectable()
@@ -318,6 +330,7 @@ export class CharacterService {
       activityId?: string;
       projectId?: string;
       situation?: string;
+      conversationType?: string;
     },
   ): Promise<CharacterResponse> {
     // Fetch the character early (cheap lookup) so we have its name/identity
@@ -387,6 +400,7 @@ export class CharacterService {
       character,
       learnerCtx,
       characterState,
+      context?.conversationType,
     );
 
     const task = {
@@ -478,6 +492,14 @@ export class CharacterService {
       context,
     );
 
+    // Citation/grounding: collect the real Mission/Activity/Project IDs
+    // that actually fed this response's prompt - both the caller-supplied
+    // context (missionId/activityId/projectId, per conversation.service.ts's
+    // contextSnapshot) and whatever LearnerContextService independently
+    // resolved as the learner's current mission/activity/project. Deduped,
+    // no fabricated IDs - absent entirely when nothing real was referenced.
+    const groundedIn = this.collectGroundedIn(context, learnerCtx);
+
     return {
       message: finalMessage,
       mood: this.determineMood(learnerCtx),
@@ -486,7 +508,32 @@ export class CharacterService {
         responseSafety.state !== 'safe'
           ? { safetyState: responseSafety.state, safetyReasons: responseSafety.reasons }
           : undefined,
+      groundedIn: groundedIn.length > 0 ? groundedIn : undefined,
     };
+  }
+
+  /**
+   * Build the groundedIn citation list from whichever real mission/
+   * activity/project IDs actually informed this response - the explicit
+   * caller-supplied context plus LearnerContextService's independently
+   * resolved current mission/activity/project. Deduplicated; returns []
+   * (not fabricated IDs) when nothing content-specific was referenced.
+   */
+  private collectGroundedIn(
+    context: { missionId?: string; activityId?: string; projectId?: string } | undefined,
+    learnerCtx: LearnerContext,
+  ): string[] {
+    const ids = new Set<string>();
+
+    if (context?.missionId) ids.add(`mission:${context.missionId}`);
+    if (context?.activityId) ids.add(`activity:${context.activityId}`);
+    if (context?.projectId) ids.add(`project:${context.projectId}`);
+
+    if (learnerCtx.currentMission?.id) ids.add(`mission:${learnerCtx.currentMission.id}`);
+    if (learnerCtx.currentActivity?.id) ids.add(`activity:${learnerCtx.currentActivity.id}`);
+    if (learnerCtx.currentProject?.id) ids.add(`project:${learnerCtx.currentProject.id}`);
+
+    return Array.from(ids);
   }
 
   /**
@@ -496,6 +543,7 @@ export class CharacterService {
     character: any,
     learnerContext: LearnerContext,
     characterState: CharacterContext,
+    conversationType?: string,
   ): string {
     const personality = character.personality;
     const basePrompt = character.systemPrompt;
@@ -511,6 +559,14 @@ export class CharacterService {
     // Build relationship context
     const relationshipContext = this.formatRelationshipContext(characterState);
 
+    // Build conversation-mode instruction - real, distinct behavior per
+    // ConversationType, not just a passed-through enum value with no
+    // effect on the prompt. Closes the Conversation Engine gap flagged in
+    // docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md ("no dedicated
+    // enum value or distinct handling" for DEBATE/INTERVIEW, and ROLEPLAY
+    // previously had a value with no behavior difference either).
+    const modeInstruction = this.getConversationModeInstruction(conversationType);
+
     return `${basePrompt}
 
 ${ageInstruction}
@@ -523,6 +579,8 @@ ${relationshipContext}
 PERSONALITY TRAITS:
 ${JSON.stringify(personality, null, 2)}
 
+${modeInstruction}
+
 IMPORTANT GUIDELINES:
 1. Never claim to be a real friend or express need for the learner
 2. Focus on learning goals, not social dependency
@@ -533,6 +591,44 @@ IMPORTANT GUIDELINES:
 7. Celebrate effort and growth, not just correctness
 
 Respond as ${character.name} in character, keeping responses concise (2-3 sentences for ages 8-9, up to 5 sentences for ages 12-14).`;
+  }
+
+  /**
+   * Build a real, distinct system-prompt instruction block per
+   * ConversationType. Absent/CASUAL/LEARNING_SUPPORT etc. get no extra
+   * block (same as before this change). ROLEPLAY, DEBATE, and INTERVIEW
+   * each get genuinely different guidance - not the same enum value with
+   * no behavior difference.
+   */
+  private getConversationModeInstruction(conversationType?: string): string {
+    switch (conversationType) {
+      case 'ROLEPLAY':
+        return `CONVERSATION MODE: ROLEPLAY
+- Stay fully in-character for an imaginative scenario tied to the learner's mission/topic
+- Describe settings and other characters briefly, then let the learner act/respond
+- Keep the scenario safe, age-appropriate, and educational - not just entertainment
+- Gently steer back on-topic if the roleplay drifts from the learning goal`;
+
+      case 'DEBATE':
+        return `CONVERSATION MODE: DEBATE
+- Pick a clear, age-appropriate side of a topic tied to the learner's mission/subject and argue it respectfully
+- Make one point at a time, then invite the learner to respond or counter it
+- Model good debate structure: claim, reason, evidence/example
+- Never be dismissive - validate good points even while disagreeing
+- Periodically offer to "swap sides" so the learner practices both perspectives
+- This is a structured critical-thinking exercise, not a real disagreement`;
+
+      case 'INTERVIEW':
+        return `CONVERSATION MODE: INTERVIEW
+- YOU ask the questions - the learner answers, reversing the usual chat direction
+- Ask one open-ended question at a time about their mission/project/topic
+- Follow up on their answer with a natural next question, like a curious interviewer
+- Keep questions age-appropriate and encouraging, never interrogative or stressful
+- Occasionally reflect back what they said to show you're listening`;
+
+      default:
+        return '';
+    }
   }
 
   /**

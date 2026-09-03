@@ -34,6 +34,24 @@ export interface PronunciationFeedbackRequest {
   transcript?: string;
 }
 
+/**
+ * Content-citation grounding: real Mission/Activity IDs from the
+ * learner's current context (LearnerContextService) that informed a
+ * coaching response - closes the "no retrieval/citation grounding" gap
+ * flagged for the AI Tutor/Companion Engine in
+ * docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md. Not fabricated -
+ * omitted entirely when the learner has no active mission/activity.
+ */
+function groundedInFromContext(context: {
+  currentMission?: { id: string };
+  currentActivity?: { id: string };
+}): string[] {
+  const ids: string[] = [];
+  if (context?.currentMission?.id) ids.push(`mission:${context.currentMission.id}`);
+  if (context?.currentActivity?.id) ids.push(`activity:${context.currentActivity.id}`);
+  return ids;
+}
+
 @Injectable()
 export class EnglishCoachService {
   constructor(
@@ -74,6 +92,7 @@ export class EnglishCoachService {
       cefrLevel,
       topic: request.topic,
       suggestedVocabulary: this.extractVocabulary(response.content),
+      groundedIn: groundedInFromContext(context as any),
     };
   }
 
@@ -122,6 +141,7 @@ Be encouraging and focus on progress, not just errors.`;
       // top of the LLM's holistic feedback above (not a replacement).
       grammarIssues: grammarCheckResult.issues,
       grammarIssueCount: grammarCheckResult.issues.length,
+      groundedIn: groundedInFromContext(context as any),
     };
   }
 

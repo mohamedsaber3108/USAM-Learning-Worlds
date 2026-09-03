@@ -25,6 +25,24 @@ export interface CodeReviewRequest {
   objectiveId?: string;
 }
 
+/**
+ * Content-citation grounding: real Mission/Activity IDs from the
+ * learner's current context (LearnerContextService) that informed a
+ * coaching response - closes the "no retrieval/citation grounding" gap
+ * flagged for the AI Tutor/Companion Engine in
+ * docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md. Not fabricated -
+ * omitted entirely when the learner has no active mission/activity.
+ */
+function groundedInFromContext(context: {
+  currentMission?: { id: string };
+  currentActivity?: { id: string };
+}): string[] {
+  const ids: string[] = [];
+  if (context?.currentMission?.id) ids.push(`mission:${context.currentMission.id}`);
+  if (context?.currentActivity?.id) ids.push(`activity:${context.currentActivity.id}`);
+  return ids;
+}
+
 export interface CodeExplanationRequest {
   learnerId: string;
   code: string;
@@ -64,6 +82,7 @@ export class CodingCoachService {
       suggestedFix: this.extractSuggestedFix(response.content),
       explanation: this.extractExplanation(response.content),
       learningPoints: this.extractLearningPoints(response.content),
+      groundedIn: groundedInFromContext(context as any),
     };
   }
 
@@ -105,6 +124,7 @@ Be encouraging! Focus on growth, not perfection.`;
       improvements: this.extractImprovements(response.content),
       nextConcept: this.extractNextConcept(response.content),
       codeQualityScore: this.assessCodeQuality(request.code, request.language),
+      groundedIn: groundedInFromContext(context as any),
     };
   }
 
@@ -144,6 +164,7 @@ Use analogies and real-world examples!`;
       explanation: response.content,
       keyConceptsintroduced: this.extractKeyConcepts(response.content),
       analogies: this.extractAnalogies(response.content),
+      groundedIn: groundedInFromContext(context as any),
     };
   }
 
