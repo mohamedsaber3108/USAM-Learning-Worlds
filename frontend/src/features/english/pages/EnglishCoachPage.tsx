@@ -92,7 +92,7 @@ export function EnglishCoachPage() {
       <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Link to="/english" className="text-white/90 hover:text-white transition-colors">
                 ← Strands
               </Link>

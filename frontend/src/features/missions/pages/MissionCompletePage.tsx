@@ -15,7 +15,7 @@ export function MissionCompletePage() {
         <div className="text-center">
           <p className="text-slate-500">No results found</p>
           <Link to="/missions" className="text-primary-600 mt-4 inline-block flex items-center gap-1 justify-center">
-            <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+            <ArrowLeft className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
             Back to Missions
           </Link>
         </div>

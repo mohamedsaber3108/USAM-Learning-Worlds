@@ -69,7 +69,7 @@ export function ProgressPage() {
       {/* Header — one solid brand color, no rainbow gradient */}
       <header className="bg-primary-600 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
               <ArrowLeft className="w-4 h-4" strokeWidth={2} />
               Back
@@ -303,7 +303,7 @@ export function ProgressPage() {
                 {unlockedAchievements.slice(0, 5).map((achievement: any) => (
                   <div
                     key={achievement.id}
-                    className="flex items-center space-x-3 p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
                   >
                     <div className="icon-chip bg-secondary-50 text-secondary-600">
                       <Trophy className="w-5 h-5" strokeWidth={2} />

@@ -45,7 +45,7 @@ export function LeaderboardPage() {
       <header className="bg-primary-600 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
                 <ArrowLeft className="w-4 h-4" strokeWidth={2} />
                 Back
@@ -91,7 +91,7 @@ export function LeaderboardPage() {
             className="stat-card mb-8"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-4">
                 <div className={`icon-chip ${getRankTint(myRank.rank)}`}>
                   {getRankIcon(myRank.rank) ? (
                     (() => {
@@ -163,7 +163,7 @@ export function LeaderboardPage() {
                         : 'bg-surface-50 hover:bg-surface-100'
                     }`}
                   >
-                    <div className="flex items-center space-x-4 flex-1">
+                    <div className="flex items-center gap-4 flex-1">
                       {/* Rank */}
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getRankTint(rank)}`}>
                         {RankIcon ? (

@@ -98,7 +98,7 @@ export function MissionDetailPage() {
       <header className="bg-white shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link to="/missions" className="text-slate-600 hover:text-slate-900 flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+            <ArrowLeft className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
             Back to Missions
           </Link>
         </div>
@@ -185,7 +185,7 @@ export function MissionDetailPage() {
                 return (
                   <div
                     key={activity.id}
-                    className="flex items-center space-x-4 p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
+                    className="flex items-center gap-4 p-3 rounded-control bg-surface-50 hover:bg-surface-100 transition-colors"
                   >
                     <div className="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center font-semibold text-primary-600">
                       {index + 1}
