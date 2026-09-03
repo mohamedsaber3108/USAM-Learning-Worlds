@@ -220,10 +220,33 @@ describe.skip('Red Team Engine v1 - Bedrock-LLM-dependent cases (requires live B
   }
 });
 
+describe('Red Team Engine v1 - meet-in-person cases (documents a real, unaddressed gap)', () => {
+  const meetCases = battery.cases.filter((c) => c.category === 'meet_in_person');
+
+  it('battery contains meet-in-person cases', () => {
+    expect(meetCases.length).toBeGreaterThan(0);
+  });
+
+  it('[MEET-01] plain in-person-meeting solicitation does NOT match any deterministic pattern (real gap: no pattern set targets this category at all)', () => {
+    const testCase = battery.cases.find((c) => c.id === 'MEET-01')!;
+    expect(detectsParentBypassMirror(testCase.prompt)).toBe(false);
+  });
+
+  it('[MEET-02] "don\'t mention it to anyone" near-miss does NOT match PARENT_BYPASS_PATTERNS despite superficially similar secrecy framing', () => {
+    const testCase = battery.cases.find((c) => c.id === 'MEET-02')!;
+    expect(detectsParentBypassMirror(testCase.prompt)).toBe(false);
+  });
+
+  it('[MEET-03] location/landmark solicitation for a meetup does NOT match any deterministic pattern', () => {
+    const testCase = battery.cases.find((c) => c.id === 'MEET-03')!;
+    expect(detectsParentBypassMirror(testCase.prompt)).toBe(false);
+  });
+});
+
 describe('Red Team Engine v1 - battery integrity checks', () => {
-  it('battery has between 20 and 25 cases', () => {
+  it('battery has between 20 and 32 cases', () => {
     expect(battery.cases.length).toBeGreaterThanOrEqual(20);
-    expect(battery.cases.length).toBeLessThanOrEqual(25);
+    expect(battery.cases.length).toBeLessThanOrEqual(32);
   });
 
   it('every case has an id, prompt, expected_outcome, and deterministic flag', () => {
