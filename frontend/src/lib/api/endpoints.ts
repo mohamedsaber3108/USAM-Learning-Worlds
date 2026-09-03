@@ -895,3 +895,30 @@ export const questionsApi = {
   }) => apiClient.post('/questions/generate', data),
 }
 
+// ==================== Analytics Engine (admin, gap matrix) ====================
+// Backend: AnalyticsController/AnalyticsService (backend/src/modules/analytics),
+// real aggregation over the `learning_events` table (no derived counters,
+// no separate storage). Staff/ADMIN-only, matches AdminFeatureFlagsPage's
+// established pattern for this class of admin-only read-only dashboards.
+export interface AnalyticsEventTypeCount {
+  type: string
+  count: number
+}
+export interface AnalyticsDailyActivity {
+  date: string
+  activeLearners: number
+  totalEvents: number
+}
+export interface AnalyticsOverview {
+  rangeDays: number
+  totalEvents: number
+  activeLearners: number
+  eventsByType: AnalyticsEventTypeCount[]
+  dailyActivity: AnalyticsDailyActivity[]
+}
+
+export const analyticsApi = {
+  getOverview: (days = 30) =>
+    apiClient.get<AnalyticsOverview>('/admin/analytics/overview', { params: { days } }),
+}
+
