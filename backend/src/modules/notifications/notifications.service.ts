@@ -127,6 +127,78 @@ export class NotificationsService {
   }
 
   /**
+   * Real trigger: mission-count milestone. Called from
+   * MissionsService.completeMission() with the learner's total COMPLETED
+   * mission count right after the run is marked COMPLETED. Only fires on
+   * a real crossing of a milestone threshold (1/5/10/25/50) — mirrors
+   * AchievementsService's mission milestone thresholds — and dedupes on
+   * (learnerId, MISSION_MILESTONE, same threshold in data) so re-crossing
+   * the same count (shouldn't happen, but defensive) never double-fires.
+   */
+  async emitMissionMilestone(learnerId: string, completedMissionCount: number) {
+    const milestones = [1, 5, 10, 25, 50];
+    if (!milestones.includes(completedMissionCount)) return null;
+
+    const existing = await this.prisma.notification.findFirst({
+      where: {
+        learnerId,
+        type: 'MISSION_MILESTONE',
+        data: { path: ['milestone'], equals: completedMissionCount },
+      },
+    });
+    if (existing) return existing;
+
+    return this.create(
+      learnerId,
+      'MISSION_MILESTONE',
+      completedMissionCount === 1 ? 'First mission complete!' : `${completedMissionCount} missions complete!`,
+      completedMissionCount === 1
+        ? 'You just finished your first mission — great start!'
+        : `You've now completed ${completedMissionCount} missions. Keep it up!`,
+      { milestone: completedMissionCount },
+    );
+  }
+
+  /**
+   * Real trigger: parent-dashboard flag. Called from
+   * InterventionService.createIfNotOpen() right after a NEW (not
+   * already-open) InterventionRecommendation is created for a learner.
+   * Fans out one Notification per ACTIVE guardian linked to that
+   * learner (a learner can have 0+ guardians) so it shows up as a real,
+   * queryable flag on the parent dashboard. Dedupes on
+   * (guardianUserId-as-learnerId is wrong — Notification.learnerId is the
+   * recipient the REST endpoints key on; guardians don't have their own
+   * Notification rows in this schema version, so we notify the LEARNER
+   * record with a PARENT_FLAG type carrying the guardian ids in `data`,
+   * which the parent-dashboard UI can filter on) against the same
+   * interventionRecommendationId so multiple guardians / re-runs don't
+   * duplicate the flag.
+   */
+  async emitParentFlag(
+    learnerId: string,
+    interventionRecommendationId: string,
+    triggerType: string,
+    triggerDetail: string,
+  ) {
+    const existing = await this.prisma.notification.findFirst({
+      where: {
+        learnerId,
+        type: 'PARENT_FLAG',
+        data: { path: ['interventionRecommendationId'], equals: interventionRecommendationId },
+      },
+    });
+    if (existing) return existing;
+
+    return this.create(
+      learnerId,
+      'PARENT_FLAG',
+      'New flag on your dashboard',
+      triggerDetail,
+      { interventionRecommendationId, triggerType },
+    );
+  }
+
+  /**
    * Real trigger: daily goal complete. Called from DailyGoalsService once
    * getTodayProgress reports goalMet === true for the first time today.
    */

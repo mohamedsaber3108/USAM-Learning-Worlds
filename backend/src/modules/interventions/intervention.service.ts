@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 /**
  * Intervention Engine v1.
@@ -41,7 +42,10 @@ export class InterventionService {
   static readonly LOW_MASTERY_ATTEMPT_THRESHOLD = 5;
   static readonly LOW_MASTERY_CONFIDENCE_CEILING = 0.3;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Evaluate both triggers for a single learner+competency pair, called
@@ -134,6 +138,17 @@ export class InterventionService {
     this.logger.log(
       `Intervention created: learner=${learnerId} competency=${competencyId} trigger=${triggerType}`,
     );
+
+    // Notification Engine: real parent-dashboard flag trigger. Fires
+    // whenever a genuinely NEW (not deduped/already-open) intervention
+    // recommendation is created — best-effort, never blocks the
+    // recommendation write itself.
+    void this.notificationsService
+      .emitParentFlag(learnerId, created.id, triggerType, payload.triggerDetail)
+      .catch((err) =>
+        this.logger.warn(`Failed to emit PARENT_FLAG notification for learner=${learnerId}: ${(err as Error).message}`),
+      );
+
     return created;
   }
 
