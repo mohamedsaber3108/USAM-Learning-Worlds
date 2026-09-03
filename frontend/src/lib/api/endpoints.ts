@@ -914,6 +914,87 @@ export const safetyPolicyApi = {
     apiClient.get<SafetyPolicyRecord>(`/admin/safety-policies/${ageBand}/versions/${version}`),
 }
 
+// ==================== Content Items (authoring CMS slice) ====================
+// Backend: ContentItemsController (backend/src/modules/content-items/
+// content-items.controller.ts) over ContentItemsService — the minimal
+// create/list/status-lifecycle slice for the previously-orphaned
+// ContentItem table (model + enums existed with zero service/controller
+// anywhere — see docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md,
+// "Content Ingestion Engine"). ADMIN-only, same guard pattern as
+// content-qa/admin-missions. Status lifecycle is a strict forward walk:
+// DRAFT -> VALIDATING -> VALIDATED -> PUBLISHED, with DEPRECATED/REJECTED
+// reachable as side/terminal states — server enforces allowed transitions,
+// this UI just offers whatever the current status allows.
+export type ContentTypeKey =
+  | 'ACTIVITY'
+  | 'QUESTION'
+  | 'STORY'
+  | 'SCENARIO'
+  | 'HINT'
+  | 'EXPLANATION'
+  | 'PROJECT_BRIEF'
+  | 'PRACTICE_SET'
+
+export type ContentStatusKey = 'DRAFT' | 'VALIDATING' | 'VALIDATED' | 'PUBLISHED' | 'DEPRECATED' | 'REJECTED'
+
+export type DifficultyLevelKey = 'EASY' | 'MEDIUM' | 'HARD' | 'CHALLENGE'
+
+export interface ContentItemRecord {
+  id: string
+  type: ContentTypeKey
+  title: string
+  content: unknown
+  metadata: unknown
+  language: string
+  ageBand: AgeBandKey | null
+  domainId: string | null
+  objectiveId: string | null
+  difficulty: DifficultyLevelKey | null
+  status: ContentStatusKey
+  version: number
+  sourceType: 'SEEDED' | 'AI_GENERATED' | 'HUMAN_AUTHORED'
+  createdBy: string | null
+  validatedBy: string | null
+  validatedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ContentItemListResponse {
+  items: ContentItemRecord[]
+  total: number
+  take: number
+  skip: number
+}
+
+export const contentItemsApi = {
+  list: (params?: {
+    type?: ContentTypeKey
+    status?: ContentStatusKey
+    ageBand?: AgeBandKey
+    domainId?: string
+    take?: number
+    skip?: number
+  }) => apiClient.get<ContentItemListResponse>('/admin/content-items', { params }),
+
+  findOne: (id: string) => apiClient.get<ContentItemRecord>(`/admin/content-items/${id}`),
+
+  create: (data: {
+    type: ContentTypeKey
+    title: string
+    content: unknown
+    metadata?: unknown
+    language?: string
+    ageBand?: AgeBandKey
+    domainId?: string
+    objectiveId?: string
+    difficulty?: DifficultyLevelKey
+  }) => apiClient.post<ContentItemRecord>('/admin/content-items', data),
+
+  updateStatus: (id: string, status: ContentStatusKey) =>
+    apiClient.patch<ContentItemRecord>(`/admin/content-items/${id}/status`, { status }),
+}
+
 // ==================== Translations (localization QA) ====================
 // Backend: TranslationController (backend/src/modules/learning/translation.controller.ts),
 // real seeded rows across CHARACTER/DOMAIN/ACTIVITY/DIGITAL_LITERACY_CONCEPT/
