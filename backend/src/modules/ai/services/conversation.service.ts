@@ -191,6 +191,7 @@ export class ConversationService {
         missionId: (conversation.contextSnapshot as any)?.currentMission?.id,
         projectId: (conversation.contextSnapshot as any)?.currentProject?.id,
         situation: this.determineConversationSituation(conversation),
+        conversationType: conversation.type,
       },
     );
 
@@ -411,6 +412,18 @@ export class ConversationService {
 
     if (conversation.type === 'PROJECT_GUIDANCE') {
       return `Project guidance for: ${context?.currentProject?.title || 'current project'}`;
+    }
+
+    if (conversation.type === 'ROLEPLAY') {
+      return `Roleplay scenario${context?.currentMission ? ` set in mission: ${context.currentMission.title}` : ''}`;
+    }
+
+    if (conversation.type === 'DEBATE') {
+      return `Friendly debate${context?.currentMission ? ` connected to mission: ${context.currentMission.title}` : ''} - argue a side, then swap`;
+    }
+
+    if (conversation.type === 'INTERVIEW') {
+      return `Interview practice${context?.currentMission ? ` for mission: ${context.currentMission.title}` : ''} - character asks the questions`;
     }
 
     if (context?.currentMission) {
