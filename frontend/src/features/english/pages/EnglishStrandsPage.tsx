@@ -93,7 +93,7 @@ export function EnglishStrandsPage() {
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-medium text-gray-700">CEFR Level:</span>
             <button
-              className={`px-3 py-1 rounded text-sm font-medium ${
+              className={`px-3 py-1 min-h-11 rounded text-sm font-medium ${
                 cefrFilter === '' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700'
               }`}
               onClick={() => setCefrFilter('')}
@@ -103,7 +103,7 @@ export function EnglishStrandsPage() {
             {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((level) => (
               <button
                 key={level}
-                className={`px-3 py-1 rounded text-sm font-medium ${
+                className={`px-3 py-1 min-h-11 rounded text-sm font-medium ${
                   cefrFilter === level ? 'bg-primary-600 text-white' : CEFR_COLORS[level] || 'bg-gray-100 text-gray-700'
                 }`}
                 onClick={() => setCefrFilter(level)}
