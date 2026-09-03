@@ -48,6 +48,11 @@ const CATEGORY_META: Record<
     icon: '🧭',
     gradient: 'from-rose-500 to-pink-500',
   },
+  'communication-skills': {
+    title: 'Communication Skills',
+    icon: '🗣️',
+    gradient: 'from-fuchsia-500 to-purple-500',
+  },
 }
 
 const AGE_BANDS = [

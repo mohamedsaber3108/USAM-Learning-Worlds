@@ -504,7 +504,7 @@ export const codingSandboxApi = {
 //   - FinancialLiteracyConcept (19 rows, financial_literacy_concepts)
 // Served by backend/src/modules/cross-curricular/cross-curricular.controller.ts,
 // mounted at `/api/cross-curricular`.
-export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy' | 'career-exploration'
+export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy' | 'career-exploration' | 'communication-skills'
 
 export interface CrossCurricularConcept {
   id: string

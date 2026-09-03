@@ -188,6 +188,9 @@ export function CurriculumBrowsePage() {
             <Link to="/cross-curricular/career-exploration" className="btn bg-rose-600 text-white hover:bg-rose-700 shadow-none">
               🧭 Career Exploration
             </Link>
+            <Link to="/cross-curricular/communication-skills" className="btn bg-fuchsia-600 text-white hover:bg-fuchsia-700 shadow-none">
+              🗣️ Communication Skills
+            </Link>
           </div>
         </div>
       </div>
