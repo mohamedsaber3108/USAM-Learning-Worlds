@@ -4,9 +4,10 @@
  * Closes the "AI Hallucination Control" gap flagged in
  * docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md ("no RAG/retrieval/
  * citation/grounding/refusal-policy layer ... no teacher-escalation
- * trigger"). This is deliberately NOT a RAG/citation pipeline (that
- * remains a separate, larger, honestly-deferred gap - see RAG Engine row).
- * It is two small, real things:
+ * trigger tied to low-confidence answers"). This is deliberately NOT a
+ * RAG/citation pipeline (that remains a separate, larger,
+ * honestly-deferred gap - see RAG Engine row). It is three small, real
+ * things:
  *
  * 1. A keyword-based off-topic detector: compares free-text learner
  *    input against the real scope keywords of their current mission/
@@ -21,9 +22,24 @@
  *    hedge ("I'm not fully sure, let's check with a teacher") rather
  *    than confidently answering outside the learner's current
  *    mission/activity content scope.
+ * 3. NEW (v1 low-confidence escalation): a deterministic hedging-language
+ *    detector run against the AI's OWN generated answer (not the
+ *    learner's input). If the model's response reads as
+ *    low-confidence/hedged ("I'm not sure", "I think it might be",
+ *    "don't quote me on this", etc.) on what looks like a factual/
+ *    educational question, that is a real signal the answer may be
+ *    unreliable. Previously the shaky answer was simply returned to the
+ *    child as-is - nothing detected this or routed it anywhere. Now
+ *    `flagLowConfidenceIfNeeded()` detects it, swaps in the safe teacher-
+ *    escalation hedge instead of the shaky answer, and persists a real,
+ *    actionable `SafetyEscalation` record (reusing the same model/queue
+ *    built for character-safety escalations, with a new
+ *    `triggerReason` = 'LOW_CONFIDENCE_ANSWER' category) so a
+ *    moderator/teacher can review what the AI almost said and why.
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { SafetyEscalationService } from './safety-escalation.service';
 
 export interface OffTopicCheckResult {
   offTopic: boolean;
@@ -46,8 +62,133 @@ const STOPWORDS = new Set([
   'know','think','want','please','also','very','really','okay','ok','hi','hey','hello',
 ]);
 
+/** Result of scanning an AI-generated answer for low-confidence signals. */
+export interface LowConfidenceCheckResult {
+  lowConfidence: boolean;
+  matchedPhrases: string[];
+}
+
+/**
+ * Deterministic hedging-language patterns commonly used by LLMs to
+ * self-signal uncertainty ("I'm not sure", "I think it might be...",
+ * "don't quote me on this", "as far as I know", etc). Rule-based, not an
+ * LLM judgment call - same "deterministic pattern match over raw text"
+ * approach already used by CharacterSafetyService for parent-bypass/
+ * dependency-risk detection, applied here to the AI's own output instead
+ * of the learner's.
+ */
+const HEDGING_PATTERNS: RegExp[] = [
+  /i'?m not (fully |totally |100% |completely )?sure/i,
+  /i (don'?t|do not) (fully |really )?know( for sure)?/i,
+  /i think (it|this|that) (might|may|could) be/i,
+  /(it|this) (might|may) (be|not be)/i,
+  /don'?t quote me on (this|that)/i,
+  /as far as i know/i,
+  /i'?m (a bit |kind of |somewhat )?uncertain/i,
+  /i could be wrong/i,
+  /correct me if i'?m wrong/i,
+  /not (entirely|completely|totally) certain/i,
+  /i'?m (just |only )?guessing/i,
+  /take this with a grain of salt/i,
+  /i believe(,)? but i'?m not certain/i,
+  /it'?s hard to say (for sure|exactly)/i,
+];
+
+/**
+ * Heuristic signal that a learner's question is factual/educational
+ * (vs. small talk/greetings) - i.e. the class of question where a
+ * confidently-wrong answer is actually risky. Deliberately broad/
+ * permissive: false positives here just mean an extra (harmless) check,
+ * false negatives mean a shaky answer slips through, so err toward
+ * catching more.
+ */
+const FACTUAL_QUESTION_PATTERN =
+  /\b(what|why|when|where|who|which|how (many|much|does|do|is|are)|is it true|explain|define)\b/i;
+
 @Injectable()
 export class HallucinationControlService {
+  private readonly logger = new Logger(HallucinationControlService.name);
+
+  constructor(private safetyEscalation: SafetyEscalationService) {}
+
+  /**
+   * Scan an AI-generated answer for deterministic hedging-language
+   * patterns. This runs on the model's OWN output, not the learner's
+   * input - it is the self-reported-confidence heuristic requested for
+   * the v1 low-confidence escalation mechanism (no structured
+   * "confidence" field is returned by the current Bedrock prompts, so
+   * hedging language in the free-text response is used as the proxy
+   * signal instead).
+   */
+  checkLowConfidenceAnswer(answerText: string): LowConfidenceCheckResult {
+    if (!answerText) {
+      return { lowConfidence: false, matchedPhrases: [] };
+    }
+    const matched = HEDGING_PATTERNS.filter((p) => p.test(answerText)).map(
+      (p) => p.source,
+    );
+    return { lowConfidence: matched.length > 0, matchedPhrases: matched };
+  }
+
+  /**
+   * Heuristic check for whether a learner's question looks
+   * factual/educational (the class of question a hedged, possibly-wrong
+   * answer is actually risky for - as opposed to small talk, where a
+   * hedge is harmless).
+   */
+  looksLikeFactualQuestion(text: string): boolean {
+    if (!text) return false;
+    return FACTUAL_QUESTION_PATTERN.test(text) || text.trim().endsWith('?');
+  }
+
+  /**
+   * v1 low-confidence-answer escalation: the real behavioral fix this
+   * gap needed. Given the learner's question and the AI's proposed
+   * answer, decide whether the answer is a low-confidence response to a
+   * factual/educational question. If so:
+   *  - persist a real, actionable SafetyEscalation record (reusing the
+   *    same model/queue built for character-safety escalations, with a
+   *    new triggerReason category: 'LOW_CONFIDENCE_ANSWER') so a
+   *    moderator/teacher can review the flagged Q&A, and
+   *  - return the safe teacher-escalation hedge to use INSTEAD of the
+   *    shaky answer.
+   * If the answer is confident (or the question isn't factual-looking),
+   * returns null and the caller should return the original answer
+   * unchanged. Never throws into the caller's response path - escalation
+   * persistence failures are logged, not propagated, matching the
+   * existing CharacterSafetyService pattern.
+   */
+  async flagLowConfidenceIfNeeded(params: {
+    learnerId: string;
+    question: string;
+    answerText: string;
+    source: string; // e.g. 'english-coach.conversation', 'coding-coach.debug'
+  }): Promise<{ hedge: string; matchedPhrases: string[] } | null> {
+    const { learnerId, question, answerText, source } = params;
+
+    const confidenceCheck = this.checkLowConfidenceAnswer(answerText);
+    if (!confidenceCheck.lowConfidence) {
+      return null;
+    }
+    if (!this.looksLikeFactualQuestion(question)) {
+      return null;
+    }
+
+    try {
+      await this.safetyEscalation.createEscalation({
+        learnerId,
+        triggerReason: `LOW_CONFIDENCE_ANSWER (${source}): matched hedging patterns [${confidenceCheck.matchedPhrases.join(', ')}] on question: "${question.slice(0, 200)}"`,
+        safetyState: 'low_confidence_answer',
+      });
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to create SafetyEscalation for low-confidence answer (learner ${learnerId}, source ${source}): ${error?.message}`,
+      );
+    }
+
+    return { hedge: TEACHER_ESCALATION_HEDGE, matchedPhrases: confidenceCheck.matchedPhrases };
+  }
+
   /**
    * Tokenize free text into lowercase content words (stopwords/short
    * tokens removed).
