@@ -504,12 +504,40 @@ export class CharacterService {
       aiResponse.content,
     );
 
-    const finalMessage =
+    let candidateMessage =
       responseSafety.state === 'blocked'
         ? SAFETY_FALLBACK_BLOCKED
         : responseSafety.state === 'escalation_required'
           ? SAFETY_FALLBACK_ESCALATION
           : aiResponse.content;
+
+    // v1 low-confidence-answer escalation: only relevant when the safety
+    // layer above didn't already replace the message (a safety fallback
+    // line is never hedged-sounding, so there's nothing to catch there).
+    // If the character's own generated reply reads as hedged/uncertain on
+    // what looks like a genuine factual/educational question, swap in the
+    // safe teacher-escalation hedge instead and persist a real,
+    // actionable SafetyEscalation record so a moderator/teacher can review
+    // what was almost said. See HallucinationControlService and
+    // docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md ("AI Hallucination
+    // Control") for the gap this closes.
+    let lowConfidenceHedge = false;
+    let matchedHedgingPhrases: string[] | undefined;
+    if (responseSafety.state === 'safe') {
+      const lowConfidence = await this.hallucinationControl.flagLowConfidenceIfNeeded({
+        learnerId,
+        question: input,
+        answerText: candidateMessage,
+        source: 'character.generateResponse',
+      });
+      if (lowConfidence) {
+        candidateMessage = lowConfidence.hedge;
+        lowConfidenceHedge = true;
+        matchedHedgingPhrases = lowConfidence.matchedPhrases;
+      }
+    }
+
+    const finalMessage = candidateMessage;
 
     // Log interaction (never logs the raw text if it was suppressed for safety)
     await this.logInteraction(
@@ -535,7 +563,9 @@ export class CharacterService {
       metadata:
         responseSafety.state !== 'safe'
           ? { safetyState: responseSafety.state, safetyReasons: responseSafety.reasons }
-          : undefined,
+          : lowConfidenceHedge
+            ? { lowConfidenceHedge: true, matchedHedgingPhrases }
+            : undefined,
       groundedIn: groundedIn.length > 0 ? groundedIn : undefined,
     };
   }
