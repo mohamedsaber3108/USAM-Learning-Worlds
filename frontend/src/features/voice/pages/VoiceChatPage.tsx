@@ -5,15 +5,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic2, ArrowLeft, Info, Sparkles } from 'lucide-react'
+import { Mic2, ArrowLeft, Info, Sparkles, Keyboard } from 'lucide-react'
 import { VoiceRecorder } from '../components/VoiceRecorder'
 import { VoicePlayer } from '../components/VoicePlayer'
-import { voiceApi, VoiceTurnResult } from '../api/voiceApi'
+import { voiceApi, VoiceTurnResult, isVoiceSidecarUnavailable } from '../api/voiceApi'
 import { EmptyState } from '@/components/common/CharacterState'
 
 interface Turn extends VoiceTurnResult {
   id: string
-  resolvedAudioUrl: string
+  resolvedAudioUrl: string | null
 }
 
 export function VoiceChatPage() {
@@ -21,6 +21,12 @@ export function VoiceChatPage() {
   const [turns, setTurns] = useState<Turn[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // When the ASR/TTS sidecar is unreachable/timed out, we stop asking the
+  // child to keep recording and drop them into a plain text input instead —
+  // no stuck spinner they can't debug.
+  const [textFallbackActive, setTextFallbackActive] = useState(false)
+  const [textFallbackMessage, setTextFallbackMessage] = useState<string | null>(null)
+  const [textInput, setTextInput] = useState('')
 
   const handleRecordingComplete = async (blob: Blob) => {
     if (!conversationId.trim()) {
@@ -37,13 +43,45 @@ export function VoiceChatPage() {
         {
           ...result,
           id: `${Date.now()}`,
-          resolvedAudioUrl: voiceApi.resolveAudioUrl(result.audioUrl),
+          resolvedAudioUrl: result.audioUrl ? voiceApi.resolveAudioUrl(result.audioUrl) : null,
         },
       ])
     } catch (err: any) {
-      setError(
-        err?.response?.data?.message || err?.message || 'Voice turn failed',
-      )
+      if (isVoiceSidecarUnavailable(err)) {
+        // Backend signals fallbackToText:true — auto-switch this child to
+        // typing instead of leaving the mic UI up with no way forward.
+        setTextFallbackMessage(err.response.data.message)
+        setTextFallbackActive(true)
+      } else {
+        setError(
+          err?.response?.data?.message || err?.message || 'Voice turn failed',
+        )
+      }
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleTextFallbackSend = async () => {
+    if (!textInput.trim() || !conversationId.trim()) return
+    setError(null)
+    setIsProcessing(true)
+    try {
+      const res = await voiceApi.sendTextFallback(conversationId.trim(), textInput.trim())
+      setTurns((prev) => [
+        ...prev,
+        {
+          id: `${Date.now()}`,
+          transcript: textInput.trim(),
+          aiResponseText: res.data.characterMessage.content,
+          audioUrl: null,
+          audioUnavailable: true,
+          resolvedAudioUrl: null,
+        },
+      ])
+      setTextInput('')
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Message failed to send')
     } finally {
       setIsProcessing(false)
     }
@@ -96,12 +134,57 @@ export function VoiceChatPage() {
           </div>
         </div>
 
-        {/* Recorder surface — the hero interaction, given real visual weight */}
+        {/* Recorder surface — the hero interaction, given real visual weight.
+            When a sidecar is unreachable/timed out we swap this whole block
+            for a plain text input so the child is never stuck staring at a
+            mic/spinner they can't recover from. */}
         <div className="stat-card-hero flex flex-col items-center py-10 mb-8">
-          <VoiceRecorder
-            onRecordingComplete={handleRecordingComplete}
-            disabled={isProcessing}
-          />
+          {textFallbackActive ? (
+            <div className="w-full max-w-md flex flex-col items-center gap-4">
+              <div className="flex items-center gap-2 text-primary-700">
+                <Keyboard className="w-5 h-5" strokeWidth={2} />
+                <p className="text-sm font-semibold">Voice is taking a break — let's type!</p>
+              </div>
+              {textFallbackMessage && (
+                <p className="text-sm text-slate-600 text-center">{textFallbackMessage}</p>
+              )}
+              <div className="flex w-full gap-2">
+                <input
+                  type="text"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleTextFallbackSend()}
+                  placeholder="Type what you wanted to say..."
+                  className="input flex-1"
+                  disabled={isProcessing}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleTextFallbackSend}
+                  disabled={isProcessing || !textInput.trim()}
+                  className="px-4 py-2 rounded-control bg-primary-500 text-white font-semibold hover:bg-primary-600 disabled:opacity-50"
+                >
+                  Send
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setTextFallbackActive(false)
+                  setTextFallbackMessage(null)
+                }}
+                className="text-xs font-medium text-slate-400 hover:text-slate-600 underline"
+              >
+                Try the microphone again
+              </button>
+            </div>
+          ) : (
+            <VoiceRecorder
+              onRecordingComplete={handleRecordingComplete}
+              disabled={isProcessing}
+            />
+          )}
           <AnimatePresence>
             {isProcessing && (
               <motion.p
@@ -111,7 +194,7 @@ export function VoiceChatPage() {
                 className="mt-5 text-sm font-medium text-primary-700 flex items-center gap-1.5"
               >
                 <Sparkles className="w-4 h-4" strokeWidth={2} />
-                Transcribing, thinking, and synthesizing speech…
+                {textFallbackActive ? 'Sending your message…' : 'Transcribing, thinking, and synthesizing speech…'}
               </motion.p>
             )}
           </AnimatePresence>
@@ -163,7 +246,15 @@ export function VoiceChatPage() {
                         AI response
                       </p>
                       <p className="text-slate-800 font-medium">{turn.aiResponseText}</p>
-                      <VoicePlayer audioUrl={turn.resolvedAudioUrl} />
+                      {turn.resolvedAudioUrl ? (
+                        <VoicePlayer audioUrl={turn.resolvedAudioUrl} />
+                      ) : (
+                        turn.audioUnavailable && (
+                          <p className="mt-1 text-xs text-slate-400 italic">
+                            (voice playback wasn't available for this reply — text only)
+                          </p>
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
