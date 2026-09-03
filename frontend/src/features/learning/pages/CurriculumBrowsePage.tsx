@@ -16,6 +16,9 @@ import {
   Shield,
   Compass,
   MessageCircle,
+  Puzzle as PuzzleIcon,
+  Brain,
+  Search,
 } from 'lucide-react'
 import { curriculumApi, learningApi, masteryApi } from '@/lib/api/endpoints'
 import { WorldPathMap, type WorldPathDomain } from '@/features/learning/components/WorldPathMap'
@@ -192,6 +195,26 @@ export function CurriculumBrowsePage() {
           </div>
         </div>
       </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="card mb-2">
+          <h2 className="text-lg font-heading font-semibold mb-3">Thinking Skills</h2>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/thinking/problem-solving" className="btn bg-orange-600 text-white hover:bg-orange-700 shadow-none flex items-center gap-1.5">
+              <PuzzleIcon className="w-4 h-4" strokeWidth={2} />
+              Problem Solving
+            </Link>
+            <Link to="/thinking/computational-thinking" className="btn bg-blue-600 text-white hover:bg-blue-700 shadow-none flex items-center gap-1.5">
+              <Brain className="w-4 h-4" strokeWidth={2} />
+              Computational Thinking
+            </Link>
+            <Link to="/thinking/critical-thinking" className="btn bg-teal-600 text-white hover:bg-teal-700 shadow-none flex items-center gap-1.5">
+              <Search className="w-4 h-4" strokeWidth={2} />
+              Critical Thinking
+            </Link>
+          </div>
+        </div>
+      </div>
 
       {/* Cross-Curricular quick links — real seeded AILiteracyConcept /
           EntrepreneurshipConcept / FinancialLiteracyConcept content,

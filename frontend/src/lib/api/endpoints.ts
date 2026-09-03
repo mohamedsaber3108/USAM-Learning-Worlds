@@ -583,6 +583,43 @@ export const crossCurricularApi = {
     apiClient.get<CrossCurricularConcept>(`/cross-curricular/${category}/${slug}`),
 }
 
+// ==================== Thinking Skills (Problem Solving / Computational /
+// Critical Thinking) ====================
+// Three real, independently-seeded models sharing an identical shape:
+//   - ProblemSolvingConcept        (15 rows, problem_solving_concepts)
+//   - ComputationalThinkingConcept (14 rows, computational_thinking_concepts)
+//   - CriticalThinkingConcept      (15 rows, critical_thinking_concepts)
+// Each served by its own thin controller (problem-solving.controller.ts,
+// computational-thinking.controller.ts, critical-thinking.controller.ts),
+// mounted at `/api/problem-solving`, `/api/computational-thinking`,
+// `/api/critical-thinking` respectively. Found (2026-09-03) fully built and
+// seeded on the backend with zero frontend surface — same bug class as the
+// Cross-Curricular/Flashcards/Communication-Skills fixes.
+export type ThinkingSkillEngine = 'problem-solving' | 'computational-thinking' | 'critical-thinking'
+
+export interface ThinkingSkillConcept {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  category: string
+  ageAppropriate: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
+  order: number
+  isActive: boolean
+  createdAt: string
+}
+
+export const thinkingSkillsApi = {
+  list: (engine: ThinkingSkillEngine, params?: { ageBand?: string; category?: string }) =>
+    apiClient.get<ThinkingSkillConcept[]>(`/${engine}`, { params }),
+
+  listCategories: (engine: ThinkingSkillEngine) =>
+    apiClient.get<string[]>(`/${engine}/categories`),
+
+  getConcept: (engine: ThinkingSkillEngine, slug: string) =>
+    apiClient.get<ThinkingSkillConcept>(`/${engine}/${slug}`),
+}
+
 // ==================== Metacognition / Reflection ====================
 // Real data backed by ReflectionPrompt + MissionReflection Prisma models
 // (backend/prisma/seeds/seed-reflection-prompts.ts, 3 seeded prompts).

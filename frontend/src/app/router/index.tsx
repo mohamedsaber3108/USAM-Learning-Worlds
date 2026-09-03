@@ -34,6 +34,8 @@ import { CosmeticShopPage } from '@/features/cosmetics/pages/CosmeticShopPage'
 import { LearningInsightsPage } from '@/features/analytics/pages/LearningInsightsPage'
 import { CrossCurricularPage } from '@/features/cross-curricular/pages/CrossCurricularPage'
 import { CrossCurricularConceptDetailPage } from '@/features/cross-curricular/pages/CrossCurricularConceptDetailPage'
+import { ThinkingSkillsPage } from '@/features/thinking-skills/pages/ThinkingSkillsPage'
+import { ThinkingSkillConceptDetailPage } from '@/features/thinking-skills/pages/ThinkingSkillConceptDetailPage'
 import { StoriesListPage } from '@/features/stories/pages/StoriesListPage'
 import { StoryReaderPage } from '@/features/stories/pages/StoryReaderPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
@@ -174,6 +176,8 @@ export function AppRouter() {
             content, one shared parameterized page per category. */}
         <Route path="/cross-curricular/:category" element={<CrossCurricularPage />} />
         <Route path="/cross-curricular/:category/:slug" element={<CrossCurricularConceptDetailPage />} />
+        <Route path="/thinking/:engine" element={<ThinkingSkillsPage />} />
+        <Route path="/thinking/:engine/:slug" element={<ThinkingSkillConceptDetailPage />} />
 
         {/* Admin — CMS/Content Studio + Authoring Engine v1 (Mission
             content type only; ADMIN-role-gated both here and server-side
