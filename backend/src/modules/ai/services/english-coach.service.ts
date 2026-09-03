@@ -10,6 +10,7 @@ import { PrismaService } from '../../../database/prisma.service';
 import { AIProviderService } from '../ai-provider.service';
 import { LearnerContextService } from '../learner-context.service';
 import { AITaskType } from '../interfaces/ai-task.interface';
+import { RetrievedContextItem } from '../interfaces/learner-context.interface';
 import {
   GrammarCheckService,
   GrammarIssue,
@@ -60,11 +61,35 @@ export interface PronunciationFeedbackRequest {
 function groundedInFromContext(context: {
   currentMission?: { id: string };
   currentActivity?: { id: string };
+  retrievedContext?: RetrievedContextItem[];
 }): string[] {
   const ids: string[] = [];
   if (context?.currentMission?.id) ids.push(`mission:${context.currentMission.id}`);
   if (context?.currentActivity?.id) ids.push(`activity:${context.currentActivity.id}`);
+  (context?.retrievedContext ?? []).forEach((item) => ids.push(item.sourceTag));
   return ids;
+}
+
+/**
+ * Format retrieval-grounding hits (LearnerContextService.buildContext's
+ * `question`-driven keyword/full-text pass, see learner-context.service.ts)
+ * into a prompt block instructing the AI to cite the sourceTag when it
+ * draws on an item. Mirrors CharacterService.formatRetrievedContext.
+ * Returns '' when nothing was retrieved - never fabricates a filler block.
+ */
+function formatRetrievedContext(items?: RetrievedContextItem[]): string {
+  if (!items || items.length === 0) {
+    return '';
+  }
+
+  const lines = items
+    .map((item) => `- [${item.sourceTag}] ${item.title}: ${item.snippet}`)
+    .join('\n');
+
+  return `RELEVANT CURRICULUM CONTENT (retrieved by keyword match on the learner's question):
+${lines}
+
+When your answer draws on one of the items above, mention it naturally and cite it by appending its tag in the form (source: <tag>) exactly once, e.g. "(source: ${items[0].sourceTag})". Never cite a tag that isn't listed above, and never invent facts not supported by these snippets or your general knowledge - if you're unsure, say so instead of guessing.`;
 }
 
 @Injectable()
@@ -98,7 +123,11 @@ export class EnglishCoachService {
    * Conduct English conversation practice
    */
   async conductConversation(request: EnglishConversationRequest) {
-    const context = await this.learnerContext.buildContext(request.learnerId);
+    const context = await this.learnerContext.buildContext(
+      request.learnerId,
+      undefined,
+      request.userMessage,
+    );
 
     // Determine CEFR level from age and mastery
     const cefrLevel = request.difficulty || this.determineCEFRLevel(context);
@@ -178,7 +207,11 @@ export class EnglishCoachService {
    * Provide grammar correction and feedback
    */
   async correctGrammar(request: GrammarCorrectionRequest) {
-    const context = await this.learnerContext.buildContext(request.learnerId);
+    const context = await this.learnerContext.buildContext(
+      request.learnerId,
+      undefined,
+      request.text,
+    );
 
     // Deterministic rule-based layer FIRST: self-hosted LanguageTool
     // catches mechanical errors (spelling, subject-verb agreement,
@@ -199,7 +232,9 @@ ${request.explainMistakes ? 'For each mistake, explain why it\'s wrong and how t
 
 Be encouraging and focus on progress, not just errors.
 
-${this.hallucinationControl.getPromptGuardrail()}`;
+${this.hallucinationControl.getPromptGuardrail()}
+
+${formatRetrievedContext(context.retrievedContext)}`;
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -402,7 +437,9 @@ ${topic ? `Topic: ${topic}` : 'Topic: Free conversation'}
 
 ${guidelines}
 
-${this.hallucinationControl.getPromptGuardrail()}`;
+${this.hallucinationControl.getPromptGuardrail()}
+
+${formatRetrievedContext(context.retrievedContext)}`;
   }
 
   /**
