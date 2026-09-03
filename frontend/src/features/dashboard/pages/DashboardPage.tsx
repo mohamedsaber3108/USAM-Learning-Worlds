@@ -29,7 +29,8 @@ import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
-import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
+import { EmptyState, ErrorState } from '@/components/common/CharacterState'
+import { DashboardSkeleton } from '@/components/common/Skeleton'
 
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
 // `labelKey` resolves against dashboard.quickActions.* in both locales.
@@ -176,14 +177,14 @@ export function DashboardPage() {
   )
   const [celebrationDismissed, setCelebrationDismissed] = useState(false)
 
-  // First paint before the core progression numbers arrive — show Azouz
-  // warming things up instead of an empty flash of blank cards.
+  // First paint before the core progression numbers arrive — render a
+  // content-shaped skeleton (hero/secondary stat cards, goal ring, recent
+  // list) instead of a centered LoadingState blob. The old centered blob
+  // occupied a fraction of the real content's height, so swapping it for
+  // the actual dashboard caused a big, visible page jump/blank-flash on
+  // every load of the single highest-traffic page in the app.
   if (progressionLoading) {
-    return (
-      <div className="min-h-screen bg-surface-50 flex items-center justify-center">
-        <LoadingState character="Azouz" message="Azouz is getting your dashboard ready..." size={96} />
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   // The dashboard's core stat is the progression query — if that fails we
