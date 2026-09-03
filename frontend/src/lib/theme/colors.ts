@@ -23,6 +23,19 @@ export const THEME_HEX = {
   slate950: '#1e1b4b',
 } as const
 
+/** Cosmetic-shop equipped avatar-border theme accents — deliberately a
+ * separate small palette (orange/pink) from the brand accent/secondary
+ * above, since these represent purchasable cosmetic variety rather than
+ * core brand color. Values match Tailwind's default orange-600/pink-600
+ * so the `bg-orange-*`/`text-pink-*` utility classes used alongside these
+ * inline hex values (react-circular-progressbar etc.) stay visually
+ * identical. */
+export const COSMETIC_THEME_HEX = {
+  'theme-indigo': THEME_HEX.primary600,
+  'theme-orange': '#ea580c',
+  'theme-pink': '#db2777',
+} as const
+
 /** Palette used for decorative confetti bursts — deliberately more varied
  * than the strict UI palette (celebration moments are allowed a wider,
  * playful accent range), but still anchored to real token hues rather than

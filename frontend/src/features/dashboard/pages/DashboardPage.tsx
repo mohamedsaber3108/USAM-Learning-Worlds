@@ -28,6 +28,7 @@ import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
+import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { LoadingState, EmptyState } from '@/components/common/CharacterState'
 
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
@@ -60,11 +61,7 @@ const BORDER_RING_CLASS: Record<string, string> = {
   'border-diamond': 'ring-4 ring-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.65)]',
 }
 
-const THEME_ACCENT_HEX: Record<string, string> = {
-  'theme-indigo': '#4f46e5',
-  'theme-orange': '#ea580c',
-  'theme-pink': '#db2777',
-}
+const THEME_ACCENT_HEX: Record<string, string> = COSMETIC_THEME_HEX
 
 const THEME_ACCENT_CHIP_CLASS: Record<string, string> = {
   'theme-indigo': 'bg-primary-50 text-primary-600',
@@ -246,9 +243,9 @@ export function DashboardPage() {
                   text={String(progression?.level || 1)}
                   strokeWidth={9}
                   styles={buildStyles({
-                    pathColor: themeAccentHex || '#4f46e5',
-                    trailColor: '#e0e4ff',
-                    textColor: '#1e1b4b',
+                    pathColor: themeAccentHex || THEME_HEX.primary600,
+                    trailColor: THEME_HEX.primary100,
+                    textColor: THEME_HEX.slate950,
                     textSize: '30px',
                   })}
                 />

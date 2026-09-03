@@ -1,5 +1,6 @@
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 import { CheckCircle2, Target } from 'lucide-react'
+import { THEME_HEX } from '../../../lib/theme/colors'
 
 export interface DailyGoalProgress {
   goal: { targetMinutes: number; targetActivities: number }
@@ -58,9 +59,9 @@ export function DailyGoalCard({ data, isLoading }: DailyGoalCardProps) {
             text={goalMet ? '' : `${Math.round(ringValue)}%`}
             strokeWidth={10}
             styles={buildStyles({
-              pathColor: goalMet ? '#10b981' /* success-500 */ : '#4f46e5' /* primary-600 */,
-              trailColor: '#eef1ff' /* primary-50 */,
-              textColor: '#0f172a',
+              pathColor: goalMet ? THEME_HEX.success500 : THEME_HEX.primary600,
+              trailColor: THEME_HEX.primary50,
+              textColor: THEME_HEX.slate900,
               textSize: '22px',
             })}
           />
