@@ -3,22 +3,24 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import apiClient from '@/lib/api/client'
 import type { AuthResponse } from '@/types'
 
-const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  firstName: z.string().min(1, 'First name is required'),
-  displayName: z.string().min(1, 'Display name is required'),
-})
-
-type RegisterForm = z.infer<typeof registerSchema>
-
 export function RegisterPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const registerSchema = z.object({
+    email: z.string().email(t('auth.validation.invalidEmail')),
+    password: z.string().min(8, t('auth.validation.passwordMinLength')),
+    firstName: z.string().min(1, t('auth.validation.firstNameRequired')),
+    displayName: z.string().min(1, t('auth.validation.displayNameRequired')),
+  })
+
+  type RegisterForm = z.infer<typeof registerSchema>
 
   const {
     register,
@@ -52,7 +54,7 @@ export function RegisterPage() {
       // the right language/direction from the next screen onward.
       navigate('/onboarding/language')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+      setError(err.response?.data?.message || t('auth.register.genericError'))
     } finally {
       setLoading(false)
     }
@@ -64,9 +66,9 @@ export function RegisterPage() {
         <div className="bg-white rounded-2xl shadow-soft-lg p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Create Account
+              {t('auth.register.createAccount')}
             </h1>
-            <p className="text-gray-600">Join USAM Learning Worlds</p>
+            <p className="text-gray-600">{t('auth.register.subtitle')}</p>
           </div>
 
           {error && (
@@ -78,13 +80,13 @@ export function RegisterPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                First Name
+                {t('auth.register.firstNameLabel')}
               </label>
               <input
                 {...register('firstName')}
                 type="text"
                 className="input"
-                placeholder="Alex"
+                placeholder={t('auth.register.firstNamePlaceholder')}
               />
               {errors.firstName && (
                 <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>
@@ -93,13 +95,13 @@ export function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Display Name
+                {t('auth.register.displayNameLabel')}
               </label>
               <input
                 {...register('displayName')}
                 type="text"
                 className="input"
-                placeholder="What should we call you?"
+                placeholder={t('auth.register.displayNamePlaceholder')}
               />
               {errors.displayName && (
                 <p className="text-red-500 text-sm mt-1">{errors.displayName.message}</p>
@@ -108,13 +110,13 @@ export function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                {t('auth.register.emailLabel')}
               </label>
               <input
                 {...register('email')}
                 type="email"
                 className="input"
-                placeholder="you@example.com"
+                placeholder={t('auth.register.emailPlaceholder')}
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
@@ -123,13 +125,13 @@ export function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                {t('auth.register.passwordLabel')}
               </label>
               <input
                 {...register('password')}
                 type="password"
                 className="input"
-                placeholder="••••••••"
+                placeholder={t('auth.register.passwordPlaceholder')}
               />
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
@@ -141,15 +143,15 @@ export function RegisterPage() {
               disabled={loading}
               className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? t('auth.register.submitting') : t('auth.register.submit')}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Already have an account?{' '}
+              {t('auth.register.haveAccount')}{' '}
               <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-                Sign in
+                {t('auth.register.signIn')}
               </Link>
             </p>
           </div>
