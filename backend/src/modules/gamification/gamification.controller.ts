@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ProgressionService } from './progression.service';
 import { AchievementsService } from './achievements.service';
 import { StreaksService } from './streaks.service';
+import { CosmeticsService } from './cosmetics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -12,6 +13,7 @@ export class GamificationController {
     private progression: ProgressionService,
     private achievements: AchievementsService,
     private streaks: StreaksService,
+    private cosmetics: CosmeticsService,
   ) {}
 
   @Get('progression')
@@ -96,6 +98,48 @@ export class GamificationController {
     }
 
     return this.streaks.updateStreak(learnerId);
+  }
+
+  // ==================== Cosmetic Shop ====================
+
+  @Get('cosmetics')
+  async getCosmetics(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners have a cosmetic shop');
+    }
+
+    return this.cosmetics.listCosmetics(learnerId);
+  }
+
+  @Get('cosmetics/equipped')
+  async getEquippedCosmetics(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners have equipped cosmetics');
+    }
+
+    return this.cosmetics.getEquipped(learnerId);
+  }
+
+  @Post('cosmetics/:id/unlock')
+  async unlockCosmetic(@CurrentUser() user: any, @Param('id') id: string) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners can unlock cosmetics');
+    }
+
+    return this.cosmetics.unlock(learnerId, id);
+  }
+
+  @Post('cosmetics/:id/equip')
+  async equipCosmetic(@CurrentUser() user: any, @Param('id') id: string) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners can equip cosmetics');
+    }
+
+    return this.cosmetics.equip(learnerId, id);
   }
 
   private getLevelXPRange(level: number): number {

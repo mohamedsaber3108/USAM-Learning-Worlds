@@ -31,6 +31,21 @@ export const gamificationApi = {
     apiClient.get('/gamification/rank'),
 }
 
+// ==================== Cosmetics (XP-spending shop) ====================
+export const cosmeticsApi = {
+  list: () =>
+    apiClient.get('/gamification/cosmetics'),
+
+  getEquipped: () =>
+    apiClient.get('/gamification/cosmetics/equipped'),
+
+  unlock: (id: string) =>
+    apiClient.post(`/gamification/cosmetics/${id}/unlock`),
+
+  equip: (id: string) =>
+    apiClient.post(`/gamification/cosmetics/${id}/equip`),
+}
+
 // ==================== Mastery ====================
 export const masteryApi = {
   getOverview: () =>

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { seedCharacterUniverse } from './seeds/seed-character-universe';
+import { seedCosmetics } from './seeds/seed-cosmetics';
 
 const prisma = new PrismaClient();
 
@@ -158,6 +159,7 @@ async function main() {
 
   // Create the full Character Universe (15 named characters, including Azouz)
   await seedCharacterUniverse();
+  await seedCosmetics(prisma);
 
   // Create sample mission
   const mission = await prisma.mission.create({

@@ -71,6 +71,7 @@ model Learner {
   learnerContexts       LearnerContext[]
   pathProgress          LearningPathProgress[]
   learningEvents        LearningEvent[]
+  cosmeticUnlocks       LearnerCosmeticUnlock[]
 
   @@index([userId])
   @@index([displayName])
@@ -1154,4 +1155,46 @@ model FinancialLiteracyConcept {
   @@index([slug])
   @@index([category])
   @@map("financial_literacy_concepts")
+}
+
+// ==================== Cosmetic Shop (XP-spending economy) ====================
+// Real "spend your XP" loop: learners unlock cosmetic items (borders, badges,
+// titles, dashboard color themes) by spending earned XP. Server-side atomic
+// balance check + deduction lives in CosmeticsService; this is just storage.
+enum CosmeticCategory {
+  BORDER
+  BADGE
+  TITLE
+  COLOR_THEME
+}
+
+model AvatarCosmetic {
+  id              String            @id @default(uuid())
+  name            String            @unique
+  category        CosmeticCategory
+  xpCost          Int
+  iconOrStyleKey  String
+  isDefault       Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+
+  unlocks         LearnerCosmeticUnlock[]
+
+  @@index([category])
+  @@map("avatar_cosmetics")
+}
+
+model LearnerCosmeticUnlock {
+  id          String         @id @default(uuid())
+  learnerId   String
+  cosmeticId  String
+  unlockedAt  DateTime       @default(now())
+  isEquipped  Boolean        @default(false)
+
+  learner     Learner        @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  cosmetic    AvatarCosmetic @relation(fields: [cosmeticId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, cosmeticId])
+  @@index([learnerId])
+  @@index([cosmeticId])
+  @@map("learner_cosmetic_unlocks")
 }

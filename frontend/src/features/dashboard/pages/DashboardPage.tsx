@@ -21,7 +21,7 @@ import {
   Clock,
   Award,
 } from 'lucide-react'
-import { gamificationApi, masteryApi, missionsApi } from '@/lib/api/endpoints'
+import { gamificationApi, masteryApi, missionsApi, cosmeticsApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
 import { useAgeAdaptation, type CopyTone } from '@/lib/hooks/useAgeAdaptation'
 import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
@@ -84,6 +84,29 @@ const VIEW_PROGRESS_LABEL: Record<CopyTone, string> = {
   'encouraging-mature': 'View Full Progress',
 }
 
+// Real per-equipped-cosmetic rendering — not a settings toggle. These maps
+// translate the AvatarCosmetic.iconOrStyleKey seeded in the backend into
+// actual Tailwind classes / hex values applied on this page.
+const BORDER_RING_CLASS: Record<string, string> = {
+  'border-slate': 'ring-4 ring-slate-300',
+  'border-gold': 'ring-4 ring-secondary-400',
+  'border-blue': 'ring-4 ring-primary-400',
+  'border-purple': 'ring-4 ring-purple-400',
+  'border-diamond': 'ring-4 ring-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.65)]',
+}
+
+const THEME_ACCENT_HEX: Record<string, string> = {
+  'theme-indigo': '#4f46e5',
+  'theme-orange': '#ea580c',
+  'theme-pink': '#db2777',
+}
+
+const THEME_ACCENT_CHIP_CLASS: Record<string, string> = {
+  'theme-indigo': 'bg-primary-50 text-primary-600',
+  'theme-orange': 'bg-orange-50 text-orange-600',
+  'theme-pink': 'bg-pink-50 text-pink-600',
+}
+
 export function DashboardPage() {
   const navigate = useNavigate()
   const userStr = localStorage.getItem('user')
@@ -127,6 +150,19 @@ export function DashboardPage() {
     queryKey: ['recent-missions'],
     queryFn: () => missionsApi.getHistory().then(res => res.data),
   })
+
+  const { data: equippedCosmetics } = useQuery({
+    queryKey: ['cosmetics-equipped'],
+    queryFn: () => cosmeticsApi.getEquipped().then(res => res.data),
+  })
+
+  const equippedBorderKey: string | null = equippedCosmetics?.BORDER?.iconOrStyleKey ?? null
+  const equippedTitleName: string | null = equippedCosmetics?.TITLE?.name ?? null
+  const equippedThemeKey: string | null = equippedCosmetics?.COLOR_THEME?.iconOrStyleKey ?? null
+  const themeAccentHex = equippedThemeKey ? THEME_ACCENT_HEX[equippedThemeKey] : undefined
+  const themeChipClass = equippedThemeKey
+    ? THEME_ACCENT_CHIP_CLASS[equippedThemeKey] || 'bg-primary-50 text-primary-600'
+    : 'bg-primary-50 text-primary-600'
 
   const totalXP = useCountUp(progression?.totalXP || 0, 1000)
   const streakCount = useCountUp(streak?.currentStreak || 0, 700)
@@ -175,16 +211,37 @@ export function DashboardPage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="mb-8"
+          className="mb-8 flex items-center gap-4"
         >
-          <h2
-            className={`font-display font-bold text-slate-900 mb-1 ${
-              adapt.density === 'simple' ? 'text-3xl' : 'text-2xl'
+          {/* Equipped BORDER cosmetic renders here as a real ring around an
+              avatar circle — visible on every dashboard load, not a hidden
+              setting. Falls back to the default slate ring when nothing
+              is equipped yet. */}
+          <div
+            className={`w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-display font-bold text-lg flex-shrink-0 ${
+              BORDER_RING_CLASS[equippedBorderKey || 'border-slate'] || BORDER_RING_CLASS['border-slate']
             }`}
           >
-            Welcome back, {user?.displayName || 'Learner'}
-          </h2>
-          <p className="text-slate-500 text-sm">{GREETING_SUBTEXT[adapt.copyTone]}</p>
+            {(user?.displayName || 'L').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2
+              className={`font-display font-bold text-slate-900 mb-1 flex items-center gap-2 flex-wrap ${
+                adapt.density === 'simple' ? 'text-3xl' : 'text-2xl'
+              }`}
+            >
+              Welcome back, {user?.displayName || 'Learner'}
+              {/* Equipped TITLE cosmetic renders as real text next to the
+                  learner's name — the whole point of "spend your XP". */}
+              {equippedTitleName && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary-100 text-secondary-800 align-middle">
+                  <Sparkles className="w-3.5 h-3.5" strokeWidth={2} />
+                  {equippedTitleName}
+                </span>
+              )}
+            </h2>
+            <p className="text-slate-500 text-sm">{GREETING_SUBTEXT[adapt.copyTone]}</p>
+          </div>
         </motion.div>
 
         {/* Stats Grid — card count and per-card copy branch on `adapt`,
@@ -229,7 +286,7 @@ export function DashboardPage() {
                   text=""
                   strokeWidth={10}
                   styles={buildStyles({
-                    pathColor: '#4f46e5',
+                    pathColor: themeAccentHex || '#4f46e5',
                     trailColor: '#e0e4ff',
                   })}
                 />
@@ -263,7 +320,7 @@ export function DashboardPage() {
                   <p className="text-xs text-slate-500 mt-1">Rank #{rank?.rank || '---'}</p>
                 )}
               </div>
-              <div className="icon-chip bg-secondary-50 text-secondary-600">
+              <div className={`icon-chip ${themeChipClass}`}>
                 <Zap className="w-5 h-5" strokeWidth={2} />
               </div>
             </div>

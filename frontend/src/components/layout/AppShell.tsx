@@ -18,6 +18,7 @@ import {
   Languages,
   Palette,
   Sparkles,
+  ShoppingBag,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 
@@ -101,6 +102,7 @@ interface MoreItem {
 }
 
 const moreItems: MoreItem[] = [
+  { label: 'Shop', to: '/shop', icon: ShoppingBag, description: 'Spend XP on borders, badges, titles & themes' },
   { label: 'Achievements', to: '/achievements', icon: Trophy, description: 'Badges & milestones' },
   { label: 'Leaderboard', to: '/leaderboard', icon: BarChart3, description: 'See how you rank' },
   { label: 'Progress', to: '/progress', icon: TrendingUp, description: 'Your mastery over time' },
@@ -133,7 +135,7 @@ export function AppShell() {
 
   const isMoreActive = useMemo(
     () =>
-      ['/achievements', '/leaderboard', '/progress', '/voice-chat', '/characters'].some((p) =>
+      ['/achievements', '/leaderboard', '/progress', '/voice-chat', '/characters', '/shop'].some((p) =>
         location.pathname.startsWith(p)
       ) || location.pathname.startsWith('/parents/children'),
     [location.pathname]

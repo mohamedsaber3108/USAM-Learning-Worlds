@@ -26,6 +26,7 @@ import { EnglishStrandsPage } from '@/features/english/pages/EnglishStrandsPage'
 import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
 import { CharacterGalleryPage } from '@/features/characters/pages/CharacterGalleryPage'
 import { CharacterChatPage } from '@/features/characters/pages/CharacterChatPage'
+import { CosmeticShopPage } from '@/features/cosmetics/pages/CosmeticShopPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AppShell } from '@/components/layout/AppShell'
 import { LandingPage } from '@/features/landing/pages/LandingPage'
@@ -135,6 +136,9 @@ export function AppRouter() {
         {/* Character Universe (gallery with progressive unlock + per-character chat) */}
         <Route path="/characters" element={<CharacterGalleryPage />} />
         <Route path="/characters/:id/chat" element={<CharacterChatPage />} />
+
+        {/* Cosmetic Shop — real XP-spending economy (borders/badges/titles/themes) */}
+        <Route path="/shop" element={<CosmeticShopPage />} />
       </Route>
 
       {/* "/" — public landing/preview for signed-out visitors (real product
