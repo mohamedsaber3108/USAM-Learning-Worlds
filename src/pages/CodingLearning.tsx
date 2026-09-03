@@ -139,7 +139,7 @@ export function CodingLearning() {
                           className="flex-1"
                           onClick={() => handleStartChallenge(concept)}
                         >
-                          <Code className="mr-2 size-4" />
+                          <Code className="me-2 size-4" />
                           Challenge
                         </Button>
                       </div>

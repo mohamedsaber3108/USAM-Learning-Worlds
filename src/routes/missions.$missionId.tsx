@@ -65,7 +65,7 @@ function MissionRunPage() {
         to="/missions"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ChevronLeft className="size-4" aria-hidden /> All missions
+        <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden /> All missions
       </Link>
 
       <AsyncBoundary query={runQuery} loadingLabel="Opening the mission">

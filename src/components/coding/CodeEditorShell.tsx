@@ -48,9 +48,9 @@ export function CodeEditorShell({ exercise }: { exercise: CodingExercise }) {
         </div>
         <Badge variant="secondary" className="shrink-0">
           {blocksOnly ? (
-            <Blocks className="mr-1 size-3" aria-hidden />
+            <Blocks className="me-1 size-3" aria-hidden />
           ) : (
-            <TerminalSquare className="mr-1 size-3" aria-hidden />
+            <TerminalSquare className="me-1 size-3" aria-hidden />
           )}
           {blocksOnly ? "Blocks" : exercise.language}
         </Badge>
@@ -73,7 +73,7 @@ export function CodeEditorShell({ exercise }: { exercise: CodingExercise }) {
             <span className="size-2 rounded-full bg-destructive/70" aria-hidden />
             <span className="size-2 rounded-full bg-primary/70" aria-hidden />
             <span className="size-2 rounded-full bg-secondary/70" aria-hidden />
-            <span className="ml-2">main.{exercise.language === "python" ? "py" : "js"}</span>
+            <span className="ms-2">main.{exercise.language === "python" ? "py" : "js"}</span>
           </div>
           <label className="sr-only" htmlFor="code-source">
             Code editor

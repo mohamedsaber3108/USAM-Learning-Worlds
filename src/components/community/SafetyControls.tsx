@@ -65,7 +65,7 @@ export function ReportButton({ targetType, targetId, onSubmit }: ReportButtonPro
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="text-muted-foreground">
-          <Flag className="mr-2 size-4" />
+          <Flag className="me-2 size-4" />
           Report
         </Button>
       </DialogTrigger>
@@ -194,7 +194,7 @@ export function BlockButton({ userId, userName, onBlock }: BlockButtonProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="text-destructive">
-          <UserX className="mr-2 size-4" />
+          <UserX className="me-2 size-4" />
           Block
         </Button>
       </DialogTrigger>

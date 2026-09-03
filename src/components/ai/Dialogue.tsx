@@ -71,7 +71,7 @@ export function DialogueBubble({
 /** The "AI is composing" indicator, shared by every conversational surface. */
 export function TypingIndicator({ label = "Azouz is thinking" }: { label?: string }) {
   return (
-    <div className="flex items-center gap-1 pl-1" aria-live="polite" aria-label={label}>
+    <div className="flex items-center gap-1 ps-1" aria-live="polite" aria-label={label}>
       {[0, 1, 2].map((i) => (
         <span
           key={i}

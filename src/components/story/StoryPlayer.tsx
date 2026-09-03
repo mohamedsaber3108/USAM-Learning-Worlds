@@ -28,7 +28,7 @@ export function StoryPlayer({ story }: { story: Story }) {
           <h2 className="truncate font-display text-xl font-bold">{story.title}</h2>
         </div>
         <Badge variant="secondary" className="shrink-0">
-          <BookOpen className="mr-1 size-3" aria-hidden />
+          <BookOpen className="me-1 size-3" aria-hidden />
           {story.minutes} min
         </Badge>
       </div>

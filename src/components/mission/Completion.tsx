@@ -63,7 +63,7 @@ export function MasteryDecisionPanel({ decisions }: { decisions: MasteryDecision
             <p className="text-sm font-medium">{d.objectiveStatement}</p>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className={cn("rounded-full px-2 py-0.5", from.tone)}>{from.label}</span>
-              <Icons.ArrowRight className="size-3.5 text-muted-foreground" aria-hidden />
+              <Icons.ArrowRight className="size-3.5 text-muted-foreground rtl:rotate-180" aria-hidden />
               <span className={cn("rounded-full px-2 py-0.5 font-semibold", to.tone)}>
                 {to.label}
               </span>
@@ -221,7 +221,7 @@ export function NextRecommendations({
               <Button asChild variant={rec.kind === "rest" ? "ghost" : "secondary"} size="sm">
                 <Link to={rec.targetPath}>
                   {rec.kind === "rest" ? "Stop here" : "Go"}
-                  <Icons.ArrowRight className="size-4" aria-hidden />
+                  <Icons.ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
                 </Link>
               </Button>
             </li>

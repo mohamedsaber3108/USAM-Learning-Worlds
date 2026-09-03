@@ -473,7 +473,7 @@ function RecommendationCard({
         {recommendation.linkTo && onAction && (
           <Button size="sm" variant="outline" onClick={onAction}>
             {recommendation.linkTo.label}
-            <ArrowRight className="ml-2 size-4" />
+            <ArrowRight className="ms-2 size-4 rtl:rotate-180" />
           </Button>
         )}
       </div>
