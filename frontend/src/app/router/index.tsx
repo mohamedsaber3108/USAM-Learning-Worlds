@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
@@ -9,7 +10,6 @@ import { CharacterIntroPage } from '@/features/onboarding/pages/CharacterIntroPa
 import { OnboardingCompletePage } from '@/features/onboarding/pages/OnboardingCompletePage'
 import { MissionsBrowsePage } from '@/features/missions/pages/MissionsBrowsePage'
 import { MissionDetailPage } from '@/features/missions/pages/MissionDetailPage'
-import { MissionPlayerPage } from '@/features/missions/pages/MissionPlayerPage'
 import { MissionCompletePage } from '@/features/missions/pages/MissionCompletePage'
 import { ProjectsPage } from '@/features/projects/pages/ProjectsPage'
 import { ProjectDetailPage } from '@/features/projects/pages/ProjectDetailPage'
@@ -23,14 +23,10 @@ import { ConceptDetailPage } from '@/features/learning/pages/ConceptDetailPage'
 import { LearningPathsPage } from '@/features/learning/pages/LearningPathsPage'
 import { LearningPathDetailPage } from '@/features/learning/pages/LearningPathDetailPage'
 import { FlashcardsStudyPage } from '@/features/learning/pages/FlashcardsStudyPage'
-import { ParentDashboardPage } from '@/features/parents/pages/ParentDashboardPage'
 import { ParentTimeLimitsPage } from '@/features/parents/pages/ParentTimeLimitsPage'
-import { VoiceChatPage } from '@/features/voice/pages/VoiceChatPage'
 import { EnglishStrandsPage } from '@/features/english/pages/EnglishStrandsPage'
 import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
-import { CharacterGalleryPage } from '@/features/characters/pages/CharacterGalleryPage'
 import { CharacterChatPage } from '@/features/characters/pages/CharacterChatPage'
-import { CosmeticShopPage } from '@/features/cosmetics/pages/CosmeticShopPage'
 import { LearningInsightsPage } from '@/features/analytics/pages/LearningInsightsPage'
 import { CrossCurricularPage } from '@/features/cross-curricular/pages/CrossCurricularPage'
 import { CrossCurricularConceptDetailPage } from '@/features/cross-curricular/pages/CrossCurricularConceptDetailPage'
@@ -44,6 +40,34 @@ import { AppShell } from '@/components/layout/AppShell'
 import { LandingPage } from '@/features/landing/pages/LandingPage'
 import { AdminMissionsPage } from '@/features/admin/pages/AdminMissionsPage'
 import { AdminFeatureFlagsPage } from '@/features/admin/pages/AdminFeatureFlagsPage'
+import { LoadingState } from '@/components/common/CharacterState'
+
+/** Route-level code splitting for the heaviest pages in the bundle.
+ * These pull in large dependency subtrees (Sandpack/Pyodide for missions,
+ * chart/analytics libs for the parent dashboard, character art for the
+ * gallery, the cosmetic shop's asset previews, and the voice pipeline's
+ * media/audio handling), so they're loaded on demand via React.lazy()
+ * instead of shipping in the main chunk. See PERFORMANCE_GUIDE.md /
+ * this task's PR for the before/after bundle-size numbers. */
+const MissionPlayerPage = lazy(() =>
+  import('@/features/missions/pages/MissionPlayerPage').then((m) => ({ default: m.MissionPlayerPage }))
+)
+const CharacterGalleryPage = lazy(() =>
+  import('@/features/characters/pages/CharacterGalleryPage').then((m) => ({ default: m.CharacterGalleryPage }))
+)
+const ParentDashboardPage = lazy(() =>
+  import('@/features/parents/pages/ParentDashboardPage').then((m) => ({ default: m.ParentDashboardPage }))
+)
+const CosmeticShopPage = lazy(() =>
+  import('@/features/cosmetics/pages/CosmeticShopPage').then((m) => ({ default: m.CosmeticShopPage }))
+)
+const VoiceChatPage = lazy(() =>
+  import('@/features/voice/pages/VoiceChatPage').then((m) => ({ default: m.VoiceChatPage }))
+)
+
+function RouteFallback() {
+  return <LoadingState character="Azouz" message="Azouz is warming things up..." />
+}
 
 /** Branch "/" on auth state: signed-in visitors go straight to the app
  * (their previous behavior, unchanged); first-time/signed-out visitors get
@@ -126,7 +150,14 @@ export function AppRouter() {
         {/* Missions */}
         <Route path="/missions" element={<MissionsBrowsePage />} />
         <Route path="/missions/:id" element={<MissionDetailPage />} />
-        <Route path="/missions/play/:runId" element={<MissionPlayerPage />} />
+        <Route
+          path="/missions/play/:runId"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <MissionPlayerPage />
+            </Suspense>
+          }
+        />
         <Route path="/missions/complete" element={<MissionCompletePage />} />
 
         {/* Learning / Curriculum */}
@@ -150,24 +181,52 @@ export function AppRouter() {
         <Route path="/progress" element={<ProgressPage />} />
 
         {/* Parents (guardian-only backend endpoints; no client role-gate yet — see followup) */}
-        <Route path="/parents" element={<ParentDashboardPage />} />
+        <Route
+          path="/parents"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <ParentDashboardPage />
+            </Suspense>
+          }
+        />
         <Route path="/parents/children/:learnerId/time-limits" element={<ParentTimeLimitsPage />} />
 
         {/* Voice Chat (Voice Pipeline v1) */}
-        <Route path="/voice-chat" element={<VoiceChatPage />} />
+        <Route
+          path="/voice-chat"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <VoiceChatPage />
+            </Suspense>
+          }
+        />
 
         {/* English (Strands browser + Coach chat) */}
         <Route path="/english" element={<EnglishStrandsPage />} />
         <Route path="/english/coach" element={<EnglishCoachPage />} />
 
         {/* Character Universe (gallery with progressive unlock + per-character chat) */}
-        <Route path="/characters" element={<CharacterGalleryPage />} />
+        <Route
+          path="/characters"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <CharacterGalleryPage />
+            </Suspense>
+          }
+        />
         <Route path="/stories" element={<StoriesListPage />} />
         <Route path="/stories/:id" element={<StoryReaderPage />} />
         <Route path="/characters/:id/chat" element={<CharacterChatPage />} />
 
         {/* Cosmetic Shop — real XP-spending economy (borders/badges/titles/themes) */}
-        <Route path="/shop" element={<CosmeticShopPage />} />
+        <Route
+          path="/shop"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <CosmeticShopPage />
+            </Suspense>
+          }
+        />
 
         {/* My Journey — learner-facing view of the /learning/events analytics pipeline */}
         <Route path="/insights" element={<LearningInsightsPage />} />
