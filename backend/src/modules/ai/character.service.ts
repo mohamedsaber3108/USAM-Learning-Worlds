@@ -279,7 +279,14 @@ export class CharacterService {
   }
 
   /**
-   * Get character state for a specific learner
+   * Get character state for a specific learner.
+   *
+   * Derives relationshipLevel/interactionCount/lastInteraction from the
+   * character_interactions log (source of truth), then upserts the result
+   * into CharacterState — a small persisted read-cache row per
+   * (learner, character) pair so other code (e.g. a future "characters
+   * you're closest to" widget) can query relationship state directly
+   * without recomputing from the full interaction log every time.
    */
   async getCharacterState(
     characterId: string,
@@ -287,7 +294,6 @@ export class CharacterService {
   ): Promise<CharacterContext> {
     const character = await this.getCharacter(characterId);
 
-    // Get or create character state
     const interactions = await this.prisma.$queryRaw`
       SELECT COUNT(*) as count
       FROM character_interactions
@@ -295,9 +301,9 @@ export class CharacterService {
       AND "characterId" = ${characterId}
     ` as any[];
 
-    const interactionCount = interactions[0]?.count || 0;
+    const interactionCount = Number(interactions[0]?.count || 0);
 
-    const lastInteraction = await this.prisma.$queryRaw`
+    const lastInteractionRows = await this.prisma.$queryRaw`
       SELECT "createdAt"
       FROM character_interactions
       WHERE "learnerId" = ${learnerId}
@@ -311,6 +317,24 @@ export class CharacterService {
       5,
       Math.floor(interactionCount / 10) + 1,
     );
+    const lastInteraction = lastInteractionRows[0]?.createdAt;
+
+    // Persist as a read-cache row (upsert on the unique [learnerId, characterId]).
+    await this.prisma.characterState.upsert({
+      where: { learnerId_characterId: { learnerId, characterId } },
+      create: {
+        learnerId,
+        characterId,
+        relationshipLevel,
+        interactionCount,
+        lastInteraction,
+      },
+      update: {
+        relationshipLevel,
+        interactionCount,
+        lastInteraction,
+      },
+    });
 
     return {
       characterId,
@@ -318,7 +342,7 @@ export class CharacterService {
       characterRole: character.role,
       relationshipLevel,
       interactionCount,
-      lastInteraction: lastInteraction[0]?.createdAt,
+      lastInteraction,
     };
   }
 
