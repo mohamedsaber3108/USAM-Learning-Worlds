@@ -61,7 +61,7 @@ export function ReactionSystem({ characterId, characterName }: ReactionSystemPro
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-50 transition-all duration-500 ${
+      className={`fixed bottom-4 end-4 z-50 transition-all duration-500 ${
         isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
@@ -74,7 +74,7 @@ export function ReactionSystem({ characterId, characterName }: ReactionSystemPro
             </div>
             {/* Gesture Animation */}
             {currentReaction.gesture && (
-              <div className="absolute -top-2 -right-2 text-2xl animate-bounce">
+              <div className="absolute -top-2 -end-2 text-2xl animate-bounce">
                 {getGestureEmoji(currentReaction.gesture)}
               </div>
             )}
@@ -225,7 +225,7 @@ export function ReactionTriggerDemo() {
 
       {/* Active Reaction Display */}
       {currentReaction && (
-        <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="fixed bottom-4 end-4 z-50 animate-in slide-in-from-bottom-4 duration-500">
           <div className="bg-card border rounded-lg shadow-lg p-4 max-w-sm">
             <div className="flex items-start gap-3">
               <div className="relative">
@@ -233,7 +233,7 @@ export function ReactionTriggerDemo() {
                   {getExpressionEmoji(currentReaction.expression)}
                 </div>
                 {currentReaction.gesture && (
-                  <div className="absolute -top-2 -right-2 text-2xl animate-bounce">
+                  <div className="absolute -top-2 -end-2 text-2xl animate-bounce">
                     {getGestureEmoji(currentReaction.gesture)}
                   </div>
                 )}

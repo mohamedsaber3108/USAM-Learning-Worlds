@@ -99,7 +99,7 @@ export function SkillDetail({
               <p className="mt-1 text-xs text-muted-foreground">{skill.nextRecommendation.reason}</p>
               {onStartRecommendation && (
                 <Button onClick={onStartRecommendation} className="mt-3" size="sm">
-                  Start <ArrowRight className="ml-1.5 size-4" aria-hidden />
+                  Start <ArrowRight className="ms-1.5 size-4 rtl:rotate-180" aria-hidden />
                 </Button>
               )}
             </div>

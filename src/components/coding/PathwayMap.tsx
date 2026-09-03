@@ -200,7 +200,7 @@ export function LabCard({
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-display text-base font-semibold">{lab.title}</h3>
-        <ArrowRight className="size-4 shrink-0 text-primary" aria-hidden />
+        <ArrowRight className="size-4 shrink-0 text-primary rtl:rotate-180" aria-hidden />
       </div>
       <p className="text-sm text-muted-foreground">{lab.premise}</p>
       <p className="text-sm">{lab.instructions[ageBand].goal}</p>

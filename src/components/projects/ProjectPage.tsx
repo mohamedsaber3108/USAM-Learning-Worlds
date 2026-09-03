@@ -92,7 +92,7 @@ export function ProjectPage({
             </div>
             {canEdit && onAdvanceState && (
               <Button onClick={onAdvanceState} size="sm">
-                Next Stage <ArrowRight className="ml-1.5 size-4" />
+                Next Stage <ArrowRight className="ms-1.5 size-4 rtl:rotate-180" />
               </Button>
             )}
           </div>
@@ -241,7 +241,7 @@ function SkillConnectionCard({ connection }: { connection: Project["skillConnect
         <p className="text-sm font-medium">Skill Name Here</p>
         <div className="mt-1 flex items-center gap-2">
           <MasteryBadge state={connection.startingMastery} />
-          <ArrowRight className="size-3 text-muted-foreground" aria-hidden />
+          <ArrowRight className="size-3 text-muted-foreground rtl:rotate-180" aria-hidden />
           <MasteryBadge state={connection.targetMastery} />
         </div>
       </div>
