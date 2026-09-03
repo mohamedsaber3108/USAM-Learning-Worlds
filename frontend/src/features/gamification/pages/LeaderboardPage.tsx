@@ -103,14 +103,14 @@ export function LeaderboardPage() {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-slate-500">Your Rank</p>
-                  <p className="text-2xl font-display font-extrabold text-slate-900">
+                  <p className="text-2xl font-display font-extrabold text-slate-900 tabular-nums">
                     #{myRank.rank || '---'}
                   </p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-xs font-medium text-slate-500">Total XP</p>
-                <p className="text-2xl font-display font-extrabold text-secondary-600">
+                <p className="text-2xl font-display font-extrabold text-secondary-600 tabular-nums">
                   {myRankXP.toLocaleString()}
                 </p>
               </div>
@@ -120,9 +120,20 @@ export function LeaderboardPage() {
 
         {/* Leaderboard */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-slate-500">Loading leaderboard...</p>
+          <div className="card">
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 rounded-control bg-surface-50 animate-pulse">
+                  <div className="w-10 h-10 rounded-xl bg-surface-200 flex-shrink-0" />
+                  <div className="w-10 h-10 rounded-full bg-surface-200 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-32 bg-surface-200 rounded" />
+                    <div className="h-3 w-16 bg-surface-200 rounded" />
+                  </div>
+                  <div className="h-4 w-12 bg-surface-200 rounded" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : leaderboard && leaderboard.length > 0 ? (
           <div className="card">
@@ -133,8 +144,11 @@ export function LeaderboardPage() {
                 const RankIcon = getRankIcon(rank)
 
                 return (
-                  <div
+                  <motion.div
                     key={entry.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25, delay: Math.min(index, 10) * 0.03 }}
                     className={`flex items-center justify-between p-4 rounded-control transition-colors ${
                       isMe
                         ? 'bg-primary-50 border border-primary-200'
@@ -173,7 +187,7 @@ export function LeaderboardPage() {
 
                       {/* Stats */}
                       <div className="text-right">
-                        <p className="font-display font-bold text-secondary-600">
+                        <p className="font-display font-bold text-secondary-600 tabular-nums">
                           {entry.totalXP?.toLocaleString() || 0}
                         </p>
                         <p className="text-xs text-slate-400">XP</p>
@@ -184,7 +198,7 @@ export function LeaderboardPage() {
                         <div className="text-right ml-4 flex items-center gap-1">
                           <Flame className="w-4 h-4 text-accent-600" strokeWidth={2} />
                           <div>
-                            <p className="font-display font-bold text-accent-600 leading-none">
+                            <p className="font-display font-bold text-accent-600 leading-none tabular-nums">
                               {entry.currentStreak}
                             </p>
                             <p className="text-xs text-slate-400">streak</p>
@@ -192,7 +206,7 @@ export function LeaderboardPage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>

@@ -60,9 +60,24 @@ export function AchievementsPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-slate-500">Loading achievements...</p>
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="stat-card text-center animate-pulse">
+                  <div className="h-9 w-14 bg-surface-200 rounded mx-auto mb-2" />
+                  <div className="h-3 w-16 bg-surface-200 rounded mx-auto" />
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="stat-card animate-pulse">
+                  <div className="w-16 h-16 rounded-xl bg-surface-200 mx-auto mb-4" />
+                  <div className="h-4 w-32 bg-surface-200 rounded mx-auto mb-2" />
+                  <div className="h-3 w-40 bg-surface-200 rounded mx-auto" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : achievements && achievements.length > 0 ? (
           <>
