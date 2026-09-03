@@ -12,6 +12,7 @@ import { MissionDetailPage } from '@/features/missions/pages/MissionDetailPage'
 import { MissionPlayerPage } from '@/features/missions/pages/MissionPlayerPage'
 import { MissionCompletePage } from '@/features/missions/pages/MissionCompletePage'
 import { ProjectsPage } from '@/features/projects/pages/ProjectsPage'
+import { ProjectDetailPage } from '@/features/projects/pages/ProjectDetailPage'
 import { MyPortfolioPage } from '@/features/projects/pages/MyPortfolioPage'
 import { CommunityPage } from '@/features/community/pages/CommunityPage'
 import { AchievementsPage } from '@/features/gamification/pages/AchievementsPage'
@@ -134,6 +135,7 @@ export function AppRouter() {
 
         {/* Projects */}
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/portfolio" element={<MyPortfolioPage />} />
 
         {/* Community */}

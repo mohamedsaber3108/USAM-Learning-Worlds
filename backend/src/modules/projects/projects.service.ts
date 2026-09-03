@@ -317,6 +317,78 @@ export class ProjectsService {
     return !!collab;
   }
 
+  // ==================== Milestone stage machine ====================
+  // Idea -> Plan -> Build -> Test -> Present, backed by ProjectMilestone rows.
+  // Closes the "Project Stage Machine" gap: previously ProjectMilestone had
+  // no controller/service surface at all despite being seeded (10 projects /
+  // 50 milestones live in prod per seed-projects-rubrics.ts).
+
+  async listMilestones(projectId: string, learnerId?: string) {
+    if (learnerId) {
+      const hasAccess = await this.hasProjectAccess(projectId, learnerId);
+      const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+      if (!hasAccess && project?.visibility === 'PRIVATE') {
+        throw new ForbiddenException('No access to this project');
+      }
+    }
+    return this.prisma.projectMilestone.findMany({
+      where: { projectId },
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  async updateMilestoneStatus(
+    projectId: string,
+    milestoneId: string,
+    learnerId: string,
+    status: string,
+  ) {
+    const hasAccess = await this.hasProjectAccess(projectId, learnerId);
+    if (!hasAccess) throw new ForbiddenException('No access to this project');
+
+    const milestone = await this.prisma.projectMilestone.findUnique({
+      where: { id: milestoneId },
+    });
+    if (!milestone || milestone.projectId !== projectId) {
+      throw new NotFoundException('Milestone not found');
+    }
+
+    const validStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETE'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException(`status must be one of ${validStatuses.join(', ')}`);
+    }
+
+    const updated = await this.prisma.projectMilestone.update({
+      where: { id: milestoneId },
+      data: { status },
+    });
+
+    // Auto-advance project state to match furthest-reached milestone stage,
+    // so the Project.state (DRAFT/PLANNING/BUILDING/REVIEW/...) stays a real
+    // reflection of stepper progress instead of drifting from it.
+    const allMilestones = await this.prisma.projectMilestone.findMany({
+      where: { projectId },
+      orderBy: { order: 'asc' },
+    });
+    const completedCount = allMilestones.filter((m) => m.status === 'COMPLETE').length;
+    const stageToState: Record<number, string> = {
+      0: 'PLANNING',
+      1: 'PLANNING',
+      2: 'BUILDING',
+      3: 'REVIEW',
+      4: 'COMPLETED',
+    };
+    const newState = stageToState[completedCount] ?? undefined;
+    if (newState) {
+      const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+      if (project && project.state !== 'SHOWCASED' && project.state !== newState) {
+        await this.prisma.project.update({ where: { id: projectId }, data: { state: newState as any } });
+      }
+    }
+
+    return updated;
+  }
+
   // ==================== Research Engine ====================
   // Minimal real version: sourced notes/citations attached to a Project.
 

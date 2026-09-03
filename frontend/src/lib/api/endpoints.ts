@@ -138,6 +138,21 @@ export const projectsApi = {
 
   getRubric: (id: number | string) =>
     apiClient.get(`/projects/${id}/rubric`),
+
+  getMilestones: (id: string) =>
+    apiClient.get(`/projects/${id}/milestones`),
+
+  updateMilestone: (id: string, milestoneId: string, status: string) =>
+    apiClient.put(`/projects/${id}/milestones/${milestoneId}`, { status }),
+
+  listResearchNotes: (id: string) =>
+    apiClient.get(`/projects/${id}/research-notes`),
+
+  addResearchNote: (id: string, data: { content: string; sourceTitle?: string; sourceUrl?: string }) =>
+    apiClient.post(`/projects/${id}/research-notes`, data),
+
+  listCollaborators: (id: string) =>
+    apiClient.get(`/projects/${id}/collaborators`),
 }
 
 // ==================== Rubrics ====================
