@@ -40,7 +40,24 @@ export default defineConfig({
           }
           if (
             id.includes('@codesandbox/sandpack-react') ||
-            id.includes('@codesandbox/sandpack-client')
+            id.includes('@codesandbox/sandpack-client') ||
+            // Transitive deps pulled in solely by sandpack-client's embedded
+            // dev server + terminal/logging stack. These were previously
+            // falling through the substring checks above into the
+            // catch-all 'vendor' chunk (verified via rollup-plugin-
+            // visualizer: mime-db's bundled db.json alone is ~165kB,
+            // static-browser-server ~220kB) even though nothing outside
+            // the sandpack tree imports them, so grouping them here fixes
+            // cache-invalidation correctness rather than just moving bytes.
+            id.includes('/node_modules/mime-db/') ||
+            id.includes('/node_modules/static-browser-server/') ||
+            id.includes('@codesandbox/nodebox') ||
+            id.includes('/node_modules/outvariant/') ||
+            id.includes('/node_modules/dequal/') ||
+            id.includes('@stitches/core') ||
+            id.includes('/node_modules/anser/') ||
+            id.includes('/node_modules/lz-string/') ||
+            id.includes('intersection-observer')
           ) {
             return 'vendor-sandpack'
           }
