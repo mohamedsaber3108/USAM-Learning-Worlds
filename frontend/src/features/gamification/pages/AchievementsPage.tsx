@@ -14,6 +14,7 @@ import {
   Lock,
 } from 'lucide-react'
 import { gamificationApi } from '@/lib/api/endpoints'
+import { EmptyState } from '@/components/common/CharacterState'
 
 export function AchievementsPage() {
   const { data: achievements, isLoading } = useQuery({
@@ -205,15 +206,13 @@ export function AchievementsPage() {
             </div>
           </>
         ) : (
-          <div className="text-center py-12">
-            <div className="icon-chip bg-secondary-50 text-secondary-600 mx-auto mb-4 w-16 h-16">
-              <Trophy className="w-8 h-8" strokeWidth={2} />
-            </div>
-            <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">
-              No Achievements Yet
-            </h2>
-            <p className="text-slate-500">Start learning to unlock achievements!</p>
-          </div>
+          <EmptyState
+            character="Zein"
+            title="No Achievements Yet"
+            message="Every mission, streak, and project you complete earns you a badge. Start your first mission to unlock your very first achievement!"
+            actionLabel="Start a Mission"
+            actionTo="/missions"
+          />
         )}
       </main>
     </div>
