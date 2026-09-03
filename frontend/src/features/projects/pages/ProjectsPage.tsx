@@ -32,7 +32,11 @@ function NewProjectModal({
       <div className="bg-white rounded-card shadow-soft-lg max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display font-bold text-lg text-slate-900">New Project</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 rounded-full"
+          >
             <X className="w-5 h-5" strokeWidth={2} />
           </button>
         </div>

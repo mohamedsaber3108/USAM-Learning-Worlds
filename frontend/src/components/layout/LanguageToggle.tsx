@@ -28,7 +28,7 @@ export function LanguageToggle() {
           <button
             type="button"
             onClick={() => pick('en')}
-            className={`flex-1 text-xs font-semibold py-2 rounded-lg border transition-colors ${
+            className={`flex-1 text-xs font-semibold py-2 rounded-lg border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 ${
               current === 'en'
                 ? 'bg-primary-600 text-white border-primary-600'
                 : 'bg-white text-slate-600 border-surface-200'
@@ -39,7 +39,7 @@ export function LanguageToggle() {
           <button
             type="button"
             onClick={() => pick('ar')}
-            className={`flex-1 text-xs font-semibold py-2 rounded-lg border transition-colors ${
+            className={`flex-1 text-xs font-semibold py-2 rounded-lg border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 ${
               current === 'ar'
                 ? 'bg-primary-600 text-white border-primary-600'
                 : 'bg-white text-slate-600 border-surface-200'
