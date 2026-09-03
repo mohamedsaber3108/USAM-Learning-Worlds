@@ -350,6 +350,14 @@ export const en = {
     missionsCount: 'Missions ({{count}})',
     projectsCount: 'Projects ({{count}})',
   },
+  dailyGoal: {
+    title: "Today's Goal",
+    minutes: 'Minutes',
+    minutesValue: '{{spent}} / {{target}} min',
+    activities: 'Activities',
+    activitiesValue: '{{completed}} / {{target}}',
+    goalComplete: 'Goal complete for today — nice work!',
+  },
 };
 
 export type TranslationKeys = typeof en;

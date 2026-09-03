@@ -351,4 +351,12 @@ export const ar: TranslationKeys = {
     missionsCount: 'المهمات ({{count}})',
     projectsCount: 'المشاريع ({{count}})',
   },
+  dailyGoal: {
+    title: 'هدف اليوم',
+    minutes: 'الدقائق',
+    minutesValue: '{{spent}} / {{target}} دقيقة',
+    activities: 'الأنشطة',
+    activitiesValue: '{{completed}} / {{target}}',
+    goalComplete: 'خلّصت هدف النهارده — شغل تحفة!',
+  },
 };
