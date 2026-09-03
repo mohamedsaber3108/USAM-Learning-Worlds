@@ -1,12 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import helmet from 'helmet';
 import * as compression from 'compression';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Security headers
@@ -50,6 +51,7 @@ async function bootstrap() {
     🏥 Health check: http://localhost:${port}/api/health
     📊 Environment: ${process.env.NODE_ENV || 'development'}
   `);
+  logger.log(`Server started on port ${port} (env=${process.env.NODE_ENV || 'development'})`);
 }
 
 bootstrap();
