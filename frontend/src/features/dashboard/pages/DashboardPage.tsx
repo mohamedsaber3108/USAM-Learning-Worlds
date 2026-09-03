@@ -179,7 +179,7 @@ export function DashboardPage() {
   if (progressionLoading) {
     return (
       <div className="min-h-screen bg-surface-50 flex items-center justify-center">
-        <LoadingState character="Azouz" message="Azouz is getting your dashboard ready..." />
+        <LoadingState character="Azouz" message="Azouz is getting your dashboard ready..." size={96} />
       </div>
     )
   }
@@ -187,19 +187,19 @@ export function DashboardPage() {
   return (
     <div className="min-h-screen bg-surface-50">
       {/* Main Content — header + bottom nav now come from AppShell */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="mb-8 flex items-center gap-4"
+          className="mb-10 flex items-center gap-4"
         >
           {/* Equipped BORDER cosmetic renders here as a real ring around an
               avatar circle — visible on every dashboard load, not a hidden
               setting. Falls back to the default slate ring when nothing
               is equipped yet. */}
           <div
-            className={`w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-display font-bold text-lg flex-shrink-0 ${
+            className={`w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-display font-bold text-xl flex-shrink-0 ${
               BORDER_RING_CLASS[equippedBorderKey || 'border-slate'] || BORDER_RING_CLASS['border-slate']
             }`}
           >
@@ -207,8 +207,8 @@ export function DashboardPage() {
           </div>
           <div>
             <h2
-              className={`font-display font-bold text-slate-900 mb-1 flex items-center gap-2 flex-wrap ${
-                adapt.density === 'simple' ? 'text-3xl' : 'text-2xl'
+              className={`font-display font-bold text-slate-900 mb-1.5 flex items-center gap-2 flex-wrap tracking-tight ${
+                adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
               }`}
             >
               {t('dashboard.welcomeBack', { name: user?.displayName || t('dashboard.defaultLearnerName') })}
@@ -225,150 +225,126 @@ export function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Stats Grid — card count and per-card copy branch on `adapt`,
-            not on a CSS class. AGE_8_9 sees Level + XP + Streak only;
-            AGE_10_11 adds Rank; AGE_12_14 also gets the Mastery breakdown
-            below rendered in full detail. */}
-        <div
-          className={`grid grid-cols-1 gap-5 mb-8 ${
-            adapt.density === 'simple'
-              ? 'md:grid-cols-3'
-              : adapt.density === 'balanced'
-              ? 'md:grid-cols-2 lg:grid-cols-4'
-              : 'md:grid-cols-3'
-          }`}
-        >
+        {/* Stats — the core loop (Level + XP) is ONE hero card with real
+            visual weight (tinted surface, big ring, big numbers), not just
+            another white box in a uniform 4-up grid. Streak/Rank are
+            genuinely secondary: smaller, stacked in the side column.
+            Card count and copy still branch on `adapt` exactly as before —
+            AGE_8_9 sees Level+XP hero + Streak only; AGE_10_11 adds Rank;
+            AGE_12_14 also gets the Mastery breakdown further down. */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10 items-stretch">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.05 }}
-            className="stat-card"
+            className="lg:col-span-2 stat-card-hero"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.levelLabel')}</p>
-                <p
-                  className={`font-display font-extrabold text-slate-900 ${
-                    adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
-                  }`}
-                >
-                  {progression?.level || 1}
+            <div className="flex items-center gap-6">
+              <div className={adapt.density === 'simple' ? 'w-24 h-24 flex-shrink-0' : 'w-20 h-20 flex-shrink-0'}>
+                <CircularProgressbar
+                  value={levelProgress}
+                  text={String(progression?.level || 1)}
+                  strokeWidth={9}
+                  styles={buildStyles({
+                    pathColor: themeAccentHex || '#4f46e5',
+                    trailColor: '#e0e4ff',
+                    textColor: '#1e1b4b',
+                    textSize: '30px',
+                  })}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary-600 mb-1">
+                  {t('dashboard.levelLabel')}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-600 mb-3">
                   {t(`dashboard.levelHelptext.${adapt.copyTone}`, {
                     xp: progression?.xpInCurrentLevel || 0,
                     next: progression?.xpForNextLevel || 100,
                   })}
                 </p>
-              </div>
-              <div className={adapt.density === 'simple' ? 'w-16 h-16' : 'w-14 h-14'}>
-                <CircularProgressbar
-                  value={levelProgress}
-                  text=""
-                  strokeWidth={10}
-                  styles={buildStyles({
-                    pathColor: themeAccentHex || '#4f46e5',
-                    trailColor: '#e0e4ff',
-                  })}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.1 }}
-            className="stat-card"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.totalXpLabel')}</p>
-                <p
-                  className={`font-display font-extrabold text-slate-900 ${
-                    adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
-                  }`}
-                >
-                  {totalXP.toLocaleString()}
-                </p>
-                {/* Rank folds into the XP card for the youngest band instead
-                    of getting its own card — real content difference, not
-                    a hidden duplicate. Older bands get a real Rank card
-                    below (showRankCard). */}
-                {!showRankCard ? (
-                  <p className="text-xs text-slate-500 mt-1">{t(`dashboard.xpCelebration.${adapt.copyTone}`)}</p>
-                ) : (
-                  <p className="text-xs text-slate-500 mt-1">{t('dashboard.rankLabel', { rank: rank?.rank || '---' })}</p>
-                )}
-              </div>
-              <div className={`icon-chip ${themeChipClass}`}>
-                <Zap className="w-5 h-5" strokeWidth={2} />
-              </div>
-            </div>
-          </motion.div>
-
-          {showStreakCard && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.15 }}
-              className="stat-card"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.streakLabel')}</p>
+                <div className="flex items-baseline gap-2 flex-wrap">
                   <p
-                    className={`font-display font-extrabold text-slate-900 ${
-                      adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
+                    className={`font-display font-extrabold text-slate-900 tabular-nums leading-none ${
+                      adapt.density === 'simple' ? 'text-5xl' : 'text-4xl'
                     }`}
                   >
-                    {streakCount}
+                    {totalXP.toLocaleString()}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {showBestStreakDetail
-                      ? t('dashboard.bestStreak', { days: streak?.longestStreak || 0 })
-                      : t(`dashboard.streakCelebration.${adapt.copyTone}`)}
-                  </p>
+                  <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${themeChipClass}`}>
+                    <Zap className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    {t('dashboard.totalXpLabel')}
+                  </span>
                 </div>
-                <div className="icon-chip bg-accent-50 text-accent-600">
-                  <Flame className="w-5 h-5" strokeWidth={2} />
-                </div>
+                {!showRankCard ? (
+                  <p className="text-xs text-slate-500 mt-1.5">{t(`dashboard.xpCelebration.${adapt.copyTone}`)}</p>
+                ) : (
+                  <p className="text-xs text-slate-500 mt-1.5">{t('dashboard.rankLabel', { rank: rank?.rank || '---' })}</p>
+                )}
               </div>
-            </motion.div>
-          )}
+            </div>
+          </motion.div>
 
-          {/* Rank gets its own card once density allows a 4th+ card
-              (AGE_10_11 and AGE_12_14) — for AGE_8_9 it's folded above. */}
-          {showRankCard && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.2 }}
-              className="stat-card"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.rank')}</p>
-                  <p className="text-3xl font-display font-extrabold text-slate-900">
-                    #{rank?.rank || '---'}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {adapt.density === 'detailed' ? t('dashboard.rankAmongAll') : t('dashboard.rankKeepClimbing')}
-                  </p>
+          <div className="flex flex-col gap-5">
+            {showStreakCard && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.15 }}
+                className="stat-card-secondary flex-1"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.streakLabel')}</p>
+                    <p className="font-display font-extrabold text-slate-900 text-2xl tabular-nums">
+                      {streakCount}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {showBestStreakDetail
+                        ? t('dashboard.bestStreak', { days: streak?.longestStreak || 0 })
+                        : t(`dashboard.streakCelebration.${adapt.copyTone}`)}
+                    </p>
+                  </div>
+                  <div className="icon-chip bg-accent-50 text-accent-600 w-10 h-10">
+                    <Flame className="w-4.5 h-4.5" strokeWidth={2} />
+                  </div>
                 </div>
-                <div className="icon-chip bg-primary-50 text-primary-600">
-                  <Award className="w-5 h-5" strokeWidth={2} />
+              </motion.div>
+            )}
+
+            {/* Rank gets its own card once density allows a 4th+ card
+                (AGE_10_11 and AGE_12_14) — for AGE_8_9 it's folded into the hero. */}
+            {showRankCard && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.2 }}
+                className="stat-card-secondary flex-1"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.rank')}</p>
+                    <p className="text-2xl font-display font-extrabold text-slate-900 tabular-nums">
+                      #{rank?.rank || '---'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {adapt.density === 'detailed' ? t('dashboard.rankAmongAll') : t('dashboard.rankKeepClimbing')}
+                    </p>
+                  </div>
+                  <div className="icon-chip bg-primary-50 text-primary-600 w-10 h-10">
+                    <Award className="w-4.5 h-4.5" strokeWidth={2} />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+          </div>
         </div>
 
         {/* Today's Goal — real server-computed daily-goal progress ring.
             Sits right after the stats grid, before the mastery/quick-actions
             panels, so it's visible at-a-glance without scrolling on most
             viewports. */}
-        <div className="mb-8 max-w-sm">
+        <div className="mb-10 max-w-sm">
           <DailyGoalCard data={dailyGoal} isLoading={dailyGoalLoading} />
         </div>
 
@@ -378,7 +354,7 @@ export function DashboardPage() {
             layout, which is a genuine content difference, not styling. */}
         {mastery && (
           <div
-            className={`grid grid-cols-1 gap-5 mb-8 ${showMasteryBreakdown ? 'md:grid-cols-2' : ''}`}
+            className={`grid grid-cols-1 gap-5 mb-10 ${showMasteryBreakdown ? 'md:grid-cols-2' : ''}`}
           >
             {showMasteryBreakdown && (
               <div className="card">
