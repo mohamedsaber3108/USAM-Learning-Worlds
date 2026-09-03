@@ -19,7 +19,22 @@ import { CharacterFace } from '@/features/characters/components/CharacterFace'
  *  - Error: reassuring, no red/alarming language, always offers Retry.
  */
 
-export type CompanionName = 'Azouz' | 'Zein' | 'Luma' | 'Codey'
+export type CompanionName =
+  | 'Azouz'
+  | 'Zein'
+  | 'Luma'
+  | 'Codey'
+  | 'Nova'
+  | 'Mira'
+  | 'Rami'
+  | 'Faris'
+  | 'Tala'
+  | 'Adam'
+  | 'Byte'
+  | 'Nour'
+  | 'Rex'
+  | 'Zara'
+  | 'Atlas'
 
 function CompanionFace({ character, size }: { character: CompanionName; size: number }) {
   return <CharacterFace characterId={character} size={size} animate />
