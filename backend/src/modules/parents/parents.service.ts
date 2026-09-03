@@ -315,6 +315,41 @@ export class ParentsService {
   }
 
   /**
+   * Get child's recent metacognition reflections (post-mission self-ratings
+   * and optional notes). Real data from MissionReflection, joined with the
+   * ReflectionPrompt it answers and the MissionRun/Mission it belongs to,
+   * so a guardian can see e.g. "How did that feel?" -> 2/5 -> "It was hard"
+   * for a specific mission. Was previously zero-trace: the model/API
+   * existed for the learner side (reflection.controller.ts) but nothing on
+   * the guardian side surfaced it — Metacognition data was write-only.
+   */
+  async getChildReflections(parentId: string, learnerId: string, limit = 20) {
+    await this.verifyRelationship(parentId, learnerId);
+
+    const reflections = await this.prisma.missionReflection.findMany({
+      where: { learnerId },
+      include: {
+        prompt: true,
+        missionRun: {
+          include: { mission: { select: { title: true } } },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return reflections.map((r) => ({
+      id: r.id,
+      missionTitle: r.missionRun?.mission?.title ?? null,
+      promptText: r.prompt.text,
+      promptKind: r.prompt.kind,
+      rating: r.rating,
+      note: r.note,
+      createdAt: r.createdAt,
+    }));
+  }
+
+  /**
    * Verify guardian-learner relationship
    */
   private async verifyRelationship(guardianId: string, learnerId: string) {

@@ -78,6 +78,28 @@ export class ParentsController {
     return this.parentsService.getChildActivity(guardianId, learnerId, daysNum);
   }
 
+  /**
+   * Metacognition Engine (guardian view): a child's recent post-mission
+   * reflections (prompt + 1-5 self-rating + optional note), so a guardian
+   * can see how their kid says they're feeling about missions, not just
+   * score/XP numbers. Was previously write-only — learners could submit
+   * reflections but nothing surfaced them to guardians.
+   */
+  @Get('children/:learnerId/reflections')
+  async getChildReflections(
+    @CurrentUser() user: any,
+    @Param('learnerId') learnerId: string,
+    @Query('limit') limit?: string,
+  ) {
+    const guardianId = user.guardian?.id;
+    if (!guardianId) {
+      throw new Error('Only guardians can view child reflections');
+    }
+
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.parentsService.getChildReflections(guardianId, learnerId, limitNum);
+  }
+
   @Post('children/:learnerId/time-limits')
   async setTimeLimits(
     @CurrentUser() user: any,
