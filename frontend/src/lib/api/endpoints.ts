@@ -936,6 +936,40 @@ export const safetyPolicyApi = {
     apiClient.get<SafetyPolicyRecord>(`/admin/safety-policies/${ageBand}/versions/${version}`),
 }
 
+// ==================== Prompt Template Engine (AI Prompt/Policy Engine, generic slice) ====================
+// Backend: AdminPromptTemplateController (backend/src/modules/ai/
+// admin-prompt-template.controller.ts) over PromptTemplateService, a
+// versioned/changelog-tracked table backing every system-prompt string
+// previously hardcoded in character.service.ts/moderation.service.ts/
+// coding-coach.service.ts/english-coach.service.ts. Closes the
+// "generic prompt templates sub-gap" half of the AI Prompt/Policy
+// Engine (the SafetyPolicy half already has AdminSafetyPolicyPage).
+// ADMIN-only. Edits go through upsertTemplate (bumps version, keeps
+// changelog history — never destructive); deactivate is a soft-disable
+// that makes the owning service fall back to its inline default.
+export interface PromptTemplateRecord {
+  id: string
+  key: string
+  content: string
+  version: number
+  changelog: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export const promptTemplateApi = {
+  list: () => apiClient.get<PromptTemplateRecord[]>('/admin/prompt-templates'),
+
+  get: (key: string) => apiClient.get<PromptTemplateRecord>(`/admin/prompt-templates/${key}`),
+
+  update: (key: string, data: { content: string; changelog: string }) =>
+    apiClient.put<PromptTemplateRecord>(`/admin/prompt-templates/${key}`, data),
+
+  deactivate: (key: string) =>
+    apiClient.patch<PromptTemplateRecord>(`/admin/prompt-templates/${key}/deactivate`),
+}
+
 // ==================== Content Items (authoring CMS slice) ====================
 // Backend: ContentItemsController (backend/src/modules/content-items/
 // content-items.controller.ts) over ContentItemsService — the minimal

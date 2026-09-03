@@ -32,6 +32,7 @@ import { MemoryGovernanceService } from './memory-governance.service';
 import { MemoryGovernanceController } from './memory-governance.controller';
 import { SafetyPolicyService } from './services/safety-policy.service';
 import { AdminSafetyPolicyController } from './admin-safety-policy.controller';
+import { AdminPromptTemplateController } from './admin-prompt-template.controller';
 
 @Module({
   imports: [EnglishLearningModule, AuthModule, NotificationsModule],
@@ -44,6 +45,7 @@ import { AdminSafetyPolicyController } from './admin-safety-policy.controller';
     MemoryGovernanceController,
     SafetyEscalationController,
     AdminSafetyPolicyController,
+    AdminPromptTemplateController,
   ],
   providers: [
     // Legacy services (kept for backward compatibility)
