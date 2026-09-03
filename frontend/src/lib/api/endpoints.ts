@@ -784,6 +784,55 @@ export const worldsApi = {
   getOne: (id: string) => apiClient.get('/worlds/' + id),
 }
 
+// ==================== Creativity Engine ====================
+// Real data backed by CreativityPrompt/CreativitySubmission Prisma models
+// (backend/src/modules/creativity/creativity.controller.ts, mounted at
+// `/api/creativity`), seeded via backend/prisma/seeds/seed-creativity-prompts.ts
+// (13 open-ended prompts spanning story/art/music/invention across Domains).
+// A guided creative-project-prompt system distinct from generic
+// Project/ProjectMilestone — a curated prompt library + opt-in public
+// submission gallery, not open-ended free-form project tracking.
+export interface CreativityPromptRecord {
+  id: string
+  title: string
+  slug: string
+  prompt: string
+  ageBand: string
+  order: number
+  isActive: boolean
+  domain?: { id: string; name: string; slug: string } | null
+}
+
+export interface CreativitySubmissionRecord {
+  id: string
+  promptId: string
+  learnerId: string
+  title?: string | null
+  content: string
+  visibility: 'PRIVATE' | 'PUBLIC'
+  createdAt: string
+  prompt?: { id: string; title: string; slug: string }
+  learner?: { id: string; displayName: string; avatarUrl?: string | null }
+}
+
+export const creativityApi = {
+  listPrompts: (params?: { ageBand?: string; domainId?: string }) =>
+    apiClient.get<CreativityPromptRecord[]>('/creativity/prompts', { params }),
+
+  getPrompt: (slug: string) => apiClient.get<CreativityPromptRecord>(`/creativity/prompts/${slug}`),
+
+  submit: (dto: { promptId: string; title?: string; content: string; visibility?: 'PRIVATE' | 'PUBLIC' }) =>
+    apiClient.post<CreativitySubmissionRecord>('/creativity/submissions', dto),
+
+  mySubmissions: () => apiClient.get<CreativitySubmissionRecord[]>('/creativity/submissions/mine'),
+
+  gallery: (promptId?: string) =>
+    apiClient.get<CreativitySubmissionRecord[]>('/creativity/gallery', { params: promptId ? { promptId } : {} }),
+
+  setVisibility: (id: string, visibility: 'PRIVATE' | 'PUBLIC') =>
+    apiClient.post(`/creativity/submissions/${id}/visibility`, { visibility }),
+}
+
 // ==================== Feature Flags (admin) ====================
 export interface FeatureFlagRecord {
   key: string
