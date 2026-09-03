@@ -3,6 +3,7 @@ import { ProgressionService } from './progression.service';
 import { AchievementsService } from './achievements.service';
 import { StreaksService } from './streaks.service';
 import { CosmeticsService } from './cosmetics.service';
+import { StreakFreezeService } from './streak-freeze.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -14,6 +15,7 @@ export class GamificationController {
     private achievements: AchievementsService,
     private streaks: StreaksService,
     private cosmetics: CosmeticsService,
+    private streakFreeze: StreakFreezeService,
   ) {}
 
   @Get('progression')
@@ -140,6 +142,28 @@ export class GamificationController {
     }
 
     return this.cosmetics.equip(learnerId, id);
+  }
+
+  // ==================== Streak Freeze (coin-spending shop) ====================
+
+  @Get('streak-freeze/status')
+  async getStreakFreezeStatus(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners have streak freezes');
+    }
+
+    return this.streakFreeze.getStatus(learnerId);
+  }
+
+  @Post('streak-freeze/purchase')
+  async purchaseStreakFreeze(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners can purchase streak freezes');
+    }
+
+    return this.streakFreeze.purchase(learnerId);
   }
 
   private getLevelXPRange(level: number): number {

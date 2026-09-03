@@ -76,6 +76,35 @@ export class StreaksService {
       }
 
       return { streak: newStreak, isNewRecord, bonusXP };
+    } else if (streak.freezesAvailable > 0) {
+      // Coin-purchased Streak Freeze absorbs the missed day(s): consume one
+      // freeze token, keep the streak alive instead of resetting to 1.
+      const updated = await this.prisma.practiceStreak.update({
+        where: { learnerId },
+        data: {
+          freezesAvailable: { decrement: 1 },
+          lastPracticeDate: now,
+          lastFreezeUsedAt: now,
+        },
+      });
+
+      // Mark the oldest unused purchase as consumed (auditable ledger).
+      const oldestUnused = await this.prisma.streakFreezePurchase.findFirst({
+        where: { learnerId, usedAt: null },
+        orderBy: { purchasedAt: 'asc' },
+      });
+      if (oldestUnused) {
+        await this.prisma.streakFreezePurchase.update({
+          where: { id: oldestUnused.id },
+          data: { usedAt: now },
+        });
+      }
+
+      return {
+        streak: updated.currentStreak,
+        freezeUsed: true,
+        freezesRemaining: updated.freezesAvailable,
+      };
     } else {
       // Streak broken - reset
       await this.prisma.practiceStreak.update({
@@ -115,6 +144,7 @@ export class StreaksService {
         currentStreak: 0,
         longestStreak: 0,
         lastPracticeDate: null,
+        freezesAvailable: 0,
       };
     }
 
@@ -131,6 +161,7 @@ export class StreaksService {
         longestStreak: streak.longestStreak,
         lastPracticeDate: streak.lastPracticeDate,
         expired: true,
+        freezesAvailable: streak.freezesAvailable,
       };
     }
 
@@ -139,6 +170,7 @@ export class StreaksService {
       longestStreak: streak.longestStreak,
       lastPracticeDate: streak.lastPracticeDate,
       practicedToday: daysDiff === 0,
+      freezesAvailable: streak.freezesAvailable,
     };
   }
 

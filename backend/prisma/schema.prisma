@@ -503,11 +503,30 @@ model PracticeStreak {
   currentStreak     Int      @default(0)
   longestStreak     Int      @default(0)
   lastPracticeDate  DateTime
+  // Coin-spending economy: learners buy freeze tokens (see StreakFreezePurchase)
+  // that get consumed here instead of the streak resetting on a missed day.
+  freezesAvailable  Int      @default(0)
+  lastFreezeUsedAt  DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@index([learnerId])
   @@map("practice_streaks")
+}
+
+// Real coin-spending economy (distinct from the XP-spending cosmetic shop):
+// learners spend Progression.coins to buy a Streak Freeze — a Duolingo-pattern
+// token that protects their streak the next time they miss a practice day.
+// One row per purchase gives a real, auditable ledger of coin spend.
+model StreakFreezePurchase {
+  id         String   @id @default(uuid())
+  learnerId  String
+  coinsCost  Int
+  purchasedAt DateTime @default(now())
+  usedAt     DateTime?
+
+  @@index([learnerId])
+  @@map("streak_freeze_purchases")
 }
 
 // ============================================
@@ -1155,6 +1174,22 @@ model FinancialLiteracyConcept {
   @@index([slug])
   @@index([category])
   @@map("financial_literacy_concepts")
+}
+
+model DigitalLiteracyConcept {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?
+  category        String
+  ageAppropriate  AgeBand
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("digital_literacy_concepts")
 }
 
 // ==================== Cosmetic Shop (XP-spending economy) ====================

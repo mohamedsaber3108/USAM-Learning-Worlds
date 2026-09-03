@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Flame, Trophy, Target, CheckCircle2 } from 'lucide-react'
-import { gamificationApi, masteryApi, missionsApi } from '@/lib/api/endpoints'
+import { ArrowLeft, Flame, Trophy, Target, CheckCircle2, Snowflake, Coins } from 'lucide-react'
+import { gamificationApi, masteryApi, missionsApi, streakFreezeApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
 
 export function ProgressPage() {
+  const queryClient = useQueryClient()
+
   const { data: progression } = useQuery({
     queryKey: ['progression'],
     queryFn: () => gamificationApi.getProgression().then(res => res.data),
@@ -14,6 +16,20 @@ export function ProgressPage() {
   const { data: streak } = useQuery({
     queryKey: ['streak'],
     queryFn: () => gamificationApi.getStreak().then(res => res.data),
+  })
+
+  const { data: freezeStatus } = useQuery({
+    queryKey: ['streak-freeze-status'],
+    queryFn: () => streakFreezeApi.getStatus().then(res => res.data),
+  })
+
+  const purchaseFreeze = useMutation({
+    mutationFn: () => streakFreezeApi.purchase(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['streak-freeze-status'] })
+      queryClient.invalidateQueries({ queryKey: ['progression'] })
+      queryClient.invalidateQueries({ queryKey: ['streak'] })
+    },
   })
 
   const { data: achievements } = useQuery({
@@ -94,6 +110,76 @@ export function ProgressPage() {
               />
             </div>
           </div>
+        </motion.div>
+
+        {/* Streak Freeze — coin-spending economy, distinct from the XP cosmetic shop */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.03 }}
+          className="card mb-8"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="icon-chip bg-sky-50 text-sky-600">
+                <Snowflake className="w-5 h-5" strokeWidth={2} />
+              </div>
+              <div>
+                <p className="font-display font-semibold text-slate-900">Streak Freeze</p>
+                <p className="text-xs text-slate-500">
+                  Protects your streak if you miss a day — spend coins, not XP.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <Coins className="w-4 h-4 text-amber-500" strokeWidth={2} />
+                <span className="font-semibold">{freezeStatus?.coins ?? progression?.coins ?? 0}</span>
+                <span className="text-slate-400">coins</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: freezeStatus?.maxFreezesHeld ?? 2 }).map((_, i) => (
+                  <Snowflake
+                    key={i}
+                    className={`w-5 h-5 ${
+                      i < (freezeStatus?.freezesAvailable ?? 0) ? 'text-sky-500' : 'text-slate-200'
+                    }`}
+                    strokeWidth={2}
+                  />
+                ))}
+                <span className="text-xs text-slate-500 ml-1">
+                  {freezeStatus?.freezesAvailable ?? 0} active
+                </span>
+              </div>
+
+              <button
+                className="btn-primary text-sm px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={
+                  purchaseFreeze.isPending ||
+                  !freezeStatus?.canAfford ||
+                  freezeStatus?.atCap
+                }
+                onClick={() => purchaseFreeze.mutate()}
+              >
+                {freezeStatus?.atCap
+                  ? 'Max held'
+                  : `Buy Streak Freeze — ${freezeStatus?.costCoins ?? 50} coins`}
+              </button>
+            </div>
+          </div>
+
+          {purchaseFreeze.isError && (
+            <p className="text-xs text-danger-600 mt-3">
+              {(purchaseFreeze.error as any)?.response?.data?.message || 'Could not purchase freeze.'}
+            </p>
+          )}
+          {purchaseFreeze.isSuccess && (
+            <p className="text-xs text-success-600 mt-3">
+              Streak Freeze purchased! It'll auto-apply the next time you miss a practice day.
+            </p>
+          )}
         </motion.div>
 
         {/* Stats Grid */}
