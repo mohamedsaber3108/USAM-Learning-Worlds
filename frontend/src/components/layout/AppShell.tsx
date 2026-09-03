@@ -204,7 +204,9 @@ export function AppShell() {
               <Link
                 key={item.key}
                 to={item.to}
-                className={`relative flex flex-col items-center justify-center gap-1 ${navItemPaddingClass} font-medium`}
+                aria-current={isActive ? 'page' : undefined}
+                className={`relative flex flex-col items-center justify-center gap-1 ${navItemPaddingClass} font-medium
+                  transition-transform duration-150 active:scale-90 hover:-translate-y-0.5`}
               >
                 {isActive && (
                   <motion.div
@@ -213,11 +215,29 @@ export function AppShell() {
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
+                {/* Unmistakable active marker: a solid bar on the leading edge
+                    of the tab (top, flips with writing direction via inset)
+                    PLUS icon fill + bold label — not color alone. */}
+                {isActive && (
+                  <motion.div
+                    layoutId="tab-indicator-bar"
+                    className="absolute top-0 inset-x-4 h-[3px] rounded-full bg-primary-600"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
                 <Icon
-                  className={`relative ${navIconSizeClass} ${isActive ? 'text-primary-600' : 'text-slate-400'}`}
-                  strokeWidth={2}
+                  className={`relative ${navIconSizeClass} transition-transform duration-150 ${
+                    isActive ? 'text-primary-600 scale-110' : 'text-slate-400'
+                  }`}
+                  strokeWidth={isActive ? 2.5 : 2}
+                  fill={isActive ? 'currentColor' : 'none'}
+                  fillOpacity={isActive ? 0.12 : 0}
                 />
-                <span className={`relative ${navLabelSizeClass} ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
+                <span
+                  className={`relative ${navLabelSizeClass} ${
+                    isActive ? 'text-primary-600 font-bold' : 'text-slate-400 font-medium'
+                  }`}
+                >
                   {t(`nav.${item.key}`)}
                 </span>
               </Link>
@@ -227,7 +247,9 @@ export function AppShell() {
           {/* More tab — overflow drawer for lower-frequency pages */}
           <button
             onClick={() => setMoreOpen(true)}
-            className={`relative flex flex-col items-center justify-center gap-1 ${navItemPaddingClass} font-medium`}
+            aria-current={isMoreActive ? 'page' : undefined}
+            className={`relative flex flex-col items-center justify-center gap-1 ${navItemPaddingClass} font-medium
+              transition-transform duration-150 active:scale-90 hover:-translate-y-0.5`}
             aria-haspopup="dialog"
             aria-expanded={moreOpen}
           >
@@ -238,11 +260,26 @@ export function AppShell() {
                 transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               />
             )}
+            {isMoreActive && (
+              <motion.div
+                layoutId="tab-indicator-bar"
+                className="absolute top-0 inset-x-4 h-[3px] rounded-full bg-primary-600"
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              />
+            )}
             <MoreHorizontal
-              className={`relative ${navIconSizeClass} ${isMoreActive ? 'text-primary-600' : 'text-slate-400'}`}
-              strokeWidth={2}
+              className={`relative ${navIconSizeClass} transition-transform duration-150 ${
+                isMoreActive ? 'text-primary-600 scale-110' : 'text-slate-400'
+              }`}
+              strokeWidth={isMoreActive ? 2.5 : 2}
+              fill={isMoreActive ? 'currentColor' : 'none'}
+              fillOpacity={isMoreActive ? 0.12 : 0}
             />
-            <span className={`relative ${navLabelSizeClass} ${isMoreActive ? 'text-primary-600' : 'text-slate-400'}`}>
+            <span
+              className={`relative ${navLabelSizeClass} ${
+                isMoreActive ? 'text-primary-600 font-bold' : 'text-slate-400 font-medium'
+              }`}
+            >
               {t('nav.more')}
             </span>
           </button>
