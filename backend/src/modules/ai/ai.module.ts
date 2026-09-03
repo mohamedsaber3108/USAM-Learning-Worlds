@@ -15,6 +15,8 @@ import { LearnerContextService } from './learner-context.service';
 import { CharacterService } from './character.service';
 import { ConversationService } from './services/conversation.service';
 import { CharacterSafetyService } from './services/character-safety.service';
+import { SafetyEscalationService } from './services/safety-escalation.service';
+import { SafetyEscalationController } from './safety-escalation.controller';
 
 // Domain-specific coaches
 import { EnglishCoachService } from './services/english-coach.service';
@@ -37,6 +39,7 @@ import { MemoryGovernanceController } from './memory-governance.controller';
     EnglishCoachController,
     AdminAIEvalController,
     MemoryGovernanceController,
+    SafetyEscalationController,
   ],
   providers: [
     // Legacy services (kept for backward compatibility)
@@ -52,6 +55,7 @@ import { MemoryGovernanceController } from './memory-governance.controller';
     CharacterService,
     ConversationService,
     CharacterSafetyService,
+    SafetyEscalationService,
 
     // Domain coaches
     EnglishCoachService,
@@ -74,6 +78,7 @@ import { MemoryGovernanceController } from './memory-governance.controller';
     CharacterService,
     ConversationService,
     CharacterSafetyService,
+    SafetyEscalationService,
     EnglishCoachService,
     CodingCoachService,
     HallucinationControlService,

@@ -25,6 +25,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { ModerationService, ModerationResult } from '../moderation.service';
+import { SafetyEscalationService } from './safety-escalation.service';
 
 /**
  * The 5 explicit character-safety states. Every evaluateSafety() call
@@ -87,6 +88,7 @@ export class CharacterSafetyService {
   constructor(
     private prisma: PrismaService,
     private moderation: ModerationService,
+    private safetyEscalation: SafetyEscalationService,
   ) {}
 
   /**
@@ -147,6 +149,29 @@ export class CharacterSafetyService {
       inputModeration,
       responseModeration,
     });
+
+    if (state === 'escalation_required') {
+      // This is the fix for a real safety gap: previously
+      // 'escalation_required' was resolved above and only ever written
+      // into ModerationLog's free-form fields - nothing created an
+      // actionable record, so a HIGH-severity character-safety event on
+      // a children's platform had nowhere real to escalate to. Create a
+      // persisted SafetyEscalation here so a moderator/admin can see,
+      // claim, and resolve it via the /safety-escalations endpoints.
+      // Never let a failure here break the caller's fallback-response
+      // path for the child - log and continue.
+      try {
+        await this.safetyEscalation.createEscalation({
+          learnerId,
+          triggerReason: reasons.join('; ') || 'escalation_required (no reasons captured)',
+          safetyState: state,
+        });
+      } catch (error: any) {
+        this.logger.error(
+          `Failed to create SafetyEscalation record for learner ${learnerId}, character ${characterId}: ${error?.message}`,
+        );
+      }
+    }
 
     return { state, reasons, allowResponse };
   }
@@ -265,12 +290,18 @@ export class CharacterSafetyService {
   }
 
   /**
-   * Persist a safety event. Reuses the existing ModerationLog table
-   * (moderation_logs) rather than introducing a new model/migration -
-   * the 5-state character-safety verdict and both moderation results are
-   * carried in the existing free-form fields (categories/severity/action)
-   * plus a JSON-encoded detail blob appended to contentPreview, since
-   * ModerationLog has no dedicated metadata Json column to extend.
+   * Persist a safety event to the general ModerationLog audit trail
+   * (moderation_logs) - the 5-state character-safety verdict and both
+   * moderation results are carried in the existing free-form fields
+   * (categories/severity/action) plus a JSON-encoded detail blob
+   * appended to contentPreview, since ModerationLog has no dedicated
+   * metadata Json column to extend.
+   *
+   * NOTE: this is the audit log only. For 'escalation_required' states,
+   * a *separate*, actionable SafetyEscalation record is also created
+   * (see the call site in evaluateSafety()) - ModerationLog alone is
+   * not queryable/actionable enough for a moderator to work a queue
+   * against, which was the original gap this fixes.
    */
   private async logSafetyEvent(
     characterId: string,
