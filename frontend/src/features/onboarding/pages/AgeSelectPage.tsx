@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { Baby, Backpack, GraduationCap, ArrowRight } from 'lucide-react'
+import { Baby, Backpack, GraduationCap, ArrowRight, Check } from 'lucide-react'
 import apiClient from '@/lib/api/client'
 import { OnboardingLayout } from '../components/OnboardingLayout'
 
@@ -68,12 +68,25 @@ export function AgeSelectPage() {
 
   return (
     <OnboardingLayout step={3} totalSteps={5} stepKey="age">
-      <div className="max-w-xl w-full bg-white rounded-3xl shadow-soft-lg p-8 sm:p-10">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+      <div className="max-w-xl w-full bg-white rounded-3xl shadow-soft-lg px-8 py-10 sm:px-12 sm:py-12">
+        {/* A quiet icon-chip anchor above the headline — matches the visual
+            grammar WelcomePage established (character/glyph before text)
+            instead of jumping straight to a bare heading. */}
+        <div className="text-center mb-9">
+          <motion.div
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 200 }}
+            className="icon-chip w-14 h-14 mx-auto mb-5 bg-primary-50 text-primary-600"
+          >
+            <Backpack className="w-7 h-7" />
+          </motion.div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 leading-tight [text-wrap:balance]">
             {t('onboarding.age.title')}
           </h1>
-          <p className="text-gray-600">{t('onboarding.age.subtitle')}</p>
+          <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
+            {t('onboarding.age.subtitle')}
+          </p>
         </div>
 
         {error && (
@@ -82,7 +95,7 @@ export function AgeSelectPage() {
           </div>
         )}
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-3 mb-9">
           {AGE_BANDS.map((band, i) => {
             const Icon = band.icon
             const isSelected = selected === band.value
@@ -96,27 +109,39 @@ export function AgeSelectPage() {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={() => setSelected(band.value)}
-                className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-left transition-colors ${
+                aria-pressed={isSelected}
+                className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-150 ${
                   isSelected
-                    ? 'border-primary-500 ring-2 ring-primary-200 bg-primary-50'
-                    : `border-gray-200 hover:border-gray-300 ${band.tint.split(' ').filter(c => c.startsWith('bg-')).join(' ')}`
+                    ? 'border-primary-500 ring-2 ring-primary-200 bg-primary-50 shadow-soft-md'
+                    : `border-gray-200 hover:border-gray-300 hover:shadow-soft ${band.tint.split(' ').filter(c => c.startsWith('bg-')).join(' ')}`
                 }`}
               >
                 <div
-                  className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
                     isSelected ? 'bg-primary-500 text-white' : band.tint
                   }`}
                 >
                   <Icon className="w-8 h-8" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-lg font-bold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <p className="text-lg font-bold text-gray-900 leading-snug">
                     {t(`onboarding.age.bands.${band.key}.label`)}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 leading-relaxed">
                     {t(`onboarding.age.bands.${band.key}.blurb`)}
                   </p>
                 </div>
+                {/* Real selected-state affordance — a check chip, not just a
+                    border color change, so the choice reads unambiguously
+                    even for the youngest 8-9 band. */}
+                <motion.div
+                  initial={false}
+                  animate={{ scale: isSelected ? 1 : 0, opacity: isSelected ? 1 : 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  className="w-7 h-7 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0"
+                >
+                  <Check className="w-4 h-4" strokeWidth={3} />
+                </motion.div>
               </motion.button>
             )
           })}
@@ -125,7 +150,7 @@ export function AgeSelectPage() {
         <button
           onClick={handleContinue}
           disabled={!selected || saving}
-          className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="btn btn-primary w-full py-3.5 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {saving ? t('onboarding.age.saving') : t('onboarding.age.continue')}
           {!saving && <ArrowRight className="w-5 h-5 rtl:scale-x-[-1]" />}
