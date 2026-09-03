@@ -109,6 +109,12 @@ export default {
         'soft-md': '0 2px 8px rgba(16,24,40,0.06), 0 8px 24px rgba(16,24,40,0.06)',
         'soft-lg': '0 4px 12px rgba(16,24,40,0.08), 0 16px 40px rgba(16,24,40,0.08)',
         'soft-hover': '0 4px 16px rgba(16,24,40,0.08), 0 12px 32px rgba(16,24,40,0.10)',
+        // Tinted glows for correct/incorrect resolution states — same hue as
+        // the success/error tokens above, not a generic black shadow. Used
+        // sparingly on the single activity card that just resolved.
+        'glow-success': '0 0 0 1px rgba(16,185,129,0.22), 0 10px 28px -6px rgba(16,185,129,0.35)',
+        'glow-error': '0 0 0 1px rgba(239,68,68,0.20), 0 10px 28px -6px rgba(239,68,68,0.28)',
+        'glow-primary': '0 0 0 1px rgba(79,70,229,0.18), 0 8px 22px -6px rgba(79,70,229,0.28)',
       },
       keyframes: {
         'fade-in-up': {
@@ -123,10 +129,20 @@ export default {
           '0%': { transform: 'translateX(-120%)' },
           '100%': { transform: 'translateX(220%)' },
         },
+        // Tiny lateral wobble for the "not quite" resolution — a single
+        // decaying oscillation (spring-like), not a cartoon shake loop.
+        'wobble-once': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '20%': { transform: 'translateX(-4px)' },
+          '40%': { transform: 'translateX(3px)' },
+          '60%': { transform: 'translateX(-2px)' },
+          '80%': { transform: 'translateX(1px)' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.16,1,0.3,1) both',
         'shimmer-sweep': 'shimmer-sweep 1.1s ease-out',
+        'wobble-once': 'wobble-once 0.4s cubic-bezier(0.36,0.07,0.19,0.97) both',
       },
     },
   },
