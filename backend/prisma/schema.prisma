@@ -756,14 +756,23 @@ model ModerationLog {
 // model is the fix: a first-class queue a moderator/admin can list,
 // claim (assignedTo), and resolve.
 model SafetyEscalation {
-  id            String                 @id @default(uuid())
-  learnerId     String
-  triggerReason String                 @db.Text
-  safetyState   String
-  status        SafetyEscalationStatus @default(OPEN)
-  assignedTo    String?
-  resolvedAt    DateTime?
-  createdAt     DateTime               @default(now())
+  id             String                    @id @default(uuid())
+  learnerId      String
+  triggerReason  String                    @db.Text
+  safetyState    String
+  status         SafetyEscalationStatus    @default(OPEN)
+  assignedTo     String?
+  resolvedAt     DateTime?
+  // Teacher/Mentor Engine v1 (human escalation layer, previously fully
+  // Missing per the Gap Matrix — the queue only had OPEN/IN_PROGRESS/
+  // RESOLVED status with no record of WHAT a human actually did.
+  // resolutionType captures the real human decision made when closing
+  // an escalation; resolutionNote is the moderator/admin's free-text
+  // account of the review, both required at resolve-time so RESOLVED
+  // always carries a real audit trail, not just a status flip.
+  resolutionType EscalationResolutionType?
+  resolutionNote String?                   @db.Text
+  createdAt      DateTime                  @default(now())
 
   learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
@@ -777,6 +786,19 @@ enum SafetyEscalationStatus {
   OPEN
   IN_PROGRESS
   RESOLVED
+}
+
+// Teacher/Mentor Engine v1: what a human moderator/admin actually
+// decided when resolving a SafetyEscalation. REFERRED_TO_GUARDIAN fires
+// a real PARENT_FLAG notification to every ACTIVE guardian of the
+// learner (see SafetyEscalationService.resolve / NotificationsService.
+// emitSafetyEscalationFlag) so a real human-adult-in-the-loop is
+// actually notified, not just an internal status change.
+enum EscalationResolutionType {
+  RESOLVED_INTERNALLY
+  REFERRED_TO_GUARDIAN
+  REFERRED_TO_HUMAN_SUPPORT
+  FALSE_POSITIVE
 }
 
 model QuarantinedContent {

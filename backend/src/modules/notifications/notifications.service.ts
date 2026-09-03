@@ -199,6 +199,43 @@ export class NotificationsService {
   }
 
   /**
+   * Teacher/Mentor Engine v1 (human escalation layer): real trigger.
+   * Called from SafetyEscalationService.resolve() when a moderator/admin
+   * resolves a SafetyEscalation with resolutionType=REFERRED_TO_GUARDIAN
+   * — i.e. a human reviewer looked at a flagged character-safety event
+   * and decided the learner's real guardian needs to know. Same
+   * dedupe-on-source-record pattern as emitParentFlag, keyed on the
+   * safetyEscalationId so re-resolving/re-running doesn't duplicate the
+   * flag. This is the actual "notify a real human adult" half of the
+   * human-escalation-layer gap — previously a HIGH-severity safety event
+   * had a queue a moderator could resolve, but resolving it never told
+   * anyone outside the moderation team, including the child's own
+   * guardian.
+   */
+  async emitSafetyEscalationGuardianFlag(
+    learnerId: string,
+    safetyEscalationId: string,
+    resolutionNote: string,
+  ) {
+    const existing = await this.prisma.notification.findFirst({
+      where: {
+        learnerId,
+        type: 'PARENT_FLAG',
+        data: { path: ['safetyEscalationId'], equals: safetyEscalationId },
+      },
+    });
+    if (existing) return existing;
+
+    return this.create(
+      learnerId,
+      'PARENT_FLAG',
+      'A safety review on your child\u2019s account was referred to you',
+      resolutionNote,
+      { safetyEscalationId, triggerType: 'SAFETY_ESCALATION_REFERRED_TO_GUARDIAN' },
+    );
+  }
+
+  /**
    * Real trigger: daily goal complete. Called from DailyGoalsService once
    * getTodayProgress reports goalMet === true for the first time today.
    */

@@ -56,8 +56,12 @@ export class SafetyEscalationController {
   }
 
   /**
-   * Mark an escalation resolved. resolvedBy defaults to the calling
-   * moderator/admin's user id if the body omits it.
+   * Mark an escalation resolved. Requires resolutionType + resolutionNote
+   * (Teacher/Mentor Engine v1: every resolution must record a real human
+   * decision, not just a status flip). resolvedBy defaults to the
+   * calling moderator/admin's user id if the body omits it.
+   * resolutionType=REFERRED_TO_GUARDIAN fans out a real PARENT_FLAG
+   * notification to the learner's guardians.
    */
   @Patch(':id/resolve')
   async resolve(
@@ -65,6 +69,22 @@ export class SafetyEscalationController {
     @Body() dto: ResolveSafetyEscalationDto,
     @CurrentUser() user: any,
   ) {
-    return this.safetyEscalationService.resolve(id, dto.resolvedBy ?? user?.id);
+    return this.safetyEscalationService.resolve(
+      id,
+      dto.resolutionType as any,
+      dto.resolutionNote,
+      dto.resolvedBy ?? user?.id,
+    );
+  }
+
+  /**
+   * Teacher/Mentor Engine v1 ops summary: open/in-progress backlog size
+   * and a resolution-type breakdown of everything resolved, so whoever
+   * staffs this queue has an at-a-glance signal instead of only a raw
+   * list.
+   */
+  @Get('stats/summary')
+  async stats() {
+    return this.safetyEscalationService.stats();
   }
 }
