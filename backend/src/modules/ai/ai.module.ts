@@ -29,6 +29,8 @@ import { AIEvalService } from './ai-eval.service';
 import { AdminAIEvalController } from './admin-ai-eval.controller';
 import { MemoryGovernanceService } from './memory-governance.service';
 import { MemoryGovernanceController } from './memory-governance.controller';
+import { SafetyPolicyService } from './services/safety-policy.service';
+import { AdminSafetyPolicyController } from './admin-safety-policy.controller';
 
 @Module({
   imports: [EnglishLearningModule, AuthModule],
@@ -40,6 +42,7 @@ import { MemoryGovernanceController } from './memory-governance.controller';
     AdminAIEvalController,
     MemoryGovernanceController,
     SafetyEscalationController,
+    AdminSafetyPolicyController,
   ],
   providers: [
     // Legacy services (kept for backward compatibility)
@@ -66,6 +69,9 @@ import { MemoryGovernanceController } from './memory-governance.controller';
     // AI Evaluation Harness + Memory Governance
     AIEvalService,
     MemoryGovernanceService,
+
+    // AI Prompt/Policy Engine (Safety slice)
+    SafetyPolicyService,
   ],
   exports: [
     // Export both old and new for gradual migration
@@ -83,6 +89,7 @@ import { MemoryGovernanceController } from './memory-governance.controller';
     CodingCoachService,
     HallucinationControlService,
     PromptTemplateService,
+    SafetyPolicyService,
   ],
 })
 export class AIModule {

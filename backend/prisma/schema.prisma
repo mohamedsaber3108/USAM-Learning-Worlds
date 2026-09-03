@@ -934,6 +934,51 @@ model PromptTemplate {
   @@map("prompt_templates")
 }
 
+// AI Prompt/Policy Engine (Safety slice): a versioned, auditable store
+// for the *safety policy rules* that moderation.service.ts and
+// character-safety.service.ts currently hardcode inline (severity
+// thresholds, parent-bypass pattern lists, escalation triggers, etc).
+// Distinct from PromptTemplate above (which versions system-prompt
+// *text*) — SafetyPolicy versions the *rule configuration* those
+// services branch on, scoped per age band, so a policy change for
+// AGE_8_9 doesn't silently affect AGE_12_14 and every change is
+// auditable via effectiveFrom + changelog instead of a code diff.
+// Not a full policy-authoring/approval platform - a real, small
+// "read the safety thresholds from a table instead of a hardcoded
+// object" refactor, same spirit as PromptTemplate. See docs/
+// architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md "AI Prompt/Policy
+// Engine" row (Safety & Parent Engine bundle).
+model SafetyPolicy {
+  id            String    @id @default(uuid())
+  ageBand       AgeBand
+  policyVersion Int       @default(1)
+  // Rule payload, e.g.:
+  // {
+  //   "maxHealthySessionMinutes": 45,
+  //   "maxHealthyMessagesPerSession": 60,
+  //   "severityBlockThreshold": "CRITICAL",
+  //   "severityEscalateThreshold": "HIGH",
+  //   "parentBypassPatterns": ["..."],
+  //   "dependencyPhrases": ["..."]
+  // }
+  rules         Json
+  changelog     String?   @db.Text
+  isActive      Boolean   @default(true)
+  effectiveFrom DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // One version number per age band - callers resolve "the active
+  // policy for this ageBand" by isActive + latest effectiveFrom, but
+  // policyVersion must still be unique per ageBand for auditability
+  // (no two rows silently claim the same version number for the same
+  // band).
+  @@unique([ageBand, policyVersion])
+  @@index([ageBand, isActive])
+  @@index([effectiveFrom])
+  @@map("safety_policies")
+}
+
 enum ConversationType {
   LEARNING_SUPPORT
   ENGLISH_PRACTICE
