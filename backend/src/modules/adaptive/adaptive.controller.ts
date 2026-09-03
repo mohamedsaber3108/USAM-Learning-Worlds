@@ -3,6 +3,8 @@ import { ZPDCalculatorService } from './zpd-calculator.service';
 import { RecommendationService } from './recommendation.service';
 import { InterleavingService } from './interleaving.service';
 import { TransferService } from './transfer.service';
+import { CognitiveLoadService } from './cognitive-load.service';
+import { EngagementService } from './engagement.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -14,7 +16,42 @@ export class AdaptiveController {
     private recommendations: RecommendationService,
     private interleaving: InterleavingService,
     private transfer: TransferService,
+    private cognitiveLoad: CognitiveLoadService,
+    private engagement: EngagementService,
   ) {}
+
+  /**
+   * Attention/Engagement Engine v1: session-level abandonment-rate +
+   * completion-speed signal computed from real LearningEvent rows (see
+   * engagement.service.ts header for full scope notes). Distinct from
+   * Cognitive Load Engine's per-attempt fatigue signal above.
+   */
+  @Get('engagement')
+  async getEngagement(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners have an engagement assessment');
+    }
+    return this.engagement.assessEngagement(learnerId);
+  }
+
+  /**
+   * Cognitive Load Engine v1 — the read side (`assessLoad()`) existed in
+   * `CognitiveLoadService` since it was first built but was never exposed
+   * via any controller route (Gap Matrix note: "the fatigue-level/pacing-
+   * recommendation read side exists in code but not yet exposed via a
+   * controller route"). This closes that gap: a learner (or an admin
+   * viewing on a learner's behalf, guard TBD) can now fetch their own
+   * current rolling-window fatigue assessment.
+   */
+  @Get('cognitive-load')
+  async getCognitiveLoad(@CurrentUser() user: any) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners have a cognitive load assessment');
+    }
+    return this.cognitiveLoad.assessLoad(learnerId);
+  }
 
   /**
    * Interleaving Engine v1: build an interleaved (competency-alternating)

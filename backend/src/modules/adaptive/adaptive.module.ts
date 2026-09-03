@@ -5,6 +5,7 @@ import { RecommendationService } from './recommendation.service';
 import { CognitiveLoadService } from './cognitive-load.service';
 import { InterleavingService } from './interleaving.service';
 import { TransferService } from './transfer.service';
+import { EngagementService } from './engagement.service';
 
 @Module({
   controllers: [AdaptiveController],
@@ -14,6 +15,7 @@ import { TransferService } from './transfer.service';
     CognitiveLoadService,
     InterleavingService,
     TransferService,
+    EngagementService,
   ],
   exports: [
     ZPDCalculatorService,
@@ -21,6 +23,7 @@ import { TransferService } from './transfer.service';
     CognitiveLoadService,
     InterleavingService,
     TransferService,
+    EngagementService,
   ],
 })
 export class AdaptiveModule {}
