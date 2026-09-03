@@ -14,6 +14,7 @@ import {
   TEACHER_ESCALATION_HEDGE,
 } from './hallucination-control.service';
 import { PromptTemplateService } from './prompt-template.service';
+import { RetrievedContextItem } from '../interfaces/learner-context.interface';
 
 /** Fixed coding-domain vocabulary so normal on-subject questions about
  * coding concepts are never false-flagged as off-topic, even when they
@@ -50,11 +51,36 @@ export interface CodeReviewRequest {
 function groundedInFromContext(context: {
   currentMission?: { id: string };
   currentActivity?: { id: string };
+  retrievedContext?: RetrievedContextItem[];
 }): string[] {
   const ids: string[] = [];
   if (context?.currentMission?.id) ids.push(`mission:${context.currentMission.id}`);
   if (context?.currentActivity?.id) ids.push(`activity:${context.currentActivity.id}`);
+  (context?.retrievedContext ?? []).forEach((item) => ids.push(item.sourceTag));
   return ids;
+}
+
+/**
+ * Format retrieval-grounding hits (LearnerContextService.buildContext's
+ * `question`-driven keyword/full-text pass, see learner-context.service.ts)
+ * into a prompt block instructing the AI to cite the sourceTag when it
+ * draws on an item. Mirrors CharacterService.formatRetrievedContext /
+ * english-coach.service.ts's copy of the same helper.
+ * Returns '' when nothing was retrieved - never fabricates a filler block.
+ */
+function formatRetrievedContext(items?: RetrievedContextItem[]): string {
+  if (!items || items.length === 0) {
+    return '';
+  }
+
+  const lines = items
+    .map((item) => `- [${item.sourceTag}] ${item.title}: ${item.snippet}`)
+    .join('\n');
+
+  return `RELEVANT CURRICULUM CONTENT (retrieved by keyword match on the learner's question):
+${lines}
+
+When your answer draws on one of the items above, mention it naturally and cite it by appending its tag in the form (source: <tag>) exactly once, e.g. "(source: ${items[0].sourceTag})". Never cite a tag that isn't listed above, and never invent facts not supported by these snippets or your general knowledge - if you're unsure, say so instead of guessing.`;
 }
 
 export interface CodeExplanationRequest {
@@ -96,7 +122,11 @@ export class CodingCoachService {
    * Provide debug assistance
    */
   async provideDebugAssistance(request: DebugAssistanceRequest) {
-    const context = await this.learnerContext.buildContext(request.learnerId);
+    const context = await this.learnerContext.buildContext(
+      request.learnerId,
+      undefined,
+      request.error || request.expectedBehavior,
+    );
 
     const prompt = await this.buildDebugPrompt(request, context);
 
@@ -286,7 +316,7 @@ Make it fun and relatable!`;
    * Provide Socratic guidance (ask questions instead of giving answers)
    */
   async provideSocraticGuidance(learnerId: string, code: string, stuckPoint: string) {
-    const context = await this.learnerContext.buildContext(learnerId);
+    const context = await this.learnerContext.buildContext(learnerId, undefined, stuckPoint);
 
     // Off-topic detector: stuckPoint is genuinely free-text (a learner
     // can type anything here, not just a description of their code
@@ -317,7 +347,9 @@ Questions should:
 - Build understanding
 - Encourage experimentation
 
-${this.hallucinationControl.getPromptGuardrail()}`;
+${this.hallucinationControl.getPromptGuardrail()}
+
+${formatRetrievedContext(context.retrievedContext)}`;
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -429,7 +461,9 @@ ${request.code}
 ${request.error ? `Error: ${request.error}` : ''}
 ${request.expectedBehavior ? `Expected: ${request.expectedBehavior}` : ''}
 
-${this.hallucinationControl.getPromptGuardrail()}`;
+${this.hallucinationControl.getPromptGuardrail()}
+
+${formatRetrievedContext(context.retrievedContext)}`;
   }
 
   /**
