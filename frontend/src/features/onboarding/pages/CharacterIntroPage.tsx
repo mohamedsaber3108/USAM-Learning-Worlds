@@ -104,7 +104,7 @@ export function CharacterIntroPage() {
                 {t(`onboarding.character.${current.i18nKey}.role`)}
               </p>
 
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl text-left mb-2">
+              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl text-start mb-2">
                 <MessageCircle className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
                 <p className="text-gray-700 text-sm sm:text-[15px] leading-relaxed">
                   “{t(`onboarding.character.${current.i18nKey}.quote`)}”

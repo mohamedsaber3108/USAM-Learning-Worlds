@@ -70,7 +70,7 @@ export function AdminAnalyticsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm bg-white rounded-xl border border-surface-200">
               <thead>
-                <tr className="text-left text-slate-400 text-xs">
+                <tr className="text-start text-slate-400 text-xs">
                   <th className="px-3 py-2">Date</th>
                   <th className="px-3 py-2">Active learners</th>
                   <th className="px-3 py-2">Total events</th>

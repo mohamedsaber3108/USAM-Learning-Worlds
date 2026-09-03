@@ -110,7 +110,7 @@ export function AgeSelectPage() {
                 whileTap={{ scale: 0.99 }}
                 onClick={() => setSelected(band.value)}
                 aria-pressed={isSelected}
-                className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-150 ${
+                className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-start transition-all duration-150 ${
                   isSelected
                     ? 'border-primary-500 ring-2 ring-primary-200 bg-primary-50 shadow-soft-md'
                     : `border-gray-200 hover:border-gray-300 hover:shadow-soft ${band.tint.split(' ').filter(c => c.startsWith('bg-')).join(' ')}`

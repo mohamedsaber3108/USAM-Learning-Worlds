@@ -189,7 +189,7 @@ export function SearchBar() {
                     ref={(el) => (itemRefs.current[index] = el)}
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => handleSelect(item)}
-                    className={`block w-full text-left px-4 py-3 border-b border-surface-50 last:border-0 ${
+                    className={`block w-full text-start px-4 py-3 border-b border-surface-50 last:border-0 ${
                       isActive ? 'bg-primary-50' : 'hover:bg-surface-50'
                     }`}
                   >

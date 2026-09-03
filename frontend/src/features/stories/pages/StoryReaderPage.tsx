@@ -83,7 +83,7 @@ export function StoryReaderPage() {
                   <button
                     key={idx}
                     onClick={() => choose(choice.nextPageNumber)}
-                    className="w-full text-left px-4 py-3 rounded-lg border-2 border-primary-200 hover:border-primary-500 hover:bg-primary-50 transition-colors font-medium text-gray-800"
+                    className="w-full text-start px-4 py-3 rounded-lg border-2 border-primary-200 hover:border-primary-500 hover:bg-primary-50 transition-colors font-medium text-gray-800"
                   >
                     {choice.label}
                   </button>

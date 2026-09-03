@@ -187,7 +187,7 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.25 }}
-                className="mt-6 flex items-start gap-3 p-4 bg-primary-50 rounded-xl text-left"
+                className="mt-6 flex items-start gap-3 p-4 bg-primary-50 rounded-xl text-start"
               >
                 <CharacterAvatar name={selectedCharacter.name} size="md" />
                 <div>

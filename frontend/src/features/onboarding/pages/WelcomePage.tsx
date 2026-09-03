@@ -39,7 +39,7 @@ export function WelcomePage() {
           {t('onboarding.welcome.subtitle')}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-start">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

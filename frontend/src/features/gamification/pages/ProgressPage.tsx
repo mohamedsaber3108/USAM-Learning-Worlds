@@ -104,7 +104,7 @@ export function ProgressPage() {
               <p className="text-slate-500 text-xs font-medium mb-1">Current Level</p>
               <p className="text-5xl font-display font-extrabold text-primary-600">{progression?.level || 1}</p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-slate-500 text-xs font-medium mb-1">Total XP</p>
               <p className="text-4xl font-display font-extrabold text-slate-900">
                 {totalXP.toLocaleString()}
@@ -353,7 +353,7 @@ export function ProgressPage() {
                         {new Date(run.startedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       {run.status === 'COMPLETED' ? (
                         <>
                           <p className="text-sm font-semibold text-success-600">

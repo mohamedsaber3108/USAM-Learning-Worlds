@@ -50,7 +50,7 @@ export function OnboardingCompletePage() {
         {/* Checklist recap — every prior step, tied visually to this final
             screen via the same success-green token used across the app for
             correctness/mastery feedback (see tailwind.config.js). */}
-        <ul className="text-left space-y-2.5 mb-9 bg-success-50/60 rounded-2xl p-5">
+        <ul className="text-start space-y-2.5 mb-9 bg-success-50/60 rounded-2xl p-5">
           {checklist.map((item, i) => (
             <motion.li
               key={item}
