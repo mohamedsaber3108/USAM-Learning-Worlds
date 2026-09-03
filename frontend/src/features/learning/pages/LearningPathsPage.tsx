@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { ArrowLeft, Map } from 'lucide-react'
 import { curriculumApi, learningApi } from '@/lib/api/endpoints'
 
 interface LearningPath {
@@ -32,10 +33,14 @@ export function LearningPathsPage() {
       <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Link to="/learn" className="text-white/90 hover:text-white transition-colors">
-              ← Curriculum
+            <Link to="/learn" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
+              <ArrowLeft className="w-4 h-4" strokeWidth={2} />
+              Curriculum
             </Link>
-            <h1 className="text-2xl font-heading font-bold text-white">🗺️ Learning Paths</h1>
+            <h1 className="text-2xl font-heading font-bold text-white flex items-center gap-2">
+              <Map className="w-6 h-6" strokeWidth={2} />
+              Learning Paths
+            </h1>
           </div>
         </div>
       </header>

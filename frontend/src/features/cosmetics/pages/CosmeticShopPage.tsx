@@ -13,6 +13,7 @@ import {
   Type,
   Palette,
   Sparkles,
+  PartyPopper,
 } from 'lucide-react'
 import { cosmeticsApi } from '@/lib/api/endpoints'
 
@@ -267,7 +268,9 @@ export function CosmeticShopPage() {
             </div>
             <div>
               <p className="font-semibold text-sm">Unlocked!</p>
-              <p className="text-xs text-slate-300">{confirmation.name} is now yours 🎉</p>
+              <p className="text-xs text-slate-300 flex items-center gap-1">
+                {confirmation.name} is now yours <PartyPopper className="w-3.5 h-3.5" strokeWidth={2} />
+              </p>
             </div>
           </motion.div>
         )}
