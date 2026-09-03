@@ -49,6 +49,8 @@ import { AdminInterventionsPage } from '@/features/admin/pages/AdminIntervention
 import { AdminMisconceptionsPage } from '@/features/admin/pages/AdminMisconceptionsPage'
 import { AdminAIEvalPage } from '@/features/admin/pages/AdminAIEvalPage'
 import { AdminAssessmentQualityPage } from '@/features/admin/pages/AdminAssessmentQualityPage'
+import { AdminContentQaPage } from '@/features/admin/pages/AdminContentQaPage'
+import { AdminMemoryGovernancePage } from '@/features/admin/pages/AdminMemoryGovernancePage'
 import { LoadingState } from '@/components/common/CharacterState'
 
 /** Route-level code splitting for the heaviest pages in the bundle.
@@ -329,6 +331,22 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <AdminAssessmentQualityPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/content-qa"
+          element={
+            <AdminRoute>
+              <AdminContentQaPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/memory-governance"
+          element={
+            <AdminRoute>
+              <AdminMemoryGovernancePage />
             </AdminRoute>
           }
         />

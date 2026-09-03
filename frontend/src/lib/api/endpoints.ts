@@ -1038,6 +1038,63 @@ export const assessmentQualityApi = {
   scan: () => apiClient.post<AssessmentQualityScanResult>('/admin/assessment-quality/scan'),
 }
 
+// Content QA Engine — admin surface over ContentQAFlag, distinct from
+// Assessment Quality (question-item structure) and Rubrics (human grading).
+export type ContentQAFlagType =
+  | 'MISSING_DESCRIPTION'
+  | 'CONTENT_TOO_SHORT'
+  | 'NO_AGE_BAND_SIGNAL'
+  | 'ZERO_AGE_VARIANT_COVERAGE'
+
+export interface ContentQAFlag {
+  id: string
+  entityType: 'ACTIVITY' | 'MISSION'
+  entityId: string
+  flagType: ContentQAFlagType
+  severity: 'LOW' | 'MEDIUM' | 'HIGH'
+  detail: string
+  detectedAt: string
+}
+
+export interface ContentQAScanResult {
+  scannedAt: string
+  activitiesScanned: number
+  missionsScanned: number
+  flagsFound: number
+  flagsCreated: number
+  flagsAlreadyOpen: number
+  candidates: { entityType: string; entityId: string; flagType: ContentQAFlagType; detail: string }[]
+}
+
+export const contentQaApi = {
+  listFlags: () => apiClient.get<ContentQAFlag[]>('/admin/content-qa/flags'),
+  scan: () => apiClient.post<ContentQAScanResult>('/admin/content-qa/scan'),
+}
+
+// AI Memory Governance — admin visibility over ConversationMessage /
+// CharacterInteraction retention (volumes + past-retention backlog).
+export interface PurposeTagCount {
+  purposeTag: string
+  total: number
+  pastRetention: number
+}
+
+export interface MemoryGovernanceStats {
+  conversationMessages: PurposeTagCount[]
+  characterInteractions: PurposeTagCount[]
+  totals: {
+    conversationMessages: number
+    conversationMessagesPastRetention: number
+    characterInteractions: number
+    characterInteractionsPastRetention: number
+  }
+  generatedAt: string
+}
+
+export const memoryGovernanceApi = {
+  getStats: () => apiClient.get<MemoryGovernanceStats>('/admin/memory-governance/stats'),
+}
+
 // AI Evaluation Harness — admin read-only history over AIEvalRun/AIEvalResult,
 // populated by backend/scripts/run-ai-eval.ts (run manually/via cron, not
 // triggered from this UI). See backend/src/modules/ai/admin-ai-eval.controller.ts.
