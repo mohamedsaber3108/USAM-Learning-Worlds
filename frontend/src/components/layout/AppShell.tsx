@@ -23,6 +23,7 @@ import {
   Zap,
   FolderKanban,
   Settings,
+  FlaskConical,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { LanguageToggle } from './LanguageToggle'
@@ -391,6 +392,19 @@ export function AppShell() {
                       <div>
                         <p className="font-medium text-slate-700 text-sm">Admin: Feature Flags</p>
                         {isDetailedDensity && <p className="text-xs text-slate-400">Toggle gated features</p>}
+                      </div>
+                    </Link>
+                    <Link
+                      to="/admin/experiments"
+                      onClick={() => setMoreOpen(false)}
+                      className="quick-action !items-start ltr:!text-left rtl:!text-right"
+                    >
+                      <div className="icon-chip bg-slate-100 text-slate-600">
+                        <FlaskConical className="w-5 h-5" strokeWidth={2} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">Admin: Experiments</p>
+                        {isDetailedDensity && <p className="text-xs text-slate-400">A/B experiments &amp; variants</p>}
                       </div>
                     </Link>
                   </>

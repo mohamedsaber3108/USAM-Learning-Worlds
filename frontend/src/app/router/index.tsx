@@ -51,6 +51,7 @@ import { AdminAIEvalPage } from '@/features/admin/pages/AdminAIEvalPage'
 import { AdminAssessmentQualityPage } from '@/features/admin/pages/AdminAssessmentQualityPage'
 import { AdminContentQaPage } from '@/features/admin/pages/AdminContentQaPage'
 import { AdminMemoryGovernancePage } from '@/features/admin/pages/AdminMemoryGovernancePage'
+import { AdminExperimentsPage } from '@/features/admin/pages/AdminExperimentsPage'
 import { LoadingState } from '@/components/common/CharacterState'
 
 /** Route-level code splitting for the heaviest pages in the bundle.
@@ -347,6 +348,14 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <AdminMemoryGovernancePage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/experiments"
+          element={
+            <AdminRoute>
+              <AdminExperimentsPage />
             </AdminRoute>
           }
         />

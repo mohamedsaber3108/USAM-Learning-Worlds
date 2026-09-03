@@ -847,6 +847,36 @@ export const featureFlagsApi = {
     apiClient.patch(`/feature-flags/${key}`, { isEnabledGlobally }),
 }
 
+// ==================== Experimentation Engine v1 ====================
+// Backend: ExperimentationController/ExperimentationService
+// (backend/src/modules/experimentation/), deterministic hash-based
+// variant bucketing + persisted ExperimentAssignment rows. Merged with
+// zero frontend consumer — same "backend built, frontend dead" bug class
+// as the Audit/Feature-Flag engines. Staff (ADMIN/MODERATOR) list;
+// ADMIN-only create + status changes. No outcome/results endpoint exists
+// server-side yet (by design — see service header comment), so this page
+// is a plain list + create + status-control surface only.
+export interface ExperimentRecord {
+  id: string
+  key: string
+  name: string
+  description: string | null
+  status: 'DRAFT' | 'RUNNING' | 'PAUSED' | 'COMPLETED'
+  variants: (string | { name: string })[]
+  createdAt: string
+  updatedAt?: string
+}
+
+export const experimentsApi = {
+  list: () => apiClient.get<ExperimentRecord[]>('/experiments'),
+
+  create: (data: { key: string; name: string; description?: string; variants: string[] }) =>
+    apiClient.post<ExperimentRecord>('/experiments', data),
+
+  setStatus: (key: string, status: 'DRAFT' | 'RUNNING' | 'PAUSED' | 'COMPLETED') =>
+    apiClient.patch<ExperimentRecord>(`/experiments/${key}/status`, { status }),
+}
+
 // ==================== Translations (localization QA) ====================
 // Backend: TranslationController (backend/src/modules/learning/translation.controller.ts),
 // real seeded rows across CHARACTER/DOMAIN/ACTIVITY/DIGITAL_LITERACY_CONCEPT/
