@@ -43,6 +43,7 @@ import { DifficultyCalibrationModule } from './modules/difficulty-calibration/di
 import { MediaModule } from './modules/media/media.module';
 import { SimulationModule } from './modules/simulation/simulation.module';
 import { VisualLanguageModule } from './modules/visual-language/visual-language.module';
+import { CurriculumMappingModule } from './modules/curriculum-mapping/curriculum-mapping.module';
 
 @Module({
   imports: [
@@ -105,6 +106,7 @@ import { VisualLanguageModule } from './modules/visual-language/visual-language.
     MediaModule,
     SimulationModule,
     VisualLanguageModule,
+    CurriculumMappingModule,
   ],
   controllers: [AppController],
   providers: [
