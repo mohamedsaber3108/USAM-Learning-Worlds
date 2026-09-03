@@ -937,3 +937,57 @@ concluding it needs seeding.**
    distinct from the earlier false-alarm empty-DB finding.
 4. AWS Bedrock credentials still pending user action — not a blocker.
 5. 39 fully-stale branches confirmed safe to delete in a cleanup tick.
+
+### Tick 42 continued: real CHARACTER_UNLOCKED notification producer wired + live-verified
+
+Closed next-tick-priority #2 from above within the same tick (budget allowed
+it): `NotificationsService.emitCharacterUnlocked()` existed as a real,
+dedupe-safe method since an earlier tick but had **zero callers anywhere in
+the codebase** (confirmed via `grep -rn emitCharacterUnlocked backend/src`
+before touching anything — only the method definition itself matched).
+Wired it into `CharacterService.getUnlockedCharactersForLearner()` as a
+fire-and-forget side effect: every non-core character present in the real,
+live-computed unlock list now triggers `emitCharacterUnlocked`, which
+dedupes on `(learnerId, CHARACTER_UNLOCKED, characterId)` so repeated reads
+(there's no separate stored "unlock event" — unlock status is derived live
+from real mastery/project/mission/domain signals on every call) never
+double-notify. Added `NotificationsModule` to `AiModule`'s imports (no
+circular dependency — `NotificationsModule` only imports `PrismaService`
+internals, nothing from `ai/`).
+
+- `npx tsc --noEmit` and `npm run build` both clean before push.
+- Pushed as `7517a76` (clean fast-forward from `542fc8d`).
+- Deployed to Kids-server: `git merge --ff-only` → `7517a76`, `npx prisma
+  generate` (no-op), backend build clean, `pm2 restart` — **boot log clean,
+  no DI-resolution crash**, which is the real test for a newly-added
+  cross-module `imports`/constructor-injection wire (a broken DI graph
+  throws at Nest bootstrap, not silently).
+- **Live-verified end-to-end, not just deployed**: minted a real learner JWT
+  (via a live `Learner`+`User` row, same method as the admin-JWT pattern),
+  called `GET /api/characters/unlocked` once, then queried
+  `notifications` table directly — a real `CHARACTER_UNLOCKED` /
+  `"New character unlocked!"` row appeared with a timestamp matching the
+  API call. The producer fires for real against live data, not just
+  "builds without error."
+- All three (control, GitHub, Kids-server) confirmed at `7517a76`. Public
+  site 200, `/api/health` connected.
+
+Remaining honest gap on Notification Engine: only `CHARACTER_UNLOCKED` was
+unwired and is now fixed; the other 3 trigger types
+(`checkStreaksAtRisk`/`emitMissionMilestone`/`emitParentFlag`/
+`emitDailyGoalComplete`) were already correctly wired by earlier ticks
+(verified via `grep -rn "emitMissionMilestone\|emitParentFlag\|emitDailyGoalComplete\|checkStreaksAtRisk" backend/src`
+this tick, found real call sites in `missions.service.ts`,
+`intervention.service.ts`, `daily-goals.service.ts`, and the controller's
+manual-trigger endpoint respectively) — the Notification Engine's producer
+side is now fully wired for all 5 of its documented trigger types, not just
+read/list/mark-read. No push notification (FCM/APNs) infra exists — that
+remains out of scope per the service's own doc comment, correctly deferred.
+
+### Next tick priorities (updated)
+1. Gap Matrix reconciliation pass is still the standing overdue item (full
+   Running Tally recount against ~17 merges since Tick 17/Part 9) — highest
+   priority if no urgent live-bug is found first.
+2. `safety_policies` table genuinely empty — real scoped seeding task.
+3. AWS Bedrock credentials still pending user action — not a blocker.
+4. 39 fully-stale branches safe to delete in a cleanup tick.
