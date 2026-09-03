@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { ShieldCheck, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react'
 import { parentsApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
@@ -21,6 +22,7 @@ interface ChildLink {
 }
 
 export function ParentDashboardPage() {
+  const { t } = useTranslation()
   const [selectedLearnerId, setSelectedLearnerId] = useState<string | null>(null)
 
   // Real endpoint: GET /parents/children
@@ -65,16 +67,16 @@ export function ParentDashboardPage() {
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-indigo-400" strokeWidth={2} />
             <h1 className="text-sm font-semibold text-slate-100 tracking-tight">
-              Family Overview
+              {t('parentDashboard.familyOverview')}
             </h1>
-            <span className="parent-badge">Parent View</span>
+            <span className="parent-badge">{t('parentDashboard.parentView')}</span>
           </div>
           <Link
             to="/dashboard"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} />
-            Back to learner app
+            {t('parentDashboard.backToLearnerApp')}
           </Link>
         </div>
       </header>
@@ -83,29 +85,27 @@ export function ParentDashboardPage() {
         {isForbidden && (
           <div className="parent-panel border-amber-200 bg-amber-50 p-4 mb-6">
             <p className="text-amber-900 text-sm">
-              This account isn't linked as a guardian, so the Parent Dashboard has no
-              children to show. Log in with a guardian/parent account to view child
-              progress here.
+              {t('parentDashboard.forbiddenMessage')}
             </p>
           </div>
         )}
 
         {childrenLoading && (
-          <LoadingState character="Luma" message="Luma is pulling up your family overview..." />
+          <LoadingState character="Luma" message={t('parentDashboard.loadingChildren')} />
         )}
 
         {childrenIsError && !isForbidden && (
           <ErrorState
             character="Azouz"
-            title="Couldn't load your children"
-            message="No worries — this happens sometimes. Let's give it another try."
+            title={t('parentDashboard.childrenErrorTitle')}
+            message={t('parentDashboard.genericErrorMessage')}
             onRetry={() => refetchChildren()}
           />
         )}
 
         {!childrenLoading && !childrenIsError && !isForbidden && children && children.length === 0 && (
           <div className="parent-panel p-4">
-            <p className="text-slate-500 text-sm">No children are linked to this guardian account yet.</p>
+            <p className="text-slate-500 text-sm">{t('parentDashboard.noChildrenLinked')}</p>
           </div>
         )}
 
@@ -133,10 +133,13 @@ export function ParentDashboardPage() {
             <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900 leading-tight">
-                  {activeChild?.learner.displayName || 'Child'}
+                  {activeChild?.learner.displayName || t('parentDashboard.defaultChildName')}
                 </h2>
                 <p className="text-slate-500 text-xs mt-0.5">
-                  Age band {activeChild?.learner.ageBand} · Account status: {activeChild?.learner.status}
+                  {t('parentDashboard.ageBandStatus', {
+                    ageBand: activeChild?.learner.ageBand,
+                    status: activeChild?.learner.status,
+                  })}
                 </p>
               </div>
               <Link
@@ -144,19 +147,19 @@ export function ParentDashboardPage() {
                 className="parent-btn-secondary"
               >
                 <Timer className="w-3.5 h-3.5" strokeWidth={2} />
-                Manage Time Limits
+                {t('parentDashboard.manageTimeLimits')}
               </Link>
             </div>
 
             {dashboardLoading && (
-              <LoadingState character="Luma" message="Luma is putting together this dashboard..." />
+              <LoadingState character="Luma" message={t('parentDashboard.loadingDashboard')} />
             )}
 
             {dashboardIsError && (
               <ErrorState
                 character="Azouz"
-                title="Hmm, that dashboard didn't load"
-                message="No worries — this happens sometimes. Let's give it another try."
+                title={t('parentDashboard.dashboardErrorTitle')}
+                message={t('parentDashboard.genericErrorMessage')}
                 onRetry={() => refetchDashboard()}
               />
             )}
@@ -166,41 +169,41 @@ export function ParentDashboardPage() {
                 {/* Key metrics — a single dense, scannable panel row instead of 4 big decorative cards */}
                 <div className="parent-panel mb-5">
                   <div className="parent-panel-header">
-                    <span className="parent-section-label mb-0">Key Metrics</span>
+                    <span className="parent-section-label mb-0">{t('parentDashboard.keyMetrics')}</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100">
                     <div className="px-4 py-3">
-                      <p className="text-[11px] font-medium text-slate-500">Level</p>
+                      <p className="text-[11px] font-medium text-slate-500">{t('parentDashboard.level')}</p>
                       <p className="text-xl font-semibold text-slate-900 tabular-nums">
                         {dashboard.progression?.level ?? 1}
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        {dashboard.progression?.totalXP?.toLocaleString() ?? 0} XP
+                        {t('parentDashboard.xpSuffix', { xp: dashboard.progression?.totalXP?.toLocaleString() ?? 0 })}
                       </p>
                     </div>
 
                     <div className="px-4 py-3">
-                      <p className="text-[11px] font-medium text-slate-500">Streak</p>
+                      <p className="text-[11px] font-medium text-slate-500">{t('parentDashboard.streak')}</p>
                       <p className="text-xl font-semibold text-slate-900 tabular-nums">
-                        {dashboard.streak?.current ?? 0}d
+                        {t('parentDashboard.daysSuffix', { count: dashboard.streak?.current ?? 0 })}
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        Best {dashboard.streak?.longest ?? 0}d
+                        {t('parentDashboard.best', { count: dashboard.streak?.longest ?? 0 })}
                       </p>
                     </div>
 
                     <div className="px-4 py-3">
-                      <p className="text-[11px] font-medium text-slate-500">Proficient Skills</p>
+                      <p className="text-[11px] font-medium text-slate-500">{t('parentDashboard.proficientSkills')}</p>
                       <p className="text-xl font-semibold text-slate-900 tabular-nums">
                         {dashboard.mastery?.proficient ?? 0}
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        of {dashboard.mastery?.total ?? 0} tracked
+                        {t('parentDashboard.ofTracked', { count: dashboard.mastery?.total ?? 0 })}
                       </p>
                     </div>
 
                     <div className="px-4 py-3">
-                      <p className="text-[11px] font-medium text-slate-500">Showcased Projects</p>
+                      <p className="text-[11px] font-medium text-slate-500">{t('parentDashboard.showcasedProjects')}</p>
                       <p className="text-xl font-semibold text-slate-900 tabular-nums">
                         {dashboard.projects?.showcased ?? 0}
                       </p>
@@ -214,33 +217,37 @@ export function ParentDashboardPage() {
                     <div className="parent-panel-header">
                       <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
                         <BarChart3 className="w-4 h-4 text-indigo-500" strokeWidth={2} />
-                        Mastery Breakdown
+                        {t('parentDashboard.masteryBreakdown')}
                       </span>
                     </div>
                     <div>
                       <div className="parent-row">
-                        <span className="text-slate-500">Proficient</span>
+                        <span className="text-slate-500">{t('parentDashboard.proficient')}</span>
                         <span className="font-semibold text-emerald-600 tabular-nums">{dashboard.mastery?.proficient ?? 0}</span>
                       </div>
                       <div className="parent-row">
-                        <span className="text-slate-500">Developing</span>
+                        <span className="text-slate-500">{t('parentDashboard.developing')}</span>
                         <span className="font-semibold text-indigo-600 tabular-nums">{dashboard.mastery?.developing ?? 0}</span>
                       </div>
                       <div className="parent-row">
-                        <span className="text-slate-500">Emerging</span>
+                        <span className="text-slate-500">{t('parentDashboard.emerging')}</span>
                         <span className="font-semibold text-slate-500 tabular-nums">{dashboard.mastery?.emerging ?? 0}</span>
                       </div>
                     </div>
 
                     {dashboard.mastery?.byDomain && Object.keys(dashboard.mastery.byDomain).length > 0 && (
                       <div className="px-4 py-3 border-t border-slate-100">
-                        <p className="parent-section-label">By Domain</p>
+                        <p className="parent-section-label">{t('parentDashboard.byDomain')}</p>
                         <div className="space-y-1.5">
                           {Object.entries(dashboard.mastery.byDomain as Record<string, any>).map(([domain, stats]) => (
                             <div key={domain} className="flex justify-between text-xs">
                               <span className="text-slate-500">{domain}</span>
                               <span className="text-slate-700 tabular-nums">
-                                {stats.proficient}/{stats.total} · avg {stats.avgConfidence}%
+                                {t('parentDashboard.domainStats', {
+                                  proficient: stats.proficient,
+                                  total: stats.total,
+                                  avgConfidence: stats.avgConfidence,
+                                })}
                               </span>
                             </div>
                           ))}
@@ -253,7 +260,7 @@ export function ParentDashboardPage() {
                     <div className="parent-panel-header">
                       <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
                         <BookOpenCheck className="w-4 h-4 text-indigo-500" strokeWidth={2} />
-                        Recent Activity
+                        {t('parentDashboard.recentActivity')}
                       </span>
                     </div>
                     {dashboard.recentActivity && dashboard.recentActivity.length > 0 ? (
@@ -275,7 +282,7 @@ export function ParentDashboardPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-slate-400 text-sm px-4 py-3">No recent activity in this window.</p>
+                      <p className="text-slate-400 text-sm px-4 py-3">{t('parentDashboard.noRecentActivity')}</p>
                     )}
                   </div>
                 </div>
@@ -286,12 +293,14 @@ export function ParentDashboardPage() {
                     <div className="parent-panel-header">
                       <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
                         <CalendarRange className="w-4 h-4 text-indigo-500" strokeWidth={2} />
-                        Activity — last {activity.days} days
+                        {t('parentDashboard.activityLastDays', { days: activity.days })}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
                       <div className="px-4 py-3">
-                        <p className="parent-section-label">Practice ({activity.activities?.evidence?.length ?? 0})</p>
+                        <p className="parent-section-label">
+                          {t('parentDashboard.practiceCount', { count: activity.activities?.evidence?.length ?? 0 })}
+                        </p>
                         <div className="space-y-1">
                           {(activity.activities?.evidence ?? []).slice(0, 5).map((e: any, i: number) => (
                             <p key={i} className="text-xs text-slate-600 flex items-center gap-1.5">
@@ -306,7 +315,9 @@ export function ParentDashboardPage() {
                         </div>
                       </div>
                       <div className="px-4 py-3">
-                        <p className="parent-section-label">Missions ({activity.activities?.missions?.length ?? 0})</p>
+                        <p className="parent-section-label">
+                          {t('parentDashboard.missionsCount', { count: activity.activities?.missions?.length ?? 0 })}
+                        </p>
                         <div className="space-y-1">
                           {(activity.activities?.missions ?? []).slice(0, 5).map((m: any, i: number) => (
                             <p key={i} className="text-xs text-slate-600">{m.title} — {m.status}</p>
@@ -314,7 +325,9 @@ export function ParentDashboardPage() {
                         </div>
                       </div>
                       <div className="px-4 py-3">
-                        <p className="parent-section-label">Projects ({activity.activities?.projects?.length ?? 0})</p>
+                        <p className="parent-section-label">
+                          {t('parentDashboard.projectsCount', { count: activity.activities?.projects?.length ?? 0 })}
+                        </p>
                         <div className="space-y-1">
                           {(activity.activities?.projects ?? []).slice(0, 5).map((p: any, i: number) => (
                             <p key={i} className="text-xs text-slate-600">{p.title} — {p.state}</p>
