@@ -189,6 +189,8 @@ export class LearningController {
         return this.contentAdaptationService.getAdaptedObjective(entityId, ageBand);
       case 'MISSION':
         return this.contentAdaptationService.getAdaptedMission(entityId, ageBand);
+      case 'CONTENT_ITEM':
+        return this.contentAdaptationService.getAdaptedContentItem(entityId, ageBand);
       default:
         throw new Error(`Unsupported entity type: ${entityType}`);
     }

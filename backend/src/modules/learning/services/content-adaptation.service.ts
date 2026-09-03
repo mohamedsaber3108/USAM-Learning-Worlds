@@ -176,6 +176,50 @@ export class ContentAdaptationService {
     };
   }
 
+  /**
+   * Age-adapt a ContentItem (raw content produced by the Content
+   * Intelligence pipeline) by reading its real seeded AgeVariant row, if
+   * one exists. Closes the gap flagged in the gap matrix: ContentItem was
+   * modeled but never wired into content-adaptation.service.ts, unlike
+   * Activity/Objective/Mission which already had this path.
+   */
+  async getAdaptedContentItem(contentItemId: string, ageBand: AgeBand): Promise<AdaptedContent> {
+    const contentItem = await this.prisma.contentItem.findUnique({
+      where: { id: contentItemId },
+    });
+
+    if (!contentItem) {
+      throw new NotFoundException(`Content item ${contentItemId} not found`);
+    }
+
+    const variant = await this.prisma.ageVariant.findUnique({
+      where: {
+        entityType_entityId_ageBand: {
+          entityType: 'CONTENT_ITEM',
+          entityId: contentItemId,
+          ageBand,
+        },
+      },
+    });
+
+    return {
+      entityType: 'CONTENT_ITEM',
+      entityId: contentItemId,
+      baseContent: contentItem,
+      ageVariant: variant
+        ? {
+            framing: variant.framing,
+            languageLevel: variant.languageLevel,
+            scaffoldLevel: variant.scaffoldLevel,
+            surface: variant.surface,
+            content: variant.content,
+          }
+        : undefined,
+      adapted: !!variant,
+      ageBand,
+    };
+  }
+
   async createAgeVariant(
     entityType: string,
     entityId: string,
@@ -288,6 +332,8 @@ export class ContentAdaptationService {
         return this.prisma.mission.count({ where: { isActive: true } });
       case 'CONCEPT':
         return this.prisma.concept.count({ where: { isActive: true } });
+      case 'CONTENT_ITEM':
+        return this.prisma.contentItem.count();
       default:
         return 0;
     }
