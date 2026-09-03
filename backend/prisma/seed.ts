@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { seedCharacterUniverse } from './seeds/seed-character-universe';
 import { seedCosmetics } from './seeds/seed-cosmetics';
 import { seedReflectionPrompts } from './seeds/seed-reflection-prompts';
