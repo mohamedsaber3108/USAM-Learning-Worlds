@@ -45,6 +45,7 @@ import { AdminQuestionTemplatesPage } from '@/features/admin/pages/AdminQuestion
 import { AdminAnalyticsPage } from '@/features/admin/pages/AdminAnalyticsPage'
 import { AdminAuditLogPage } from '@/features/admin/pages/AdminAuditLogPage'
 import { AdminSafetyEscalationsPage } from '@/features/admin/pages/AdminSafetyEscalationsPage'
+import { AdminInterventionsPage } from '@/features/admin/pages/AdminInterventionsPage'
 import { LoadingState } from '@/components/common/CharacterState'
 
 /** Route-level code splitting for the heaviest pages in the bundle.
@@ -293,6 +294,14 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <AdminSafetyEscalationsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/interventions"
+          element={
+            <AdminRoute>
+              <AdminInterventionsPage />
             </AdminRoute>
           }
         />

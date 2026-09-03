@@ -943,6 +943,37 @@ export const auditApi = {
     apiClient.get<AuditLogEntry[]>('/audit/logs', { params }),
 }
 
+// Intervention Engine — staff (ADMIN/MODERATOR) surface over
+// InterventionRecommendation, created reactively by InterventionService
+// when a real struggle pattern (3 consecutive wrong on same competency,
+// or 5+ attempts with confidence still <0.3) is detected right after an
+// activity submission. See backend/src/modules/interventions/.
+export interface InterventionRecommendation {
+  id: string
+  learnerId: string
+  competencyId: string
+  triggerType: 'CONSECUTIVE_WRONG_SAME_COMPETENCY' | 'LOW_MASTERY_REPEATED_ATTEMPTS'
+  triggerDetail: string
+  recommendedAction: string
+  status: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED'
+  createdAt: string
+  acknowledgedAt: string | null
+  resolvedAt: string | null
+  learner?: { id: string; displayName?: string }
+  competency?: { id: string; name?: string }
+}
+
+export const interventionsApi = {
+  listOpen: (take?: number) =>
+    apiClient.get<InterventionRecommendation[]>('/admin/interventions', {
+      params: take ? { take } : undefined,
+    }),
+  acknowledge: (id: string) =>
+    apiClient.patch<InterventionRecommendation>(`/admin/interventions/${id}/acknowledge`),
+  resolve: (id: string) =>
+    apiClient.patch<InterventionRecommendation>(`/admin/interventions/${id}/resolve`),
+}
+
 // Safety Escalation Queue — staff (MODERATOR/ADMIN) surface over
 // SafetyEscalation, the persisted record created whenever
 // CharacterSafetyService.evaluateSafety() resolves to
