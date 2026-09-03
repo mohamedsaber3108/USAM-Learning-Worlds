@@ -969,12 +969,12 @@ export interface ContentItemListResponse {
 
 export const contentItemsApi = {
   list: (params?: {
-    type?: ContentTypeKey
-    status?: ContentStatusKey
-    ageBand?: AgeBandKey
-    domainId?: string
-    take?: number
-    skip?: number
+    type?: ContentTypeKey | undefined
+    status?: ContentStatusKey | undefined
+    ageBand?: AgeBandKey | undefined
+    domainId?: string | undefined
+    take?: number | undefined
+    skip?: number | undefined
   }) => apiClient.get<ContentItemListResponse>('/admin/content-items', { params }),
 
   findOne: (id: string) => apiClient.get<ContentItemRecord>(`/admin/content-items/${id}`),
@@ -985,10 +985,10 @@ export const contentItemsApi = {
     content: unknown
     metadata?: unknown
     language?: string
-    ageBand?: AgeBandKey
+    ageBand?: AgeBandKey | undefined
     domainId?: string
     objectiveId?: string
-    difficulty?: DifficultyLevelKey
+    difficulty?: DifficultyLevelKey | undefined
   }) => apiClient.post<ContentItemRecord>('/admin/content-items', data),
 
   updateStatus: (id: string, status: ContentStatusKey) =>
