@@ -19,6 +19,8 @@ import { LearningModule } from './modules/learning/learning.module';
 import { CodingSandboxModule } from './modules/coding-sandbox/coding-sandbox.module';
 import { VoiceModule } from './modules/voice/voice.module';
 import { CrossCurricularModule } from './modules/cross-curricular/cross-curricular.module';
+import { LearnerModelModule } from './modules/learner-model/learner-model.module';
+import { ReflectionModule } from './modules/reflection/reflection.module';
 
 @Module({
   imports: [
@@ -57,6 +59,8 @@ import { CrossCurricularModule } from './modules/cross-curricular/cross-curricul
     CodingSandboxModule,
     VoiceModule,
     CrossCurricularModule,
+    ReflectionModule,
+    LearnerModelModule,
   ],
   controllers: [AppController],
   providers: [
