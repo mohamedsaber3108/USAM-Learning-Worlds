@@ -115,9 +115,18 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // Single subtle highlight sweep across a progress fill — the
+        // "reward" cue for XP/streak bars. One pass, no looping rainbow,
+        // no color shift — just a soft lighter band of the SAME hue
+        // moving once across the bar when its value changes.
+        'shimmer-sweep': {
+          '0%': { transform: 'translateX(-120%)' },
+          '100%': { transform: 'translateX(220%)' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.16,1,0.3,1) both',
+        'shimmer-sweep': 'shimmer-sweep 1.1s ease-out',
       },
     },
   },

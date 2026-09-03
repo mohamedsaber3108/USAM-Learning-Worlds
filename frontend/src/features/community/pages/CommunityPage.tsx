@@ -13,9 +13,9 @@ import {
   CheckCircle2,
   Eye,
   Send,
-  Sprout,
 } from 'lucide-react'
 import { communityApi, projectsApi } from '@/lib/api/endpoints'
+import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
 
 interface CommunityProject {
   id: string
@@ -68,7 +68,7 @@ export function CommunityPage() {
   const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'submitted' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
-  const { data: feed, isLoading, isError } = useQuery({
+  const { data: feed, isLoading, isError, refetch } = useQuery({
     queryKey: ['community-feed'],
     queryFn: () => communityApi.getFeed({ limit: 20 }).then((res) => res.data),
   })
@@ -109,7 +109,7 @@ export function CommunityPage() {
       setSubmitState('error')
       setErrorMessage(
         err?.response?.data?.message ||
-          'Something went wrong sending your post to the review helpers. Please try again!',
+          "That didn't quite make it to the review helpers — no worries, let's try sending it again!",
       )
     }
   }
@@ -272,28 +272,22 @@ export function CommunityPage() {
         <h2 className="text-xl font-display font-bold text-slate-900 mb-4">Approved Posts</h2>
 
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-slate-600">Loading the community feed...</p>
-          </div>
+          <LoadingState character="Luma" message="Luma is fetching new posts from the community..." />
         ) : isError ? (
-          <div className="card text-center py-8">
-            <p className="text-slate-600">
-              Couldn't load the community feed right now. Please try again later.
-            </p>
-          </div>
+          <ErrorState
+            character="Luma"
+            title="Couldn't load the community feed"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetch()}
+          />
         ) : projects.length === 0 ? (
-          <div className="card text-center py-12">
-            <div className="icon-chip bg-success-50 text-success-600 w-16 h-16 mx-auto mb-4">
-              <Sprout className="w-8 h-8" strokeWidth={2} />
-            </div>
-            <h3 className="text-xl font-display font-bold text-slate-900 mb-2">
-              No posts here yet!
-            </h3>
-            <p className="text-slate-600">
-              Be the first to share something once it's checked by a helper.
-            </p>
-          </div>
+          <EmptyState
+            character="Luma"
+            title="No posts here yet!"
+            message="Be the first to share something once it's checked by a helper."
+            actionLabel="Share Something"
+            onAction={() => setShowForm(true)}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {projects.map((project, idx) => (

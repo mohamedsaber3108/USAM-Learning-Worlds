@@ -16,13 +16,14 @@ import {
   ListChecks,
 } from 'lucide-react'
 import { missionsApi } from '@/lib/api/endpoints'
+import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 
 export function MissionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [error, setError] = useState('')
 
-  const { data: mission, isLoading } = useQuery({
+  const { data: mission, isLoading, isError, refetch } = useQuery({
     queryKey: ['mission', id],
     queryFn: () => missionsApi.getById(id!).then(res => res.data),
     enabled: !!id,
@@ -59,23 +60,34 @@ export function MissionDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-          <p className="mt-4 text-slate-500">Loading mission...</p>
-        </div>
+        <LoadingState character="Azouz" message="Azouz is pulling up this mission..." />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-surface-50 flex items-center justify-center px-4">
+        <ErrorState
+          character="Azouz"
+          title="Couldn't load this mission"
+          message="No worries — this happens sometimes. Let's give it another try."
+          onRetry={() => refetch()}
+        />
       </div>
     )
   }
 
   if (!mission) {
     return (
-      <div className="min-h-screen bg-surface-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-slate-600 text-lg">Mission not found</p>
-          <Link to="/missions" className="text-primary-600 hover:text-primary-700 mt-4 inline-block">
-            ← Back to Missions
-          </Link>
-        </div>
+      <div className="min-h-screen bg-surface-50 flex items-center justify-center px-4">
+        <ErrorState
+          character="Zein"
+          title="Zein couldn't find that mission"
+          message="It might have moved or doesn't exist yet. Let's head back and pick another one."
+          retryLabel="Back to Missions"
+          onRetry={() => navigate('/missions')}
+        />
       </div>
     )
   }

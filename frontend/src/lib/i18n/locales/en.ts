@@ -139,6 +139,66 @@ export const en = {
       getToKnow: "First, let's get to know you a little — it only takes a minute!",
       getStarted: "Let's Get Started",
     },
+    language: {
+      title: 'Choose your language',
+      subtitle: 'You can change this any time in Settings.',
+      continue: 'Continue',
+    },
+    age: {
+      title: 'How old are you?',
+      subtitle: "This helps us pick missions and lessons that fit you.",
+      bands: {
+        AGE_8_9: { label: 'Age 8-9', blurb: "I'm just starting my learning journey" },
+        AGE_10_11: { label: 'Age 10-11', blurb: 'Ready for bigger challenges' },
+        AGE_12_14: { label: 'Age 12-14', blurb: 'I want to level up fast' },
+      },
+      saving: 'Saving...',
+      continue: 'Continue',
+      error: "We couldn't save your age band. Please try again.",
+    },
+    character: {
+      title: 'Meet your guide team',
+      subtitle: "Four characters are with you from day one — flip through and get to know them all.",
+      preferredPickSame: '{{name}} was your pick earlier too — great choice!',
+      preferredPickOther:
+        'You picked {{name}} as your favorite before — nice choice! But now the whole team is with you from the start.',
+      next: 'Next',
+      back: 'Back',
+      continueWithAll: "Let's go!",
+      dotAriaLabel: 'Go to {{name}}',
+      azouz: {
+        role: 'Your main guide',
+        quote:
+          "Hi, I'm Azouz! I'll be with you on every mission — cheering you on, giving hints when you're stuck, and throwing a little celebration every time you level up. Let's explore together!",
+      },
+      zein: {
+        role: 'The explorer',
+        quote:
+          "I'm Zein! My passion is finding new worlds to learn in — hidden facts, shortcuts, and \"what if\" questions. Walk with me and we'll never run out of things to discover!",
+      },
+      luma: {
+        role: 'English coach',
+        quote:
+          "Hey, I'm Luma! Words and language are my thing — reading, grammar, and talking about anything until it clicks. No boring drills, we turn practice into real conversation.",
+      },
+      codey: {
+        role: 'Coding coach',
+        quote:
+          "Hey, I'm Codey! I build real things with code — games, tiny apps, weird experiments. Bugs don't scare me, and by the end they won't scare you either.",
+      },
+    },
+    complete: {
+      title: 'All set!',
+      subtitle:
+        'Your profile is ready and your guide team is waiting to walk you through your first mission. Let\'s head to your dashboard.',
+      checklist: {
+        language: 'Language selected',
+        age: 'Age band saved',
+        characters: 'Met your guide team',
+        ready: 'Ready to start learning',
+      },
+      cta: 'Go to my dashboard',
+    },
   },
   language: {
     toggleLabel: 'Language',

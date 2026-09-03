@@ -46,6 +46,18 @@ export const cosmeticsApi = {
     apiClient.post(`/gamification/cosmetics/${id}/equip`),
 }
 
+// ==================== Daily Goal (real server-computed progress) ====================
+export const dailyGoalsApi = {
+  getGoal: () =>
+    apiClient.get('/daily-goals/me'),
+
+  setGoal: (data: { targetMinutes: number; targetActivities: number }) =>
+    apiClient.put('/daily-goals/me', data),
+
+  getProgress: () =>
+    apiClient.get('/daily-goals/me/progress'),
+}
+
 // ==================== Streak Freeze (coin-spending shop) ====================
 export const streakFreezeApi = {
   getStatus: () =>

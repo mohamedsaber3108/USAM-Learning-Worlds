@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Target, Clock } from 'lucide-react'
 import { missionsApi } from '@/lib/api/endpoints'
+import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
 
 export function MissionsBrowsePage() {
   const [filters, setFilters] = useState({
@@ -12,7 +13,7 @@ export function MissionsBrowsePage() {
     search: '',
   })
 
-  const { data: missions, isLoading } = useQuery({
+  const { data: missions, isLoading, isError, refetch } = useQuery({
     queryKey: ['missions', filters],
     queryFn: () => {
       const params: { difficulty?: string; domainId?: number; search?: string } = {}
@@ -107,10 +108,14 @@ export function MissionsBrowsePage() {
 
         {/* Mission Grid */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-slate-500">Loading missions...</p>
-          </div>
+          <LoadingState character="Zein" message="Zein is scouting out missions for you..." />
+        ) : isError ? (
+          <ErrorState
+            character="Azouz"
+            title="Couldn't fetch the missions"
+            message="No worries — this happens sometimes. Let's give it another try."
+            onRetry={() => refetch()}
+          />
         ) : missions && missions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {missions.map((mission: any, index: number) => (
@@ -165,10 +170,13 @@ export function MissionsBrowsePage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-slate-600 text-lg">No missions found</p>
-            <p className="text-slate-500 text-sm mt-2">Try adjusting your filters</p>
-          </div>
+          <EmptyState
+            character="Zein"
+            title="No missions match yet"
+            message="Try a different search or clear your filters to see everything Zein has scouted out."
+            actionLabel="Clear filters"
+            onAction={() => setFilters({ difficulty: '', domainId: '', search: '' })}
+          />
         )}
       </main>
     </div>
