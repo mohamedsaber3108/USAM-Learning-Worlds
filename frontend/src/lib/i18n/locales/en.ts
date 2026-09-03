@@ -130,6 +130,13 @@ export const en = {
     tip: "Tip: pick a character above first — we'll introduce you to them right after you sign up.",
   },
   onboarding: {
+    stepLabels: {
+      language: 'Language',
+      welcome: 'Welcome',
+      age: 'About you',
+      character: 'Your guides',
+      complete: 'All set',
+    },
     welcome: {
       title: 'Welcome to USAM Learning Worlds!',
       subtitle:
