@@ -943,3 +943,42 @@ export const auditApi = {
     apiClient.get<AuditLogEntry[]>('/audit/logs', { params }),
 }
 
+// Safety Escalation Queue — staff (MODERATOR/ADMIN) surface over
+// SafetyEscalation, the persisted record created whenever
+// CharacterSafetyService.evaluateSafety() resolves to
+// 'escalation_required'. See backend/src/modules/ai/safety-escalation.controller.ts.
+export type SafetyEscalationStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED'
+
+export interface SafetyEscalationEntry {
+  id: string
+  learnerId: string
+  triggerReason: string
+  safetyState: string
+  status: SafetyEscalationStatus
+  assignedTo: string | null
+  resolvedAt: string | null
+  createdAt: string
+  learner?: {
+    id: string
+    displayName: string | null
+    firstName: string | null
+    ageBand: string
+  }
+}
+
+export const safetyEscalationApi = {
+  list: (status?: SafetyEscalationStatus) =>
+    apiClient.get<SafetyEscalationEntry[]>('/safety-escalations', {
+      params: status ? { status } : undefined,
+    }),
+  getOne: (id: string) => apiClient.get<SafetyEscalationEntry>(`/safety-escalations/${id}`),
+  assign: (id: string, assignedTo?: string) =>
+    apiClient.patch<SafetyEscalationEntry>(`/safety-escalations/${id}/assign`, {
+      assignedTo,
+    }),
+  resolve: (id: string, resolvedBy?: string) =>
+    apiClient.patch<SafetyEscalationEntry>(`/safety-escalations/${id}/resolve`, {
+      resolvedBy,
+    }),
+}
+
