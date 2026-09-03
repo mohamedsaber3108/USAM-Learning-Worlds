@@ -315,12 +315,24 @@ export const learningEventsApi = {
 }
 
 // ==================== English (Strands + Coach) ====================
+export type EnglishStrandFamily =
+  | 'VOCABULARY'
+  | 'GRAMMAR'
+  | 'PRONUNCIATION'
+  | 'LISTENING'
+  | 'READING'
+  | 'WRITING'
+  | 'SPEAKING'
+  | 'SHADOWING'
+  | 'DICTATION'
+
 export interface EnglishStrand {
   id: string
   name: string
   slug: string
   description: string | null
   cefrLevel: string | null
+  strandType: EnglishStrandFamily | null
   order: number
   isActive: boolean
   createdAt: string
@@ -331,10 +343,13 @@ export interface EnglishStrand {
  * (`backend/src/modules/learning/english.controller.ts`, mounted at
  * `/api/english`). 45 seeded rows across the 9 strand families
  * (Vocabulary, Grammar, Pronunciation, Listening, Reading, Writing,
- * Speaking, Shadowing, Dictation), CEFR A1-B2.
+ * Speaking, Shadowing, Dictation), CEFR A1-B2. Family is a real
+ * `strandType` enum column (migration
+ * `20260903_add_english_strand_type_column.sql`), not client-side
+ * name-string-parsing.
  */
 export const englishApi = {
-  listStrands: (params?: { cefrLevel?: string }) =>
+  listStrands: (params?: { cefrLevel?: string; strandType?: EnglishStrandFamily }) =>
     apiClient.get<EnglishStrand[]>('/english/strands', { params }),
 
   getStrand: (slug: string) =>
@@ -489,7 +504,7 @@ export const codingSandboxApi = {
 //   - FinancialLiteracyConcept (19 rows, financial_literacy_concepts)
 // Served by backend/src/modules/cross-curricular/cross-curricular.controller.ts,
 // mounted at `/api/cross-curricular`.
-export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy'
+export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy' | 'career-exploration'
 
 export interface CrossCurricularConcept {
   id: string
