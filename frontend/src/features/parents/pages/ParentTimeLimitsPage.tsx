@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ShieldCheck, Timer, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react'
 import { parentsApi } from '@/lib/api/endpoints'
+import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 
 /**
  * Time-limits settings for a single child.
@@ -21,6 +22,20 @@ export function ParentTimeLimitsPage() {
   const [dailyMinutes, setDailyMinutes] = useState<number | ''>('')
   const [weeklyMinutes, setWeeklyMinutes] = useState<number | ''>('')
   const [bedtimeHour, setBedtimeHour] = useState<number | ''>('')
+
+  const dailyError =
+    dailyMinutes !== '' && (dailyMinutes < 0 || dailyMinutes > 480)
+      ? 'Daily limit needs to be between 0 and 480 minutes.'
+      : null
+  const weeklyError =
+    weeklyMinutes !== '' && (weeklyMinutes < 0 || weeklyMinutes > 2000)
+      ? 'Weekly limit needs to be between 0 and 2000 minutes.'
+      : null
+  const bedtimeError =
+    bedtimeHour !== '' && (bedtimeHour < 0 || bedtimeHour > 23)
+      ? 'Bedtime hour needs to be between 0 and 23.'
+      : null
+  const hasFieldErrors = Boolean(dailyError || weeklyError || bedtimeError)
 
   const { data: children } = useQuery({
     queryKey: ['parents-children'],
@@ -96,7 +111,9 @@ export function ParentTimeLimitsPage() {
                 onChange={(e) => setDailyMinutes(e.target.value === '' ? '' : Number(e.target.value))}
                 className="parent-input"
                 placeholder="e.g. 60"
+                aria-invalid={Boolean(dailyError)}
               />
+              {dailyError && <p className="text-rose-600 text-xs mt-1">{dailyError}</p>}
             </div>
 
             <div>
@@ -112,7 +129,9 @@ export function ParentTimeLimitsPage() {
                 onChange={(e) => setWeeklyMinutes(e.target.value === '' ? '' : Number(e.target.value))}
                 className="parent-input"
                 placeholder="e.g. 300"
+                aria-invalid={Boolean(weeklyError)}
               />
+              {weeklyError && <p className="text-rose-600 text-xs mt-1">{weeklyError}</p>}
             </div>
 
             <div>
@@ -128,14 +147,16 @@ export function ParentTimeLimitsPage() {
                 onChange={(e) => setBedtimeHour(e.target.value === '' ? '' : Number(e.target.value))}
                 className="parent-input"
                 placeholder="e.g. 20"
+                aria-invalid={Boolean(bedtimeError)}
               />
+              {bedtimeError && <p className="text-rose-600 text-xs mt-1">{bedtimeError}</p>}
             </div>
           </div>
 
           <div className="px-4 py-3 border-t border-slate-100 flex items-center gap-3">
             <button
               onClick={() => mutation.mutate()}
-              disabled={mutation.isPending || !learnerId}
+              disabled={mutation.isPending || !learnerId || hasFieldErrors}
               className="parent-btn-primary"
             >
               {mutation.isPending ? 'Saving…' : 'Save Time Limits'}
@@ -150,7 +171,7 @@ export function ParentTimeLimitsPage() {
             {mutation.isError && (
               <p className="flex items-center gap-1.5 text-rose-600 text-xs font-medium">
                 <AlertCircle className="w-3.5 h-3.5" strokeWidth={2} />
-                Failed: {(mutation.error as any)?.response?.data?.message || 'unknown error'}
+                {getFriendlyErrorMessage(mutation.error, 'We could not save these settings. Please try again.')}
               </p>
             )}
           </div>

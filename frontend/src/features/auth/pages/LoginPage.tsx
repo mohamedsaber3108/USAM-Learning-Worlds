@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import apiClient from '@/lib/api/client'
+import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 import type { AuthResponse } from '@/types'
 
 export function LoginPage() {
@@ -23,7 +24,7 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   })
@@ -41,7 +42,7 @@ export function LoginPage() {
 
       navigate('/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.message || t('auth.login.genericError'))
+      setError(getFriendlyErrorMessage(err, t('auth.login.genericError')))
     } finally {
       setLoading(false)
     }
@@ -100,10 +101,10 @@ export function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || isSubmitting}
               className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? t('auth.login.submitting') : t('auth.login.submit')}
+              {loading || isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')}
             </button>
           </form>
 
