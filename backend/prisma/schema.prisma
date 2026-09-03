@@ -200,6 +200,7 @@ model Competency {
   masteryRecords   MasteryRecord[]
   prerequisites    CompetencyPrerequisite[] @relation("competency")
   dependents       CompetencyPrerequisite[] @relation("prerequisite")
+  projects         Project[]
 
   @@index([skillId])
   @@map("competencies")
@@ -220,6 +221,7 @@ model LearningObjective {
   concept      Concept?       @relation(fields: [conceptId], references: [id], onDelete: Cascade)
   activities   Activity[]
   contentItems ContentItem[]
+  projects     Project[]
 
   @@index([competencyId])
   @@index([conceptId])

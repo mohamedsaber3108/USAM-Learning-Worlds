@@ -17,6 +17,14 @@ export class CreateProjectDto {
   @IsString({ each: true })
   @IsOptional()
   tags?: string[];
+
+  @IsString()
+  @IsOptional()
+  competencyId?: string;
+
+  @IsString()
+  @IsOptional()
+  objectiveId?: string;
 }
 
 export class UpdateProjectDto {
@@ -40,4 +48,12 @@ export class UpdateProjectDto {
   @IsString({ each: true })
   @IsOptional()
   tags?: string[];
+
+  @IsString()
+  @IsOptional()
+  competencyId?: string;
+
+  @IsString()
+  @IsOptional()
+  objectiveId?: string;
 }

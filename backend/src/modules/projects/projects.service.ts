@@ -16,6 +16,8 @@ export class ProjectsService {
       type: string;
       visibility: string;
       tags?: string[];
+      competencyId?: string;
+      objectiveId?: string;
     },
   ) {
     const project = await this.prisma.project.create({
@@ -26,6 +28,8 @@ export class ProjectsService {
         visibility: data.visibility as any,
         state: 'DRAFT',
         skills: data.tags || [],
+        competencyId: data.competencyId,
+        objectiveId: data.objectiveId,
       },
     });
 
@@ -40,6 +44,8 @@ export class ProjectsService {
       where: { id: projectId },
       include: {
         learner: true,
+        competency: { include: { skill: { include: { domain: true } } } },
+        objective: true,
       },
     });
 
@@ -56,6 +62,49 @@ export class ProjectsService {
   }
 
   /**
+   * Curriculum chain context for a project — where this project sits in
+   * Domain -> Skill -> Competency -> LearningObjective (closes the
+   * Curriculum Engine gap: Project stage was previously untethered from
+   * the hierarchy).
+   */
+  async getProjectCurriculumContext(projectId: string) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        competency: { include: { skill: { include: { domain: true } } } },
+        objective: { include: { competency: { include: { skill: { include: { domain: true } } } } } },
+      },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const competency = project.objective?.competency || project.competency;
+
+    if (!competency) {
+      return {
+        projectId,
+        linked: false,
+        message: 'Project is not yet linked to a Domain/Skill/Competency',
+      };
+    }
+
+    return {
+      projectId,
+      linked: true,
+      domain: competency.skill.domain
+        ? { id: competency.skill.domain.id, name: competency.skill.domain.name }
+        : null,
+      skill: { id: competency.skill.id, name: competency.skill.name },
+      competency: { id: competency.id, name: competency.name },
+      objective: project.objective
+        ? { id: project.objective.id, name: project.objective.name }
+        : null,
+    };
+  }
+
+  /**
    * Update project
    */
   async updateProject(
@@ -67,6 +116,8 @@ export class ProjectsService {
       state: string;
       visibility: string;
       tags: string[];
+      competencyId: string;
+      objectiveId: string;
     }>,
   ) {
     // Verify ownership
@@ -86,6 +137,8 @@ export class ProjectsService {
         state: data.state as any,
         visibility: data.visibility as any,
         skills: data.tags,
+        competencyId: data.competencyId,
+        objectiveId: data.objectiveId,
       },
     });
   }

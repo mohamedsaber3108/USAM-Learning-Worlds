@@ -70,6 +70,11 @@ export class ProjectsController {
     return this.projectsService.getProject(id, requestingLearnerId);
   }
 
+  @Get(':id/curriculum-context')
+  async getProjectCurriculumContext(@Param('id') id: string) {
+    return this.projectsService.getProjectCurriculumContext(id);
+  }
+
   @Put(':id')
   async updateProject(
     @CurrentUser() user: any,
