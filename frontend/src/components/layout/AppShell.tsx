@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { LanguageToggle } from './LanguageToggle'
+import { PageTransition } from '@/components/motion/PageTransition'
 
 /**
  * AppShell — the one persistent navigation frame for every authenticated page.
@@ -171,18 +172,16 @@ export function AppShell() {
         </div>
       </header>
 
-      {/* Page content — subtle fade/slide transition on route change */}
+      {/* Page content — spring-based fade/slide transition on route change.
+          mode="popLayout" lets the exiting page animate out of flow while
+          the incoming page animates in, instead of both fighting for the
+          same layout slot (avoids a jarring blank/collapsed frame between
+          routes). See PageTransition for the reduced-motion fallback. */}
       <main className="flex-1 pb-24">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-          >
+        <AnimatePresence mode="popLayout" initial={false}>
+          <PageTransition key={location.pathname}>
             <Outlet />
-          </motion.div>
+          </PageTransition>
         </AnimatePresence>
       </main>
 
