@@ -1,9 +1,72 @@
-import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, FolderKanban, Plus, Star, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, FolderKanban, Plus, Star, Sparkles, X } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
 
+function NewProjectModal({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [type, setType] = useState('INDEPENDENT')
+
+  const create = useMutation({
+    mutationFn: () =>
+      projectsApi.create({ title, description, type, visibility: 'PRIVATE', tags: [] }).then(res => res.data),
+    onSuccess: (project: any) => {
+      onCreated(project.id)
+    },
+  })
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-card shadow-lg max-w-md w-full p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display font-bold text-lg text-slate-900">New Project</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <X className="w-5 h-5" strokeWidth={2} />
+          </button>
+        </div>
+        <div className="space-y-3">
+          <input
+            className="w-full border border-slate-200 rounded-control px-3 py-2 text-sm"
+            placeholder="Project title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <textarea
+            className="w-full border border-slate-200 rounded-control px-3 py-2 text-sm"
+            placeholder="What are you building?"
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <select
+            className="w-full border border-slate-200 rounded-control px-3 py-2 text-sm"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="INDEPENDENT">Independent</option>
+            <option value="GUIDED">Guided</option>
+            <option value="COLLABORATIVE">Collaborative</option>
+          </select>
+        </div>
+        <button
+          className="btn btn-primary w-full mt-5"
+          disabled={!title.trim() || !description.trim() || create.isPending}
+          onClick={() => create.mutate()}
+        >
+          {create.isPending ? 'Creating...' : 'Create Project'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function ProjectsPage() {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [showModal, setShowModal] = useState(false)
+
   const { data: projects, isLoading } = useQuery({
     queryKey: ['my-projects'],
     queryFn: () => projectsApi.getMy().then(res => res.data),
@@ -25,7 +88,10 @@ export function ProjectsPage() {
                 My Projects
               </h1>
             </div>
-            <button className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40">
+            <button
+              className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40"
+              onClick={() => setShowModal(true)}
+            >
               <Plus className="w-4 h-4" strokeWidth={2} />
               New Project
             </button>
@@ -43,7 +109,7 @@ export function ProjectsPage() {
         ) : projects && projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((project: any) => (
-              <div key={project.id} className="card">
+              <Link key={project.id} to={`/projects/${project.id}`} className="card hover:shadow-md transition-shadow">
                 <h3 className="font-display font-semibold text-lg text-slate-900 mb-2">
                   {project.title}
                 </h3>
@@ -61,7 +127,7 @@ export function ProjectsPage() {
                     </span>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
@@ -71,12 +137,23 @@ export function ProjectsPage() {
             </div>
             <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">No Projects Yet</h2>
             <p className="text-slate-600 mb-6">Start creating your portfolio!</p>
-            <button className="btn btn-primary">
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>
               Create Your First Project
             </button>
           </div>
         )}
       </main>
+
+      {showModal && (
+        <NewProjectModal
+          onClose={() => setShowModal(false)}
+          onCreated={(id) => {
+            setShowModal(false)
+            queryClient.invalidateQueries({ queryKey: ['my-projects'] })
+            navigate(`/projects/${id}`)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -114,6 +114,27 @@ export class ProjectsController {
     return this.projectsService.showcaseProject(id, learnerId);
   }
 
+  // ==================== Milestone stage machine ====================
+
+  @Get(':id/milestones')
+  async listMilestones(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.projectsService.listMilestones(id, user.learner?.id);
+  }
+
+  @Put(':id/milestones/:milestoneId')
+  async updateMilestone(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Param('milestoneId') milestoneId: string,
+    @Body() body: { status: string },
+  ) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new Error('Only learners can update milestones');
+    }
+    return this.projectsService.updateMilestoneStatus(id, milestoneId, learnerId, body.status);
+  }
+
   // ==================== Collaboration Engine ====================
 
   @Post(':id/collaborators')
