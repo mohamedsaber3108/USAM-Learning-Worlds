@@ -1001,6 +1001,43 @@ export const misconceptionsApi = {
     }),
 }
 
+// Assessment Quality Engine — admin surface over AssessmentQualityFlag,
+// a rule-based scan (NO_CORRECT_ANSWER, CORRECT_ANSWER_NOT_IN_OPTIONS,
+// TOO_FEW_OPTIONS, DUPLICATE_OPTIONS, ALL_OPTIONS_CORRECT) of SELECT/
+// MATCH/SEQUENCE activities' question-item structure, triggerable on
+// demand from this admin page (no cron yet). See
+// backend/src/modules/assessment-quality/admin-assessment-quality.controller.ts.
+export type AssessmentQualityFlagType =
+  | 'NO_CORRECT_ANSWER'
+  | 'CORRECT_ANSWER_NOT_IN_OPTIONS'
+  | 'TOO_FEW_OPTIONS'
+  | 'DUPLICATE_OPTIONS'
+  | 'ALL_OPTIONS_CORRECT'
+
+export interface AssessmentQualityFlag {
+  id: string
+  activityId: string
+  flagType: AssessmentQualityFlagType
+  detail: string
+  detectedAt: string
+  resolvedAt: string | null
+}
+
+export interface AssessmentQualityScanResult {
+  scannedAt: string
+  activitiesScanned: number
+  flagsFound: number
+  flagsCreated: number
+  flagsAlreadyOpen: number
+  flagsAutoResolved: number
+  candidates: { activityId: string; flagType: AssessmentQualityFlagType; detail: string }[]
+}
+
+export const assessmentQualityApi = {
+  listFlags: () => apiClient.get<AssessmentQualityFlag[]>('/admin/assessment-quality/flags'),
+  scan: () => apiClient.post<AssessmentQualityScanResult>('/admin/assessment-quality/scan'),
+}
+
 // AI Evaluation Harness — admin read-only history over AIEvalRun/AIEvalResult,
 // populated by backend/scripts/run-ai-eval.ts (run manually/via cron, not
 // triggered from this UI). See backend/src/modules/ai/admin-ai-eval.controller.ts.

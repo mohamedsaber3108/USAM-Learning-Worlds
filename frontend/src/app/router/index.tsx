@@ -48,6 +48,7 @@ import { AdminSafetyEscalationsPage } from '@/features/admin/pages/AdminSafetyEs
 import { AdminInterventionsPage } from '@/features/admin/pages/AdminInterventionsPage'
 import { AdminMisconceptionsPage } from '@/features/admin/pages/AdminMisconceptionsPage'
 import { AdminAIEvalPage } from '@/features/admin/pages/AdminAIEvalPage'
+import { AdminAssessmentQualityPage } from '@/features/admin/pages/AdminAssessmentQualityPage'
 import { LoadingState } from '@/components/common/CharacterState'
 
 /** Route-level code splitting for the heaviest pages in the bundle.
@@ -320,6 +321,14 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <AdminAIEvalPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/assessment-quality"
+          element={
+            <AdminRoute>
+              <AdminAssessmentQualityPage />
             </AdminRoute>
           }
         />
