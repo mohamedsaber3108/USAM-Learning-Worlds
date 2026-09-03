@@ -4,30 +4,34 @@ import { MessageCircle } from 'lucide-react'
 import { charactersApi, type CharacterSummary } from '@/lib/api/endpoints'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { CHARACTER_VISUALS, getCharacterVisual } from '../lib/characterVisuals'
+import { LoadingState } from '@/components/common/CharacterState'
 
 /**
  * The full 15-character roster ordering + unlock hints for the fallback
  * (mock-shape) path used until the backend's /characters/unlocked lands.
- * Azouz is always unlocked (seeded + given during onboarding); the rest use
- * placeholder unlock hints that a future backend response will replace with
- * real per-learner unlock state.
+ * Azouz, Zein, Luma and Codey are the 4 core characters (unlocked from day
+ * 1, per CharacterService.CORE_CHARACTER_NAMES on the backend); the rest
+ * unlock progressively and these hints describe the same real trigger
+ * conditions implemented in CharacterService.getUnlockedCharactersForLearner
+ * (domain engagement, mission/project completion, XP, age band, etc.) in
+ * plain child-facing language.
  */
 const FALLBACK_ROSTER: Array<{ name: string; role: string; unlockHint: string; unlocked: boolean }> = [
   { name: 'Azouz', role: 'GUIDE', unlockHint: '', unlocked: true },
-  { name: 'Zein', role: 'Explorer', unlockHint: 'Unlocks after your first mission', unlocked: false },
-  { name: 'Luma', role: 'English Coach', unlockHint: 'Unlocks after your first English activity', unlocked: false },
-  { name: 'Codey', role: 'Coding Mentor', unlockHint: 'Unlocks after your first coding mission', unlocked: false },
-  { name: 'Nova', role: 'AI Mentor', unlockHint: 'Unlocks after exploring the AI domain', unlocked: false },
-  { name: 'Mira', role: 'Creative Mentor', unlockHint: 'Unlocks after your first creative project', unlocked: false },
+  { name: 'Zein', role: 'Explorer', unlockHint: 'Always with you from day one', unlocked: true },
+  { name: 'Luma', role: 'English Coach', unlockHint: 'Always with you from day one', unlocked: true },
+  { name: 'Codey', role: 'Coding Mentor', unlockHint: 'Always with you from day one', unlocked: true },
+  { name: 'Nova', role: 'AI Mentor', unlockHint: 'Unlocks after exploring the AI Literacy domain', unlocked: false },
+  { name: 'Mira', role: 'Creative Mentor', unlockHint: 'Unlocks after your first Arts or Creativity mission', unlocked: false },
   { name: 'Rami', role: 'Science Mentor', unlockHint: 'Unlocks after your first Science mission', unlocked: false },
-  { name: 'Faris', role: 'Problem Solver', unlockHint: 'Unlocks after solving your first challenge', unlocked: false },
-  { name: 'Tala', role: 'Communication Coach', unlockHint: 'Unlocks after your first presentation activity', unlocked: false },
-  { name: 'Adam', role: 'Entrepreneurship Mentor', unlockHint: 'Unlocks after your first project pitch', unlocked: false },
-  { name: 'Byte', role: 'Digital Safety Guide', unlockHint: 'Unlocks after your first digital-safety lesson', unlocked: false },
-  { name: 'Nour', role: 'Financial Literacy Mentor', unlockHint: 'Unlocks after your first money-smarts mission', unlocked: false },
-  { name: 'Rex', role: 'Rival', unlockHint: 'Unlocks after reaching a learning streak of 7 days', unlocked: false },
-  { name: 'Zara', role: 'Storyteller', unlockHint: 'Unlocks after your first story activity', unlocked: false },
-  { name: 'Atlas', role: 'World Guide', unlockHint: 'Unlocks after completing 3 different domains', unlocked: false },
+  { name: 'Faris', role: 'Problem Solver', unlockHint: 'Unlocks after your first Critical Thinking mission', unlocked: false },
+  { name: 'Tala', role: 'Communication Coach', unlockHint: 'Unlocks after submitting your first project', unlocked: false },
+  { name: 'Adam', role: 'Entrepreneurship Mentor', unlockHint: 'Unlocks after your first Entrepreneurship mission', unlocked: false },
+  { name: 'Byte', role: 'Digital Safety Guide', unlockHint: 'Unlocks after your first Digital Literacy mission (or automatically at age 10+)', unlocked: false },
+  { name: 'Nour', role: 'Financial Literacy Mentor', unlockHint: 'Unlocks after your first Financial Literacy mission', unlocked: false },
+  { name: 'Rex', role: 'Rival', unlockHint: 'Unlocks after you earn your first XP', unlocked: false },
+  { name: 'Zara', role: 'Storyteller', unlockHint: 'Unlocks after completing your first mission', unlocked: false },
+  { name: 'Atlas', role: 'World Guide', unlockHint: 'Unlocks after exploring 2+ different domains', unlocked: false },
 ]
 
 interface RosterEntry {
@@ -99,21 +103,28 @@ export function CharacterGalleryPage() {
     )
   })()
 
+  const unlockedCount = roster.filter((r) => r.unlocked).length
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <header className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">
-          Character Universe
+          My Companions <span className="text-slate-400 font-medium">· رفقاء رحلتي</span>
         </h1>
         <p className="text-slate-500 mt-1">
-          Meet your mentors and companions. Locked characters show how to unlock them —
-          keep learning to build your full team.
+          Meet your mentors and companions. Locked characters show how to unlock them — keep
+          learning to build your full team.
+        </p>
+        <p className="text-sm text-slate-400 mt-1" dir="rtl">
+          اتعرّف على مرشديك ورفقاء رحلتك. الشخصيات المقفولة بتوريك إزاي تفتحها — استمر في التعلم
+          لتكمل فريقك بالكامل.
+        </p>
+        <p className="text-xs font-semibold text-primary-600 mt-3">
+          {unlockedCount} / {roster.length} unlocked
         </p>
       </header>
 
-      {loading && (
-        <div className="text-slate-400 text-sm">Loading your characters...</div>
-      )}
+      {loading && <LoadingState character="Codey" message="Codey is loading your character crew..." />}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {roster.map((entry) => {
@@ -127,12 +138,24 @@ export function CharacterGalleryPage() {
             >
               <CharacterAvatar name={entry.name} size="lg" locked={!entry.unlocked} />
               <div className="flex-1 min-w-0">
-                <h3 className="font-display font-bold text-slate-900 truncate">
-                  {entry.name}
+                <h3 className="font-display font-bold text-slate-900 truncate flex items-baseline gap-2">
+                  <span>{entry.name}</span>
+                  {visual.nameAr && (
+                    <span className="text-sm font-semibold text-slate-400" dir="rtl">
+                      {visual.nameAr}
+                    </span>
+                  )}
                 </h3>
                 <p className="text-xs font-medium text-slate-400 mb-1">{entry.role}</p>
                 {entry.unlocked ? (
-                  <p className="text-sm text-slate-600">{visual.blurb}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-slate-600">{visual.blurb}</p>
+                    {visual.blurbAr && (
+                      <p className="text-sm text-slate-500" dir="rtl">
+                        {visual.blurbAr}
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <p className="text-sm text-slate-400 italic">{entry.unlockHint}</p>
                 )}

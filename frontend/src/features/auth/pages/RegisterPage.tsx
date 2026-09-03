@@ -47,8 +47,10 @@ export function RegisterPage() {
       localStorage.setItem('refreshToken', response.data.refreshToken)
       localStorage.setItem('user', JSON.stringify(response.data.user))
 
-      // First-time users always go through onboarding before the dashboard.
-      navigate('/onboarding/welcome')
+      // First-time users always go through onboarding before the dashboard,
+      // starting with language choice so the rest of the flow renders in
+      // the right language/direction from the next screen onward.
+      navigate('/onboarding/language')
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.')
     } finally {

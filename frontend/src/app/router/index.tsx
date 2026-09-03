@@ -3,6 +3,7 @@ import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { WelcomePage } from '@/features/onboarding/pages/WelcomePage'
+import { LanguageSelectPage } from '@/features/onboarding/pages/LanguageSelectPage'
 import { AgeSelectPage } from '@/features/onboarding/pages/AgeSelectPage'
 import { CharacterIntroPage } from '@/features/onboarding/pages/CharacterIntroPage'
 import { OnboardingCompletePage } from '@/features/onboarding/pages/OnboardingCompletePage'
@@ -59,9 +60,19 @@ export function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Onboarding (first-time learners: age select + Azouz intro) — a
-          full-screen guided wizard, intentionally kept outside the tab-bar
-          shell so kids aren't distracted by nav mid-flow. */}
+      {/* Onboarding (first-time learners: language -> welcome -> age select
+          -> meet the 4 core mentors) — a full-screen guided wizard,
+          intentionally kept outside the tab-bar shell so kids aren't
+          distracted by nav mid-flow. See OnboardingLayout for the shared
+          progress bar + step transition. */}
+      <Route
+        path="/onboarding/language"
+        element={
+          <ProtectedRoute>
+            <LanguageSelectPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/onboarding/welcome"
         element={

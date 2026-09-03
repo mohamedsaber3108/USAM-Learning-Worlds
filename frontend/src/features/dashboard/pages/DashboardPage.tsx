@@ -22,11 +22,13 @@ import {
   Clock,
   Award,
 } from 'lucide-react'
-import { gamificationApi, masteryApi, missionsApi, cosmeticsApi } from '@/lib/api/endpoints'
+import { gamificationApi, masteryApi, missionsApi, cosmeticsApi, dailyGoalsApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
+import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
+import { LoadingState, EmptyState } from '@/components/common/CharacterState'
 
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
 // `labelKey` resolves against dashboard.quickActions.* in both locales.
@@ -86,11 +88,11 @@ export function DashboardPage() {
   // get routed into the onboarding flow instead of seeing the dashboard.
   useEffect(() => {
     if (user?.role === 'LEARNER' && user.learner && !user.learner.ageBand) {
-      navigate('/onboarding/welcome', { replace: true })
+      navigate('/onboarding/language', { replace: true })
     }
   }, [user, navigate])
 
-  const { data: progression } = useQuery({
+  const { data: progression, isLoading: progressionLoading } = useQuery({
     queryKey: ['progression'],
     queryFn: () => gamificationApi.getProgression().then(res => res.data),
   })
@@ -118,6 +120,11 @@ export function DashboardPage() {
   const { data: equippedCosmetics } = useQuery({
     queryKey: ['cosmetics-equipped'],
     queryFn: () => cosmeticsApi.getEquipped().then(res => res.data),
+  })
+
+  const { data: dailyGoal, isLoading: dailyGoalLoading } = useQuery({
+    queryKey: ['daily-goal-progress'],
+    queryFn: () => dailyGoalsApi.getProgress().then(res => res.data),
   })
 
   const equippedBorderKey: string | null = equippedCosmetics?.BORDER?.iconOrStyleKey ?? null
@@ -166,6 +173,16 @@ export function DashboardPage() {
     progressionReady
   )
   const [celebrationDismissed, setCelebrationDismissed] = useState(false)
+
+  // First paint before the core progression numbers arrive — show Azouz
+  // warming things up instead of an empty flash of blank cards.
+  if (progressionLoading) {
+    return (
+      <div className="min-h-screen bg-surface-50 flex items-center justify-center">
+        <LoadingState character="Azouz" message="Azouz is getting your dashboard ready..." />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-surface-50">
@@ -347,6 +364,14 @@ export function DashboardPage() {
           )}
         </div>
 
+        {/* Today's Goal — real server-computed daily-goal progress ring.
+            Sits right after the stats grid, before the mastery/quick-actions
+            panels, so it's visible at-a-glance without scrolling on most
+            viewports. */}
+        <div className="mb-8 max-w-sm">
+          <DailyGoalCard data={dailyGoal} isLoading={dailyGoalLoading} />
+        </div>
+
         {/* Mastery Overview — full breakdown only for the highest-density
             band (AGE_12_14, showAllStats=true). AGE_8_9/AGE_10_11 get a
             single simplified "Quick Actions" panel instead of a two-column
@@ -415,8 +440,11 @@ export function DashboardPage() {
         )}
 
         {/* Recent Activity — AGE_8_9 sees fewer rows (3) to keep the page
-            from feeling like a dense log; older bands see up to 5. */}
-        {recentMissions && recentMissions.length > 0 && (
+            from feeling like a dense log; older bands get up to 5. When a
+            learner hasn't completed a mission yet, this is their very
+            first look at the platform's "no data" moment — greet them with
+            a companion and a clear next step instead of an empty gap. */}
+        {recentMissions && recentMissions.length > 0 ? (
           <div className="card">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="w-5 h-5 text-primary-600" strokeWidth={2} />
@@ -453,6 +481,14 @@ export function DashboardPage() {
               ))}
             </div>
           </div>
+        ) : (
+          <EmptyState
+            character="Azouz"
+            title="No missions completed yet"
+            message="Every learning adventure starts with a first step — pick a mission and Azouz will cheer you on!"
+            actionLabel="Browse missions"
+            actionTo="/missions"
+          />
         )}
       </main>
 
