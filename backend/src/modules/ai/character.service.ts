@@ -16,6 +16,8 @@ import {
 import { LearnerContext, CharacterContext } from './interfaces/learner-context.interface';
 import { CharacterSafetyService } from './services/character-safety.service';
 import { pickFallbackLine } from './services/character-fallback-responses';
+import { PromptTemplateService } from './services/prompt-template.service';
+import { HallucinationControlService } from './services/hallucination-control.service';
 
 /** Fallback copy shown instead of the raw AI text when the safety layer intervenes. */
 const SAFETY_FALLBACK_BLOCKED =
@@ -60,6 +62,8 @@ export class CharacterService {
     private learnerContext: LearnerContextService,
     private aiProvider: AIProviderService,
     private characterSafety: CharacterSafetyService,
+    private promptTemplates: PromptTemplateService,
+    private hallucinationControl: HallucinationControlService,
   ) {}
 
   /**
@@ -396,7 +400,7 @@ export class CharacterService {
     ]);
 
     // Build AI task with full context
-    const systemPrompt = this.buildCharacterSystemPrompt(
+    const systemPrompt = await this.buildCharacterSystemPrompt(
       character,
       learnerCtx,
       characterState,
@@ -539,12 +543,12 @@ export class CharacterService {
   /**
    * Build character system prompt with personality and context
    */
-  private buildCharacterSystemPrompt(
+  private async buildCharacterSystemPrompt(
     character: any,
     learnerContext: LearnerContext,
     characterState: CharacterContext,
     conversationType?: string,
-  ): string {
+  ): Promise<string> {
     const personality = character.personality;
     const basePrompt = character.systemPrompt;
 
@@ -567,6 +571,22 @@ export class CharacterService {
     // previously had a value with no behavior difference either).
     const modeInstruction = this.getConversationModeInstruction(conversationType);
 
+    // AI Prompt/Policy Engine: the guidelines block is now read from
+    // the versioned PromptTemplate table (key "character.guidelines")
+    // instead of being a hardcoded string literal, with this exact text
+    // as the inline fallback if the DB row is missing/inactive/errors.
+    const guidelines = await this.promptTemplates.getPrompt(
+      'character.guidelines',
+      `IMPORTANT GUIDELINES:
+1. Never claim to be a real friend or express need for the learner
+2. Focus on learning goals, not social dependency
+3. Be warm and encouraging without creating unhealthy attachment
+4. Always prioritize educational objectives
+5. Use age-appropriate language and concepts
+6. Reference their current learning progress naturally
+7. Celebrate effort and growth, not just correctness`,
+    );
+
     return `${basePrompt}
 
 ${ageInstruction}
@@ -581,14 +601,9 @@ ${JSON.stringify(personality, null, 2)}
 
 ${modeInstruction}
 
-IMPORTANT GUIDELINES:
-1. Never claim to be a real friend or express need for the learner
-2. Focus on learning goals, not social dependency
-3. Be warm and encouraging without creating unhealthy attachment
-4. Always prioritize educational objectives
-5. Use age-appropriate language and concepts
-6. Reference their current learning progress naturally
-7. Celebrate effort and growth, not just correctness
+${guidelines}
+
+${this.hallucinationControl.getPromptGuardrail()}
 
 Respond as ${character.name} in character, keeping responses concise (2-3 sentences for ages 8-9, up to 5 sentences for ages 12-14).`;
   }

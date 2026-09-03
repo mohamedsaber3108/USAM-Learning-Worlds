@@ -9,11 +9,12 @@ import { LearningController } from './learning.controller';
 import { EnglishController } from './english.controller';
 import { CodingController } from './coding.controller';
 import { TranslationController } from './translation.controller';
+import { StoriesController } from './stories.controller';
 import { AIModule } from '../ai/ai.module';
 
 @Module({
   imports: [DatabaseModule, AIModule],
-  controllers: [LearningController, EnglishController, TranslationController],
+  controllers: [LearningController, EnglishController, TranslationController, StoriesController],
   providers: [
     ConceptService,
     LearningPathService,

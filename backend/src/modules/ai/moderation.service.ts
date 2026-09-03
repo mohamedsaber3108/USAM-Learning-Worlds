@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { BedrockService } from './bedrock.service';
 import { PiiDetectionService } from './services/pii-detection.service';
+import { PromptTemplateService } from './services/prompt-template.service';
 
 export interface ModerationResult {
   flagged: boolean;
@@ -11,6 +12,27 @@ export interface ModerationResult {
   shouldBlock: boolean;
 }
 
+/** Inline fallback used if the DB template is missing/inactive/errors -
+ * moderation must never hard-fail because of a prompt-table outage.
+ * This is also the seed content for the `moderation.system` row (see
+ * prisma/seeds/seed-prompt-templates.ts). */
+const MODERATION_SYSTEM_PROMPT_FALLBACK = `You are a content moderation AI for a K-12 educational platform.
+Flag content that is:
+- Inappropriate for children (violence, adult content, hate speech)
+- Contains personal information (names, addresses, phone numbers, emails)
+- Contains bullying or harassment
+- Contains dangerous instructions
+- Spam or commercial content
+
+Return JSON:
+{
+  "flagged": boolean,
+  "categories": ["category1", "category2"],
+  "severity": "LOW|MEDIUM|HIGH|CRITICAL",
+  "explanation": "brief explanation",
+  "shouldBlock": boolean
+}`;
+
 @Injectable()
 export class ModerationService {
   private readonly logger = new Logger(ModerationService.name);
@@ -19,6 +41,7 @@ export class ModerationService {
     private prisma: PrismaService,
     private bedrock: BedrockService,
     private piiDetection: PiiDetectionService,
+    private promptTemplates: PromptTemplateService,
   ) {}
 
   /**
@@ -44,22 +67,15 @@ export class ModerationService {
     }
     const piiDetected = piiHits.length > 0;
 
-    const systemPrompt = `You are a content moderation AI for a K-12 educational platform.
-Flag content that is:
-- Inappropriate for children (violence, adult content, hate speech)
-- Contains personal information (names, addresses, phone numbers, emails)
-- Contains bullying or harassment
-- Contains dangerous instructions
-- Spam or commercial content
-
-Return JSON:
-{
-  "flagged": boolean,
-  "categories": ["category1", "category2"],
-  "severity": "LOW|MEDIUM|HIGH|CRITICAL",
-  "explanation": "brief explanation",
-  "shouldBlock": boolean
-}`;
+    // AI Prompt/Policy Engine: read the moderation system prompt from
+    // the versioned PromptTemplate table (key "moderation.system")
+    // instead of a hardcoded string literal, with the exact original
+    // text as the inline fallback if the DB row is missing/inactive/
+    // errors (moderation must never hard-fail on a prompt-table outage).
+    const systemPrompt = await this.promptTemplates.getPrompt(
+      'moderation.system',
+      MODERATION_SYSTEM_PROMPT_FALLBACK,
+    );
 
     const userMessage = `Moderate this ${contentType.toLowerCase()} content for a K-12 platform:
 

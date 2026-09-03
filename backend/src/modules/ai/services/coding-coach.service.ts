@@ -9,6 +9,20 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { AIProviderService } from '../ai-provider.service';
 import { LearnerContextService } from '../learner-context.service';
+import {
+  HallucinationControlService,
+  TEACHER_ESCALATION_HEDGE,
+} from './hallucination-control.service';
+import { PromptTemplateService } from './prompt-template.service';
+
+/** Fixed coding-domain vocabulary so normal on-subject questions about
+ * coding concepts are never false-flagged as off-topic, even when they
+ * don't literally match the current mission/activity title. */
+const CODING_DOMAIN_VOCABULARY = [
+  'code', 'coding', 'bug', 'debug', 'error', 'function', 'variable', 'loop', 'array', 'string',
+  'boolean', 'condition', 'python', 'javascript', 'scratch', 'blockly', 'html', 'css', 'algorithm',
+  'syntax', 'program', 'programming', 'class', 'object', 'method', 'value', 'output', 'input',
+];
 
 export interface DebugAssistanceRequest {
   learnerId: string;
@@ -56,7 +70,27 @@ export class CodingCoachService {
     private prisma: PrismaService,
     private aiProvider: AIProviderService,
     private learnerContext: LearnerContextService,
+    private hallucinationControl: HallucinationControlService,
+    private promptTemplates: PromptTemplateService,
   ) {}
+
+  /**
+   * Off-topic check for a free-text learner message against the
+   * learner's current mission/activity scope + coding domain vocabulary.
+   * Returns the deterministic hedge line (no AI call spent) when the
+   * message is flagged off-topic; null otherwise, meaning the caller
+   * should proceed with a normal AI call (which itself still carries
+   * the confidence/uncertainty guardrail in its prompt as a backstop).
+   */
+  private checkOffTopicOrNull(text: string, context: any, extra: Array<string | undefined>): string | null {
+    const scopeKeywords = this.hallucinationControl.buildScopeKeywords(
+      context,
+      extra,
+      CODING_DOMAIN_VOCABULARY,
+    );
+    const result = this.hallucinationControl.checkOffTopic(text, scopeKeywords);
+    return result.offTopic ? TEACHER_ESCALATION_HEDGE : null;
+  }
 
   /**
    * Provide debug assistance
@@ -64,7 +98,7 @@ export class CodingCoachService {
   async provideDebugAssistance(request: DebugAssistanceRequest) {
     const context = await this.learnerContext.buildContext(request.learnerId);
 
-    const prompt = this.buildDebugPrompt(request, context);
+    const prompt = await this.buildDebugPrompt(request, context);
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -104,7 +138,9 @@ Provide:
 2. Suggestions for improvement (focus on 1-2 key points)
 3. One new concept they could learn next
 
-Be encouraging! Focus on growth, not perfection.`;
+Be encouraging! Focus on growth, not perfection.
+
+${this.hallucinationControl.getPromptGuardrail()}`;
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -146,7 +182,9 @@ ${request.specificLine ? `Focus especially on line ${request.specificLine}.` : '
 
 ${ageGuidance}
 
-Use analogies and real-world examples!`;
+Use analogies and real-world examples!
+
+${this.hallucinationControl.getPromptGuardrail()}`;
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -225,7 +263,21 @@ Make it fun and relatable!`;
   async provideSocraticGuidance(learnerId: string, code: string, stuckPoint: string) {
     const context = await this.learnerContext.buildContext(learnerId);
 
-    const prompt = `A ${context.age}-year-old is stuck on this code:
+    // Off-topic detector: stuckPoint is genuinely free-text (a learner
+    // can type anything here, not just a description of their code
+    // problem). If it shares no overlap with their current mission/
+    // activity + coding vocabulary, short-circuit to the teacher-
+    // escalation hedge without spending an AI call.
+    const hedge = this.checkOffTopicOrNull(stuckPoint, context, [code?.slice(0, 200)]);
+    if (hedge) {
+      return {
+        questions: [hedge],
+        hint: 'Try answering these questions first, then try again!',
+        offTopicHedge: true,
+      };
+    }
+
+    const prompt = `You are helping a ${context.age}-year-old who is stuck on this code:
 
 \`\`\`
 ${code}
@@ -238,7 +290,9 @@ Ask 2-3 guiding questions that help them figure it out themselves. Don't give th
 Questions should:
 - Help them think through the problem
 - Build understanding
-- Encourage experimentation`;
+- Encourage experimentation
+
+${this.hallucinationControl.getPromptGuardrail()}`;
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -316,10 +370,31 @@ Provide:
   }
 
   /**
-   * Build debug prompt with age-appropriate guidance
+   * Build debug prompt with age-appropriate guidance. AI Prompt/Policy
+   * Engine: the base instruction block is read from the versioned
+   * PromptTemplate table (key "coding-coach.debug") instead of being a
+   * hardcoded string literal, with this exact text as the inline
+   * fallback if the DB row is missing/inactive/errors.
    */
-  private buildDebugPrompt(request: DebugAssistanceRequest, context: any): string {
-    return `You are helping a ${context.age}-year-old debug their ${request.language} code.
+  private async buildDebugPrompt(request: DebugAssistanceRequest, context: any): Promise<string> {
+    const base = await this.promptTemplates.getPrompt(
+      'coding-coach.debug',
+      `You are helping a {age}-year-old debug their {language} code.
+
+Help them:
+1. Understand what went wrong (in simple terms)
+2. Where the problem is (specific line if possible)
+3. How to fix it (step by step)
+4. Why it works (learning moment)
+
+Be encouraging! Bugs are learning opportunities.`,
+    );
+
+    const filled = base
+      .replace(/\{age\}/g, String(context.age))
+      .replace(/\{language\}/g, request.language);
+
+    return `${filled}
 
 Code:
 \`\`\`${request.language}
@@ -329,13 +404,7 @@ ${request.code}
 ${request.error ? `Error: ${request.error}` : ''}
 ${request.expectedBehavior ? `Expected: ${request.expectedBehavior}` : ''}
 
-Help them:
-1. Understand what went wrong (in simple terms)
-2. Where the problem is (specific line if possible)
-3. How to fix it (step by step)
-4. Why it works (learning moment)
-
-Be encouraging! Bugs are learning opportunities.`;
+${this.hallucinationControl.getPromptGuardrail()}`;
   }
 
   /**

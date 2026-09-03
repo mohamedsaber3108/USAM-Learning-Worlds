@@ -19,6 +19,8 @@ import { CharacterSafetyService } from './services/character-safety.service';
 // Domain-specific coaches
 import { EnglishCoachService } from './services/english-coach.service';
 import { CodingCoachService } from './services/coding-coach.service';
+import { HallucinationControlService } from './services/hallucination-control.service';
+import { PromptTemplateService } from './services/prompt-template.service';
 import { EnglishLearningModule } from '../english-learning/grammar-check.module';
 
 @Module({
@@ -47,6 +49,8 @@ import { EnglishLearningModule } from '../english-learning/grammar-check.module'
     // Domain coaches
     EnglishCoachService,
     CodingCoachService,
+    HallucinationControlService,
+    PromptTemplateService,
   ],
   exports: [
     // Export both old and new for gradual migration
@@ -61,6 +65,8 @@ import { EnglishLearningModule } from '../english-learning/grammar-check.module'
     CharacterSafetyService,
     EnglishCoachService,
     CodingCoachService,
+    HallucinationControlService,
+    PromptTemplateService,
   ],
 })
 export class AIModule {

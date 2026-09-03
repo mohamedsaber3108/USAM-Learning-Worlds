@@ -21,6 +21,15 @@ import { VoiceModule } from './modules/voice/voice.module';
 import { CrossCurricularModule } from './modules/cross-curricular/cross-curricular.module';
 import { LearnerModelModule } from './modules/learner-model/learner-model.module';
 import { ReflectionModule } from './modules/reflection/reflection.module';
+import { WorldsModule } from './modules/worlds/worlds.module';
+import { QuestionsModule } from './modules/questions/questions.module';
+import { FlashcardsModule } from './modules/flashcards/flashcards.module';
+import { DailyGoalsModule } from './modules/daily-goals/daily-goals.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CreativityModule } from './modules/creativity/creativity.module';
+import { ProblemSolvingModule } from './modules/problem-solving/problem-solving.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
 
 @Module({
   imports: [
@@ -61,6 +70,15 @@ import { ReflectionModule } from './modules/reflection/reflection.module';
     CrossCurricularModule,
     ReflectionModule,
     LearnerModelModule,
+    WorldsModule,
+    QuestionsModule,
+    FlashcardsModule,
+    DailyGoalsModule,
+    NotificationsModule,
+    CreativityModule,
+    ProblemSolvingModule,
+    AuditModule,
+    FeatureFlagsModule,
   ],
   controllers: [AppController],
   providers: [

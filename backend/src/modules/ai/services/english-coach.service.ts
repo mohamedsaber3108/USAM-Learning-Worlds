@@ -14,6 +14,21 @@ import {
   GrammarCheckService,
   GrammarIssue,
 } from '../../english-learning/services/grammar-check.service';
+import {
+  HallucinationControlService,
+  TEACHER_ESCALATION_HEDGE,
+} from './hallucination-control.service';
+import { PromptTemplateService } from './prompt-template.service';
+
+/** Fixed English-learning domain vocabulary so normal on-subject
+ * questions about grammar/vocabulary/pronunciation aren't false-flagged
+ * as off-topic even when they don't literally match the current
+ * mission/activity title. */
+const ENGLISH_DOMAIN_VOCABULARY = [
+  'word', 'words', 'grammar', 'sentence', 'vocabulary', 'pronounce', 'pronunciation', 'spelling',
+  'verb', 'noun', 'adjective', 'tense', 'reading', 'writing', 'speaking', 'listening', 'english',
+  'conversation', 'story', 'passage', 'meaning', 'translate', 'translation',
+];
 
 export interface EnglishConversationRequest {
   learnerId: string;
@@ -59,7 +74,25 @@ export class EnglishCoachService {
     private aiProvider: AIProviderService,
     private learnerContext: LearnerContextService,
     private grammarCheck: GrammarCheckService,
+    private hallucinationControl: HallucinationControlService,
+    private promptTemplates: PromptTemplateService,
   ) {}
+
+  /**
+   * Off-topic check for a free-text learner message against the
+   * learner's current mission/activity scope + English domain
+   * vocabulary. Returns the deterministic hedge line (no AI call
+   * spent) when flagged off-topic; null otherwise.
+   */
+  private checkOffTopicOrNull(text: string, context: any, extra: Array<string | undefined>): string | null {
+    const scopeKeywords = this.hallucinationControl.buildScopeKeywords(
+      context,
+      extra,
+      ENGLISH_DOMAIN_VOCABULARY,
+    );
+    const result = this.hallucinationControl.checkOffTopic(text, scopeKeywords);
+    return result.offTopic ? TEACHER_ESCALATION_HEDGE : null;
+  }
 
   /**
    * Conduct English conversation practice
@@ -70,7 +103,25 @@ export class EnglishCoachService {
     // Determine CEFR level from age and mastery
     const cefrLevel = request.difficulty || this.determineCEFRLevel(context);
 
-    const systemPrompt = this.buildConversationPrompt(cefrLevel, request.topic, context);
+    // Off-topic detector: this is genuinely free-text conversation, so a
+    // learner can ask anything. If the message shares no overlap with
+    // the learner's current mission/activity/topic + English domain
+    // vocabulary, short-circuit to the teacher-escalation hedge without
+    // spending an AI call. Conservative by design (see
+    // HallucinationControlService) - normal on-topic chat is untouched.
+    const hedge = this.checkOffTopicOrNull(request.userMessage, context, [request.topic]);
+    if (hedge) {
+      return {
+        response: hedge,
+        cefrLevel,
+        topic: request.topic,
+        suggestedVocabulary: [],
+        groundedIn: groundedInFromContext(context as any),
+        offTopicHedge: true,
+      };
+    }
+
+    const systemPrompt = await this.buildConversationPrompt(cefrLevel, request.topic, context);
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -119,7 +170,9 @@ Analyze this text for grammar mistakes:
 
 ${request.explainMistakes ? 'For each mistake, explain why it\'s wrong and how to fix it in simple terms.' : 'Just provide the corrected version.'}
 
-Be encouraging and focus on progress, not just errors.`;
+Be encouraging and focus on progress, not just errors.
+
+${this.hallucinationControl.getPromptGuardrail()}`;
 
     const response = await this.aiProvider.invoke({
       messages: [
@@ -285,9 +338,13 @@ Make it engaging and age-appropriate. Include:
   }
 
   /**
-   * Build conversation prompt with CEFR and topic awareness
+   * Build conversation prompt with CEFR and topic awareness. AI
+   * Prompt/Policy Engine: the guidelines block is read from the
+   * versioned PromptTemplate table (key "english-coach.conversation")
+   * instead of being a hardcoded string literal, with this exact text
+   * as the inline fallback if the DB row is missing/inactive/errors.
    */
-  private buildConversationPrompt(cefrLevel: string, topic: string | undefined, context: any): string {
+  private async buildConversationPrompt(cefrLevel: string, topic: string | undefined, context: any): Promise<string> {
     const cefrGuidance = {
       A1: 'Use very simple sentences. Present tense mostly. Basic vocabulary (family, colors, food, numbers).',
       A2: 'Simple sentences. Can mix present and past. Everyday topics. Common phrases.',
@@ -297,13 +354,9 @@ Make it engaging and age-appropriate. Include:
       C2: 'Native-level complexity. Idiomatic expressions. Subtle meanings.',
     };
 
-    return `You are an encouraging English conversation partner for a ${context.age}-year-old learner at CEFR level ${cefrLevel}.
-
-${cefrGuidance[cefrLevel as keyof typeof cefrGuidance]}
-
-${topic ? `Topic: ${topic}` : 'Topic: Free conversation'}
-
-Guidelines:
+    const guidelines = await this.promptTemplates.getPrompt(
+      'english-coach.conversation',
+      `Guidelines:
 - Be warm and encouraging
 - Correct gently when needed
 - Ask follow-up questions
@@ -311,7 +364,18 @@ Guidelines:
 - Keep responses to 2-3 sentences
 - Adapt to learner's level
 
-Respond naturally to the learner's message.`;
+Respond naturally to the learner's message.`,
+    );
+
+    return `You are an encouraging English conversation partner for a ${context.age}-year-old learner at CEFR level ${cefrLevel}.
+
+${cefrGuidance[cefrLevel as keyof typeof cefrGuidance]}
+
+${topic ? `Topic: ${topic}` : 'Topic: Free conversation'}
+
+${guidelines}
+
+${this.hallucinationControl.getPromptGuardrail()}`;
   }
 
   /**

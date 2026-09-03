@@ -73,6 +73,12 @@ model Learner {
   learningEvents        LearningEvent[]
   cosmeticUnlocks       LearnerCosmeticUnlock[]
   missionReflections    MissionReflection[]
+  flashcardReviews      FlashcardReview[]
+  dailyGoal             DailyGoal?
+  notifications         Notification[]
+  projectCollaborations ProjectCollaborator[]
+  researchNotes         ResearchNote[]
+  creativitySubmissions CreativitySubmission[]
 
   @@index([userId])
   @@index([displayName])
@@ -157,9 +163,13 @@ model Domain {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  skills         Skill[]
-  learningPaths  LearningPath[]
-  contentItems   ContentItem[]
+  skills            Skill[]
+  learningPaths     LearningPath[]
+  contentItems      ContentItem[]
+  worlds            World[]
+  creativityPrompts CreativityPrompt[]
+  stories           Story[]
+  flashcards        Flashcard[]
 
   @@index([slug])
   @@map("domains")
@@ -222,6 +232,7 @@ model LearningObjective {
   activities   Activity[]
   contentItems ContentItem[]
   projects     Project[]
+  questionTemplates QuestionTemplate[]
 
   @@index([competencyId])
   @@index([conceptId])
@@ -239,17 +250,38 @@ model Activity {
   assessmentPurpose AssessmentPurpose @default(FORMATIVE)
   order             Int            @default(0)
   isActive          Boolean        @default(true)
+  generatedFromTemplateId String?
+  // Bloom Engine (SMALL, manual-tagging version — see gap matrix Bloom
+  // Engine row). Each seeded activity below is manually tagged with the
+  // cognitive level it actually exercises, NOT auto-classified — there is
+  // no NLP/heuristic classifier here. Auto-classification of arbitrary
+  // future content remains genuinely Missing; this field + the
+  // /missions/activities/by-bloom-level/:level filter are the real,
+  // small, honest slice: manual data + a real filter over it.
+  bloomLevel        BloomLevel?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
   objective        LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
   attempts         ActivityAttempt[]
   missionActivities MissionActivity[]
+  generatedFromTemplate QuestionTemplate? @relation("GeneratedFromTemplate", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
 
   @@index([objectiveId])
   @@index([type])
   @@index([assessmentPurpose])
+  @@index([generatedFromTemplateId])
+  @@index([bloomLevel])
   @@map("activities")
+}
+
+enum BloomLevel {
+  REMEMBER
+  UNDERSTAND
+  APPLY
+  ANALYZE
+  EVALUATE
+  CREATE
 }
 
 enum AssessmentPurpose {
@@ -364,11 +396,43 @@ model Mission {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  world             World?             @relation(fields: [worldId], references: [id], onDelete: SetNull)
   runs              MissionRun[]
   missionActivities MissionActivity[]
 
   @@index([type])
+  @@index([worldId])
   @@map("missions")
+}
+
+// ==================== World Engine / World State Engine ====================
+// Zero-trace engine per USAM_KIDS_ENGINE_GAP_MATRIX.md Part 7b — before this
+// pass, `Mission.worldId` was a nullable, unindexed, unvalidated free string
+// with no World model, no FK, no relation, no seed data, no controller
+// route, and no frontend reference. Built from scratch this pass: a real
+// World model that Mission.worldId now genuinely references (migrated from
+// free string to FK), one World per major Domain (a "zone" learners travel
+// to for that subject), and a real per-learner unlock-status signal reusing
+// the same domain-engagement pattern character.service.ts's
+// getUnlockedCharactersForLearner() established (getDomainEngagementSet()).
+model World {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?
+  domainId        String
+  unlockCondition String
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  domain   Domain    @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  missions Mission[]
+
+  @@index([domainId])
+  @@index([slug])
+  @@map("worlds")
 }
 
 enum MissionType {
@@ -429,27 +493,71 @@ model ActivityAttempt {
 // ============================================
 
 model Project {
-  id           String         @id @default(uuid())
-  learnerId    String
-  title        String
-  description  String?
-  state        ProjectState   @default(DRAFT)
-  visibility   ProjectVisibility @default(PRIVATE)
-  skills       String[]
-  competencyId String?
-  objectiveId  String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id                   String            @id @default(uuid())
+  learnerId            String
+  title                String
+  description          String?
+  state                ProjectState      @default(DRAFT)
+  visibility           ProjectVisibility @default(PRIVATE)
+  skills               String[]
+  competencyId         String?
+  objectiveId          String?
+  isRealWorldChallenge Boolean           @default(false)
+  externalSourceUrl    String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
-  learner    Learner            @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  competency Competency?        @relation(fields: [competencyId], references: [id], onDelete: SetNull)
-  objective  LearningObjective? @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
-  milestones ProjectMilestone[]
+  learner       Learner              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  competency    Competency?          @relation(fields: [competencyId], references: [id], onDelete: SetNull)
+  objective     LearningObjective?   @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
+  milestones    ProjectMilestone[]
+  collaborators ProjectCollaborator[]
+  researchNotes ResearchNote[]
 
   @@index([learnerId])
   @@index([state])
   @@index([competencyId])
+  @@index([isRealWorldChallenge])
   @@map("projects")
+}
+
+enum ProjectCollaboratorRole {
+  EDITOR
+  COMMENTER
+}
+
+model ProjectCollaborator {
+  id        String                  @id @default(uuid())
+  projectId String
+  learnerId String
+  role      ProjectCollaboratorRole @default(EDITOR)
+  invitedBy String
+  createdAt DateTime                @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, learnerId])
+  @@index([projectId])
+  @@index([learnerId])
+  @@map("project_collaborators")
+}
+
+model ResearchNote {
+  id          String   @id @default(uuid())
+  projectId   String
+  learnerId   String
+  content     String
+  sourceTitle String?
+  sourceUrl   String?
+  createdAt   DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([learnerId])
+  @@map("research_notes")
 }
 
 enum ProjectState {
@@ -679,6 +787,13 @@ model ConversationMessage {
   metadata         Json?
   moderationResult Json?
   createdAt        DateTime @default(now())
+  /// AI Memory Governance: number of days this message may be retained
+  /// before a purge job/query is allowed to delete it. Defaults to 180
+  /// days for conversation transcripts (longer than ephemeral
+  /// LearnerContext snapshots since parents/moderators may need to
+  /// review a conversation after the fact), per docs/architecture/
+  /// USAM_KIDS_ENGINE_GAP_MATRIX.md "AI Memory Governance" row.
+  retentionDays    Int      @default(180)
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
@@ -737,6 +852,13 @@ model LearnerContext {
   masterySnapshot      Json
   preferencesSnapshot  Json?
   generatedAt          DateTime @default(now())
+  /// AI Memory Governance: number of days this snapshot may be retained
+  /// before a purge job/query is allowed to delete it. Defaults to 90
+  /// days - context snapshots are ephemeral personalization inputs, not
+  /// permanent records, per docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md
+  /// "AI Memory Governance" row (no retention-policy metadata existed
+  /// before this field).
+  retentionDays        Int      @default(90)
 
   learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
@@ -744,6 +866,31 @@ model LearnerContext {
   @@index([sessionId])
   @@index([generatedAt])
   @@map("learner_contexts")
+}
+
+ // AI Prompt/Policy Engine (small, real version): a versioned,
+ // centrally-managed store for the system prompts that were previously
+ // hardcoded inline in character.service.ts / moderation.service.ts /
+ // coding-coach.service.ts / english-coach.service.ts. Each row is one
+ // named template (`key`) with a `version` number and `changelog` text
+ // describing what changed at that version, plus `isActive` so a
+ // template can be soft-disabled (falling back to the caller's inline
+ // default) without deleting history. Not a full policy-approval/A-B
+ // testing platform - a real, small "read the prompt from a table
+ // instead of a string literal" refactor. See docs/architecture/
+ // USAM_KIDS_ENGINE_GAP_MATRIX.md "AI Prompt/Policy Engine" row.
+model PromptTemplate {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  content   String   @db.Text
+  version   Int      @default(1)
+  changelog String?  @db.Text
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@map("prompt_templates")
 }
 
 enum ConversationType {
@@ -1206,6 +1353,23 @@ model AILiteracyConcept {
   @@map("ai_literacy_concepts")
 }
 
+model CommunicationSkillConcept {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?
+  ageAppropriate  AgeBand
+  category        String
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@index([ageAppropriate])
+  @@map("communication_skill_concepts")
+}
+
 model EntrepreneurshipConcept {
   id              String   @id @default(uuid())
   name            String   @unique
@@ -1367,4 +1531,308 @@ model LearnerCosmeticUnlock {
   @@index([learnerId])
   @@index([cosmeticId])
   @@map("learner_cosmetic_unlocks")
+}
+
+// ============================================
+// STORY ENGINE (small, real, honest scope)
+//
+// A deliberately small branching-story model, NOT a full branching-
+// narrative platform. `Story` is the top-level metadata; `StoryPage` is
+// one page of a linear-with-branches story where `choiceOptions` (Json)
+// holds 2-3 {label, nextPageNumber} choices. The LAST page of any branch
+// has an empty/null `choiceOptions` array to signal "the end".
+//
+// Story Branching Engine (gap matrix) is satisfied by this same
+// `choiceOptions` Json structure — see gap matrix note, no separate
+// branching-engine model was built.
+//
+// Story Safety Engine: every StoryPage carries `safetyReviewed` +
+// `safetyReviewedAt` + `safetyNotes`, populated by running each page's
+// `text` through the existing safety pattern (deterministic Presidio PII
+// backstop, the same one ModerationService.moderateContent() uses) at
+// seed time, even though this content is human-authored — see
+// seed-stories.ts for the actual review calls and honest notes about the
+// Bedrock-LLM half of ModerationService being down in production.
+// ============================================
+model Story {
+  id          String   @id @default(uuid())
+  title       String
+  summary     String
+  ageBand     AgeBand
+  domainId    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  domain      Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  pages       StoryPage[]
+
+  @@index([domainId])
+  @@index([ageBand])
+  @@map("stories")
+}
+
+model StoryPage {
+  id                String    @id @default(uuid())
+  storyId           String
+  pageNumber        Int
+  text              String
+  // Array of { label: string, nextPageNumber: number | null } — 2-3
+  // entries for a branching page, or [] for an ending page.
+  choiceOptions     Json
+  // Story Safety Engine fields — this page's `text` was run through the
+  // deterministic PII backstop at authoring time.
+  safetyReviewed    Boolean   @default(false)
+  safetyReviewedAt  DateTime?
+  safetyNotes       String?
+
+  story             Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, pageNumber])
+  @@index([storyId])
+  @@map("story_pages")
+}
+
+
+// ============================================
+// QUESTION ENGINE (real MCQ/fill-blank/drag-drop template system)
+// (missing-wave2-cluster-1)
+// ============================================
+enum QuestionType {
+  MCQ
+  FILL_BLANK
+  DRAG_DROP
+}
+
+model QuestionTemplate {
+  id             String            @id @default(uuid())
+  objectiveId    String
+  type           QuestionType
+  stem           String            @db.Text
+  options        Json?
+  correctAnswer  String
+  distractors    Json
+  difficulty     DifficultyLevel   @default(MEDIUM)
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  objective      LearningObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  generatedActivities Activity[]   @relation("GeneratedFromTemplate")
+
+  @@index([objectiveId])
+  @@index([type])
+  @@map("question_templates")
+}
+
+model Flashcard {
+  id          String   @id @default(uuid())
+  domainId    String
+  front       String   @db.Text
+  back        String   @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  domain      Domain            @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  reviews     FlashcardReview[]
+
+  @@index([domainId])
+  @@map("flashcards")
+}
+
+model FlashcardReview {
+  id              String    @id @default(uuid())
+  learnerId       String
+  flashcardId     String
+  confidence      Float     @default(0.0)
+  reviewCount     Int       @default(0)
+  lastReviewedAt  DateTime?
+  nextReviewDue   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  learner         Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  flashcard       Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, flashcardId])
+  @@index([learnerId])
+  @@index([nextReviewDue])
+  @@map("flashcard_reviews")
+}
+
+model DailyGoal {
+  id                String   @id @default(uuid())
+  learnerId         String   @unique
+  targetMinutes     Int      @default(15)
+  targetActivities  Int      @default(3)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  learner           Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@map("daily_goals")
+}
+
+enum NotificationType {
+  STREAK_AT_RISK
+  CHARACTER_UNLOCKED
+  DAILY_GOAL_COMPLETE
+  MISSION_REMINDER
+  ACHIEVEMENT_UNLOCKED
+}
+
+model Notification {
+  id         String            @id @default(uuid())
+  learnerId  String
+  type       NotificationType
+  title      String
+  body       String
+  data       Json?
+  isRead     Boolean           @default(false)
+  createdAt  DateTime          @default(now())
+
+  learner    Learner           @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([learnerId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ==================== Creativity Engine ====================
+// Zero-trace engine per USAM_KIDS_ENGINE_GAP_MATRIX.md ("No model, service,
+// or module... nothing dedicated beyond generic Project/ai-task.interface
+// enum value"). Built from scratch this pass: a small bank of real
+// open-ended creative prompts ("design a poster explaining photosynthesis",
+// "write a 4-line poem about your favorite number") spanning multiple
+// Domains, plus a lightweight submission+gallery layer. Deliberately a
+// dedicated model rather than reusing Project — prompts here are
+// curriculum-authored content (like AILiteracyConcept), not learner-authored
+// project metadata, and submissions are simple text/note responses to a
+// specific prompt rather than a full multi-milestone Project lifecycle.
+model CreativityPrompt {
+  id          String   @id @default(uuid())
+  title       String   @unique
+  slug        String   @unique
+  prompt      String
+  domainId    String?
+  ageBand     AgeBand
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  domain      Domain?                @relation(fields: [domainId], references: [id], onDelete: SetNull)
+  submissions CreativitySubmission[]
+
+  @@index([slug])
+  @@index([domainId])
+  @@index([ageBand])
+  @@map("creativity_prompts")
+}
+
+enum CreativitySubmissionVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+model CreativitySubmission {
+  id         String                         @id @default(uuid())
+  promptId   String
+  learnerId  String
+  title      String?
+  content    String
+  visibility CreativitySubmissionVisibility @default(PRIVATE)
+  createdAt  DateTime                       @default(now())
+
+  prompt  CreativityPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  learner Learner          @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([promptId])
+  @@index([learnerId])
+  @@index([visibility])
+  @@map("creativity_submissions")
+}
+
+// ==================== Problem Solving Engine + Computational Thinking Engine ====================
+// Both zero-trace per USAM_KIDS_ENGINE_GAP_MATRIX.md Part 7b — genuinely
+// overlapping (decomposition/pattern-recognition/abstraction/algorithm-design
+// underlies both "problem solving" and "computational thinking" as commonly
+// taught to kids), so this pass builds ONE model covering both rather than
+// two near-duplicate tables. Mirrors AILiteracyConcept/CareerExplorationConcept
+// exactly: a flat, age-banded concept table with no relations, served
+// read-only via a controller mirroring cross-curricular.controller.ts.
+model ProblemSolvingConcept {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String
+  ageAppropriate AgeBand
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@index([slug])
+  @@index([category])
+  @@map("problem_solving_concepts")
+}
+
+// ==================== Audit Engine ====================
+// Per USAM_KIDS_ENGINE_GAP_MATRIX.md's Audit Engine row: a real, SMALL
+// audit log for sensitive admin-ish actions, not a generic everything-
+// logger. Wired into exactly 3 existing sensitive endpoints (see
+// audit-log.service.ts for the exact call sites): parent time-limit
+// changes, moderation review decisions, and learner age-band changes.
+// Intentionally NOT a middleware/interceptor that logs every request —
+// that would be the "generic everything-logger" the task explicitly
+// says not to build. Each sensitive service method calls
+// AuditLogService.record() itself, at the exact point where the
+// mutation happens, so the "what changed" diff is real (not inferred
+// from request/response bodies by a generic interceptor).
+model AdminAuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String
+  actorRole   String
+  action      String
+  targetType  String
+  targetId    String
+  before      Json?
+  after       Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([action])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
+}
+
+// ==================== Feature Flag Engine ====================
+// Per USAM_KIDS_ENGINE_GAP_MATRIX.md's Feature Flag Engine row: a real,
+// small FeatureFlag model + FeatureFlagService.isEnabled(flagKey,
+// learnerId?) + ONE real usage gating something meaningful. This pass
+// wires it into the Streak Freeze shop feature (streak-freeze.service.ts
+// purchase() call) as the demonstration — flip `streak_freeze_shop` off
+// and the purchase endpoint rejects with a clear "feature disabled"
+// error instead of the DB write happening.
+//
+// Rollout model kept intentionally simple (no % rollout/experiment
+// bucketing — that would be a distinct, larger A/B-testing engine): a
+// flag is either globally enabled/disabled, or enabled for a specific
+// allow-list of learnerIds (learnerOverrides), which is enough to prove
+// the mechanism (global kill-switch + per-learner override) without
+// over-building.
+model FeatureFlag {
+  id                String   @id @default(uuid())
+  key               String   @unique
+  description       String?
+  isEnabledGlobally Boolean  @default(false)
+  learnerOverrides  String[] @default([])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([key])
+  @@map("feature_flags")
 }

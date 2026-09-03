@@ -533,7 +533,7 @@ Continuing the same pass (same session as Part 8) — Localization and Safety se
 | Observability Engine | Zero trace — no OpenTelemetry/Prometheus/Grafana/Sentry SDK or config found in `backend/package.json`'s implied dependency surface (no import statements for any of these found via repeated greps across this and prior passes) or `backend/src/main.ts`. Only `console.log` (`main.ts`'s bootstrap banner) and NestJS's built-in `Logger` class (used extensively, e.g. `character.service.ts`, `moderation.service.ts`) exist for observability. | Partially implemented | **UPDATE (missing-wave2-cluster-9)**: Real, SMALL v1 shipped — `GET /api/health/detailed` (`app.controller.ts`/`app.service.ts`, commit `a4cdb09`) returns DB reachability + round-trip latency (a pool-health proxy — Prisma doesn't expose pg-pool internals directly, so real query latency plus any `connection_limit` parsed from `DATABASE_URL` is the honest available signal), process `uptimeSeconds`, and a count of `ERROR`-level lines in the last 500 lines of the PM2 error log this process already writes via Nest's `Logger`. Live-verified via curl on prod: `{"status":"ok","database":{"connected":true,"latencyMs":5,...},"recentErrors":{"errorCount":12,...}}`. Also standardized `console.log`→`Logger` in `PrismaService`/`main.ts`'s bootstrap (previously the two remaining `console.log` call sites in the whole backend; every other service already used Nest's `Logger` consistently, confirmed by this pass's own grep). **Honest deferral for the FULL observability stack**: this is explicitly NOT Prometheus/Grafana/OpenTelemetry/Sentry — no metrics time-series, no distributed tracing, no alerting, no log aggregation service. That remains genuinely infra-scale work (needs a metrics backend, a collector agent, dashboards, and ideally a managed log-aggregation service) and is correctly out of scope for a v1 slice; deferred until the platform has traffic/SRE need to justify standing up that infra. |
 | Analytics Engine (product, distinct from Learning Analytics) | Zero trace of a product-analytics/retention-tracking system distinct from `LearningEvent` (already credited as Learning Analytics Engine, Part 7b: Partially implemented) — no separate event stream for session-count/DAU/retention-cohort tracking, confirming the exact gap this file's own Part 1 row 15 predicted ("no separation yet between product analytics and learning analytics... today it's one event stream serving both concerns"). | Missing (as a separate system) | Directly resolves Part 1 row 15's open question: there is in fact no second, separate product-analytics stream — `LearningEvent` remains the only analytics pipeline, meaning product/retention analytics genuinely does not exist at all (not just "unseparated," but absent). |
 | Feature Flag Engine | Zero trace — `grep -rlEi "FeatureFlag\|feature-flag"` across the whole codebase returns no hits. No flag-gated code path, no config-driven feature toggle, found anywhere. | Missing | Nothing built; the inventory notes this maps to the existing `feature-flags-architect` Hermes skill/agent, which is a planning/authoring tool, not itself a running feature-flag *system* inside this codebase — the skill's existence doesn't substitute for the actual runtime engine. |
-| CMS/Content Studio + Curriculum/Character/Mission/Activity Authoring Engines | Zero trace — every piece of content in this codebase (missions, activities, characters, English strands, cross-curricular concepts) is created via one-off Prisma seed scripts (`backend/prisma/seeds/*.ts`, referenced throughout this file — e.g. `seed-cross-curricular.ts`, `seed-english-coding.ts`) run manually, not through any admin UI, CMS, or authoring tool. No admin routes, no content-editor frontend pages found in `frontend/src/features/**` (no `admin`/`cms`/`authoring` directory exists). | Missing | All 5 named authoring engines collapse to the same one finding: content authoring today is "write a TypeScript seed script and run it," with zero tooling for non-engineers to author/edit any content type. |
+| CMS/Content Studio + Curriculum/Character/Mission/Activity Authoring Engines | **v1 built this pass (missing-wave2-cluster-10), Mission content type only.** New `backend/src/modules/missions/admin-missions.controller.ts` — thin, ADMIN-role-gated (`@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(Role.ADMIN)`, using the real `Role.ADMIN` enum value + the pre-existing-but-previously-unused `RolesGuard`/`@Roles()` decorator pair, no new hack role needed) — exposes `GET/POST /admin/missions`, `GET/PATCH/DELETE /admin/missions/:id`, delegating to 5 new methods on the *existing* `MissionsService` (`adminListMissions`, `adminGetMission`, `createMission`, `updateMission`, `deleteMission` — zero duplicated business logic, same Prisma `Mission` model the learner-facing `MissionsController` already reads). Frontend: `frontend/src/features/admin/pages/AdminMissionsPage.tsx`, a real form-based list/create/edit/delete UI, mounted at `/admin/missions` behind a new `AdminRoute` client-side gate (`frontend/src/components/common/AdminRoute.tsx`, checks cached `user.role === 'ADMIN'`; the actual security boundary is the backend `RolesGuard`, this is UX-only). | Partially implemented (Mission-only v1) | **Honest scope note: this is one content type out of the ~5 named authoring engines, not the full CMS.** Character / English strand / Cross-Curricular concept / general Activity authoring UIs remain genuinely Missing — still seed-script-only (`backend/prisma/seeds/*.ts`), no admin tooling exists for any content type besides Mission. This proves the CMS concept end-to-end (admin creates content -> same DB row -> learner sees it via the pre-existing unmodified `GET /missions` endpoint, live-verified) but should not be read as "CMS gap closed." |
 | Localization CMS | Already logged Missing as part of Localization Engine (Part 8) — no separate authoring-tool trace found either; would require both the (missing) CMS above and the (missing) Localization Engine to exist first. | Missing | **Confirmed still Missing (missing-wave2-cluster-7 pass)**: re-checked for any admin route/authoring-UI trace for translation content — none exists (`TranslationController` above is a plain CRUD/approve API, not an authoring UI). Deliberately deferred: this genuinely depends on the still-Missing generic CMS/Authoring Engine (Part 9 row above) existing first — building a Localization-specific authoring UI without the underlying CMS/Authoring platform it should be built on would create a one-off, non-reusable admin page rather than a real CMS module, and would need to be rebuilt once the generic CMS ships. The `POST /translations/:entityType/:entityId/:field/approve` endpoint added this pass (see Translation QA Engine row) provides the *API* a future CMS could call, but is not itself a CMS. |
 | Translation QA Engine | Already logged Missing/Partially-implemented context — `TranslationService` (Part 8, Localization section: real CRUD, zero controller/route) has no quality-review layer of any kind (no reviewer-approval field on the `Translation` model, no flagging workflow). | Partially implemented | **UPDATE (missing-wave2-cluster-7)**: Real v1 QA gate shipped by piggybacking on the `Translation` model change described in the Arabic Educational Content Engine row above (same schema change, same migration) rather than building separate QA infrastructure. `Translation.isHumanApproved`/`approvedBy`/`approvedAt` is the reviewer-approval field the original finding said was missing. `TranslationService.setApproval()` + `TranslationService.getApprovalStats()` + `POST /translations/:entityType/:entityId/:field/approve` + `GET /translations/qa/stats` (`translation.controller.ts`) give a real (if simple) approve/revoke workflow and coverage reporting. 71 rows are live-flagged `isHumanApproved=true` on production (see Arabic Educational Content Engine row for detail), and `TranslationService.autoTranslate()`'s placeholder path was left deliberately NOT setting this flag, so machine-generated `[NEEDS_TRANSLATION:..]` placeholder rows are visibly distinguishable from human-approved ones via this same field. Not "fully implemented" because there's no flagging/rejection-reason workflow beyond a boolean, and no reviewer-role/permissions model (any authenticated caller can currently call the approve endpoint) — a v1 gate, not a full editorial QA pipeline. |
 | AI Prompt/Policy Engine | Zero trace of versioned, centrally-managed prompts — every system prompt found in this codebase (`character.service.ts`'s `buildCharacterSystemPrompt()`, `moderation.service.ts`'s inline moderation prompt, `coding-coach.service.ts`/`english-coach.service.ts`'s coaching prompts) is a hardcoded template string embedded directly in its owning service file, with no version number, no changelog, no separate policy-approval gate, and no A/B-testable prompt-variant mechanism. | Missing | Directly matches the inventory's own framing ("versioned prompts with safety policy + eval, not scattered in code") — prompts genuinely are "scattered in code" today, confirmed by this pass's direct reads of 4 separate prompt-owning files. |
@@ -782,3 +782,66 @@ grounding), `7e8a4af` (Conversation Engine DEBATE/INTERVIEW), `c6cd5c9`
 (Vocabulary Engine strandType column). Voice Interaction Engine required
 no commit — verification-only per task instructions (sidecars already
 running; VAD correctly left as documented future work, not built).
+
+
+## missing-wave2-cluster-10: Economy/Coding-Sandbox verification + CMS/Authoring Mission CRUD v1
+
+**Economy Engine and Coding Sandbox / Code Execution Security Engine —
+verified already correctly classified, no change needed.** Read both
+rows in place (Part 7b line ~380 for Economy, Part 5/Part 7a line ~346
+for Coding Sandbox) plus `git log --grep=coin-economy --grep=streak-freeze`
+before touching anything. Confirmed:
+- **Economy Engine** is already `Already implemented` — closed by
+  `engine-fix-2-coin-economy` (coin-spending streak-freeze economy,
+  commit `47113b2`): `Progression.coins` now has a real spend (streak
+  freeze) distinct from `Progression.totalXP`'s cosmetic-shop spend.
+  Not stale, no edit made.
+- **Coding Sandbox / Code Execution Security Engine** is already
+  `Already implemented (v1)` — the row already documents the correct
+  "safe-by-absence" design rationale explicitly (Pyodide/Sandpack run
+  100% client-side; `backend/src/modules/coding-sandbox/` never executes
+  learner code, only serves specs and grades client-reported results).
+  Not stale, no edit made.
+
+Neither row needed correction — both were already accurately reflecting
+work closed by earlier waves. No code changes made for either.
+
+**CMS/Content Studio + Curriculum/Character/Mission/Activity Authoring
+Engines — real v1 built, Mission content type only.** Previously `Missing`
+(zero admin tooling, seed-script-only for every content type). Built the
+smallest honest slice: a working admin-only Mission CRUD.
+
+- Backend: `backend/src/modules/missions/admin-missions.controller.ts`
+  (new, thin — no business logic) mounted at `/admin/missions`, guarded
+  by `JwtAuthGuard` + `RolesGuard` + `@Roles(Role.ADMIN)` — the real
+  `ADMIN` value already in `schema.prisma`'s `Role` enum, and the
+  `RolesGuard`/`@Roles()` decorator pair that already existed in
+  `backend/src/modules/auth/` but had zero real callers before this pass.
+  5 new methods added to the *existing* `MissionsService`
+  (`adminListMissions`, `adminGetMission`, `createMission`,
+  `updateMission`, `deleteMission`) — plain Prisma CRUD on the same
+  `Mission` model the learner-facing `MissionsController` already reads,
+  no duplicated logic.
+- Frontend: `frontend/src/features/admin/pages/AdminMissionsPage.tsx` — a
+  real list/create/edit/delete form UI (not a stub), calling the new
+  `adminMissionsApi` wrapper in `frontend/src/lib/api/endpoints.ts`.
+  Route `/admin/missions` added to `frontend/src/app/router/index.tsx`,
+  gated client-side by new `frontend/src/components/common/AdminRoute.tsx`
+  (checks cached `user.role === 'ADMIN'`; the real security boundary is
+  the backend `RolesGuard`, not this client check).
+- **Live verification**: created a real test Mission via the deployed
+  admin API (`POST /api/admin/missions` with an ADMIN-role JWT), then
+  confirmed it appears via the pre-existing, unmodified learner-facing
+  `GET /api/missions` endpoint — same DB row, zero separate data path.
+  See commit message for exact IDs/response bodies.
+- **Honest scope**: this is Mission-only. Character / English strand /
+  Cross-Curricular concept / general Activity authoring UIs remain
+  genuinely `Missing` — still seed-script-only. Classified as
+  `Partially implemented (Mission-only v1)`, not `Already implemented` —
+  do not read this as "CMS gap closed."
+
+Build/deploy: backend `npm run build` + `pm2 restart usam-backend`;
+frontend full-clean deploy (`rm -rf dist && npm run build && sudo rm -rf
+/var/www/html/* && sudo cp -r dist/* /var/www/html/ && sudo chown -R
+www-data:www-data /var/www/html/`), per the mandatory pattern used by
+prior waves. Commit tagged `missing-wave2-cluster-10`.

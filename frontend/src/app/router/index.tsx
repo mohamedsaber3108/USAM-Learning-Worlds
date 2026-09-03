@@ -31,9 +31,13 @@ import { CosmeticShopPage } from '@/features/cosmetics/pages/CosmeticShopPage'
 import { LearningInsightsPage } from '@/features/analytics/pages/LearningInsightsPage'
 import { CrossCurricularPage } from '@/features/cross-curricular/pages/CrossCurricularPage'
 import { CrossCurricularConceptDetailPage } from '@/features/cross-curricular/pages/CrossCurricularConceptDetailPage'
+import { StoriesListPage } from '@/features/stories/pages/StoriesListPage'
+import { StoryReaderPage } from '@/features/stories/pages/StoryReaderPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
+import { AdminRoute } from '@/components/common/AdminRoute'
 import { AppShell } from '@/components/layout/AppShell'
 import { LandingPage } from '@/features/landing/pages/LandingPage'
+import { AdminMissionsPage } from '@/features/admin/pages/AdminMissionsPage'
 
 /** Branch "/" on auth state: signed-in visitors go straight to the app
  * (their previous behavior, unchanged); first-time/signed-out visitors get
@@ -140,6 +144,8 @@ export function AppRouter() {
 
         {/* Character Universe (gallery with progressive unlock + per-character chat) */}
         <Route path="/characters" element={<CharacterGalleryPage />} />
+        <Route path="/stories" element={<StoriesListPage />} />
+        <Route path="/stories/:id" element={<StoryReaderPage />} />
         <Route path="/characters/:id/chat" element={<CharacterChatPage />} />
 
         {/* Cosmetic Shop — real XP-spending economy (borders/badges/titles/themes) */}
@@ -153,6 +159,18 @@ export function AppRouter() {
             content, one shared parameterized page per category. */}
         <Route path="/cross-curricular/:category" element={<CrossCurricularPage />} />
         <Route path="/cross-curricular/:category/:slug" element={<CrossCurricularConceptDetailPage />} />
+
+        {/* Admin — CMS/Content Studio + Authoring Engine v1 (Mission
+            content type only; ADMIN-role-gated both here and server-side
+            via RolesGuard on /admin/missions). */}
+        <Route
+          path="/admin/missions"
+          element={
+            <AdminRoute>
+              <AdminMissionsPage />
+            </AdminRoute>
+          }
+        />
       </Route>
 
       {/* "/" — public landing/preview for signed-out visitors (real product

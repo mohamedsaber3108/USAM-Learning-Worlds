@@ -561,3 +561,61 @@ export const reflectionApi = {
     apiClient.get<MissionReflection[]>('/reflection/responses/by-run', { params: { missionRunId } }),
 }
 
+// ==================== Admin: Missions CMS/Authoring (v1) ====================
+// Thin wrapper around the admin-only /admin/missions endpoints (ADMIN role
+// required server-side via RolesGuard). Mission-content-type only — see
+// docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md CMS row for scope notes.
+export interface AdminMissionInput {
+  title: string
+  description: string
+  type: 'GUIDED' | 'EXPLORATION' | 'CHALLENGE' | 'PROJECT_BASED'
+  estimatedMinutes?: number | undefined
+  order?: number | undefined
+  isActive?: boolean | undefined
+  worldId?: string | undefined
+}
+
+export const adminMissionsApi = {
+  list: () => apiClient.get('/admin/missions'),
+
+  getById: (id: string) => apiClient.get(`/admin/missions/${id}`),
+
+  create: (data: AdminMissionInput) => apiClient.post('/admin/missions', data),
+
+  update: (id: string, data: Partial<AdminMissionInput>) =>
+    apiClient.patch(`/admin/missions/${id}`, data),
+
+  remove: (id: string) => apiClient.delete(`/admin/missions/${id}`),
+}
+
+// ==================== Story Engine (gap matrix cluster-8) ====================
+// Small, real branching-story reader — StoryPage.choiceOptions carries the
+// branching tree, walked client-side (satisfies "Story Branching Engine").
+export interface StoryPage {
+  id: string
+  pageNumber: number
+  text: string
+  safetyReviewed?: boolean
+  choiceOptions: { label: string; nextPageNumber: number | null }[] | null
+}
+
+export interface StorySummary {
+  id: string
+  title: string
+  summary?: string
+  ageBand: string
+  domain?: { name: string; slug: string; icon?: string; color?: string } | null
+  _count?: { pages: number }
+}
+
+export interface StoryDetail extends StorySummary {
+  pages: StoryPage[]
+}
+
+export const storiesApi = {
+  listStories: (params?: { ageBand?: string; domainSlug?: string }) =>
+    apiClient.get<StorySummary[]>('/stories', { params }),
+
+  getStory: (id: string) => apiClient.get<StoryDetail>(`/stories/${id}`),
+}
+

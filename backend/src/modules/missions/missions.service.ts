@@ -319,4 +319,91 @@ export class MissionsService {
       orderBy: { startedAt: 'desc' },
     });
   }
+
+  // ============================================
+  // Admin CRUD (CMS/Authoring Engine v1 — Mission
+  // content type only; see gap matrix CMS row).
+  // Thin wrappers over the same Mission model the
+  // learner-facing read paths above already use —
+  // no separate business logic, just create/update/
+  // delete so an admin can author Missions without a
+  // seed script.
+  // ============================================
+
+  /**
+   * List all missions for the admin authoring UI,
+   * including inactive ones (unlike getMissions()
+   * above, which filters isActive:true for learners).
+   */
+  async adminListMissions() {
+    return this.prisma.mission.findMany({
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async adminGetMission(missionId: string) {
+    const mission = await this.prisma.mission.findUnique({
+      where: { id: missionId },
+    });
+    if (!mission) {
+      throw new NotFoundException('Mission not found');
+    }
+    return mission;
+  }
+
+  async createMission(data: {
+    title: string;
+    description: string;
+    type: string;
+    estimatedMinutes?: number;
+    order?: number;
+    isActive?: boolean;
+    worldId?: string;
+  }) {
+    return this.prisma.mission.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        type: data.type as any,
+        estimatedMinutes: data.estimatedMinutes,
+        order: data.order ?? 0,
+        isActive: data.isActive ?? true,
+        worldId: data.worldId,
+      },
+    });
+  }
+
+  async updateMission(
+    missionId: string,
+    data: {
+      title?: string;
+      description?: string;
+      type?: string;
+      estimatedMinutes?: number;
+      order?: number;
+      isActive?: boolean;
+      worldId?: string;
+    },
+  ) {
+    await this.adminGetMission(missionId);
+    return this.prisma.mission.update({
+      where: { id: missionId },
+      data: {
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.type !== undefined && { type: data.type as any }),
+        ...(data.estimatedMinutes !== undefined && {
+          estimatedMinutes: data.estimatedMinutes,
+        }),
+        ...(data.order !== undefined && { order: data.order }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.worldId !== undefined && { worldId: data.worldId }),
+      },
+    });
+  }
+
+  async deleteMission(missionId: string) {
+    await this.adminGetMission(missionId);
+    return this.prisma.mission.delete({ where: { id: missionId } });
+  }
 }
