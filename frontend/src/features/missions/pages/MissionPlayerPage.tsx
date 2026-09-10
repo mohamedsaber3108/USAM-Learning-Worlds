@@ -344,6 +344,8 @@ function CompanionBanner({
   // Re-derive a fresh idle line each time the learner moves to a new step
   // (currentIndex changes) so the companion doesn't repeat itself endlessly;
   // once real feedback exists it always takes priority over the idle line.
+  // currentIndex is an intentional trigger dependency, not used in the body.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const idleLine = useMemo(() => getCompanionLine(name, 'start'), [name, currentIndex])
   const line = feedback?.line ?? idleLine
   return (

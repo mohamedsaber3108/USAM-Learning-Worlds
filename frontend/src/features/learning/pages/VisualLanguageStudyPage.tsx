@@ -126,10 +126,9 @@ export function VisualLanguageStudyPage() {
                 className="card w-full max-w-xl overflow-hidden"
               >
                 <div className="aspect-video bg-surface-100 flex items-center justify-center overflow-hidden">
-                  {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
                   <img
                     src={currentCard.imageUrl}
-                    alt={`Illustration for ${currentCard.word}`}
+                    alt={currentCard.word}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />

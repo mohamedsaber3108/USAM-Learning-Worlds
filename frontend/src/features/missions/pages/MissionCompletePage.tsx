@@ -9,6 +9,16 @@ export function MissionCompletePage() {
   const result = location.state?.result
   const runId = location.state?.runId
 
+  // Hooks must run unconditionally and in a stable order on every render, so
+  // the count-up animations are computed BEFORE the early "no results" return.
+  // They safely resolve to 0 when result is absent.
+  const score = result?.finalScore || 0
+  const xpEarned = result?.xpEarned || 0
+  const isPerfect = score >= 100
+
+  const scoreCount = useCountUp(score, 900)
+  const xpCount = useCountUp(xpEarned, 900)
+
   if (!result) {
     return (
       <div className="min-h-screen bg-surface-50 flex items-center justify-center">
@@ -22,13 +32,6 @@ export function MissionCompletePage() {
       </div>
     )
   }
-
-  const score = result.finalScore || 0
-  const xpEarned = result.xpEarned || 0
-  const isPerfect = score >= 100
-
-  const scoreCount = useCountUp(score, 900)
-  const xpCount = useCountUp(xpEarned, 900)
 
   const CelebrationIcon = isPerfect ? PartyPopper : score >= 80 ? Star : score >= 60 ? ThumbsUp : Zap
   const celebrationTint = isPerfect
