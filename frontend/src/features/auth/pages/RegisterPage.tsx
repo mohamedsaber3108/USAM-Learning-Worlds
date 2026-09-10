@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import apiClient from '@/lib/api/client'
 import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 import type { AuthResponse } from '@/types'
+import usamLogo from '@/assets/usam-logo.png'
 
 export function RegisterPage() {
   const { t } = useTranslation()
@@ -62,18 +63,29 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      <div className="max-w-md w-full mx-4">
-        <div className="bg-white rounded-2xl shadow-soft-lg p-8">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+      <div className="hero-glow -top-24 -right-16 w-72 h-72 animate-pulse-soft" aria-hidden="true" />
+      <div
+        className="hero-glow bottom-0 -left-16 w-80 h-80 bg-secondary-200/25 animate-pulse-soft"
+        aria-hidden="true"
+      />
+      <div className="relative max-w-md w-full mx-4">
+        <div className="bg-white rounded-2xl shadow-soft-lg p-8 border border-surface-200/70">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <img
+              src={usamLogo}
+              alt=""
+              aria-hidden="true"
+              className="h-11 w-auto mx-auto mb-5 animate-float-soft"
+            />
+            <h1 className="text-3xl font-bold text-ink mb-2">
               {t('auth.register.createAccount')}
             </h1>
-            <p className="text-gray-600">{t('auth.register.subtitle')}</p>
+            <p className="text-slate-500">{t('auth.register.subtitle')}</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-lg text-error-700 text-sm">
               {error}
             </div>
           )}

@@ -222,16 +222,16 @@ export function CurriculumBrowsePage() {
         <div className="card mb-2">
           <h2 className="text-lg font-heading font-semibold mb-3">Thinking Skills</h2>
           <div className="flex flex-wrap gap-3">
-            <Link to="/thinking/problem-solving" className="btn bg-orange-600 text-white hover:bg-orange-700 shadow-none flex items-center gap-1.5">
-              <PuzzleIcon className="w-4 h-4" strokeWidth={2} />
+            <Link to="/thinking/problem-solving" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-accent-50 text-accent-600"><PuzzleIcon className="w-4 h-4" strokeWidth={2} /></span>
               Problem Solving
             </Link>
-            <Link to="/thinking/computational-thinking" className="btn bg-blue-600 text-white hover:bg-blue-700 shadow-none flex items-center gap-1.5">
-              <Brain className="w-4 h-4" strokeWidth={2} />
+            <Link to="/thinking/computational-thinking" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-primary-50 text-primary-600"><Brain className="w-4 h-4" strokeWidth={2} /></span>
               Computational Thinking
             </Link>
-            <Link to="/thinking/critical-thinking" className="btn bg-teal-600 text-white hover:bg-teal-700 shadow-none flex items-center gap-1.5">
-              <Search className="w-4 h-4" strokeWidth={2} />
+            <Link to="/thinking/critical-thinking" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-secondary-50 text-secondary-600"><Search className="w-4 h-4" strokeWidth={2} /></span>
               Critical Thinking
             </Link>
           </div>
@@ -245,32 +245,32 @@ export function CurriculumBrowsePage() {
         <div className="card mb-2">
           <h2 className="text-lg font-heading font-semibold mb-3">Cross-Curricular</h2>
           <div className="flex flex-wrap gap-3">
-            <Link to="/cross-curricular/ai-literacy" className="btn bg-violet-600 text-white hover:bg-violet-700 shadow-none flex items-center gap-1.5">
-              <Bot className="w-4 h-4" strokeWidth={2} />
+            <Link to="/cross-curricular/ai-literacy" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-primary-50 text-primary-600"><Bot className="w-4 h-4" strokeWidth={2} /></span>
               AI Literacy
             </Link>
-            <Link to="/cross-curricular/entrepreneurship" className="btn bg-amber-600 text-white hover:bg-amber-700 shadow-none flex items-center gap-1.5">
-              <Lightbulb className="w-4 h-4" strokeWidth={2} />
+            <Link to="/cross-curricular/entrepreneurship" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-secondary-50 text-secondary-600"><Lightbulb className="w-4 h-4" strokeWidth={2} /></span>
               Entrepreneurship
             </Link>
-            <Link to="/cross-curricular/financial-literacy" className="btn bg-emerald-600 text-white hover:bg-emerald-700 shadow-none flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4" strokeWidth={2} />
+            <Link to="/cross-curricular/financial-literacy" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-success-100 text-success-600"><DollarSign className="w-4 h-4" strokeWidth={2} /></span>
               Financial Literacy
             </Link>
-            <Link to="/cross-curricular/digital-literacy" className="btn bg-sky-600 text-white hover:bg-sky-700 shadow-none flex items-center gap-1.5">
-              <Shield className="w-4 h-4" strokeWidth={2} />
+            <Link to="/cross-curricular/digital-literacy" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-primary-50 text-primary-600"><Shield className="w-4 h-4" strokeWidth={2} /></span>
               Digital Literacy
             </Link>
-            <Link to="/cross-curricular/career-exploration" className="btn bg-rose-600 text-white hover:bg-rose-700 shadow-none flex items-center gap-1.5">
-              <Compass className="w-4 h-4" strokeWidth={2} />
+            <Link to="/cross-curricular/career-exploration" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-accent-50 text-accent-600"><Compass className="w-4 h-4" strokeWidth={2} /></span>
               Career Exploration
             </Link>
-            <Link to="/cross-curricular/communication-skills" className="btn bg-fuchsia-600 text-white hover:bg-fuchsia-700 shadow-none flex items-center gap-1.5">
-              <MessageCircle className="w-4 h-4" strokeWidth={2} />
+            <Link to="/cross-curricular/communication-skills" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-secondary-50 text-secondary-600"><MessageCircle className="w-4 h-4" strokeWidth={2} /></span>
               Communication Skills
             </Link>
-            <Link to="/cross-curricular/coding-concepts" className="btn bg-slate-700 text-white hover:bg-slate-800 shadow-none flex items-center gap-1.5">
-              <Code className="w-4 h-4" strokeWidth={2} />
+            <Link to="/cross-curricular/coding-concepts" className="btn btn-secondary flex items-center gap-2">
+              <span className="icon-chip w-7 h-7 bg-ink/5 text-ink"><Code className="w-4 h-4" strokeWidth={2} /></span>
               Coding Concepts
             </Link>
           </div>

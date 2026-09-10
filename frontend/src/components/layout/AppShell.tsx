@@ -33,6 +33,7 @@ import { LanguageToggle } from './LanguageToggle'
 import { PageTransition } from '@/components/motion/PageTransition'
 import { NotificationBell } from './NotificationBell'
 import { SearchBar } from './SearchBar'
+import usamLogo from '@/assets/usam-logo.png'
 
 /**
  * AppShell — the one persistent navigation frame for every authenticated page.
@@ -164,10 +165,22 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-surface-50 flex flex-col">
       {/* Top header — branding + logout, shared across every authenticated page */}
-      <header className="bg-primary-600 shadow-soft sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link to="/dashboard" className="text-xl font-display font-bold text-white">
-            {t('common.appName')}
+      <header className="brand-surface shadow-soft sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2.5 rounded-control focus-visible:ring-2 focus-visible:ring-white/60 focus:outline-none"
+            aria-label={t('common.appName')}
+          >
+            <img
+              src={usamLogo}
+              alt=""
+              aria-hidden="true"
+              className="brand-logo brand-logo-invert h-8"
+            />
+            <span className="text-lg font-display font-bold text-white tracking-tight hidden sm:inline">
+              {t('common.appName')}
+            </span>
           </Link>
           <div className="flex items-center gap-2">
             <SearchBar />

@@ -8,19 +8,19 @@
  * from here instead so a token change only has one other place to update.
  */
 export const THEME_HEX = {
-  primary50: '#eef1ff',
-  primary100: '#e0e4ff',
-  primary400: '#8a86fb',
-  primary600: '#4f46e5',
-  primary900: '#2b2880',
-  accent500: '#ff6b57',
-  secondary500: '#f0921a',
+  primary50: '#eef5f3',
+  primary100: '#d4e7e2',
+  primary400: '#458d7e',
+  primary600: '#1c5a4d',
+  primary900: '#0a2926',
+  accent500: '#d96a2c',
+  secondary500: '#cf9316',
   success500: '#10b981',
   success600: '#059669',
   warning500: '#f59e0b',
   error500: '#ef4444',
-  slate900: '#0f172a',
-  slate950: '#1e1b4b',
+  slate900: '#0b0f0e',
+  slate950: '#0a2926',
 } as const
 
 /** Cosmetic-shop equipped avatar-border theme accents — deliberately a
@@ -32,7 +32,7 @@ export const THEME_HEX = {
  * identical. */
 export const COSMETIC_THEME_HEX = {
   'theme-indigo': THEME_HEX.primary600,
-  'theme-orange': '#ea580c',
+  'theme-orange': '#c05622',
   'theme-pink': '#db2777',
 } as const
 
@@ -42,10 +42,10 @@ export const COSMETIC_THEME_HEX = {
  * arbitrary picks. */
 export const CONFETTI_PALETTE = [
   THEME_HEX.primary600,
-  THEME_HEX.warning500,
+  THEME_HEX.secondary500,
+  THEME_HEX.accent500,
   THEME_HEX.success500,
-  THEME_HEX.error500,
-  '#8b5cf6', // violet-500 — celebration-only accent, not a UI token
+  '#2b7061', // teal-500 — brand-anchored celebration accent
   '#06b6d4', // cyan-500 — celebration-only accent, not a UI token
-  '#ec4899', // pink-500 — celebration-only accent, not a UI token
+  '#e3ab30', // gold-400 — celebration-only accent, not a UI token
 ]

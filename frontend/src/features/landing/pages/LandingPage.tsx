@@ -18,6 +18,7 @@ import {
   setPreferredCharacter,
   type PreferredCharacterName,
 } from '../lib/characterPreference'
+import usamLogo from '@/assets/usam-logo.png'
 
 // UPGRADE NOTE: the sibling character-art agent's illustrated CharacterFace
 // component (src/features/characters/components/CharacterFace.tsx) has
@@ -80,16 +81,21 @@ export function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 via-white to-white">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-primary-50 via-white to-white">
+      {/* Ambient brand glows — decorative, breathe slowly, never distract */}
+      <div className="hero-glow -top-24 -left-16 w-72 h-72 animate-pulse-soft" aria-hidden="true" />
+      <div
+        className="hero-glow top-40 -right-20 w-80 h-80 bg-secondary-200/25 animate-pulse-soft"
+        aria-hidden="true"
+      />
+
       {/* ---------------------------------------------------------------- */}
       {/* Header */}
       {/* ---------------------------------------------------------------- */}
-      <header className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center shadow-soft">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-display font-bold text-lg text-slate-900">{t('common.appName')}</span>
+      <header className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-6 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <img src={usamLogo} alt="" aria-hidden="true" className="h-9 w-auto" />
+          <span className="font-display font-bold text-lg text-ink">{t('common.appName')}</span>
         </div>
         <Link
           to="/login"
@@ -102,7 +108,7 @@ export function LandingPage() {
       {/* ---------------------------------------------------------------- */}
       {/* Hero */}
       {/* ---------------------------------------------------------------- */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-14 pb-10 text-center">
+      <section className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-14 pb-10 text-center">
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}

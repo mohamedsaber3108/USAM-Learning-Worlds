@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import { crossCurricularApi, type CrossCurricularCategory } from '@/lib/api/endpoints'
 
 const CATEGORY_META: Record<CrossCurricularCategory, { title: string; icon: string; gradient: string }> = {
-  'ai-literacy': { title: 'AI Literacy', icon: '🤖', gradient: 'from-violet-500 to-indigo-500' },
-  entrepreneurship: { title: 'Entrepreneurship', icon: '💡', gradient: 'from-amber-500 to-orange-500' },
-  'financial-literacy': { title: 'Financial Literacy', icon: '💰', gradient: 'from-emerald-500 to-teal-500' },
-  'digital-literacy': { title: 'Digital Literacy', icon: '🛡️', gradient: 'from-sky-500 to-cyan-500' },
-  'career-exploration': { title: 'Career Exploration', icon: '🧭', gradient: 'from-rose-500 to-pink-500' },
-  'communication-skills': { title: 'Communication Skills', icon: '🗣️', gradient: 'from-fuchsia-500 to-purple-500' },
-  'coding-concepts': { title: 'Coding Concepts', icon: '💻', gradient: 'from-slate-600 to-indigo-600' },
+  'ai-literacy': { title: 'AI Literacy', icon: '🤖', gradient: 'from-primary-500 to-primary-700' },
+  entrepreneurship: { title: 'Entrepreneurship', icon: '💡', gradient: 'from-secondary-400 to-secondary-600' },
+  'financial-literacy': { title: 'Financial Literacy', icon: '💰', gradient: 'from-success-500 to-primary-600' },
+  'digital-literacy': { title: 'Digital Literacy', icon: '🛡️', gradient: 'from-primary-400 to-primary-600' },
+  'career-exploration': { title: 'Career Exploration', icon: '🧭', gradient: 'from-accent-400 to-accent-600' },
+  'communication-skills': { title: 'Communication Skills', icon: '🗣️', gradient: 'from-accent-500 to-secondary-500' },
+  'coding-concepts': { title: 'Coding Concepts', icon: '💻', gradient: 'from-ink-soft to-primary-700' },
 }
 
 const AGE_BAND_COLORS: Record<string, string> = {

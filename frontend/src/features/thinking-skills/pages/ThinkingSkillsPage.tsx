@@ -26,17 +26,17 @@ const ENGINE_META: Record<
   'problem-solving': {
     title: 'Problem Solving',
     icon: '🧩',
-    gradient: 'from-orange-500 to-red-500',
+    gradient: 'from-accent-400 to-accent-600',
   },
   'computational-thinking': {
     title: 'Computational Thinking',
     icon: '🧠',
-    gradient: 'from-blue-500 to-indigo-500',
+    gradient: 'from-primary-500 to-primary-700',
   },
   'critical-thinking': {
     title: 'Critical Thinking',
     icon: '🔍',
-    gradient: 'from-teal-500 to-cyan-600',
+    gradient: 'from-primary-400 to-success-600',
   },
 }
 

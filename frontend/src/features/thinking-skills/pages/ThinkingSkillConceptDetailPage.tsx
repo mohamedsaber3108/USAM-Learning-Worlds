@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query'
 import { thinkingSkillsApi, type ThinkingSkillEngine } from '@/lib/api/endpoints'
 
 const ENGINE_META: Record<ThinkingSkillEngine, { title: string; icon: string; gradient: string }> = {
-  'problem-solving': { title: 'Problem Solving', icon: '🧩', gradient: 'from-orange-500 to-red-500' },
-  'computational-thinking': { title: 'Computational Thinking', icon: '🧠', gradient: 'from-blue-500 to-indigo-500' },
-  'critical-thinking': { title: 'Critical Thinking', icon: '🔍', gradient: 'from-teal-500 to-cyan-600' },
+  'problem-solving': { title: 'Problem Solving', icon: '🧩', gradient: 'from-accent-400 to-accent-600' },
+  'computational-thinking': { title: 'Computational Thinking', icon: '🧠', gradient: 'from-primary-500 to-primary-700' },
+  'critical-thinking': { title: 'Critical Thinking', icon: '🔍', gradient: 'from-primary-400 to-success-600' },
 }
 
 const AGE_BAND_COLORS: Record<string, string> = {
