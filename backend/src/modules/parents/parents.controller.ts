@@ -6,6 +6,7 @@ import {
   Param,
   Query,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ParentsService } from './parents.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,7 +22,7 @@ export class ParentsController {
   async getChildren(@CurrentUser() user: any) {
     const guardianId = user.guardian?.id;
     if (!guardianId) {
-      throw new Error('Only guardians can view children');
+      throw new ForbiddenException('Only guardians can view children');
     }
 
     return this.parentsService.getChildren(guardianId);
@@ -31,7 +32,7 @@ export class ParentsController {
   async getFamilySummary(@CurrentUser() user: any) {
     const guardianId = user.guardian?.id;
     if (!guardianId) {
-      throw new Error('Only guardians can view family summary');
+      throw new ForbiddenException('Only guardians can view family summary');
     }
 
     return this.parentsService.getFamilySummary(guardianId);
@@ -44,7 +45,7 @@ export class ParentsController {
   ) {
     const guardianId = user.guardian?.id;
     if (!guardianId) {
-      throw new Error('Only guardians can view child dashboard');
+      throw new ForbiddenException('Only guardians can view child dashboard');
     }
 
     return this.parentsService.getChildDashboard(guardianId, learnerId);
@@ -57,7 +58,7 @@ export class ParentsController {
   ) {
     const guardianId = user.guardian?.id;
     if (!guardianId) {
-      throw new Error('Only guardians can view child progress');
+      throw new ForbiddenException('Only guardians can view child progress');
     }
 
     return this.parentsService.getChildProgress(guardianId, learnerId);
@@ -71,7 +72,7 @@ export class ParentsController {
   ) {
     const guardianId = user.guardian?.id;
     if (!guardianId) {
-      throw new Error('Only guardians can view child activity');
+      throw new ForbiddenException('Only guardians can view child activity');
     }
 
     const daysNum = days ? parseInt(days, 10) : 7;
@@ -93,7 +94,7 @@ export class ParentsController {
   ) {
     const guardianId = user.guardian?.id;
     if (!guardianId) {
-      throw new Error('Only guardians can view child reflections');
+      throw new ForbiddenException('Only guardians can view child reflections');
     }
 
     const limitNum = limit ? parseInt(limit, 10) : 20;
@@ -108,7 +109,7 @@ export class ParentsController {
   ) {
     const guardianId = user.guardian?.id;
     if (!guardianId) {
-      throw new Error('Only guardians can set time limits');
+      throw new ForbiddenException('Only guardians can set time limits');
     }
 
     return this.parentsService.setTimeLimits(guardianId, learnerId, dto);

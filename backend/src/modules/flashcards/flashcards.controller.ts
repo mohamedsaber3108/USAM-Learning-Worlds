@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards , ForbiddenException } from '@nestjs/common';
 import { FlashcardsService } from './flashcards.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -20,7 +20,7 @@ export class FlashcardsController {
     @Query('limit') limit?: string,
   ) {
     const learnerId = user.learner?.id;
-    if (!learnerId) throw new Error('Only learners can study flashcards');
+    if (!learnerId) throw new ForbiddenException('Only learners can study flashcards');
     return this.flashcardsService.getDueCards(learnerId, domainId, limit ? parseInt(limit, 10) : 20);
   }
 
@@ -31,14 +31,14 @@ export class FlashcardsController {
     @Body() dto: { remembered: boolean },
   ) {
     const learnerId = user.learner?.id;
-    if (!learnerId) throw new Error('Only learners can review flashcards');
+    if (!learnerId) throw new ForbiddenException('Only learners can review flashcards');
     return this.flashcardsService.recordReview(learnerId, flashcardId, dto.remembered);
   }
 
   @Get('stats')
   async getStats(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
-    if (!learnerId) throw new Error('Only learners have flashcard stats');
+    if (!learnerId) throw new ForbiddenException('Only learners have flashcard stats');
     return this.flashcardsService.getStats(learnerId);
   }
 }

@@ -33,7 +33,7 @@ export class NotificationsController {
   @Post('read-all')
   async markAllRead(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
-    if (!learnerId) throw new Error('Only learners have notifications');
+    if (!learnerId) throw new ForbiddenException('Only learners have notifications');
     return this.notificationsService.markAllRead(learnerId);
   }
 

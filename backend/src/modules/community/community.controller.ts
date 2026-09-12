@@ -6,6 +6,7 @@ import {
   Query,
   Param,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CommunityService } from './community.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -69,7 +70,7 @@ export class CommunityController {
     @Query('status') status?: string,
   ) {
     if (!user.educator && !user.parent) {
-      throw new Error('Only educators and parents can view quarantined content');
+      throw new ForbiddenException('Only educators and parents can view quarantined content');
     }
 
     return this.communityService.getQuarantinedContent(status);
@@ -82,7 +83,7 @@ export class CommunityController {
     @Body() dto: { decision: 'APPROVED' | 'REJECTED'; notes?: string },
   ) {
     if (!user.educator && !user.parent) {
-      throw new Error('Only educators and parents can review content');
+      throw new ForbiddenException('Only educators and parents can review content');
     }
 
     return this.communityService.reviewContent(id, user.id, dto);

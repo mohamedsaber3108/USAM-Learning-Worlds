@@ -8,6 +8,8 @@ import {
   Body,
   UseGuards,
   Request,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ConceptService } from './services/concept.service';
@@ -192,7 +194,7 @@ export class LearningController {
       case 'CONTENT_ITEM':
         return this.contentAdaptationService.getAdaptedContentItem(entityId, ageBand);
       default:
-        throw new Error(`Unsupported entity type: ${entityType}`);
+        throw new BadRequestException(`Unsupported entity type: ${entityType}`);
     }
   }
 

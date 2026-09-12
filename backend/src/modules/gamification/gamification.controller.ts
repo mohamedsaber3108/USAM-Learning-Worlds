@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards , ForbiddenException } from '@nestjs/common';
 import { ProgressionService } from './progression.service';
 import { AchievementsService } from './achievements.service';
 import { StreaksService } from './streaks.service';
@@ -22,7 +22,7 @@ export class GamificationController {
   async getProgression(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have progression');
+      throw new ForbiddenException('Only learners have progression');
     }
 
     const progression = await this.progression.getProgression(learnerId);
@@ -44,7 +44,7 @@ export class GamificationController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can earn XP');
+      throw new ForbiddenException('Only learners can earn XP');
     }
 
     return this.progression.awardXP(
@@ -66,7 +66,7 @@ export class GamificationController {
   async getMyRank(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have ranks');
+      throw new ForbiddenException('Only learners have ranks');
     }
 
     return this.progression.getLearnerRank(learnerId);
@@ -76,7 +76,7 @@ export class GamificationController {
   async getAchievements(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have achievements');
+      throw new ForbiddenException('Only learners have achievements');
     }
 
     return this.achievements.getAchievementProgress(learnerId);
@@ -86,7 +86,7 @@ export class GamificationController {
   async getStreak(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have streaks');
+      throw new ForbiddenException('Only learners have streaks');
     }
 
     return this.streaks.getStreak(learnerId);
@@ -96,7 +96,7 @@ export class GamificationController {
   async updateStreak(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have streaks');
+      throw new ForbiddenException('Only learners have streaks');
     }
 
     return this.streaks.updateStreak(learnerId);
@@ -108,7 +108,7 @@ export class GamificationController {
   async getCosmetics(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have a cosmetic shop');
+      throw new ForbiddenException('Only learners have a cosmetic shop');
     }
 
     return this.cosmetics.listCosmetics(learnerId);
@@ -118,7 +118,7 @@ export class GamificationController {
   async getEquippedCosmetics(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have equipped cosmetics');
+      throw new ForbiddenException('Only learners have equipped cosmetics');
     }
 
     return this.cosmetics.getEquipped(learnerId);
@@ -128,7 +128,7 @@ export class GamificationController {
   async unlockCosmetic(@CurrentUser() user: any, @Param('id') id: string) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can unlock cosmetics');
+      throw new ForbiddenException('Only learners can unlock cosmetics');
     }
 
     return this.cosmetics.unlock(learnerId, id);
@@ -138,7 +138,7 @@ export class GamificationController {
   async equipCosmetic(@CurrentUser() user: any, @Param('id') id: string) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can equip cosmetics');
+      throw new ForbiddenException('Only learners can equip cosmetics');
     }
 
     return this.cosmetics.equip(learnerId, id);
@@ -150,7 +150,7 @@ export class GamificationController {
   async getStreakFreezeStatus(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have streak freezes');
+      throw new ForbiddenException('Only learners have streak freezes');
     }
 
     return this.streakFreeze.getStatus(learnerId);
@@ -160,7 +160,7 @@ export class GamificationController {
   async purchaseStreakFreeze(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can purchase streak freezes');
+      throw new ForbiddenException('Only learners can purchase streak freezes');
     }
 
     return this.streakFreeze.purchase(learnerId);

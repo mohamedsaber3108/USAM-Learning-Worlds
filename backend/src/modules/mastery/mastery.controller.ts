@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param , ForbiddenException } from '@nestjs/common';
 import { MasteryService } from './mastery.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -23,7 +23,7 @@ export class MasteryController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can record evidence');
+      throw new ForbiddenException('Only learners can record evidence');
     }
 
     return this.masteryService.recordEvidence(
@@ -41,7 +41,7 @@ export class MasteryController {
   async getOverview(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have mastery records');
+      throw new ForbiddenException('Only learners have mastery records');
     }
 
     return this.masteryService.getMasteryOverview(learnerId);
@@ -51,7 +51,7 @@ export class MasteryController {
   async getByDomain(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have mastery records');
+      throw new ForbiddenException('Only learners have mastery records');
     }
 
     return this.masteryService.getMasteryByDomain(learnerId);
@@ -61,7 +61,7 @@ export class MasteryController {
   async getReviewDue(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have mastery records');
+      throw new ForbiddenException('Only learners have mastery records');
     }
 
     return this.masteryService.getReviewDue(learnerId);
@@ -71,7 +71,7 @@ export class MasteryController {
   async getLearningGoals(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have mastery records');
+      throw new ForbiddenException('Only learners have mastery records');
     }
 
     return this.masteryService.getLearningGoals(learnerId);

@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -26,7 +27,7 @@ export class ProjectsController {
   async createProject(@CurrentUser() user: any, @Body() dto: CreateProjectDto) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can create projects');
+      throw new ForbiddenException('Only learners can create projects');
     }
 
     return this.projectsService.createProject(learnerId, dto);
@@ -36,7 +37,7 @@ export class ProjectsController {
   async getMyProjects(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have projects');
+      throw new ForbiddenException('Only learners have projects');
     }
 
     return this.projectsService.getMyProjects(learnerId);
@@ -95,7 +96,7 @@ export class ProjectsController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can update projects');
+      throw new ForbiddenException('Only learners can update projects');
     }
 
     return this.projectsService.updateProject(id, learnerId, dto);
@@ -105,7 +106,7 @@ export class ProjectsController {
   async deleteProject(@CurrentUser() user: any, @Param('id') id: string) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can delete projects');
+      throw new ForbiddenException('Only learners can delete projects');
     }
 
     return this.projectsService.deleteProject(id, learnerId);
@@ -115,7 +116,7 @@ export class ProjectsController {
   async showcaseProject(@CurrentUser() user: any, @Param('id') id: string) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can showcase projects');
+      throw new ForbiddenException('Only learners can showcase projects');
     }
 
     return this.projectsService.showcaseProject(id, learnerId);
@@ -137,7 +138,7 @@ export class ProjectsController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can update milestones');
+      throw new ForbiddenException('Only learners can update milestones');
     }
     return this.projectsService.updateMilestoneStatus(id, milestoneId, learnerId, body.status);
   }

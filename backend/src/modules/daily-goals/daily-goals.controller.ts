@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards , ForbiddenException } from '@nestjs/common';
 import { DailyGoalsService } from './daily-goals.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -11,7 +11,7 @@ export class DailyGoalsController {
   @Get('me')
   async getGoal(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
-    if (!learnerId) throw new Error('Only learners have daily goals');
+    if (!learnerId) throw new ForbiddenException('Only learners have daily goals');
     return this.dailyGoalsService.getGoal(learnerId);
   }
 
@@ -21,14 +21,14 @@ export class DailyGoalsController {
     @Body() dto: { targetMinutes: number; targetActivities: number },
   ) {
     const learnerId = user.learner?.id;
-    if (!learnerId) throw new Error('Only learners have daily goals');
+    if (!learnerId) throw new ForbiddenException('Only learners have daily goals');
     return this.dailyGoalsService.setGoal(learnerId, dto.targetMinutes, dto.targetActivities);
   }
 
   @Get('me/progress')
   async getProgress(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
-    if (!learnerId) throw new Error('Only learners have daily goal progress');
+    if (!learnerId) throw new ForbiddenException('Only learners have daily goal progress');
     return this.dailyGoalsService.getTodayProgress(learnerId);
   }
 }

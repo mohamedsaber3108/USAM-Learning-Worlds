@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Param , ForbiddenException } from '@nestjs/common';
 import { ZPDCalculatorService } from './zpd-calculator.service';
 import { RecommendationService } from './recommendation.service';
 import { InterleavingService } from './interleaving.service';
@@ -30,7 +30,7 @@ export class AdaptiveController {
   async getEngagement(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have an engagement assessment');
+      throw new ForbiddenException('Only learners have an engagement assessment');
     }
     return this.engagement.assessEngagement(learnerId);
   }
@@ -48,7 +48,7 @@ export class AdaptiveController {
   async getCognitiveLoad(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have a cognitive load assessment');
+      throw new ForbiddenException('Only learners have a cognitive load assessment');
     }
     return this.cognitiveLoad.assessLoad(learnerId);
   }
@@ -65,7 +65,7 @@ export class AdaptiveController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can get an interleaved practice set');
+      throw new ForbiddenException('Only learners can get an interleaved practice set');
     }
     const limitNum = limit ? parseInt(limit, 10) : 6;
     return this.interleaving.getInterleavedPracticeSet(learnerId, limitNum);
@@ -80,7 +80,7 @@ export class AdaptiveController {
   async getTransferOpportunities(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have transfer opportunities');
+      throw new ForbiddenException('Only learners have transfer opportunities');
     }
     return this.transfer.listTransferOpportunities(learnerId);
   }
@@ -89,7 +89,7 @@ export class AdaptiveController {
   async getZPDProfile(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have ZPD profiles');
+      throw new ForbiddenException('Only learners have ZPD profiles');
     }
 
     return this.zpdCalculator.calculateZPD(learnerId);
@@ -102,7 +102,7 @@ export class AdaptiveController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can get recommendations');
+      throw new ForbiddenException('Only learners can get recommendations');
     }
 
     const limitNum = limit ? parseInt(limit, 10) : 10;
@@ -116,7 +116,7 @@ export class AdaptiveController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can get next activities');
+      throw new ForbiddenException('Only learners can get next activities');
     }
 
     const activityId = await this.recommendations.getNextActivity(
@@ -138,7 +138,7 @@ export class AdaptiveController {
   async getNextActivityOrchestrated(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can get a next-activity suggestion');
+      throw new ForbiddenException('Only learners can get a next-activity suggestion');
     }
 
     return this.recommendations.getOrchestratedNextActivity(learnerId);
@@ -151,7 +151,7 @@ export class AdaptiveController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have learning paths');
+      throw new ForbiddenException('Only learners have learning paths');
     }
 
     return this.recommendations.getLearningPath(learnerId, skillId);
@@ -164,7 +164,7 @@ export class AdaptiveController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have difficulty recommendations');
+      throw new ForbiddenException('Only learners have difficulty recommendations');
     }
 
     const difficulty = await this.zpdCalculator.getRecommendedDifficulty(
@@ -182,7 +182,7 @@ export class AdaptiveController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have growth velocity');
+      throw new ForbiddenException('Only learners have growth velocity');
     }
 
     const daysNum = days ? parseInt(days, 10) : 30;
@@ -201,7 +201,7 @@ export class AdaptiveController {
   async shouldLevelUp(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can level up');
+      throw new ForbiddenException('Only learners can level up');
     }
 
     const shouldLevel = await this.zpdCalculator.shouldLevelUp(learnerId);

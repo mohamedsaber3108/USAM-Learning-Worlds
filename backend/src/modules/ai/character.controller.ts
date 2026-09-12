@@ -15,6 +15,7 @@ import {
   Query,
   UseGuards,
   Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CharacterService } from './character.service';
@@ -53,7 +54,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can access unlocked characters');
+      throw new ForbiddenException('Only learners can access unlocked characters');
     }
 
     const characters = await this.characterService.getUnlockedCharactersForLearner(learnerId);
@@ -61,6 +62,26 @@ export class CharacterController {
     return { characters };
   }
 
+  /**
+   * Character Orchestrator (audit T-P1-5): resolve the best-fit companion
+   * for the learner's CURRENT context (active mission/project domain), or
+   * fall back to Azouz. Declared before the `:id` route so "orchestrate"
+   * isn't captured as a character id param.
+   */
+  @Get('orchestrate')
+  async orchestrate(
+    @Request() req: any,
+    @Query('domainSlug') domainSlug?: string,
+    @Query('missionId') missionId?: string,
+  ) {
+    const learnerId = req.user.learner?.id;
+
+    if (!learnerId) {
+      throw new ForbiddenException('Only learners have a character orchestrator');
+    }
+
+    return this.characterService.orchestrateCharacter(learnerId, { domainSlug, missionId });
+  }
 
   /**
    * Get character details
@@ -86,7 +107,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can access character state');
+      throw new ForbiddenException('Only learners can access character state');
     }
 
     const state = await this.characterService.getCharacterState(id, learnerId);
@@ -106,7 +127,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can chat with characters');
+      throw new ForbiddenException('Only learners can chat with characters');
     }
 
     const response = await this.characterService.generateResponse(
@@ -140,7 +161,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can create conversations');
+      throw new ForbiddenException('Only learners can create conversations');
     }
 
     const conversation = await this.conversationService.createConversation({
@@ -166,14 +187,14 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can access conversations');
+      throw new ForbiddenException('Only learners can access conversations');
     }
 
     const conversation = await this.conversationService.getConversation(conversationId);
 
     // Verify ownership
     if (conversation.learnerId !== learnerId) {
-      throw new Error('Not your conversation');
+      throw new ForbiddenException('Not your conversation');
     }
 
     return { conversation };
@@ -191,7 +212,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can send messages');
+      throw new ForbiddenException('Only learners can send messages');
     }
 
     const result = await this.conversationService.sendMessage(conversationId, learnerId, {
@@ -215,7 +236,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can access message history');
+      throw new ForbiddenException('Only learners can access message history');
     }
 
     const messages = await this.conversationService.getMessageHistory(conversationId, learnerId, {
@@ -240,7 +261,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can list conversations');
+      throw new ForbiddenException('Only learners can list conversations');
     }
 
     const conversations = await this.conversationService.listConversations(learnerId, {
@@ -261,7 +282,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can pause conversations');
+      throw new ForbiddenException('Only learners can pause conversations');
     }
 
     const conversation = await this.conversationService.pauseConversation(conversationId, learnerId);
@@ -277,7 +298,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can resume conversations');
+      throw new ForbiddenException('Only learners can resume conversations');
     }
 
     const conversation = await this.conversationService.resumeConversation(conversationId, learnerId);
@@ -293,7 +314,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can end conversations');
+      throw new ForbiddenException('Only learners can end conversations');
     }
 
     const conversation = await this.conversationService.endConversation(conversationId, learnerId);
@@ -312,7 +333,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can access conversation summary');
+      throw new ForbiddenException('Only learners can access conversation summary');
     }
 
     const summary = await this.conversationService.getConversationSummary(conversationId, learnerId);
@@ -328,7 +349,7 @@ export class CharacterController {
     const learnerId = req.user.learner?.id;
 
     if (!learnerId) {
-      throw new Error('Only learners can refresh context');
+      throw new ForbiddenException('Only learners can refresh context');
     }
 
     await this.conversationService.refreshContext(conversationId, learnerId);
