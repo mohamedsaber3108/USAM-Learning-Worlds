@@ -1,8 +1,9 @@
 import { Controller, Post, Patch, Body, UseGuards, Get } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, UpdateAgeBandDto } from './dto';
+import { RegisterDto, LoginDto, UpdateAgeBandDto, RefreshDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
@@ -25,9 +26,14 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  // Refresh is guarded by the DEDICATED refresh strategy (validates the
+  // refresh token in the body against JWT_REFRESH_SECRET), NOT the access-token
+  // guard — so an expired access token no longer blocks a refresh (audit T-P1-1).
+  // The @Body()/RefreshDto ensures the token is present for the global
+  // ValidationPipe; the guard/strategy does the cryptographic validation.
   @Post('refresh')
-  @UseGuards(JwtAuthGuard)
-  async refresh(@CurrentUser() user: any) {
+  @UseGuards(JwtRefreshGuard)
+  async refresh(@CurrentUser() user: any, @Body() _dto: RefreshDto) {
     return this.authService.refreshToken(user.id);
   }
 

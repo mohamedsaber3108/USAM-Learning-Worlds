@@ -35,8 +35,14 @@ apiClient.interceptors.response.use(
           const response = await axios.post(`${API_URL}/auth/refresh`, {
             refreshToken,
           })
-          const { accessToken } = response.data
+          // Backend rotates both tokens (audit T-P1-1); persist the new
+          // refresh token too, not just the access token, so the next
+          // refresh uses the rotated one.
+          const { accessToken, refreshToken: newRefreshToken } = response.data
           localStorage.setItem('accessToken', accessToken)
+          if (newRefreshToken) {
+            localStorage.setItem('refreshToken', newRefreshToken)
+          }
           originalRequest.headers.Authorization = `Bearer ${accessToken}`
           return apiClient(originalRequest)
         } catch (refreshError) {

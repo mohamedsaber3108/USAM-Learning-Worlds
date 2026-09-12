@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { AuditModule } from '../audit/audit.module';
 
@@ -24,7 +25,7 @@ import { AuditModule } from '../audit/audit.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, RolesGuard],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, RolesGuard],
   exports: [AuthService, JwtStrategy, PassportModule, RolesGuard],
 })
 export class AuthModule {}
