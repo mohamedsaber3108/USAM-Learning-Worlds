@@ -9,9 +9,10 @@ import { AdaptiveModule } from '../adaptive/adaptive.module';
 import { MisconceptionModule } from '../misconceptions/misconception.module';
 import { InterventionModule } from '../interventions/intervention.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { GamificationModule } from '../gamification/gamification.module';
 
 @Module({
-  imports: [MasteryModule, AuthModule, AdaptiveModule, MisconceptionModule, InterventionModule, NotificationsModule],
+  imports: [MasteryModule, AuthModule, AdaptiveModule, MisconceptionModule, InterventionModule, NotificationsModule, GamificationModule],
   controllers: [MissionsController, AdminMissionsController],
   providers: [MissionsService, ActivityEvaluator],
   exports: [MissionsService],

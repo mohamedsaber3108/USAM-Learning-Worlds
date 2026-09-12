@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Query, ForbiddenException } from '@nestjs/common';
 import { BedrockService } from './bedrock.service';
 import { ModerationService } from './moderation.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -26,7 +26,7 @@ export class AIController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can request feedback');
+      throw new ForbiddenException('Only learners can request feedback');
     }
 
     const isSafe = await this.moderation.isSafe(dto.work, 'TEXT');
@@ -53,7 +53,18 @@ export class AIController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can request hints');
+      throw new ForbiddenException('Only learners can request hints');
+    }
+
+    // SAFETY (T-P0-3): the learner's attempt is free-text — moderate it.
+    if (dto.learnerAttempt) {
+      const attemptSafe = await this.moderation.isSafe(dto.learnerAttempt, 'TEXT');
+      if (!attemptSafe) {
+        return {
+          error: 'Content flagged by moderation',
+          message: 'Please ensure your submission follows community guidelines.',
+        };
+      }
     }
 
     const hint = await this.bedrock.generateHint(
@@ -72,7 +83,19 @@ export class AIController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can request explanations');
+      throw new ForbiddenException('Only learners can request explanations');
+    }
+
+    // SAFETY (T-P0-3): concept + context are learner-supplied free-text.
+    const explainSafe = await this.moderation.isSafe(
+      [dto.concept, dto.context].filter(Boolean).join('\n'),
+      'TEXT',
+    );
+    if (!explainSafe) {
+      return {
+        error: 'Content flagged by moderation',
+        message: 'Please ensure your request follows community guidelines.',
+      };
     }
 
     const explanation = await this.bedrock.explainConcept(
@@ -91,7 +114,7 @@ export class AIController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can request analysis');
+      throw new ForbiddenException('Only learners can request analysis');
     }
 
     const isSafe = await this.moderation.isSafe(dto.learnerResponse, 'TEXT');
@@ -132,7 +155,7 @@ export class AIController {
     @Query('endDate') endDate?: string,
   ) {
     if (!user.educator && !user.parent) {
-      throw new Error('Only educators and parents can view moderation stats');
+      throw new ForbiddenException('Only educators and parents can view moderation stats');
     }
 
     const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -147,7 +170,7 @@ export class AIController {
     @Query('status') status: 'PENDING' | 'APPROVED' | 'REJECTED' = 'PENDING',
   ) {
     if (!user.educator && !user.parent) {
-      throw new Error('Only educators and parents can view quarantined content');
+      throw new ForbiddenException('Only educators and parents can view quarantined content');
     }
 
     return this.moderation.getQuarantinedContent(status);

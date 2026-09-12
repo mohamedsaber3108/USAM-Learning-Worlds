@@ -5,7 +5,7 @@
  * Supports: debug assistance, code review, concept explanation, guided coding
  */
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { AIProviderService } from '../ai-provider.service';
 import { LearnerContextService } from '../learner-context.service';
@@ -15,6 +15,7 @@ import {
 } from './hallucination-control.service';
 import { PromptTemplateService } from './prompt-template.service';
 import { RetrievedContextItem } from '../interfaces/learner-context.interface';
+import { ModerationService } from '../moderation.service';
 
 /** Fixed coding-domain vocabulary so normal on-subject questions about
  * coding concepts are never false-flagged as off-topic, even when they
@@ -98,7 +99,37 @@ export class CodingCoachService {
     private learnerContext: LearnerContextService,
     private hallucinationControl: HallucinationControlService,
     private promptTemplates: PromptTemplateService,
+    private moderation: ModerationService,
   ) {}
+
+  /**
+   * SAFETY (audit T-P0-3 / GAP-S3 / USAM-SAFE-006): moderate learner-supplied
+   * text/code BEFORE it is sent to the LLM. Previously the coding-coach path
+   * ran no content moderation or PII detection at all. Fails CLOSED — if the
+   * moderation service errors, we block rather than silently pass unsafe
+   * content to a child-facing AI. Throws BadRequestException on a hard block.
+   */
+  private async moderateLearnerInput(
+    learnerId: string,
+    content: string,
+    contentType: 'TEXT' | 'CODE' = 'TEXT',
+  ): Promise<void> {
+    if (!content || !content.trim()) return;
+    let result;
+    try {
+      result = await this.moderation.moderateContent(content, contentType, learnerId);
+    } catch {
+      // Fail closed: treat a moderation outage as unsafe for children.
+      throw new BadRequestException(
+        'We could not check this message for safety right now. Please try again in a moment.',
+      );
+    }
+    if (result.shouldBlock || result.severity === 'HIGH' || result.severity === 'CRITICAL') {
+      throw new BadRequestException(
+        "That message can't be sent here. Let's keep things safe and on-topic — try rephrasing, or ask a grown-up for help.",
+      );
+    }
+  }
 
   /**
    * Off-topic check for a free-text learner message against the
@@ -122,6 +153,13 @@ export class CodingCoachService {
    * Provide debug assistance
    */
   async provideDebugAssistance(request: DebugAssistanceRequest) {
+    await this.moderateLearnerInput(request.learnerId, request.code, 'CODE');
+    await this.moderateLearnerInput(
+      request.learnerId,
+      [request.error, request.expectedBehavior].filter(Boolean).join('\n'),
+      'TEXT',
+    );
+
     const context = await this.learnerContext.buildContext(
       request.learnerId,
       undefined,
@@ -154,6 +192,7 @@ export class CodingCoachService {
    * Review code and provide feedback
    */
   async reviewCode(request: CodeReviewRequest) {
+    await this.moderateLearnerInput(request.learnerId, request.code, 'CODE');
     const context = await this.learnerContext.buildContext(request.learnerId);
 
     const prompt = `You are reviewing code written by a ${context.age}-year-old learner.
@@ -198,6 +237,7 @@ ${this.hallucinationControl.getPromptGuardrail()}`;
    * Explain code to learner
    */
   async explainCode(request: CodeExplanationRequest) {
+    await this.moderateLearnerInput(request.learnerId, request.code, 'CODE');
     const context = await this.learnerContext.buildContext(request.learnerId);
 
     const ageGuidance = this.getAgeAppropriateExplanationGuidance(context.ageBand);
@@ -316,6 +356,8 @@ Make it fun and relatable!`;
    * Provide Socratic guidance (ask questions instead of giving answers)
    */
   async provideSocraticGuidance(learnerId: string, code: string, stuckPoint: string) {
+    await this.moderateLearnerInput(learnerId, code, 'CODE');
+    await this.moderateLearnerInput(learnerId, stuckPoint, 'TEXT');
     const context = await this.learnerContext.buildContext(learnerId, undefined, stuckPoint);
 
     // Off-topic detector: stuckPoint is genuinely free-text (a learner

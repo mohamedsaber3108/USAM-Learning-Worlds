@@ -1,10 +1,10 @@
-import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { AgeBand } from '@prisma/client';
-import { RegisterDto, LoginDto } from './dto';
+import { RegisterDto, LoginDto, PUBLIC_REGISTRATION_ROLES } from './dto';
 import { AuditLogService } from '../audit/audit-log.service';
 
 @Injectable()
@@ -17,6 +17,17 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
+    // SECURITY (audit T-P0-1 / GAP-S1): defense-in-depth against privilege
+    // escalation. The RegisterDto already restricts `role` to LEARNER/GUARDIAN
+    // via @IsIn, but if that validation is ever bypassed (e.g. a future caller
+    // constructs the DTO directly), this server-side allowlist guarantees the
+    // public registration path can never mint an ADMIN/MODERATOR account.
+    if (!PUBLIC_REGISTRATION_ROLES.includes(dto.role as any)) {
+      throw new ForbiddenException(
+        'Public registration is only allowed for learner or guardian accounts',
+      );
+    }
+
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },

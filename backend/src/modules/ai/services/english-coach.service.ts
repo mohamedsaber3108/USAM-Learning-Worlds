@@ -5,12 +5,13 @@
  * Supports: conversation, pronunciation feedback, grammar correction, CEFR progression
  */
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { AIProviderService } from '../ai-provider.service';
 import { LearnerContextService } from '../learner-context.service';
 import { AITaskType } from '../interfaces/ai-task.interface';
 import { RetrievedContextItem } from '../interfaces/learner-context.interface';
+import { ModerationService } from '../moderation.service';
 import {
   GrammarCheckService,
   GrammarIssue,
@@ -101,7 +102,31 @@ export class EnglishCoachService {
     private grammarCheck: GrammarCheckService,
     private hallucinationControl: HallucinationControlService,
     private promptTemplates: PromptTemplateService,
+    private moderation: ModerationService,
   ) {}
+
+  /**
+   * SAFETY (audit T-P0-3 / GAP-S3 / USAM-SAFE-006): moderate learner-supplied
+   * text BEFORE it reaches the LLM. Previously the english-coach path ran no
+   * content moderation or PII detection. Fails CLOSED — a moderation outage
+   * blocks rather than passing unchecked content to a child-facing AI.
+   */
+  private async moderateLearnerInput(learnerId: string, content: string): Promise<void> {
+    if (!content || !content.trim()) return;
+    let result;
+    try {
+      result = await this.moderation.moderateContent(content, 'TEXT', learnerId);
+    } catch {
+      throw new BadRequestException(
+        'We could not check this message for safety right now. Please try again in a moment.',
+      );
+    }
+    if (result.shouldBlock || result.severity === 'HIGH' || result.severity === 'CRITICAL') {
+      throw new BadRequestException(
+        "That message can't be sent here. Let's keep things safe and on-topic — try rephrasing, or ask a grown-up for help.",
+      );
+    }
+  }
 
   /**
    * Off-topic check for a free-text learner message against the
@@ -123,6 +148,7 @@ export class EnglishCoachService {
    * Conduct English conversation practice
    */
   async conductConversation(request: EnglishConversationRequest) {
+    await this.moderateLearnerInput(request.learnerId, request.userMessage);
     const context = await this.learnerContext.buildContext(
       request.learnerId,
       undefined,
@@ -207,6 +233,7 @@ export class EnglishCoachService {
    * Provide grammar correction and feedback
    */
   async correctGrammar(request: GrammarCorrectionRequest) {
+    await this.moderateLearnerInput(request.learnerId, request.text);
     const context = await this.learnerContext.buildContext(
       request.learnerId,
       undefined,

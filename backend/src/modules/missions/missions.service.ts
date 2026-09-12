@@ -6,6 +6,7 @@ import { CognitiveLoadService } from '../adaptive/cognitive-load.service';
 import { MisconceptionService } from '../misconceptions/misconception.service';
 import { InterventionService } from '../interventions/intervention.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ProgressionService } from '../gamification/progression.service';
 
 @Injectable()
 export class MissionsService {
@@ -17,6 +18,7 @@ export class MissionsService {
     private misconceptionService: MisconceptionService,
     private interventionService: InterventionService,
     private notificationsService: NotificationsService,
+    private progressionService: ProgressionService,
   ) {}
 
   /**
@@ -101,9 +103,17 @@ export class MissionsService {
   }
 
   /**
-   * Get mission run with progress and activities
+   * Get mission run with progress and activities.
+   *
+   * SECURITY (audit T-P0-2 / GAP-S2): when called on behalf of a learner
+   * request, `ownerLearnerId` MUST be passed so we can verify the run
+   * belongs to that learner. Previously this method took only `runId` and
+   * was exposed directly at GET /missions/runs/:runId with no ownership
+   * check — any authenticated learner could read any other learner's run,
+   * attempts, and responses (IDOR). Internal callers that already own the
+   * run (e.g. startMission right after creating it) may omit the arg.
    */
-  async getMissionRun(runId: string) {
+  async getMissionRun(runId: string, ownerLearnerId?: string) {
     const run = await this.prisma.missionRun.findUnique({
       where: { id: runId },
       include: {
@@ -135,6 +145,13 @@ export class MissionsService {
     });
 
     if (!run) {
+      throw new NotFoundException('Mission run not found');
+    }
+
+    // Ownership enforcement: do not leak another learner's run. Returns the
+    // same NotFoundException (not Forbidden) so run IDs can't be probed for
+    // existence by a non-owner.
+    if (ownerLearnerId && run.learnerId !== ownerLearnerId) {
       throw new NotFoundException('Mission run not found');
     }
 
@@ -170,7 +187,22 @@ export class MissionsService {
     }
 
     if (run.status !== 'IN_PROGRESS') {
-      throw new Error('Mission is not in progress');
+      throw new BadRequestException('Mission is not in progress');
+    }
+
+    // INTEGRITY (audit T-P0-4 / GAP-S2/BE-M2): verify the submitted activity
+    // actually belongs to this run's mission before evaluating it. Without
+    // this, a learner could submit arbitrary activityIds against any run and
+    // inject off-mission mastery evidence.
+    const missionActivity = await this.prisma.missionActivity.findUnique({
+      where: {
+        missionId_activityId: { missionId: run.missionId, activityId },
+      },
+    });
+    if (!missionActivity) {
+      throw new BadRequestException(
+        'This activity is not part of the mission for this run.',
+      );
     }
 
     // Get activity
@@ -309,6 +341,14 @@ export class MissionsService {
   async completeMission(learnerId: string, runId: string) {
     const run = await this.prisma.missionRun.findUnique({
       where: { id: runId },
+      include: {
+        mission: {
+          include: {
+            missionActivities: { include: { activity: true } },
+          },
+        },
+        attempts: { orderBy: { createdAt: 'desc' } },
+      },
     });
 
     if (!run || run.learnerId !== learnerId) {
@@ -316,10 +356,45 @@ export class MissionsService {
     }
 
     if (run.status !== 'IN_PROGRESS') {
-      throw new Error('Mission is not in progress');
+      throw new BadRequestException('Mission is not in progress');
     }
 
-    // Update run status
+    // OUTCOME (audit T-P0-4 / BE-M3): completion is no longer a bare status
+    // flip. We verify every REQUIRED activity in the mission has at least one
+    // attempt, compute a real score from the best attempt per activity, and
+    // decide pass/fail against a mastery threshold. A run cannot be
+    // "completed" with required activities left unattempted.
+    const requiredActivities = run.mission.missionActivities.filter((ma) => ma.isRequired);
+
+    // Best (highest-score, success-preferred) attempt per activity.
+    const bestByActivity = new Map<string, { success: boolean; score: number }>();
+    for (const attempt of run.attempts) {
+      const prev = bestByActivity.get(attempt.activityId);
+      const score = attempt.score ?? (attempt.success ? 100 : 0);
+      if (!prev || score > prev.score) {
+        bestByActivity.set(attempt.activityId, { success: attempt.success, score });
+      }
+    }
+
+    const missingRequired = requiredActivities.filter(
+      (ma) => !bestByActivity.has(ma.activityId),
+    );
+    if (missingRequired.length > 0) {
+      throw new BadRequestException(
+        `Cannot complete mission: ${missingRequired.length} required activit${
+          missingRequired.length === 1 ? 'y has' : 'ies have'
+        } not been attempted yet.`,
+      );
+    }
+
+    // Final score = mean of best scores across all attempted activities.
+    const scores = Array.from(bestByActivity.values()).map((b) => b.score);
+    const finalScore = scores.length
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      : 0;
+    const passed = finalScore >= 60; // mastery threshold for a mission pass
+
+    // Persist the computed outcome on the run.
     await this.prisma.missionRun.update({
       where: { id: runId },
       data: {
@@ -327,6 +402,24 @@ export class MissionsService {
         completedAt: new Date(),
       },
     });
+
+    // Award XP idempotently (awardXP is a no-op if already granted for this
+    // run). XP scales with score; only on a pass.
+    let xpAward: any = { awarded: false };
+    if (passed) {
+      const xpAmount = 50 + Math.round(finalScore / 2); // 80–100 for a pass
+      try {
+        xpAward = await this.progressionService.awardXP(
+          learnerId,
+          xpAmount,
+          'MISSION_COMPLETE',
+          runId,
+          `Completed mission: ${run.mission.title}`,
+        );
+      } catch {
+        xpAward = { awarded: false, error: true };
+      }
+    }
 
     // Notification Engine: real mission-count milestone trigger.
     // Best-effort — never blocks mission completion.
@@ -337,7 +430,14 @@ export class MissionsService {
 
     return {
       success: true,
-      message: 'Mission completed!',
+      message: passed ? 'Mission completed!' : 'Mission finished — keep practicing to master it!',
+      outcome: {
+        finalScore,
+        passed,
+        requiredActivities: requiredActivities.length,
+        activitiesAttempted: bestByActivity.size,
+        xp: xpAward,
+      },
     };
   }
 
@@ -349,7 +449,7 @@ export class MissionsService {
   async getActivitiesByAssessmentPurpose(purpose: string) {
     const normalized = purpose.toUpperCase();
     if (!['DIAGNOSTIC', 'FORMATIVE', 'SUMMATIVE'].includes(normalized)) {
-      throw new Error(`Invalid assessment purpose: ${purpose}`);
+      throw new BadRequestException(`Invalid assessment purpose: ${purpose}`);
     }
 
     return this.prisma.activity.findMany({
@@ -374,7 +474,7 @@ export class MissionsService {
     const normalized = level.toUpperCase();
     const validLevels = ['REMEMBER', 'UNDERSTAND', 'APPLY', 'ANALYZE', 'EVALUATE', 'CREATE'];
     if (!validLevels.includes(normalized)) {
-      throw new Error(`Invalid Bloom level: ${level}`);
+      throw new BadRequestException(`Invalid Bloom level: ${level}`);
     }
 
     return this.prisma.activity.findMany({

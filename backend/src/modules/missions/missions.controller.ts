@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, ForbiddenException } from '@nestjs/common';
 import { MissionsService } from './missions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -32,15 +32,20 @@ export class MissionsController {
   async startMission(@CurrentUser() user: any, @Param('id') missionId: string) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can start missions');
+      throw new ForbiddenException('Only learners can start missions');
     }
 
     return this.missionsService.startMission(learnerId, missionId);
   }
 
   @Get('runs/:runId')
-  async getMissionRun(@Param('runId') runId: string) {
-    return this.missionsService.getMissionRun(runId);
+  async getMissionRun(@CurrentUser() user: any, @Param('runId') runId: string) {
+    const learnerId = user.learner?.id;
+    if (!learnerId) {
+      throw new ForbiddenException('Only learners can access mission runs');
+    }
+    // Pass learnerId so the service enforces run ownership (IDOR fix).
+    return this.missionsService.getMissionRun(runId, learnerId);
   }
 
   @Post('runs/:runId/submit')
@@ -51,7 +56,7 @@ export class MissionsController {
   ) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can submit activities');
+      throw new ForbiddenException('Only learners can submit activities');
     }
 
     return this.missionsService.submitActivity(
@@ -67,7 +72,7 @@ export class MissionsController {
   async completeMission(@CurrentUser() user: any, @Param('runId') runId: string) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners can complete missions');
+      throw new ForbiddenException('Only learners can complete missions');
     }
 
     return this.missionsService.completeMission(learnerId, runId);
@@ -77,7 +82,7 @@ export class MissionsController {
   async getMyHistory(@CurrentUser() user: any) {
     const learnerId = user.learner?.id;
     if (!learnerId) {
-      throw new Error('Only learners have mission history');
+      throw new ForbiddenException('Only learners have mission history');
     }
 
     return this.missionsService.getMissionHistory(learnerId);
