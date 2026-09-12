@@ -210,6 +210,131 @@ export class CharacterService {
   }
 
   /**
+   * Maps a domain slug to the CharacterRole that best mentors that domain.
+   * Used by the orchestrator to pick the right companion for the learner's
+   * current context. Domain slugs match the seeded `domains` table.
+   */
+  private static readonly DOMAIN_TO_ROLE: Record<string, string> = {
+    english: 'ENGLISH_COACH',
+    coding: 'CODING_MENTOR',
+    technology: 'CODING_MENTOR',
+    'ai-literacy': 'AI_MENTOR',
+    science: 'SCIENCE_MENTOR',
+    arts: 'CREATIVE_MENTOR',
+    creativity: 'CREATIVE_MENTOR',
+    'critical-thinking': 'CHALLENGE_MASTER',
+    'problem-solving': 'CHALLENGE_MASTER',
+    entrepreneurship: 'ENTREPRENEURSHIP_MENTOR',
+    'financial-literacy': 'MENTOR',
+    'digital-literacy': 'DIGITAL_GUARDIAN',
+    communication: 'PROJECT_REVIEWER',
+  };
+
+  /**
+   * CHARACTER ORCHESTRATOR (audit T-P1-5 / GAP-L2 / USAM-CHAR-003).
+   *
+   * Previously character selection was 100% user-driven — nothing chose the
+   * right mentor for what the learner is actually doing. This resolves the
+   * best-fit character for the learner's CURRENT context:
+   *   1. Determine the active domain — explicit `domainSlug` arg if given,
+   *      else derived from the learner's in-progress MissionRun -> Mission
+   *      -> World -> Domain, else the domain of their active Project.
+   *   2. Map that domain to a CharacterRole (DOMAIN_TO_ROLE).
+   *   3. Pick the unlocked character with that role; if the domain mentor
+   *      isn't unlocked yet (or there's no active domain), fall back to
+   *      Azouz (the always-available main guide).
+   *
+   * Returns the chosen character plus WHY it was chosen, so the frontend can
+   * surface "Codey is here to help with your coding mission" rather than a
+   * silent swap. Never throws for "no context" — always resolves to a safe
+   * default. Respects the same unlock rules as getUnlockedCharactersForLearner.
+   */
+  async orchestrateCharacter(
+    learnerId: string,
+    opts?: { domainSlug?: string; missionId?: string },
+  ): Promise<{
+    character: { id: string; name: string; role: string; avatarUrl: string | null };
+    reason: string;
+    domainSlug: string | null;
+    isFallback: boolean;
+  }> {
+    const unlocked = await this.getUnlockedCharactersForLearner(learnerId);
+
+    const azouz =
+      unlocked.find((c) => c.name === 'Azouz') ??
+      (await this.prisma.character.findFirst({
+        where: { name: 'Azouz', isActive: true },
+        select: { id: true, name: true, role: true, personality: true, avatarUrl: true },
+      }));
+
+    const fallback = (reason: string, domainSlug: string | null) => ({
+      character: azouz
+        ? { id: azouz.id, name: azouz.name, role: azouz.role as string, avatarUrl: azouz.avatarUrl }
+        : { id: '', name: 'Azouz', role: 'GUIDE', avatarUrl: null },
+      reason,
+      domainSlug,
+      isFallback: true,
+    });
+
+    // 1) Resolve the active domain slug.
+    let domainSlug: string | null = opts?.domainSlug ?? null;
+
+    if (!domainSlug) {
+      const run = await this.prisma.missionRun.findFirst({
+        where: {
+          learnerId,
+          status: 'IN_PROGRESS',
+          ...(opts?.missionId ? { missionId: opts.missionId } : {}),
+        },
+        orderBy: { startedAt: 'desc' },
+        include: { mission: { include: { world: { include: { domain: true } } } } },
+      });
+      domainSlug = run?.mission?.world?.domain?.slug ?? null;
+    }
+
+    if (!domainSlug) {
+      const project = await this.prisma.project.findFirst({
+        where: { learnerId, state: { in: ['PLANNING', 'BUILDING', 'REVIEW'] } },
+        orderBy: { updatedAt: 'desc' },
+        select: { domainIds: true },
+      });
+      if (project?.domainIds?.length) {
+        const dom = await this.prisma.domain.findUnique({
+          where: { id: project.domainIds[0] },
+          select: { slug: true },
+        });
+        domainSlug = dom?.slug ?? null;
+      }
+    }
+
+    if (!domainSlug) {
+      return fallback('No active mission or project — your main guide Azouz is here to help.', null);
+    }
+
+    // 2) Map domain -> role.
+    const targetRole = CharacterService.DOMAIN_TO_ROLE[domainSlug];
+    if (!targetRole) {
+      return fallback(`Azouz will guide you through ${domainSlug}.`, domainSlug);
+    }
+
+    // 3) Pick the unlocked character with that role.
+    const mentor = unlocked.find((c) => (c.role as string) === targetRole && c.name !== 'Azouz');
+    if (!mentor) {
+      return fallback(
+        `The ${domainSlug} mentor isn't unlocked yet — keep going and Azouz will guide you meanwhile.`,
+        domainSlug,
+      );
+    }
+
+    return {
+      character: { id: mentor.id, name: mentor.name, role: mentor.role as string, avatarUrl: mentor.avatarUrl },
+      reason: `${mentor.name} is your ${domainSlug} mentor for what you're working on right now.`,
+      domainSlug,
+      isFallback: false,
+    };
+  }
+
+  /**
    * Build the set of domain slugs a learner has real engagement with,
    * combining signals across mastery/evidence, mission-linked activity
    * competencies, and cross-curricular concept models
@@ -295,7 +420,11 @@ export class CharacterService {
     });
     if (progression && progression.totalXP > 0) return true;
 
-    const xpGainCount = await this.prisma.xPGain.count({ where: { learnerId } });
+    // XPGain rows reference Progression.id (see XPGain schema fix T-P1-2), so
+    // count via the progression relation rather than a raw learnerId match.
+    const xpGainCount = await this.prisma.xPGain.count({
+      where: { progression: { learnerId } },
+    });
     return xpGainCount > 0;
   }
 
