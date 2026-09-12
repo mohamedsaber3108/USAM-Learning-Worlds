@@ -76,6 +76,8 @@ model Learner {
   flashcardReviews      FlashcardReview[]
   dailyGoal             DailyGoal?
   notifications         Notification[]
+  practiceStreak        PracticeStreak?
+  streakFreezePurchases StreakFreezePurchase[]
   projectCollaborations ProjectCollaborator[]
   researchNotes         ResearchNote[]
   creativitySubmissions CreativitySubmission[]
@@ -612,17 +614,23 @@ model Progression {
 
 model XPGain {
   id        String   @id @default(uuid())
-  learnerId String
-  amount    Int
-  source    XPSource
-  sourceId  String
-  reason    String?
-  createdAt DateTime @default(now())
+  // FK INTEGRITY FIX (audit T-P1-2 / DB-1): this column references
+  // Progression.id, NOT Learner.id — it was previously misnamed `learnerId`,
+  // which made joins to Learner silently wrong. Renamed the Prisma field to
+  // `progressionId` for honesty while keeping the physical DB column name via
+  // @map("learnerId"), so this is a zero-data-migration rename (existing rows
+  // and the @@unique/@@index below are unchanged at the database level).
+  progressionId String   @map("learnerId")
+  amount        Int
+  source        XPSource
+  sourceId      String
+  reason        String?
+  createdAt     DateTime @default(now())
 
-  progression Progression @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  progression Progression @relation(fields: [progressionId], references: [id], onDelete: Cascade)
 
-  @@unique([learnerId, source, sourceId])
-  @@index([learnerId])
+  @@unique([progressionId, source, sourceId])
+  @@index([progressionId])
   @@index([source])
   @@map("xp_gains")
 }
@@ -649,6 +657,11 @@ model PracticeStreak {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  // FK INTEGRITY (audit T-P1-2 / DB-2): learnerId now has a real relation to
+  // Learner (previously a bare unindexed-by-FK string with no referential
+  // integrity). Same physical column, adds the FK + cascade delete.
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
   @@index([learnerId])
   @@map("practice_streaks")
 }
@@ -663,6 +676,10 @@ model StreakFreezePurchase {
   coinsCost   Int
   purchasedAt DateTime  @default(now())
   usedAt      DateTime?
+
+  // FK INTEGRITY (audit T-P1-2 / DB-2): real relation to Learner (was a bare
+  // string with no referential integrity). Same physical column + FK cascade.
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
   @@index([learnerId])
   @@map("streak_freeze_purchases")

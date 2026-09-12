@@ -51,9 +51,10 @@ export class ProgressionService {
     let progression = await this.getProgression(learnerId);
 
     // Check if XP already awarded for this source
+    // (progressionId references Progression.id — see XPGain schema fix T-P1-2)
     const existing = await this.prisma.xPGain.findFirst({
       where: {
-        learnerId: progression.id,
+        progressionId: progression.id,
         source: source as any,
         sourceId,
       },
@@ -66,7 +67,7 @@ export class ProgressionService {
     // Record XP gain
     await this.prisma.xPGain.create({
       data: {
-        learnerId: progression.id,
+        progressionId: progression.id,
         amount,
         source: source as any,
         sourceId,
