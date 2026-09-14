@@ -178,20 +178,31 @@ export class EnglishCoachService {
 
     const systemPrompt = await this.buildConversationPrompt(cefrLevel, request.topic, context);
 
-    const response = await this.aiProvider.invoke({
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: request.userMessage,
-        },
-      ],
-      maxTokens: 300,
-      temperature: 0.8,
-    });
+    const response = await this.aiProvider.invoke(
+      {
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: request.userMessage,
+          },
+        ],
+        maxTokens: 300,
+        temperature: 0.8,
+      },
+      undefined,
+      {
+        // Conversational practice is high-frequency, lower-complexity ->
+        // route to the cheaper/faster model and log per-learner cost.
+        taskType: AITaskType.ENGLISH_CONVERSATION,
+        costTier: 'LOW',
+        userId: request.learnerId,
+        service: 'english-coach',
+      },
+    );
 
     // v1 low-confidence-answer escalation: if the AI's own generated
     // response reads as hedged/uncertain ("I'm not sure...", "I think it

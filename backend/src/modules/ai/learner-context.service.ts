@@ -8,16 +8,25 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { LearnerContext, RetrievedContextItem } from './interfaces/learner-context.interface';
+import { EmbeddingService } from './services/embedding.service';
 
 const MIN_QUESTION_LENGTH = 3;
 const MAX_QUESTION_LENGTH = 200;
 const MAX_RETRIEVED_ITEMS = 4;
+// pgvector cosine DISTANCE (`<=>`) ranges 0 (identical) .. 2 (opposite).
+// Only keep semantic hits closer than this — beyond it the match is too
+// weak to be trustworthy grounding, so we'd rather return nothing (and let
+// full-text try) than cite a loosely-related concept to a child.
+const MAX_SEMANTIC_DISTANCE = 0.6;
 
 @Injectable()
 export class LearnerContextService {
   private readonly logger = new Logger(LearnerContextService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly embeddings: EmbeddingService,
+  ) {}
 
   /**
    * Build complete learner context for AI
@@ -182,6 +191,80 @@ export class LearnerContextService {
       return [];
     }
 
+    // RAG upgrade (audit T-P2-2): try semantic (pgvector) retrieval first.
+    // It understands meaning ("how do plants eat?" -> "photosynthesis") where
+    // keyword full-text can't. If it yields nothing usable — because the
+    // embedding model isn't loaded, no concepts are embedded yet, or nothing
+    // is within MAX_SEMANTIC_DISTANCE — we transparently fall through to the
+    // proven full-text path below. Semantic is an enhancement, not a
+    // dependency, so a child never loses grounding if embeddings are down.
+    const semantic = await this.semanticRetrieve(q);
+    if (semantic.length > 0) {
+      return semantic;
+    }
+
+    return this.fullTextRetrieve(q);
+  }
+
+  /**
+   * Semantic retrieval over `concepts.embedding` using pgvector cosine
+   * distance (`<=>`). Returns [] (never throws) when embeddings are
+   * unavailable or nothing is close enough, so the caller falls back to
+   * full-text. Distances are converted to a 0..1 "rank" (1 = identical) for
+   * a consistent shape with the full-text path.
+   */
+  async semanticRetrieve(question: string): Promise<RetrievedContextItem[]> {
+    if (!this.embeddings.isEnabled) return [];
+
+    const vector = await this.embeddings.embed(question);
+    if (!vector) return [];
+
+    try {
+      const literal = this.embeddings.toSqlVector(vector);
+      // Cast the parameter to vector so the ivfflat cosine index is usable.
+      const rows = await this.prisma.$queryRaw<
+        Array<{ id: string; title: string; snippet: string; distance: number }>
+      >`
+        SELECT
+          c.id AS id,
+          c.name AS title,
+          coalesce(left(c.description, 200), '') AS snippet,
+          (c."embedding" <=> ${literal}::vector) AS distance
+        FROM concepts c
+        WHERE c."embedding" IS NOT NULL
+          AND c."isActive" = true
+        ORDER BY c."embedding" <=> ${literal}::vector ASC
+        LIMIT ${MAX_RETRIEVED_ITEMS}
+      `;
+
+      return rows
+        .filter((r) => Number(r.distance) <= MAX_SEMANTIC_DISTANCE)
+        .map((r) => ({
+          type: 'concept' as const,
+          id: r.id,
+          title: r.title,
+          snippet: r.snippet,
+          sourceTag: `concept:${r.id}`,
+        }));
+    } catch (err) {
+      // Same fail-soft posture as full-text: never break context assembly.
+      this.logger.error(
+        `semanticRetrieve failed for question="${question}": ${(err as Error).message}`,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Full-text retrieval-grounding pass (the pre-existing, proven path; now
+   * the fallback below semantic retrieval).
+   */
+  async fullTextRetrieve(rawQuestion: string): Promise<RetrievedContextItem[]> {
+    const q = this.sanitizeQuestion(rawQuestion);
+    if (q.length < MIN_QUESTION_LENGTH) {
+      return [];
+    }
+
     try {
       const [conceptRows, contentItemRows] = await Promise.all([
         this.prisma.$queryRaw<Array<{ id: string; title: string; snippet: string; rank: number }>>`
@@ -250,6 +333,49 @@ export class LearnerContextService {
   private sanitizeQuestion(rawQuestion: unknown): string {
     if (typeof rawQuestion !== 'string') return '';
     return rawQuestion.trim().slice(0, MAX_QUESTION_LENGTH);
+  }
+
+  /**
+   * Server-side citation validation (audit T-P2-2). Given the items that were
+   * actually retrieved for this turn and the raw AI response text, returns
+   * only the sourceTags the model cited that genuinely correspond to a
+   * retrieved item. Any citation in the response that does NOT match a real
+   * retrieved sourceTag is a fabricated/hallucinated citation and is reported
+   * separately so the caller can strip it or flag the turn.
+   *
+   * This is the enforcement half of grounding: retrieval attaches citeable
+   * sources, and this proves after the fact that the model only cited sources
+   * we actually gave it — never invented curriculum references to a child.
+   */
+  validateCitations(
+    responseText: string,
+    retrieved: RetrievedContextItem[],
+  ): { valid: string[]; fabricated: string[] } {
+    const text = responseText || '';
+    const known = new Set(retrieved.map((r) => r.sourceTag));
+
+    // sourceTags look like "concept:<uuid>" / "content_item:<uuid>".
+    const cited = new Set(
+      text.match(/\b(?:concept|content_item):[a-zA-Z0-9-]+/g) ?? [],
+    );
+
+    const valid: string[] = [];
+    const fabricated: string[] = [];
+    for (const tag of cited) {
+      if (known.has(tag)) {
+        valid.push(tag);
+      } else {
+        fabricated.push(tag);
+      }
+    }
+
+    if (fabricated.length > 0) {
+      this.logger.warn(
+        `AI cited ${fabricated.length} source(s) that were not retrieved: ${fabricated.join(', ')}`,
+      );
+    }
+
+    return { valid, fabricated };
   }
 
   /**

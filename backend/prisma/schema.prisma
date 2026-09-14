@@ -85,6 +85,7 @@ model Learner {
   interventions         InterventionRecommendation[]
   safetyEscalations     SafetyEscalation[]
   experimentAssignments ExperimentAssignment[]
+  credentials           Credential[]
 
   @@index([userId])
   @@index([displayName])
@@ -218,6 +219,7 @@ model Competency {
   dependents     CompetencyPrerequisite[] @relation("prerequisite")
   projects       Project[]
   interventions  InterventionRecommendation[]
+  credentialDefinition CredentialDefinition?
 
   @@index([skillId])
   @@map("competencies")
@@ -389,6 +391,71 @@ enum EvidenceType {
   PROBLEM_SOLVING
   TRANSFER
   REFLECTION
+}
+
+// ============================================
+// CREDENTIALS (Open Badges 3.0 style)  -- audit T-P1-6
+// Evidence -> competency mastery -> verifiable credential.
+// A CredentialDefinition is the "Achievement" (badge class) for a
+// competency; a Credential is an issued instance awarded to a learner when
+// their MasteryRecord for that competency crosses the mastery threshold.
+// The `assertionJson` column stores the full Open Badges 3.0 / W3C Verifiable
+// Credential document exactly as issued, so it can be exported/verified
+// as-is without re-deriving it from relational fields.
+// ============================================
+
+model CredentialDefinition {
+  id            String   @id @default(uuid())
+  competencyId  String   @unique
+  // Open Badges "Achievement" fields.
+  name          String
+  description   String
+  // Criteria narrative: what the learner had to do to earn it.
+  criteria      String
+  imageUrl      String?
+  // Minimum mastery confidence (0..1) required to auto-issue this credential.
+  minConfidence Float    @default(0.85)
+  // Minimum distinct evidence records required (prevents a single lucky
+  // answer from minting a credential).
+  minEvidence   Int      @default(3)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  competency  Competency   @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  credentials Credential[]
+
+  @@map("credential_definitions")
+}
+
+model Credential {
+  id             String   @id @default(uuid())
+  learnerId      String
+  definitionId   String
+  // Snapshot of the mastery evidence at issue time (confidence + count) so
+  // the credential remains meaningful even if the record later changes.
+  confidence     Float
+  evidenceCount  Int
+  // The full Open Badges 3.0 / Verifiable Credential JSON document.
+  assertionJson  Json
+  // Stable public identifier used inside the credential's `id` URL and for
+  // verification lookups. Distinct from the DB primary key.
+  credentialUid  String   @unique
+  // Optional detached signature (JWS/proof). Null until a signing key is
+  // configured; the credential shape is valid unsigned for internal use.
+  proofJws       String?
+  revokedAt      DateTime?
+  revokedReason  String?
+  issuedAt       DateTime @default(now())
+
+  learner    Learner              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  definition CredentialDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+
+  // A learner holds at most one active credential per definition.
+  @@unique([learnerId, definitionId])
+  @@index([learnerId])
+  @@index([definitionId])
+  @@map("credentials")
 }
 
 // ============================================
@@ -1779,6 +1846,15 @@ model FlashcardReview {
   reviewCount    Int       @default(0)
   lastReviewedAt DateTime?
   nextReviewDue  DateTime?
+  // Real FSRS scheduler state (audit T-P1-4) via ts-fsrs. Defaults match
+  // createEmptyCard() so existing rows upgrade cleanly (new card on next review).
+  stability      Float     @default(0)
+  difficulty     Float     @default(0)
+  fsrsState      Int       @default(0) // 0=New 1=Learning 2=Review 3=Relearning
+  reps           Int       @default(0)
+  lapses         Int       @default(0)
+  elapsedDays    Int       @default(0)
+  scheduledDays  Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

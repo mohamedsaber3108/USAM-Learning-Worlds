@@ -8,6 +8,7 @@
  */
 
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CodingSandboxService, SubmitResultDto } from './coding-sandbox.service';
@@ -32,6 +33,11 @@ export class CodingSandboxController {
    * This endpoint never runs the submitted code.
    */
   @Post('submissions')
+  // Rate limit (audit T-P1-14): cap how fast a single client can POST coding
+  // results. 60 submissions / minute is far above genuine human pace (a child
+  // runs+submits every few seconds at most) but stops scripted flooding of
+  // the AI-review + DB-write path behind this endpoint.
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
   async submitResult(
     @CurrentUser() user: any,
     @Body() dto: Omit<SubmitResultDto, never>,

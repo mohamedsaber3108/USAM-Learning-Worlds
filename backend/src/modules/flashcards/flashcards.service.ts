@@ -1,17 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { FsrsService } from './fsrs.service';
 
 /**
  * Flashcard Engine
  *
- * Per-learner spaced-repetition scheduling ported directly from
- * MasteryConfidenceAlgorithm.calculateNextReview (mastery-confidence.algorithm.ts)
- * — same confidence-bucket -> interval-in-days mapping, applied to
- * FlashcardReview instead of MasteryRecord.
+ * Per-learner spaced-repetition scheduling now backed by the real Free
+ * Spaced Repetition Scheduler (FSRS) via FsrsService/ts-fsrs (audit T-P1-4).
+ * Replaces the previous naive confidence-bucket -> fixed 1/3/7/14/30-day
+ * scheduler; intervals adapt per-card to each learner's actual recall.
  */
 @Injectable()
 export class FlashcardsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private fsrs: FsrsService,
+  ) {}
 
   async listByDomain(domainId: string) {
     return this.prisma.flashcard.findMany({
@@ -79,65 +83,45 @@ export class FlashcardsService {
       where: { learnerId_flashcardId: { learnerId, flashcardId } },
     });
 
-    const priorConfidence = review?.confidence ?? 0;
-    // Simple bounded confidence update: correct answers step up towards 1,
-    // wrong answers step back down towards 0 — mirrors the "weighted
-    // success rate moves confidence" spirit of MasteryConfidenceAlgorithm
-    // without needing a full Evidence[] history per card.
-    const nextConfidence = remembered
-      ? Math.min(1, priorConfidence + 0.25)
-      : Math.max(0, priorConfidence - 0.3);
+    const now = new Date();
+    // Real FSRS scheduling: feed the prior persisted card state + the
+    // remembered/forgot signal into the scheduler, get back the next
+    // memory state + due date.
+    const next = this.fsrs.schedule(review ?? null, remembered, now);
 
-    const nextReviewDue = this.calculateNextInterval(nextConfidence, new Date());
+    const fsrsData = {
+      confidence: next.confidence,
+      lastReviewedAt: next.lastReviewedAt,
+      nextReviewDue: next.nextReviewDue,
+      stability: next.stability,
+      difficulty: next.difficulty,
+      fsrsState: next.fsrsState,
+      reps: next.reps,
+      lapses: next.lapses,
+      elapsedDays: next.elapsedDays,
+      scheduledDays: next.scheduledDays,
+    };
 
     if (!review) {
       review = await this.prisma.flashcardReview.create({
         data: {
           learnerId,
           flashcardId,
-          confidence: nextConfidence,
           reviewCount: 1,
-          lastReviewedAt: new Date(),
-          nextReviewDue,
+          ...fsrsData,
         },
       });
     } else {
       review = await this.prisma.flashcardReview.update({
         where: { id: review.id },
         data: {
-          confidence: nextConfidence,
           reviewCount: review.reviewCount + 1,
-          lastReviewedAt: new Date(),
-          nextReviewDue,
+          ...fsrsData,
         },
       });
     }
 
     return review;
-  }
-
-  /**
-   * Ported from MasteryConfidenceAlgorithm.calculateNextReview — identical
-   * confidence-bucket -> day-interval mapping (1/3/7/14/30 days).
-   */
-  private calculateNextInterval(confidence: number, lastReviewDate: Date): Date {
-    let interval: number;
-
-    if (confidence < 0.3) {
-      interval = 1;
-    } else if (confidence < 0.5) {
-      interval = 3;
-    } else if (confidence < 0.7) {
-      interval = 7;
-    } else if (confidence < 0.9) {
-      interval = 14;
-    } else {
-      interval = 30;
-    }
-
-    const nextReview = new Date(lastReviewDate);
-    nextReview.setDate(nextReview.getDate() + interval);
-    return nextReview;
   }
 
   async getStats(learnerId: string) {

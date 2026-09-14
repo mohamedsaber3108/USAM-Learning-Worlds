@@ -8,6 +8,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { AIProviderService } from '../ai-provider.service';
+import { AITaskType } from '../interfaces/ai-task.interface';
 import { LearnerContextService } from '../learner-context.service';
 import {
   HallucinationControlService,
@@ -168,16 +169,26 @@ export class CodingCoachService {
 
     const prompt = await this.buildDebugPrompt(request, context);
 
-    const response = await this.aiProvider.invoke({
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      maxTokens: 600,
-      temperature: 0.3,
-    });
+    const response = await this.aiProvider.invoke(
+      {
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        maxTokens: 600,
+        temperature: 0.3,
+      },
+      undefined,
+      {
+        // Debugging is complex reasoning -> route to the capable model.
+        taskType: AITaskType.DEBUG,
+        costTier: 'HIGH',
+        userId: request.learnerId,
+        service: 'coding-coach',
+      },
+    );
 
     return {
       diagnosis: response.content,
@@ -211,16 +222,26 @@ Be encouraging! Focus on growth, not perfection.
 
 ${this.hallucinationControl.getPromptGuardrail()}`;
 
-    const response = await this.aiProvider.invoke({
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      maxTokens: 500,
-      temperature: 0.5,
-    });
+    const response = await this.aiProvider.invoke(
+      {
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        maxTokens: 500,
+        temperature: 0.5,
+      },
+      undefined,
+      {
+        // Code review is complex reasoning -> route to the capable model.
+        taskType: AITaskType.CODE_REVIEW,
+        costTier: 'HIGH',
+        userId: request.learnerId,
+        service: 'coding-coach',
+      },
+    );
 
     return {
       code: request.code,

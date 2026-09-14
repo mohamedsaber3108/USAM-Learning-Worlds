@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MasteryModule } from './modules/mastery/mastery.module';
+import { CredentialsModule } from './modules/credentials/credentials.module';
 import { MissionsModule } from './modules/missions/missions.module';
 import { AIModule } from './modules/ai/ai.module';
 import { AdaptiveModule } from './modules/adaptive/adaptive.module';
@@ -72,6 +73,7 @@ import { CurriculumMappingModule } from './modules/curriculum-mapping/curriculum
     DatabaseModule,
     AuthModule,
     MasteryModule,
+    CredentialsModule,
     MissionsModule,
     AIModule,
     AdaptiveModule,

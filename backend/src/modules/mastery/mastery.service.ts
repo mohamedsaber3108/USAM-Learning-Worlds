@@ -4,6 +4,7 @@ import { Queue } from 'bull';
 import { PrismaService } from '../../database/prisma.service';
 import { MasteryConfidenceAlgorithm } from './mastery-confidence.algorithm';
 import { EvidenceType, MasteryState } from '@prisma/client';
+import { CredentialsService } from '../credentials/credentials.service';
 
 @Injectable()
 export class MasteryService {
@@ -11,6 +12,7 @@ export class MasteryService {
     private prisma: PrismaService,
     private algorithm: MasteryConfidenceAlgorithm,
     @InjectQueue('mastery') private masteryQueue: Queue,
+    private credentials: CredentialsService,
   ) {}
 
   /**
@@ -109,6 +111,16 @@ export class MasteryService {
         reviewDue: nextReview,
       },
     });
+
+    // Evidence -> credential chain (audit T-P1-6): now that this competency's
+    // mastery has been recomputed, check whether the learner has earned its
+    // credential. Fail-soft inside the service — never blocks recalculation.
+    await this.credentials.maybeIssueForMastery(
+      mastery.learnerId,
+      mastery.competencyId,
+      newConfidence,
+      mastery.evidence.length,
+    );
 
     return {
       confidence: newConfidence,

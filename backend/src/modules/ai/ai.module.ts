@@ -23,6 +23,7 @@ import { EnglishCoachService } from './services/english-coach.service';
 import { CodingCoachService } from './services/coding-coach.service';
 import { HallucinationControlService } from './services/hallucination-control.service';
 import { PromptTemplateService } from './services/prompt-template.service';
+import { EmbeddingService } from './services/embedding.service';
 import { EnglishLearningModule } from '../english-learning/grammar-check.module';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -68,6 +69,7 @@ import { AdminPromptTemplateController } from './admin-prompt-template.controlle
     CodingCoachService,
     HallucinationControlService,
     PromptTemplateService,
+    EmbeddingService,
 
     // AI Evaluation Harness + Memory Governance
     AIEvalService,

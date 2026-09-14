@@ -23,6 +23,30 @@ import { CodingCoachService } from '../ai/services/coding-coach.service';
 
 export type SandboxLanguage = 'python' | 'javascript';
 
+/**
+ * Server-side submission limits (audit T-P1-14 / code-sandbox hardening).
+ *
+ * Even though code is executed CLIENT-SIDE (Pyodide/Sandpack in a Web
+ * Worker, never on our servers — see the class doc), the backend still
+ * accepts learner-supplied text (code + captured stdout/stderr/result) and
+ * persists it. Unbounded text is a real abuse/DoS vector: a script could
+ * POST multi-megabyte payloads to bloat the DB or exhaust request handling.
+ * These caps bound every field we store. They are intentionally generous
+ * for real learner programs but firmly finite.
+ */
+export const SANDBOX_LIMITS = {
+  /** Max learner source code length (chars). ~200KB of code is far beyond
+   * any legitimate child coding mission. */
+  MAX_CODE_CHARS: 200_000,
+  /** Max captured stdout we persist. Client already truncates; this is the
+   * server-side backstop. */
+  MAX_STDOUT_CHARS: 100_000,
+  /** Max captured stderr we persist. */
+  MAX_STDERR_CHARS: 50_000,
+  /** Max serialized result value we persist. */
+  MAX_RESULT_CHARS: 50_000,
+} as const;
+
 export interface CodingMissionSpec {
   activityId: string;
   title: string;
@@ -165,6 +189,42 @@ export class CodingSandboxService {
   }
 
   /**
+   * Reject a submission whose stored text fields exceed SANDBOX_LIMITS.
+   * Runs before any DB access so oversized payloads never touch storage.
+   */
+  private enforceSubmissionLimits(submission: SubmitResultDto): void {
+    const code = submission.code ?? '';
+    if (typeof code !== 'string' || code.length > SANDBOX_LIMITS.MAX_CODE_CHARS) {
+      throw new BadRequestException(
+        `Submitted code exceeds the ${SANDBOX_LIMITS.MAX_CODE_CHARS}-character limit`,
+      );
+    }
+
+    const stdout = submission.stdout ?? '';
+    if (typeof stdout !== 'string' || stdout.length > SANDBOX_LIMITS.MAX_STDOUT_CHARS) {
+      throw new BadRequestException(
+        `Captured stdout exceeds the ${SANDBOX_LIMITS.MAX_STDOUT_CHARS}-character limit`,
+      );
+    }
+
+    if (
+      submission.stderr !== undefined &&
+      (typeof submission.stderr !== 'string' ||
+        submission.stderr.length > SANDBOX_LIMITS.MAX_STDERR_CHARS)
+    ) {
+      throw new BadRequestException(
+        `Captured stderr exceeds the ${SANDBOX_LIMITS.MAX_STDERR_CHARS}-character limit`,
+      );
+    }
+
+    if (this.stringifyResult(submission.result).length > SANDBOX_LIMITS.MAX_RESULT_CHARS) {
+      throw new BadRequestException(
+        `Captured result exceeds the ${SANDBOX_LIMITS.MAX_RESULT_CHARS}-character limit`,
+      );
+    }
+  }
+
+  /**
    * Receive client-executed results, validate, persist to ActivityAttempt,
    * and attach AI code-review commentary (static text review only — the
    * AI is never given execution capability either).
@@ -173,6 +233,12 @@ export class CodingSandboxService {
     if (!learnerId) {
       throw new BadRequestException('Only learners can submit coding attempts');
     }
+
+    // Enforce server-side submission limits BEFORE any DB work (audit
+    // T-P1-14). Reject oversized payloads outright rather than silently
+    // truncating — a legitimate learner program never approaches these
+    // sizes, so an over-limit submission is either a bug or abuse.
+    this.enforceSubmissionLimits(submission);
 
     const run = await this.prisma.missionRun.findUnique({ where: { id: submission.runId } });
     if (!run || run.learnerId !== learnerId) {

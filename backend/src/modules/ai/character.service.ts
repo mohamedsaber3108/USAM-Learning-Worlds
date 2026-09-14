@@ -605,20 +605,32 @@ export class CharacterService {
     // services/character-fallback-responses.ts) instead of propagating.
     let aiResponse: { content: string };
     try {
-      aiResponse = await this.aiProvider.invoke({
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt,
-          },
-          {
-            role: 'user',
-            content: input,
-          },
-        ],
-        maxTokens: 500,
-        temperature: 0.8, // Higher temperature for more varied personality
-      });
+      aiResponse = await this.aiProvider.invoke(
+        {
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt,
+            },
+            {
+              role: 'user',
+              content: input,
+            },
+          ],
+          maxTokens: 500,
+          temperature: 0.8, // Higher temperature for more varied personality
+        },
+        undefined,
+        {
+          // Routing hint (audit AI-002/003): character chat is a
+          // high-frequency, lower-complexity task -> route to the
+          // cheaper/faster model and log per-learner cost/latency.
+          taskType: AITaskType.CHARACTER_RESPONSE,
+          costTier: 'LOW',
+          userId: learnerId,
+          service: 'character',
+        },
+      );
     } catch (error) {
       // Log the real error server-side so it stays debuggable - never
       // swallow it silently, just don't surface it to the learner.
