@@ -10,6 +10,9 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MasteryModule } from './modules/mastery/mastery.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
+import { ContentProvenanceModule } from './modules/content-provenance/content-provenance.module';
+import { LegalModule } from './modules/legal/legal.module';
+import { EntitlementsModule } from './modules/entitlements/entitlements.module';
 import { MissionsModule } from './modules/missions/missions.module';
 import { AIModule } from './modules/ai/ai.module';
 import { AdaptiveModule } from './modules/adaptive/adaptive.module';
@@ -74,6 +77,9 @@ import { CurriculumMappingModule } from './modules/curriculum-mapping/curriculum
     AuthModule,
     MasteryModule,
     CredentialsModule,
+    ContentProvenanceModule,
+    LegalModule,
+    EntitlementsModule,
     MissionsModule,
     AIModule,
     AdaptiveModule,

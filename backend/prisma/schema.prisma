@@ -86,6 +86,8 @@ model Learner {
   safetyEscalations     SafetyEscalation[]
   experimentAssignments ExperimentAssignment[]
   credentials           Credential[]
+  consentRecords        ConsentRecord[]
+  dataSubjectRequests   DataSubjectRequest[]
 
   @@index([userId])
   @@index([displayName])
@@ -115,8 +117,9 @@ model Guardian {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   guardianships Guardianship[]
+  consentRecords ConsentRecord[]
 
   @@index([userId])
   @@map("guardians")
@@ -152,6 +155,167 @@ enum GuardianshipStatus {
   PENDING
   ACTIVE
   REVOKED
+}
+
+// ============================================
+// LEGAL / PRIVACY COMPLIANCE (audit T-P1-13)
+// COPPA verifiable parental consent + GDPR-K (child data protection) +
+// GDPR data-subject rights (access/erasure). See
+// docs/legal/JURISDICTION_MATRIX.md for the per-jurisdiction rules these
+// models enforce.
+// ============================================
+
+model ConsentRecord {
+  id           String        @id @default(uuid())
+  // The guardian who granted/revoked consent, and the child it covers.
+  guardianId   String
+  learnerId    String
+  // What the consent is FOR — granular, purpose-specific (COPPA/GDPR both
+  // require consent to be specific, not blanket).
+  purpose      ConsentPurpose
+  granted      Boolean
+  // Version of the privacy policy / consent text the guardian agreed to,
+  // so we can prove exactly what was consented to at the time.
+  policyVersion String
+  // Jurisdiction that governed this consent (drives which rules applied).
+  jurisdiction String       @default("US")
+  // COPPA requires a *verifiable* parental consent method; record which one
+  // was used (e.g. 'credit-card', 'signed-form', 'gov-id', 'email-plus').
+  verificationMethod String?
+  // Audit trail of who/where.
+  ipAddress    String?
+  userAgent    String?
+  grantedAt    DateTime      @default(now())
+  revokedAt    DateTime?
+
+  guardian Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  learner  Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([guardianId])
+  @@index([learnerId])
+  @@index([purpose])
+  @@map("consent_records")
+}
+
+enum ConsentPurpose {
+  // Core account + educational service (required to use the product).
+  ESSENTIAL_SERVICE
+  // Storing learning data to personalize/adapt the experience.
+  PERSONALIZATION
+  // AI features that process the child's inputs.
+  AI_PROCESSING
+  // Voice recording/processing.
+  VOICE_PROCESSING
+  // Community/social features.
+  COMMUNITY
+  // Non-essential analytics.
+  ANALYTICS
+}
+
+model DataSubjectRequest {
+  id           String              @id @default(uuid())
+  learnerId    String
+  // The guardian who raised the request on the child's behalf.
+  requestedByGuardianId String?
+  type         DataSubjectRequestType
+  status       DataSubjectRequestStatus @default(PENDING)
+  // For EXPORT: where the generated export was stored (if any).
+  exportLocation String?
+  // Free-text detail / reason / processing notes.
+  notes        String?
+  requestedAt  DateTime            @default(now())
+  completedAt  DateTime?
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+  @@index([status])
+  @@index([type])
+  @@map("data_subject_requests")
+}
+
+enum DataSubjectRequestType {
+  // GDPR Art. 15 — right of access (export a copy of all their data).
+  EXPORT
+  // GDPR Art. 17 — right to erasure ("right to be forgotten").
+  DELETION
+}
+
+enum DataSubjectRequestStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ============================================
+// ENTITLEMENTS / SUBSCRIPTIONS (audit #11)
+// Structure only — NO payment gateway is wired. A Plan defines what a tier
+// grants; a Subscription links a guardian (billing owner) to a Plan; an
+// Entitlement is the resolved capability check the app reads. Payment
+// provider integration is behind a provider abstraction (PaymentProvider)
+// with a manual/no-op implementation so the whole flow works end-to-end
+// today and a real gateway (Stripe/Paddle/etc.) can be dropped in later.
+// ============================================
+
+model Plan {
+  id            String   @id @default(uuid())
+  // Stable code used in entitlement checks, e.g. 'FREE', 'FAMILY', 'SCHOOL'.
+  code          String   @unique
+  name          String
+  description   String?
+  // Price in minor units (e.g. cents) + currency; 0 for free.
+  priceCents    Int      @default(0)
+  currency      String   @default("USD")
+  interval      BillingInterval @default(MONTH)
+  // The capability flags/limits this plan grants, e.g.
+  // { "maxLearners": 3, "voice": true, "aiTutor": true }.
+  features      Json     @default("{}")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+enum BillingInterval {
+  MONTH
+  YEAR
+  ONE_TIME
+}
+
+model Subscription {
+  id            String   @id @default(uuid())
+  // Billing owner (a guardian). Kept as a plain id (not FK) so an org/school
+  // billing owner can be supported later without a schema change.
+  ownerUserId   String
+  planId        String
+  status        SubscriptionStatus @default(ACTIVE)
+  // Provider abstraction: which payment provider backs this subscription and
+  // its id there. 'manual' = no gateway (comped/admin-granted).
+  provider      String   @default("manual")
+  providerRef   String?
+  currentPeriodEnd DateTime?
+  cancelAtPeriodEnd Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([ownerUserId])
+  @@index([planId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  EXPIRED
 }
 
 // ============================================
@@ -1316,11 +1480,19 @@ model ContentItem {
   // no single identity table today.
   sourceType  ContentSourceType @default(SEEDED)
   createdBy   String?
+  // Content Provenance Engine v2 (audit T-P1-7): optional link to a
+  // first-class ContentSource row capturing WHERE this content came from
+  // (dataset/author/publisher) and, through it, the LICENSE it's used
+  // under. Nullable because legacy/seeded rows may predate provenance
+  // capture; new externally-sourced content (English reading passages,
+  // imported datasets) MUST set this.
+  sourceId    String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
   domain    Domain?            @relation(fields: [domainId], references: [id], onDelete: SetNull)
   objective LearningObjective? @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
+  source    ContentSource?     @relation(fields: [sourceId], references: [id], onDelete: SetNull)
 
   @@index([type])
   @@index([status])
@@ -1328,6 +1500,7 @@ model ContentItem {
   @@index([ageBand])
   @@index([generatedBy])
   @@index([sourceType])
+  @@index([sourceId])
   @@map("content_items")
 }
 
@@ -1335,6 +1508,64 @@ enum ContentSourceType {
   SEEDED
   AI_GENERATED
   HUMAN_AUTHORED
+}
+
+// ============================================
+// CONTENT PROVENANCE (audit T-P1-7)
+// First-class source + license tracking so every externally-sourced piece
+// of content (English reading passages, imported datasets, third-party
+// media) can be traced to its origin and the license it's used under. This
+// is a compliance requirement for a children's product distributing
+// third-party educational content.
+// ============================================
+
+model ContentLicense {
+  id          String   @id @default(uuid())
+  // SPDX-style identifier where one exists (e.g. "CC-BY-4.0", "CC0-1.0",
+  // "public-domain", "proprietary", "OGL-3.0").
+  spdxId      String   @unique
+  name        String
+  url         String?
+  // Whether this license permits commercial use (USAM is a commercial
+  // product, so this gates whether content is safe to ship).
+  commercialUse Boolean @default(false)
+  // Whether attribution is required when using the content.
+  requiresAttribution Boolean @default(true)
+  // Whether derivative works are permitted (we adapt passages for age).
+  allowsDerivatives Boolean @default(true)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sources ContentSource[]
+
+  @@map("content_licenses")
+}
+
+model ContentSource {
+  id           String            @id @default(uuid())
+  name         String
+  sourceType   ContentSourceType @default(HUMAN_AUTHORED)
+  // Origin URL / dataset home page / publisher reference.
+  url          String?
+  // Human-readable attribution string to display where the content is used
+  // (satisfies license attribution requirements).
+  attribution  String?
+  // Original author/publisher, distinct from the USAM actor who imported it.
+  author       String?
+  publisher    String?
+  licenseId    String?
+  // Free-text notes: import date rationale, adaptation notes, etc.
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  license      ContentLicense?   @relation(fields: [licenseId], references: [id], onDelete: SetNull)
+  contentItems ContentItem[]
+
+  @@index([licenseId])
+  @@index([sourceType])
+  @@map("content_sources")
 }
 
 enum ContentType {
