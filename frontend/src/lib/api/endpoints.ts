@@ -551,7 +551,7 @@ export interface CodingSandboxMission {
   activityId: string
   title: string
   language: 'python' | 'javascript'
-  runner: 'pyodide' | 'sandpack'
+  runner: 'pyodide' | 'sandpack' | 'blockly'
   prompt: string
   starterCode: string
   assertions: Array<{ id: string; description: string; type: string; expected: string }>

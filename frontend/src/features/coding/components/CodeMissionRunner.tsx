@@ -9,10 +9,11 @@
  * { runId, activityId, code, language, stdout, stderr, result, durationMs,
  *   timedOut } — see backend/src/modules/coding-sandbox/.
  */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Play, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { runPython } from './PyodideRunner'
 import { SandpackMission } from './SandpackMission'
+import { BlocklyWorkspace, type BlocklyWorkspaceHandle } from './BlocklyWorkspace'
 import { codingSandboxApi, type CodingSandboxMission } from '@/lib/api/endpoints'
 
 export interface CodeMissionRunnerProps {
@@ -34,6 +35,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
   const [output, setOutput] = useState<{ stdout: string; stderr: string } | null>(null)
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const blocklyRef = useRef<BlocklyWorkspaceHandle>(null)
 
   async function submit(
     stdout: string,
@@ -41,13 +43,14 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
     result: unknown,
     durationMs: number,
     timedOut: boolean,
+    submittedCode: string = code,
   ) {
     setOutput({ stdout, stderr })
     try {
       const { data } = await codingSandboxApi.submitResult({
         runId,
         activityId: mission.activityId,
-        code,
+        code: submittedCode,
         language: mission.language,
         stdout,
         stderr,
@@ -70,6 +73,17 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
     setRunning(false)
   }
 
+  // Blockly: read the Python generated from the current blocks, then run it
+  // through the identical Pyodide path + submit for grading.
+  async function runBlockly() {
+    const python = blocklyRef.current?.getPython() ?? ''
+    setRunning(true)
+    setGradeResult(null)
+    const { stdout, stderr, result, durationMs, timedOut } = await runPython(python)
+    await submit(stdout, stderr, result, durationMs, timedOut, python)
+    setRunning(false)
+  }
+
   return (
     <div className="space-y-4">
       <div className="rounded-lg bg-gray-50 p-4">
@@ -79,7 +93,37 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
         <p className="text-sm text-gray-600">{mission.prompt}</p>
       </div>
 
-      {mission.language === 'python' ? (
+      {mission.runner === 'blockly' ? (
+        <>
+          <BlocklyWorkspace ref={blocklyRef} initialXml={mission.starterCode} />
+
+          <button
+            type="button"
+            onClick={runBlockly}
+            disabled={running}
+            className="btn btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            {running ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
+            {running ? 'Running…' : 'Run'}
+          </button>
+
+          <div className="rounded-lg border border-gray-200 overflow-hidden" aria-label="Output">
+            <div className="border-b border-gray-200 px-4 py-2 text-xs text-gray-500 bg-gray-50">
+              Output
+            </div>
+            <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words px-4 py-3 font-mono text-xs leading-6">
+              {output ? (
+                <>
+                  {output.stdout && <div>{output.stdout}</div>}
+                  {output.stderr && <div className="text-red-600">{output.stderr}</div>}
+                </>
+              ) : (
+                <div className="text-gray-400">Drag some blocks, then press Run.</div>
+              )}
+            </pre>
+          </div>
+        </>
+      ) : mission.language === 'python' ? (
         <>
           <div className="rounded-lg border border-gray-200 overflow-hidden">
             <div className="border-b border-gray-200 px-4 py-2 text-xs text-gray-500 font-mono bg-gray-50">

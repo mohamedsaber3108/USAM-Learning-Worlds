@@ -51,7 +51,7 @@ export interface CodingMissionSpec {
   activityId: string;
   title: string;
   language: SandboxLanguage;
-  runner: 'pyodide' | 'sandpack';
+  runner: 'pyodide' | 'sandpack' | 'blockly';
   prompt: string;
   starterCode: string;
   /**
@@ -118,11 +118,22 @@ export class CodingSandboxService {
     const content = (activity.content as any) ?? {};
     const language: SandboxLanguage = content.language === 'javascript' ? 'javascript' : 'python';
 
+    // Blockly missions are visual-block Python: the block editor generates
+    // Python that runs through the exact same Pyodide path + grading. A
+    // mission opts in via content.runner === 'blockly'; otherwise the runner
+    // is chosen by language (sandpack for JS, pyodide for Python).
+    const runner: CodingMissionSpec['runner'] =
+      content.runner === 'blockly'
+        ? 'blockly'
+        : language === 'javascript'
+          ? 'sandpack'
+          : 'pyodide';
+
     return {
       activityId: activity.id,
       title: activity.title,
       language,
-      runner: language === 'javascript' ? 'sandpack' : 'pyodide',
+      runner,
       prompt: content.prompt ?? activity.description ?? '',
       starterCode: content.starterCode ?? '',
       assertions: Array.isArray(content.assertions) ? content.assertions : [],

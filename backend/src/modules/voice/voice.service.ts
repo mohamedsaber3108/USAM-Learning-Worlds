@@ -24,12 +24,17 @@
  * actionable fallback so the learner is never stuck waiting on a broken
  * service.
  */
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ConversationService } from '../ai/services/conversation.service';
+import {
+  STT_PROVIDERS,
+  TTS_PROVIDERS,
+  SttProvider,
+  TtsProvider,
+} from './interfaces/voice-provider.interface';
 
 export interface VoiceTurnResult {
   transcript: string;
@@ -61,46 +66,24 @@ export class VoiceSidecarUnavailableException extends HttpException {
   }
 }
 
-const DEFAULT_SIDECAR_TIMEOUT_MS = 9_000; // within the 8-10s target window
-
 @Injectable()
 export class VoiceService {
   private readonly logger = new Logger(VoiceService.name);
-  private readonly asrUrl: string;
-  private readonly ttsUrl: string;
   private readonly audioDir: string;
   private readonly publicAudioPrefix = '/voice-audio';
-  private readonly sidecarTimeoutMs: number;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly conversationService: ConversationService,
+    // Ordered by priority (index 0 = preferred). VoiceService tries each in
+    // turn until one succeeds — e.g. a fine-tuned EG-Arabic provider first,
+    // generic Whisper as fallback.
+    @Inject(STT_PROVIDERS) private readonly sttProviders: SttProvider[],
+    @Inject(TTS_PROVIDERS) private readonly ttsProviders: TtsProvider[],
   ) {
-    this.asrUrl = this.configService.get<string>('ASR_SIDECAR_URL') || 'http://127.0.0.1:8100';
-    this.ttsUrl = this.configService.get<string>('TTS_SIDECAR_URL') || 'http://127.0.0.1:8200';
-    this.sidecarTimeoutMs =
-      Number(this.configService.get<string>('VOICE_SIDECAR_TIMEOUT_MS')) ||
-      DEFAULT_SIDECAR_TIMEOUT_MS;
     // Served statically by main.ts (app.useStaticAssets) under /voice-audio.
     this.audioDir = join(process.cwd(), 'public', 'voice-audio');
     if (!existsSync(this.audioDir)) {
       mkdirSync(this.audioDir, { recursive: true });
-    }
-  }
-
-  /**
-   * fetch() with a hard timeout. Node's global fetch has no default
-   * timeout, so a hung/unreachable sidecar can otherwise block forever.
-   * Aborts the request after `this.sidecarTimeoutMs` and surfaces a
-   * distinguishable timeout error to the caller.
-   */
-  private async fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.sidecarTimeoutMs);
-    try {
-      return await fetch(url, { ...init, signal: controller.signal });
-    } finally {
-      clearTimeout(timer);
     }
   }
 
@@ -164,39 +147,33 @@ export class VoiceService {
    * leave the caller waiting indefinitely on a broken mic recording.
    */
   async transcribe(audioBuffer: Buffer, filename: string): Promise<string> {
-    try {
-      const form = new FormData();
-      form.append(
-        'file',
-        new Blob([new Uint8Array(audioBuffer)]),
-        filename || 'audio.wav',
-      );
-
-      const res = await this.fetchWithTimeout(`${this.asrUrl}/transcribe`, {
-        method: 'POST',
-        body: form,
-      });
-
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        throw new Error(`ASR sidecar returned ${res.status}: ${body}`);
+    let sawTimeout = false;
+    // Try each registered STT provider in priority order (fallback).
+    for (const provider of this.sttProviders) {
+      try {
+        const result = await provider.transcribe(audioBuffer, { filename });
+        const text = (result.text || '').trim();
+        if (text) return text;
+        // Empty transcript: try the next provider before giving up.
+        this.logger.warn(`STT provider ${provider.id} returned empty transcript, trying next`);
+      } catch (err) {
+        if (this.isTimeoutError(err)) sawTimeout = true;
+        this.logger.error(`STT provider ${provider.id} failed: ${err}`);
+        // Fall through to the next provider.
       }
+    }
 
-      const data = (await res.json()) as { text: string };
-      return (data.text || '').trim();
-    } catch (err) {
-      this.logger.error(`ASR sidecar call failed: ${err}`);
-      if (this.isTimeoutError(err)) {
-        throw new VoiceSidecarUnavailableException(
-          'asr',
-          "This is taking too long — let's switch to typing for now!",
-        );
-      }
+    // All providers failed/empty.
+    if (sawTimeout) {
       throw new VoiceSidecarUnavailableException(
         'asr',
-        "I couldn't hear you right now — let's type instead!",
+        "This is taking too long — let's switch to typing for now!",
       );
     }
+    throw new VoiceSidecarUnavailableException(
+      'asr',
+      "I couldn't hear you right now — let's type instead!",
+    );
   }
 
   /**
@@ -206,36 +183,31 @@ export class VoiceService {
    * non-fatal and degrade to a text-only reply rather than hanging.
    */
   async synthesize(text: string): Promise<string> {
-    try {
-      const res = await this.fetchWithTimeout(`${this.ttsUrl}/synthesize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        throw new Error(`TTS sidecar returned ${res.status}: ${body}`);
+    let sawTimeout = false;
+    // Try each registered TTS provider in priority order (fallback).
+    for (const provider of this.ttsProviders) {
+      try {
+        const { audio } = await provider.synthesize(text);
+        const filename = `${randomUUID()}.wav`;
+        writeFileSync(join(this.audioDir, filename), audio);
+        return `${this.publicAudioPrefix}/${filename}`;
+      } catch (err) {
+        if (this.isTimeoutError(err)) sawTimeout = true;
+        this.logger.error(`TTS provider ${provider.id} failed: ${err}`);
+        // Fall through to the next provider.
       }
+    }
 
-      const wavBuffer = Buffer.from(await res.arrayBuffer());
-      const filename = `${randomUUID()}.wav`;
-      writeFileSync(join(this.audioDir, filename), wavBuffer);
-
-      return `${this.publicAudioPrefix}/${filename}`;
-    } catch (err) {
-      this.logger.error(`TTS sidecar call failed: ${err}`);
-      if (this.isTimeoutError(err)) {
-        throw new VoiceSidecarUnavailableException(
-          'tts',
-          "I couldn't read that out loud right now, but here's your answer!",
-        );
-      }
+    if (sawTimeout) {
       throw new VoiceSidecarUnavailableException(
         'tts',
-        "Voice playback isn't working right now, but here's your answer!",
+        "I couldn't read that out loud right now, but here's your answer!",
       );
     }
+    throw new VoiceSidecarUnavailableException(
+      'tts',
+      "Voice playback isn't working right now, but here's your answer!",
+    );
   }
 
   private isTimeoutError(err: unknown): boolean {
