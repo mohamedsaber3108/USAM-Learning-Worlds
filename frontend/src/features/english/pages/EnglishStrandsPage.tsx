@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { Languages, MessageCircle } from 'lucide-react'
 import { englishApi, type EnglishStrand, type EnglishStrandFamily } from '@/lib/api/endpoints'
 
 // The 9 real strand families, backed by the `EnglishStrand.strandType`
@@ -67,21 +68,20 @@ export function EnglishStrandsPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-pop">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors">
-                <span className="inline-block rtl:scale-x-[-1]">←</span> Back
-              </Link>
-              <h1 className="text-2xl font-heading font-bold text-white">🇬🇧 English Strands</h1>
+      {/* Branded gradient header */}
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="icon-chip bg-white/15 text-white"><Languages className="w-6 h-6" strokeWidth={2} /></div>
+              <div>
+                <h1 className="text-2xl font-display font-extrabold text-white">English Strands</h1>
+                <p className="text-white/80 text-sm mt-0.5">Reading, grammar, and conversation — at your level.</p>
+              </div>
             </div>
-            <Link
-              to="/english/coach"
-              className="btn bg-white/90 text-primary-700 hover:bg-white shadow-none"
-            >
-              💬 Talk to Coach
+            <Link to="/english/coach" className="chip-glass hover:bg-white/25 transition-colors">
+              <MessageCircle className="w-4 h-4" strokeWidth={2} /> Talk to Coach
             </Link>
           </div>
         </div>

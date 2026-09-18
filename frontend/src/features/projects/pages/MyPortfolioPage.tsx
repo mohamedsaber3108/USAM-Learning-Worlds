@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, FolderKanban, Star } from 'lucide-react'
+import { FolderKanban, Star } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
 import { EmptyState, LoadingState } from '@/components/common/CharacterState'
 
@@ -24,17 +23,15 @@ export function MyPortfolioPage() {
 
   return (
     <div className="min-h-screen bg-surface-50">
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="flex items-center gap-1 text-white/90 hover:text-white transition-colors text-sm font-medium">
-              <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-              Back
-            </Link>
-            <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
-              <FolderKanban className="w-5 h-5" strokeWidth={2} />
-              My Portfolio
-            </h1>
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="icon-chip bg-white/15 text-white"><FolderKanban className="w-6 h-6" strokeWidth={2} /></div>
+            <div>
+              <h1 className="text-2xl font-display font-extrabold text-white">My Portfolio</h1>
+              <p className="text-white/80 text-sm mt-0.5">Your best work, all in one place.</p>
+            </div>
           </div>
         </div>
       </header>
