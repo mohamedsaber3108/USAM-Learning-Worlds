@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowLeft,
   MessageCircle,
   Shield,
   Plus,
@@ -131,18 +129,16 @@ export function CommunityPage() {
   return (
     <div className="min-h-screen bg-surface-50">
       {/* Header — one solid brand color, no rainbow gradient */}
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/dashboard" className="flex items-center gap-1 text-white/90 hover:text-white transition-colors text-sm font-medium">
-                <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-                Back
-              </Link>
-              <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" strokeWidth={2} />
-                Community
-              </h1>
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="icon-chip bg-white/15 text-white"><MessageCircle className="w-6 h-6" strokeWidth={2} /></div>
+              <div>
+                <h1 className="text-2xl font-display font-extrabold text-white">Community</h1>
+                <p className="text-white/80 text-sm mt-0.5">Share, celebrate, and learn together — safely.</p>
+              </div>
             </div>
             <button
               onClick={() => setShowForm((v) => !v)}

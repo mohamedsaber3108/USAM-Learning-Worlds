@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Flame, Trophy, Target, CheckCircle2, Snowflake, Coins } from 'lucide-react'
+import { TrendingUp, Flame, Trophy, Target, CheckCircle2, Snowflake, Coins } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, streakFreezeApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
@@ -69,14 +69,12 @@ export function ProgressPage() {
   return (
     <div className="min-h-screen bg-surface-50">
       {/* Header — one solid brand color, no rainbow gradient */}
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
-              <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-              {t('progressPage.back')}
-            </Link>
-            <h1 className="text-2xl font-display font-bold text-white">{t('progressPage.title')}</h1>
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="icon-chip bg-white/15 text-white"><TrendingUp className="w-6 h-6" strokeWidth={2} /></div>
+            <h1 className="text-2xl font-display font-extrabold text-white">{t('progressPage.title')}</h1>
           </div>
         </div>
       </header>

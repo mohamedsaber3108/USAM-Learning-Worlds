@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   Home, BookOpen, Target, Users2, Sparkles, Trophy, BarChart3, TrendingUp,
   Mic, ShoppingBag, FolderKanban, Zap, Languages, UserCircle2, Settings,
+  BookMarked, Palette,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import usamLogo from '@/assets/usam-logo.png'
@@ -43,6 +44,8 @@ const GROUPS: Group[] = [
       { to: '/missions', labelKey: 'nav.missions', fallback: 'Missions', icon: Target, match: (p) => p.startsWith('/missions') },
       { to: '/english', labelKey: 'more.english', fallback: 'English', icon: Languages, match: (p) => p.startsWith('/english') },
       { to: '/characters', labelKey: 'more.characters', fallback: 'Characters', icon: Sparkles, match: (p) => p.startsWith('/characters') },
+      { to: '/stories', labelKey: 'nav.stories', fallback: 'Stories', icon: BookMarked, match: (p) => p.startsWith('/stories') },
+      { to: '/creativity', labelKey: 'nav.creativity', fallback: 'Creativity', icon: Palette, match: (p) => p.startsWith('/creativity') },
       { to: '/voice-chat', labelKey: 'more.voiceChat', fallback: 'Voice Chat', icon: Mic, match: (p) => p.startsWith('/voice-chat') },
     ],
   },
