@@ -21,15 +21,16 @@ export function StoriesListPage() {
 
   return (
     <div className="min-h-screen bg-surface-50">
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5" strokeWidth={2} />
-            Choose-Your-Path Stories
-          </h1>
-          <p className="text-white/80 text-sm mt-1">
-            Pick a story, then choose what happens next on every page.
-          </p>
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="icon-chip bg-white/15 text-white"><BookOpen className="w-6 h-6" strokeWidth={2} /></div>
+            <div>
+              <h1 className="text-2xl font-display font-extrabold text-white">Choose-Your-Path Stories</h1>
+              <p className="text-white/80 text-sm mt-0.5">Pick a story, then choose what happens next on every page.</p>
+            </div>
+          </div>
         </div>
       </header>
 

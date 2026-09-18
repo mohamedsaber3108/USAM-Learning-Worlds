@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Palette } from 'lucide-react'
 import { creativityApi, type CreativityPromptRecord } from '@/lib/api/endpoints'
 import { LoadingState } from '@/components/common/CharacterState'
 import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
@@ -81,13 +82,19 @@ export function CreativityGalleryPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Creativity Studio</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Guided story, art, music, and invention prompts — pick one, create your response, and
-          share it if you'd like.
-        </p>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <header className="relative overflow-hidden rounded-blob bg-brand-hero text-white p-6 sm:p-8 mb-8 shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div aria-hidden className="absolute -top-10 -end-10 w-48 h-48 rounded-full bg-bubble-400/20 blur-2xl" />
+        <div className="relative flex items-center gap-3">
+          <div className="icon-chip bg-white/15 text-white"><Palette className="w-6 h-6" strokeWidth={2} /></div>
+          <div>
+            <h1 className="text-2xl font-display font-extrabold">Creativity Studio</h1>
+            <p className="text-white/80 text-sm mt-0.5">
+              Guided story, art, music, and invention prompts — pick one, create your response, and share it.
+            </p>
+          </div>
+        </div>
       </header>
 
       {ageBands.length > 1 && (
