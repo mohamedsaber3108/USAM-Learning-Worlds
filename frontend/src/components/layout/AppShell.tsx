@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { LanguageToggle } from './LanguageToggle'
+import { LanguageSwitchButton } from './LanguageSwitchButton'
 import { PageTransition } from '@/components/motion/PageTransition'
 import { NotificationBell } from './NotificationBell'
 import { SearchBar } from './SearchBar'
@@ -191,6 +192,7 @@ export function AppShell() {
             </span>
             <div className="flex items-center gap-2">
               <SearchBar />
+              <LanguageSwitchButton />
               <NotificationBell />
               <button
                 onClick={handleLogout}
