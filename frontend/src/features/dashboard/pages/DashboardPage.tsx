@@ -207,41 +207,42 @@ export function DashboardPage() {
   return (
     <div className="min-h-screen bg-surface-50">
       {/* Main Content — header + bottom nav now come from AppShell */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome hero banner — branded gradient surface gives the logged-in
+            home real visual energy consistent with the marketing landing,
+            instead of a bare heading on gray. Decorative + aria-hidden dots. */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="mb-10 flex items-center gap-4"
+          className="relative overflow-hidden rounded-blob bg-brand-hero text-white p-6 sm:p-8 mb-8 shadow-lift"
         >
-          {/* Equipped BORDER cosmetic renders here as a real ring around an
-              avatar circle — visible on every dashboard load, not a hidden
-              setting. Falls back to the default slate ring when nothing
-              is equipped yet. */}
-          <div
-            className={`w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-display font-bold text-xl flex-shrink-0 ${
-              BORDER_RING_CLASS[equippedBorderKey || 'border-slate'] || BORDER_RING_CLASS['border-slate']
-            }`}
-          >
-            {(user?.displayName || 'L').charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h2
-              className={`font-display font-bold text-slate-900 mb-1.5 flex items-center gap-2 flex-wrap tracking-tight ${
-                adapt.density === 'simple' ? 'text-4xl' : 'text-3xl'
+          <div aria-hidden className="dots-layer opacity-[0.15]" />
+          <div aria-hidden className="absolute -top-10 -end-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative flex items-center gap-4">
+            <div
+              className={`w-16 h-16 rounded-full bg-white/90 flex items-center justify-center text-primary-700 font-display font-bold text-xl flex-shrink-0 ${
+                BORDER_RING_CLASS[equippedBorderKey || 'border-slate'] || BORDER_RING_CLASS['border-slate']
               }`}
             >
-              {t('dashboard.welcomeBack', { name: user?.displayName || t('dashboard.defaultLearnerName') })}
-              {/* Equipped TITLE cosmetic renders as real text next to the
-                  learner's name — the whole point of "spend your XP". */}
-              {equippedTitleName && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary-100 text-secondary-800 align-middle">
-                  <Sparkles className="w-3.5 h-3.5" strokeWidth={2} />
-                  {equippedTitleName}
-                </span>
-              )}
-            </h2>
-            <p className="text-slate-500 text-sm">{t(`dashboard.greetingSubtext.${adapt.copyTone}`)}</p>
+              {(user?.displayName || 'L').charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <h2
+                className={`font-display font-extrabold mb-1 flex items-center gap-2 flex-wrap tracking-tight ${
+                  adapt.density === 'simple' ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl'
+                }`}
+              >
+                {t('dashboard.welcomeBack', { name: user?.displayName || t('dashboard.defaultLearnerName') })}
+                {equippedTitleName && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 text-white align-middle">
+                    <Sparkles className="w-3.5 h-3.5" strokeWidth={2} />
+                    {equippedTitleName}
+                  </span>
+                )}
+              </h2>
+              <p className="text-white/80 text-sm">{t(`dashboard.greetingSubtext.${adapt.copyTone}`)}</p>
+            </div>
           </div>
         </motion.div>
 

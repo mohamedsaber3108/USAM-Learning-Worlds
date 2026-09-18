@@ -33,6 +33,7 @@ import { LanguageToggle } from './LanguageToggle'
 import { PageTransition } from '@/components/motion/PageTransition'
 import { NotificationBell } from './NotificationBell'
 import { SearchBar } from './SearchBar'
+import { Sidebar } from './Sidebar'
 import usamLogo from '@/assets/usam-logo.png'
 
 /**
@@ -163,52 +164,55 @@ export function AppShell() {
   const navItemPaddingClass = isSimpleDensity ? 'py-3' : 'py-2.5'
 
   return (
-    <div className="min-h-screen bg-surface-50 flex flex-col">
-      {/* Top header — branding + logout, shared across every authenticated page */}
-      <header className="brand-surface shadow-soft sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-2.5 rounded-control focus-visible:ring-2 focus-visible:ring-white/60 focus:outline-none"
-            aria-label={t('common.appName')}
-          >
-            <img
-              src={usamLogo}
-              alt=""
-              aria-hidden="true"
-              className="brand-logo brand-logo-invert h-8"
-            />
-            <span className="text-lg font-display font-bold text-white tracking-tight hidden sm:inline">
+    <div className="min-h-screen bg-surface-50 flex">
+      {/* Desktop persistent sidebar (lg+). Mobile keeps the bottom tab bar. */}
+      <Sidebar />
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top header. On desktop the brand lives in the sidebar, so the
+            header becomes a slim utility bar (search / notifications / logout)
+            on a clean white surface; on mobile it keeps the teal brand bar
+            with the logo. */}
+        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-surface-200 lg:h-16">
+          <div className="px-4 sm:px-6 lg:px-8 py-3 lg:py-0 lg:h-16 flex justify-between items-center">
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2.5 rounded-control focus-visible:ring-2 focus-visible:ring-primary-300 focus:outline-none lg:hidden"
+              aria-label={t('common.appName')}
+            >
+              <img src={usamLogo} alt="" aria-hidden="true" className="h-8 w-auto" />
+              <span className="text-lg font-display font-bold text-ink tracking-tight hidden sm:inline">
+                {t('common.appName')}
+              </span>
+            </Link>
+            {/* Desktop: greeting/spacer keeps utilities right-aligned */}
+            <span className="hidden lg:block text-sm font-semibold text-slate-400">
               {t('common.appName')}
             </span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <SearchBar />
-            <NotificationBell />
-            <button
-              onClick={handleLogout}
-              aria-label={t('common.logout')}
-              className="btn bg-white/10 text-white hover:bg-white/20 shadow-none focus:ring-white/40 focus-visible:ring-2 focus-visible:ring-white/60"
-            >
-              <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
-              {t('common.logout')}
-            </button>
+            <div className="flex items-center gap-2">
+              <SearchBar />
+              <NotificationBell />
+              <button
+                onClick={handleLogout}
+                aria-label={t('common.logout')}
+                className="btn btn-secondary shadow-none"
+              >
+                <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
+                <span className="hidden sm:inline">{t('common.logout')}</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Page content — spring-based fade/slide transition on route change.
-          mode="popLayout" lets the exiting page animate out of flow while
-          the incoming page animates in, instead of both fighting for the
-          same layout slot (avoids a jarring blank/collapsed frame between
-          routes). See PageTransition for the reduced-motion fallback. */}
-      <main className="flex-1 pb-24">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <PageTransition key={location.pathname}>
-            <Outlet />
-          </PageTransition>
-        </AnimatePresence>
-      </main>
+        {/* Page content — spring-based fade/slide transition on route change. */}
+        <main className="flex-1 pb-24 lg:pb-8">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <PageTransition key={location.pathname}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
+        </main>
+      </div>
 
       {/* Bottom tab bar — mobile-first primary navigation.
           Real branching (not cosmetic): icon/label size tokens and vertical
@@ -217,7 +221,7 @@ export function AppShell() {
           above, using only Tailwind size tokens already used elsewhere in
           this file (w-5/w-6, text-xs/text-sm, py-2.5/py-3). */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-surface-200
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-surface-200
           shadow-[0_-4px_16px_rgba(15,23,42,0.06)] pb-[env(safe-area-inset-bottom)]"
         aria-label="Primary"
       >

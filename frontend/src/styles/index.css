@@ -270,4 +270,79 @@
     @apply inline-flex items-center gap-1.5 text-xs font-semibold uppercase
       tracking-wider text-primary-600;
   }
+
+  /* =====================================================================
+   * REDESIGN UPLIFT PRIMITIVES (additive). Richer, more playful surfaces
+   * for the kid-facing marketing + world/home experience. Existing .btn/
+   * .card/.stat-card etc are untouched so all current pages keep working.
+   * ===================================================================== */
+
+  /* Large pill CTA — the flagship "start" button on marketing surfaces. */
+  .btn-hero {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-8 py-4
+      text-base font-bold text-white bg-brand-hero shadow-hero
+      transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0
+      focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-300/60;
+  }
+
+  .btn-hero-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-8 py-4
+      text-base font-bold text-white bg-sunrise shadow-hero
+      transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0
+      focus:outline-none focus-visible:ring-4 focus-visible:ring-accent-300/60;
+  }
+
+  /* Frosted pill used in nav / chips over colored surfaces. */
+  .chip-glass {
+    @apply inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold
+      bg-white/15 text-white backdrop-blur-sm border border-white/20;
+  }
+
+  /* Playful elevated card for the kid surface — bigger radius, hero shadow,
+     lifts and tilts slightly on hover. */
+  .card-playful {
+    @apply relative bg-white rounded-blob shadow-lift border border-surface-200/60
+      p-6 transition-all duration-200 hover:shadow-hero hover:-translate-y-1;
+  }
+
+  /* World tile — a full-bleed colored gradient card representing a learning
+     world / subject. Set the gradient via an inline style or a bg-* util. */
+  .world-tile {
+    @apply relative overflow-hidden rounded-blob p-6 text-white shadow-lift
+      transition-all duration-200 hover:shadow-hero hover:-translate-y-1
+      focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50;
+  }
+
+  /* Decorative dotted backdrop layer (place absolutely, aria-hidden). */
+  .dots-layer {
+    @apply pointer-events-none absolute inset-0 bg-dot-grid bg-dot-grid opacity-60;
+  }
+
+  /* Section shell — consistent max width + horizontal padding. */
+  .section-x {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Big display heading for hero/section titles. */
+  .display-xl {
+    @apply font-display font-extrabold tracking-tight text-ink
+      text-4xl sm:text-5xl lg:text-6xl leading-[1.05];
+  }
+
+  .display-lg {
+    @apply font-display font-bold tracking-tight text-ink
+      text-2xl sm:text-3xl lg:text-4xl leading-tight;
+  }
+
+  /* Sidebar nav item (desktop shell). */
+  .side-nav-item {
+    @apply flex items-center gap-3 rounded-control px-3.5 py-2.5 text-sm font-semibold
+      text-slate-500 transition-colors duration-150
+      hover:bg-primary-50 hover:text-primary-700
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300;
+  }
+
+  .side-nav-item-active {
+    @apply bg-primary-50 text-primary-700;
+  }
 }

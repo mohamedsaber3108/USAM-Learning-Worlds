@@ -115,6 +115,48 @@ export default {
           200: '#c6d3d2',
           300: '#a9bcbb',
         },
+        // ------------------------------------------------------------------
+        // PLAYFUL SUPPORTING PALETTE (redesign uplift). Additive only — the
+        // teal `primary` stays the dominant brand color; these are for the
+        // marketing/landing surfaces, character world cards, and category
+        // accents so an 8-14 kids' product reads lively instead of clinical.
+        // Each maps to a "learning world" hue and pairs cleanly with teal.
+        // ------------------------------------------------------------------
+        // Sky — English / language world, hero accents.
+        sky: {
+          50: '#eff8ff', 100: '#dbeefe', 200: '#bfe1fe', 300: '#93cdfd',
+          400: '#60b0fa', 500: '#3b90f6', 600: '#2472eb', 700: '#1d5bd8',
+          800: '#1e4baf', 900: '#1e428a',
+        },
+        // Grape — creativity / stories world.
+        grape: {
+          50: '#f6f3ff', 100: '#ede8ff', 200: '#dcd3ff', 300: '#c3b0ff',
+          400: '#a684fc', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+          800: '#5b21b6', 900: '#4c1d95',
+        },
+        // Coral — playful CTA warmth for kid surfaces (distinct from the
+        // restrained brand `accent` amber).
+        coral: {
+          50: '#fff1f2', 100: '#ffe0e2', 200: '#ffc7cb', 300: '#ffa0a7',
+          400: '#fb6a76', 500: '#f23b4b', 600: '#df1f34', 700: '#bb1528',
+          800: '#9b1526', 900: '#801726',
+        },
+        // Bubble — fun pink for cosmetics / celebration surfaces.
+        bubble: {
+          50: '#fdf2fa', 100: '#fce7f6', 200: '#fbcfee', 300: '#faa7dd',
+          400: '#f56fc3', 500: '#ec44a6', 600: '#db2489', 700: '#bf146e',
+          800: '#9d155b', 900: '#83164e',
+        },
+      },
+      backgroundImage: {
+        // Reusable brand + world gradients so surfaces get depth without
+        // hand-rolling gradient stops per page.
+        'brand-hero': 'linear-gradient(135deg, #12403a 0%, #1c5a4d 45%, #2b7061 100%)',
+        'brand-soft': 'linear-gradient(180deg, #eef5f3 0%, #ffffff 60%)',
+        'sunrise': 'linear-gradient(135deg, #d96a2c 0%, #cf9316 100%)',
+        'aurora': 'linear-gradient(135deg, #2b7061 0%, #3b90f6 55%, #8b5cf6 100%)',
+        // Subtle dot grid for playful section backdrops (used at low opacity).
+        'dot-grid': 'radial-gradient(circle, rgba(28,90,77,0.10) 1.2px, transparent 1.2px)',
         // INDIGO ALIAS — a number of feature/parent pages were authored with
         // Tailwind's default `indigo-*` accent before the teal rebrand. Rather
         // than hand-edit every call site, alias the whole `indigo` scale onto
@@ -142,6 +184,13 @@ export default {
       borderRadius: {
         card: '14px',
         control: '12px',
+        // Softer, friendlier radii for hero/marketing surfaces and big
+        // playful cards (kid-appropriate roundness without going bubbly).
+        blob: '28px',
+        pill: '9999px',
+      },
+      backgroundSize: {
+        'dot-grid': '22px 22px',
       },
       boxShadow: {
         // Soft, multi-layer shadows — teal-tinted rather than neutral black so
@@ -156,6 +205,10 @@ export default {
         'glow-success': '0 0 0 1px rgba(16,185,129,0.22), 0 10px 28px -6px rgba(16,185,129,0.35)',
         'glow-error': '0 0 0 1px rgba(239,68,68,0.20), 0 10px 28px -6px rgba(239,68,68,0.28)',
         'glow-primary': '0 0 0 1px rgba(28,90,77,0.20), 0 8px 22px -6px rgba(28,90,77,0.30)',
+        // Deep marketing/hero elevation — larger, softer teal-tinted drop for
+        // the flagship cards on the landing + world-select surfaces.
+        'hero': '0 24px 60px -20px rgba(10,41,38,0.35), 0 8px 24px -12px rgba(10,41,38,0.20)',
+        'lift': '0 12px 32px -12px rgba(10,41,38,0.22)',
       },
       keyframes: {
         'fade-in-up': {
@@ -191,6 +244,23 @@ export default {
           '0%, 100%': { opacity: '0.5', transform: 'scale(1)' },
           '50%': { opacity: '0.8', transform: 'scale(1.05)' },
         },
+        // Slow decorative drift for background blobs on marketing surfaces.
+        'drift': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '33%': { transform: 'translate(12px, -10px) scale(1.04)' },
+          '66%': { transform: 'translate(-10px, 8px) scale(0.98)' },
+        },
+        // Gentle continuous vertical float, larger amplitude than float-soft
+        // for hero character mascots.
+        'bob': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        // One-time pop-in for cards entering the viewport.
+        'pop-in': {
+          '0%': { opacity: '0', transform: 'scale(0.94) translateY(8px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.16,1,0.3,1) both',
@@ -198,6 +268,9 @@ export default {
         'wobble-once': 'wobble-once 0.4s cubic-bezier(0.36,0.07,0.19,0.97) both',
         'float-soft': 'float-soft 5s ease-in-out infinite',
         'pulse-soft': 'pulse-soft 6s ease-in-out infinite',
+        'drift': 'drift 14s ease-in-out infinite',
+        'bob': 'bob 4s ease-in-out infinite',
+        'pop-in': 'pop-in 0.45s cubic-bezier(0.16,1,0.3,1) both',
       },
     },
   },
