@@ -178,6 +178,12 @@ export default {
       fontFamily: {
         // Display: used SPARINGLY for big numbers/headlines only.
         display: ['"Manrope"', 'sans-serif'],
+        // `heading` alias — several older pages authored headings with
+        // `font-heading` before the display token existed. Alias it to the
+        // same Manrope display stack so those 14 pages get proper heading
+        // weight instead of silently falling back to the body font. New
+        // code should use `font-display`.
+        heading: ['"Manrope"', 'sans-serif'],
         // Body/UI: clean, readable, not babyish at 14 y/o.
         sans: ['"Inter"', 'sans-serif'],
       },
@@ -209,6 +215,9 @@ export default {
         // the flagship cards on the landing + world-select surfaces.
         'hero': '0 24px 60px -20px rgba(10,41,38,0.35), 0 8px 24px -12px rgba(10,41,38,0.20)',
         'lift': '0 12px 32px -12px rgba(10,41,38,0.22)',
+        // `pop` alias — legacy pages used `shadow-pop`; map it to the soft-md
+        // elevation so those surfaces get real depth instead of no shadow.
+        'pop': '0 2px 8px rgba(10,41,38,0.07), 0 8px 24px rgba(10,41,38,0.08)',
       },
       keyframes: {
         'fade-in-up': {

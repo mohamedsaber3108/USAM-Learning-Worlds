@@ -21,6 +21,8 @@ import {
   CheckCircle2,
   Clock,
   Award,
+  Play,
+  ArrowRight,
 } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, cosmeticsApi, dailyGoalsApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
@@ -245,6 +247,48 @@ export function DashboardPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Continue learning — the ONE clear next action (Duolingo/Prodigy
+            "single visible path" pattern). Resumes an in-progress mission
+            run when there is one; otherwise routes to the missions hub.
+            Real data: derived from recentMissions (missionsApi.getHistory). */}
+        {(() => {
+          const inProgress = Array.isArray(recentMissions)
+            ? recentMissions.find((r: any) => r.status === 'IN_PROGRESS')
+            : null
+          const to = inProgress ? `/missions/play/${inProgress.id}` : '/missions'
+          const title = inProgress
+            ? inProgress.mission?.title || 'Continue your mission'
+            : t('dashboard.quickActions.missions')
+          const label = inProgress ? 'Continue' : 'Start'
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.08 }}
+              className="mb-8"
+            >
+              <Link
+                to={to}
+                className="card-playful flex items-center gap-4 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+              >
+                <div className="icon-chip bg-primary-600 text-white w-14 h-14 shrink-0 group-hover:scale-105 transition-transform">
+                  <Play className="w-6 h-6" strokeWidth={2.5} fill="currentColor" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-primary-600">
+                    {inProgress ? 'Pick up where you left off' : "Today's next step"}
+                  </p>
+                  <p className="font-display font-bold text-ink text-lg truncate">{title}</p>
+                </div>
+                <span className="btn-hero shrink-0 hidden sm:inline-flex">
+                  {label} <ArrowRight className="w-5 h-5 rtl:scale-x-[-1]" strokeWidth={2.5} />
+                </span>
+                <ArrowRight className="w-6 h-6 text-primary-600 sm:hidden rtl:scale-x-[-1]" strokeWidth={2.5} />
+              </Link>
+            </motion.div>
+          )
+        })()}
 
         {/* Stats — the core loop (Level + XP) is ONE hero card with real
             visual weight (tinted surface, big ring, big numbers), not just
