@@ -1,9 +1,8 @@
-import { Link } from 'react-router-dom'
+
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowLeft,
   ShoppingBag,
   Lock,
   CheckCircle2,
@@ -108,21 +107,16 @@ export function CosmeticShopPage() {
 
   return (
     <div className="min-h-screen bg-surface-50">
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                to="/dashboard"
-                className="text-white/90 hover:text-white transition-colors flex items-center gap-1"
-              >
-                <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-                Back
-              </Link>
-              <h1 className="text-2xl font-display font-bold text-white flex items-center gap-2">
-                <ShoppingBag className="w-6 h-6" strokeWidth={2} />
-                Shop
-              </h1>
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="icon-chip bg-white/15 text-white"><ShoppingBag className="w-6 h-6" strokeWidth={2} /></div>
+              <div>
+                <h1 className="text-2xl font-display font-extrabold text-white">Shop</h1>
+                <p className="text-white/80 text-sm mt-0.5">Spend your XP on borders, titles, and themes.</p>
+              </div>
             </div>
             <div className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full text-white font-semibold">
               <Zap className="w-4 h-4" strokeWidth={2} />

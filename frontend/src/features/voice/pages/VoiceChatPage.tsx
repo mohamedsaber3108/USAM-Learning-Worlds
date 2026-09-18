@@ -3,9 +3,9 @@
  * Record -> upload -> ASR -> AI response -> TTS -> play round trip.
  */
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic2, ArrowLeft, Info, Sparkles, Keyboard } from 'lucide-react'
+import { Mic2, Info, Sparkles, Keyboard } from 'lucide-react'
 import { VoiceRecorder } from '../components/VoiceRecorder'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { voiceApi, VoiceTurnResult, isVoiceSidecarUnavailable } from '../api/voiceApi'
@@ -92,21 +92,14 @@ export function VoiceChatPage() {
   return (
     <div className="min-h-screen bg-surface-50">
       {/* Header — one solid brand color, no rainbow gradient, matches Community/Dashboard chrome */}
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                to="/dashboard"
-                className="flex items-center gap-1 text-white/90 hover:text-white transition-colors text-sm font-medium"
-              >
-                <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-                Back
-              </Link>
-              <h1 className="text-xl font-display font-bold text-white flex items-center gap-2">
-                <Mic2 className="w-5 h-5" strokeWidth={2} />
-                Voice Chat
-              </h1>
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="icon-chip bg-white/15 text-white"><Mic2 className="w-6 h-6" strokeWidth={2} /></div>
+            <div>
+              <h1 className="text-2xl font-display font-extrabold text-white">Voice Chat</h1>
+              <p className="text-white/80 text-sm mt-0.5">Talk with your guide — practice speaking and listening.</p>
             </div>
           </div>
         </div>

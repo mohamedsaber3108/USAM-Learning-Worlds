@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Layers, RotateCcw, CheckCircle2, XCircle, Flame } from 'lucide-react'
+import { Layers, RotateCcw, CheckCircle2, XCircle, Flame } from 'lucide-react'
 import { curriculumApi, flashcardsApi, type Flashcard, type FlashcardStats } from '@/lib/api/endpoints'
 
 interface Domain {
@@ -86,17 +86,15 @@ export function FlashcardsStudyPage() {
 
   return (
     <div className="min-h-screen bg-surface-50">
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/learn" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
-              <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-              Back
-            </Link>
-            <h1 className="text-2xl font-display font-bold text-white flex items-center gap-2">
-              <Layers className="w-6 h-6" strokeWidth={2} />
-              Flashcards
-            </h1>
+      <header className="bg-brand-hero relative overflow-hidden shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="icon-chip bg-white/15 text-white"><Layers className="w-6 h-6" strokeWidth={2} /></div>
+            <div>
+              <h1 className="text-2xl font-display font-extrabold text-white">Flashcards</h1>
+              <p className="text-white/80 text-sm mt-0.5">Review with spaced repetition — remember more, faster.</p>
+            </div>
           </div>
         </div>
       </header>
