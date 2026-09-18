@@ -8,6 +8,8 @@ import apiClient from '@/lib/api/client'
 import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 import type { AuthResponse } from '@/types'
 import usamLogo from '@/assets/usam-logo.png'
+import { Button } from '@/components/ui/Button'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 
 export function RegisterPage() {
   const { t } = useTranslation()
@@ -63,111 +65,88 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      <div className="hero-glow -top-24 -right-16 w-72 h-72 animate-pulse-soft" aria-hidden="true" />
-      <div
-        className="hero-glow bottom-0 -left-16 w-80 h-80 bg-secondary-200/25 animate-pulse-soft"
-        aria-hidden="true"
-      />
-      <div className="relative max-w-md w-full mx-4">
-        <div className="bg-white rounded-2xl shadow-soft-lg p-8 border border-surface-200/70">
-          <div className="text-center mb-8">
-            <img
-              src={usamLogo}
-              alt=""
-              aria-hidden="true"
-              className="h-11 w-auto mx-auto mb-5 animate-float-soft"
-            />
-            <h1 className="text-3xl font-bold text-ink mb-2">
-              {t('auth.register.createAccount')}
-            </h1>
-            <p className="text-slate-500">{t('auth.register.subtitle')}</p>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white">
+      {/* ---- Brand panel ---- */}
+      <div className="relative lg:w-1/2 bg-brand-hero text-white overflow-hidden flex flex-col justify-between p-8 lg:p-12 min-h-[30vh] lg:min-h-screen order-first">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div aria-hidden className="absolute -top-24 -end-24 w-80 h-80 rounded-full bg-grape-400/20 blur-3xl animate-drift" />
+        <div aria-hidden className="absolute bottom-0 -start-16 w-80 h-80 rounded-full bg-secondary-300/20 blur-3xl animate-drift" style={{ animationDelay: '3s' }} />
+
+        <Link to="/" className="relative flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-control w-fit">
+          <img src={usamLogo} alt="" aria-hidden className="h-9 w-auto brand-logo-invert" />
+          <span className="font-display font-bold text-lg">{t('common.appName')}</span>
+        </Link>
+
+        <div className="relative hidden lg:flex flex-col items-center text-center gap-4 my-8">
+          <div className="flex items-end gap-2">
+            <div className="rounded-full bg-white/90 shadow-hero p-1.5 animate-bob"><CharacterFace characterId="Luma" size={92} /></div>
+            <div className="rounded-full bg-white/90 shadow-hero p-2 animate-bob" style={{ animationDelay: '0.5s' }}><CharacterFace characterId="Azouz" size={120} /></div>
+            <div className="rounded-full bg-white/90 shadow-hero p-1.5 animate-bob" style={{ animationDelay: '1s' }}><CharacterFace characterId="Codey" size={92} /></div>
+          </div>
+          <p className="max-w-sm text-white/85 text-lg font-medium">{t('auth.register.subtitle')}</p>
+        </div>
+
+        <p className="relative text-white/60 text-sm hidden lg:block">© {new Date().getFullYear()} USAM Learning Worlds</p>
+      </div>
+
+      {/* ---- Form panel ---- */}
+      <div className="lg:w-1/2 flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <h1 className="display-lg">{t('auth.register.createAccount')}</h1>
+            <p className="text-slate-500 mt-2">{t('auth.register.subtitle')}</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-lg text-error-700 text-sm">
+            <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-control text-error-700 text-sm" role="alert">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="reg-firstName" className="block text-sm font-semibold text-slate-700 mb-2">
                 {t('auth.register.firstNameLabel')}
               </label>
-              <input
-                {...register('firstName')}
-                type="text"
-                className="input"
-                placeholder={t('auth.register.firstNamePlaceholder')}
-              />
-              {errors.firstName && (
-                <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>
-              )}
+              <input id="reg-firstName" {...register('firstName')} type="text" autoComplete="given-name" className="input" placeholder={t('auth.register.firstNamePlaceholder')} />
+              {errors.firstName && <p className="text-error-600 text-sm mt-1.5">{errors.firstName.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="reg-displayName" className="block text-sm font-semibold text-slate-700 mb-2">
                 {t('auth.register.displayNameLabel')}
               </label>
-              <input
-                {...register('displayName')}
-                type="text"
-                className="input"
-                placeholder={t('auth.register.displayNamePlaceholder')}
-              />
-              {errors.displayName && (
-                <p className="text-red-500 text-sm mt-1">{errors.displayName.message}</p>
-              )}
+              <input id="reg-displayName" {...register('displayName')} type="text" autoComplete="nickname" className="input" placeholder={t('auth.register.displayNamePlaceholder')} />
+              {errors.displayName && <p className="text-error-600 text-sm mt-1.5">{errors.displayName.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="reg-email" className="block text-sm font-semibold text-slate-700 mb-2">
                 {t('auth.register.emailLabel')}
               </label>
-              <input
-                {...register('email')}
-                type="email"
-                className="input"
-                placeholder={t('auth.register.emailPlaceholder')}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-              )}
+              <input id="reg-email" {...register('email')} type="email" autoComplete="email" className="input" placeholder={t('auth.register.emailPlaceholder')} />
+              {errors.email && <p className="text-error-600 text-sm mt-1.5">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="reg-password" className="block text-sm font-semibold text-slate-700 mb-2">
                 {t('auth.register.passwordLabel')}
               </label>
-              <input
-                {...register('password')}
-                type="password"
-                className="input"
-                placeholder={t('auth.register.passwordPlaceholder')}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-              )}
+              <input id="reg-password" {...register('password')} type="password" autoComplete="new-password" className="input" placeholder={t('auth.register.passwordPlaceholder')} />
+              {errors.password && <p className="text-error-600 text-sm mt-1.5">{errors.password.message}</p>}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || isSubmitting}
-              className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button type="submit" variant="hero" size="lg" fullWidth loading={loading || isSubmitting}>
               {loading || isSubmitting ? t('auth.register.submitting') : t('auth.register.submit')}
-            </button>
+            </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              {t('auth.register.haveAccount')}{' '}
-              <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-                {t('auth.register.signIn')}
-              </Link>
-            </p>
-          </div>
+          <p className="mt-6 text-center text-slate-600">
+            {t('auth.register.haveAccount')}{' '}
+            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold">
+              {t('auth.register.signIn')}
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -8,6 +8,8 @@ import apiClient from '@/lib/api/client'
 import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 import type { AuthResponse } from '@/types'
 import usamLogo from '@/assets/usam-logo.png'
+import { Button } from '@/components/ui/Button'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 
 export function LoginPage() {
   const { t } = useTranslation()
@@ -50,92 +52,94 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      <div className="hero-glow -top-24 -left-16 w-72 h-72 animate-pulse-soft" aria-hidden="true" />
-      <div
-        className="hero-glow bottom-0 -right-16 w-80 h-80 bg-secondary-200/25 animate-pulse-soft"
-        aria-hidden="true"
-      />
-      <div className="relative max-w-md w-full mx-4">
-        <div className="bg-white rounded-2xl shadow-soft-lg p-8 border border-surface-200/70">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <img
-              src={usamLogo}
-              alt=""
-              aria-hidden="true"
-              className="h-11 w-auto mx-auto mb-5 animate-float-soft"
-            />
-            <h1 className="text-3xl font-bold text-ink mb-2">
-              {t('auth.login.welcomeBack')}
-            </h1>
-            <p className="text-slate-500">{t('auth.login.subtitle')}</p>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white">
+      {/* ---- Brand panel (left on LTR / right on RTL) ---- */}
+      <div className="relative lg:w-1/2 bg-brand-hero text-white overflow-hidden flex flex-col justify-between p-8 lg:p-12 min-h-[36vh] lg:min-h-screen">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div aria-hidden className="absolute -top-24 -start-24 w-80 h-80 rounded-full bg-sky-400/20 blur-3xl animate-drift" />
+        <div aria-hidden className="absolute bottom-0 -end-16 w-80 h-80 rounded-full bg-secondary-300/20 blur-3xl animate-drift" style={{ animationDelay: '3s' }} />
+
+        <Link to="/" className="relative flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-control w-fit">
+          <img src={usamLogo} alt="" aria-hidden className="h-9 w-auto brand-logo-invert" />
+          <span className="font-display font-bold text-lg">{t('common.appName')}</span>
+        </Link>
+
+        <div className="relative hidden lg:flex flex-col items-center text-center gap-4 my-8">
+          <div className="rounded-full bg-white/90 shadow-hero p-2 animate-bob">
+            <CharacterFace characterId="Azouz" size={140} />
+          </div>
+          <p className="max-w-sm text-white/85 text-lg font-medium">
+            {t('auth.login.subtitle')}
+          </p>
+        </div>
+
+        <p className="relative text-white/60 text-sm hidden lg:block">
+          © {new Date().getFullYear()} USAM Learning Worlds
+        </p>
+      </div>
+
+      {/* ---- Form panel ---- */}
+      <div className="lg:w-1/2 flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <h1 className="display-lg">{t('auth.login.welcomeBack')}</h1>
+            <p className="text-slate-500 mt-2">{t('auth.login.subtitle')}</p>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-lg text-error-700 text-sm">
+            <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-control text-error-700 text-sm" role="alert">
               {error}
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="login-email" className="block text-sm font-semibold text-slate-700 mb-2">
                 {t('auth.login.emailLabel')}
               </label>
               <input
+                id="login-email"
                 {...register('email')}
                 type="email"
+                autoComplete="email"
                 className="input"
                 placeholder={t('auth.login.emailPlaceholder')}
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-error-600 text-sm mt-1.5">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="login-password" className="block text-sm font-semibold text-slate-700 mb-2">
                 {t('auth.login.passwordLabel')}
               </label>
               <input
+                id="login-password"
                 {...register('password')}
                 type="password"
+                autoComplete="current-password"
                 className="input"
                 placeholder={t('auth.login.passwordPlaceholder')}
               />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-              )}
+              {errors.password && <p className="text-error-600 text-sm mt-1.5">{errors.password.message}</p>}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || isSubmitting}
-              className="btn btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button type="submit" variant="hero" size="lg" fullWidth loading={loading || isSubmitting}>
               {loading || isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')}
-            </button>
+            </Button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              {t('auth.login.noAccount')}{' '}
-              <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-                {t('auth.login.signUp')}
-              </Link>
-            </p>
-          </div>
-        </div>
+          <p className="mt-6 text-center text-slate-600">
+            {t('auth.login.noAccount')}{' '}
+            <Link to="/register" className="text-primary-600 hover:text-primary-700 font-semibold">
+              {t('auth.login.signUp')}
+            </Link>
+          </p>
 
-        {/* Demo Info */}
-        <div className="mt-6 p-4 bg-white/50 backdrop-blur rounded-lg text-center text-sm text-gray-600">
-          <p className="font-medium mb-2">{t('auth.login.demoAccountLabel')}</p>
-          <p>{t('auth.login.demoEmailLabel')}</p>
-          <p>{t('auth.login.demoPasswordLabel')}</p>
+          <div className="mt-8 p-4 bg-surface-50 border border-surface-200 rounded-control text-center text-sm text-slate-500">
+            <p className="font-semibold text-slate-600 mb-1">{t('auth.login.demoAccountLabel')}</p>
+            <p>{t('auth.login.demoEmailLabel')}</p>
+            <p>{t('auth.login.demoPasswordLabel')}</p>
+          </div>
         </div>
       </div>
     </div>
