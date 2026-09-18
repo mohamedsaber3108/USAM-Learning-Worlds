@@ -105,19 +105,21 @@ export function EmptyState({
   className = '',
 }: EmptyStateProps) {
   return (
-    <div className={`card text-center py-12 ${className}`}>
-      <div className="flex justify-center mb-4">
-        <CompanionFace character={character} size={size} />
+    <div className={`card-playful text-center py-14 max-w-lg mx-auto ${className}`}>
+      <div className="flex justify-center mb-5">
+        <div className="rounded-full bg-primary-50 p-3">
+          <CompanionFace character={character} size={size} />
+        </div>
       </div>
-      <h3 className="text-xl font-display font-bold text-slate-900 mb-2">{title}</h3>
+      <h3 className="display-lg text-2xl mb-2">{title}</h3>
       <p className="text-slate-600 max-w-sm mx-auto">{message}</p>
       {actionLabel && actionTo && (
-        <Link to={actionTo} className="btn btn-primary mt-5 inline-flex">
+        <Link to={actionTo} className="btn-hero mt-6 inline-flex">
           {actionLabel}
         </Link>
       )}
       {actionLabel && onAction && !actionTo && (
-        <button type="button" onClick={onAction} className="btn btn-primary mt-5">
+        <button type="button" onClick={onAction} className="btn-hero mt-6">
           {actionLabel}
         </button>
       )}
@@ -151,14 +153,16 @@ export function ErrorState({
   className = '',
 }: ErrorStateProps) {
   return (
-    <div role="status" aria-live="polite" className={`card text-center py-10 ${className}`}>
+    <div role="status" aria-live="polite" className={`card-playful text-center py-12 max-w-lg mx-auto ${className}`}>
       <div className="flex justify-center mb-4">
-        <CompanionFace character={character} size={size} />
+        <div className="rounded-full bg-accent-50 p-3">
+          <CompanionFace character={character} size={size} />
+        </div>
       </div>
-      <h3 className="text-lg font-display font-bold text-slate-900 mb-1">{title}</h3>
+      <h3 className="text-xl font-display font-bold text-ink mb-1">{title}</h3>
       <p className="text-slate-600 max-w-sm mx-auto text-sm">{message}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="btn btn-primary mt-5">
+        <button type="button" onClick={onRetry} className="btn-hero mt-6">
           {retryLabel}
         </button>
       )}
