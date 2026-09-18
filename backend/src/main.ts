@@ -53,11 +53,20 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS
+  // Enable CORS. Accept either ALLOWED_ORIGINS or CORS_ORIGIN (comma-
+  // separated) so a single misnamed env var can't silently block every
+  // browser request — a real incident: the prod .env set CORS_ORIGIN while
+  // the code only read ALLOWED_ORIGINS, so it fell back to localhost and
+  // blocked the live domain. Trim whitespace and drop empties.
+  const corsOrigins = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'],
+    origin: corsOrigins,
     credentials: true,
   });
+  logger.log(`CORS allowed origins: ${corsOrigins.join(', ')}`);
 
   // Global prefix
   app.setGlobalPrefix('api');
