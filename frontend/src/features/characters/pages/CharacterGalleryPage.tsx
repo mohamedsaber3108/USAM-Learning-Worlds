@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Users2 } from 'lucide-react'
 import { charactersApi, translationsApi, type CharacterSummary } from '@/lib/api/endpoints'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { CHARACTER_VISUALS, getCharacterVisual } from '../lib/characterVisuals'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Badge } from '@/components/ui/Badge'
 
 /**
  * Fetches the live human-approved Egyptian-Arabic personality blurb for one
@@ -66,11 +68,11 @@ function CharacterCard({ entry }: { entry: RosterEntry }) {
 
   const card = (
     <div
-      className={`card p-5 flex items-start gap-4 transition-shadow ${
-        entry.unlocked ? 'hover:shadow-soft-md' : 'opacity-70'
+      className={`card-playful flex items-start gap-4 h-full ${
+        entry.unlocked ? '' : 'opacity-70 hover:translate-y-0 hover:shadow-lift'
       }`}
     >
-      <CharacterAvatar name={entry.name} size="lg" locked={!entry.unlocked} />
+      <CharacterAvatar name={entry.name} size="xl" locked={!entry.unlocked} />
       <div className="flex-1 min-w-0">
         <h3 className="font-display font-bold text-slate-900 truncate flex items-baseline gap-2">
           <span>{entry.name}</span>
@@ -177,22 +179,13 @@ export function CharacterGalleryPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <header className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">
-          My Companions <span className="text-slate-400 font-medium">· رفقاء رحلتي</span>
-        </h1>
-        <p className="text-slate-500 mt-1">
-          Meet your mentors and companions. Locked characters show how to unlock them — keep
-          learning to build your full team.
-        </p>
-        <p className="text-sm text-slate-400 mt-1" dir="rtl">
-          اتعرّف على مرشديك ورفقاء رحلتك. الشخصيات المقفولة بتوريك إزاي تفتحها — استمر في التعلم
-          لتكمل فريقك بالكامل.
-        </p>
-        <p className="text-xs font-semibold text-primary-600 mt-3">
-          {unlockedCount} / {roster.length} unlocked
-        </p>
-      </header>
+      <PageHeader
+        icon={<Users2 className="w-5 h-5" />}
+        eyebrow="Your crew"
+        title={<>My Companions <span className="text-slate-400 font-medium text-xl">· رفقاء رحلتي</span></>}
+        subtitle="Meet your mentors. Locked characters show how to unlock them — keep learning to build your full team."
+        actions={<Badge tone="primary">{unlockedCount} / {roster.length} unlocked</Badge>}
+      />
 
       {loading && <LoadingState character="Codey" message="Codey is loading your character crew..." />}
 
