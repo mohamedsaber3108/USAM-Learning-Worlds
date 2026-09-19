@@ -34,7 +34,6 @@ import { LanguageSwitchButton } from './LanguageSwitchButton'
 import { PageTransition } from '@/components/motion/PageTransition'
 import { NotificationBell } from './NotificationBell'
 import { SearchBar } from './SearchBar'
-import { Sidebar } from './Sidebar'
 import usamLogo from '@/assets/usam-logo.png'
 
 /**
@@ -165,56 +164,134 @@ export function AppShell() {
   const navItemPaddingClass = isSimpleDensity ? 'py-3' : 'py-2.5'
 
   return (
-    <div className="min-h-screen bg-surface-50 flex">
-      {/* Desktop persistent sidebar (lg+). Mobile keeps the bottom tab bar. */}
-      <Sidebar />
-
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top header. On desktop the brand lives in the sidebar, so the
-            header becomes a slim utility bar (search / notifications / logout)
-            on a clean white surface; on mobile it keeps the teal brand bar
-            with the logo. */}
-        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-surface-200 lg:h-16">
-          <div className="px-4 sm:px-6 lg:px-8 py-3 lg:py-0 lg:h-16 flex justify-between items-center">
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-2.5 rounded-control focus-visible:ring-2 focus-visible:ring-primary-300 focus:outline-none lg:hidden"
-              aria-label={t('common.appName')}
-            >
-              <img src={usamLogo} alt="" aria-hidden="true" className="h-8 w-auto" />
-              <span className="text-lg font-display font-bold text-ink tracking-tight hidden sm:inline">
-                {t('common.appName')}
-              </span>
-            </Link>
-            {/* Desktop: greeting/spacer keeps utilities right-aligned */}
-            <span className="hidden lg:block text-sm font-semibold text-slate-400">
+    <div className="min-h-screen bg-surface-50 flex flex-col">
+      {/* ============================================================
+          DESKTOP: FLOATING PILL NAVIGATION (design-reference synthesis —
+          MindMarket / Wispr / Subframe / Caldera all float the nav as a
+          single rounded pill over the canvas instead of a boxy sidebar or
+          full-bleed header bar). Logo left, primary destinations center as
+          pills with an animated active pill, utilities right. This replaces
+          the old sidebar rail + slim utility bar so every authenticated
+          page reads as a playful product, not an admin dashboard.
+          ============================================================ */}
+      <div className="hidden lg:block sticky top-0 z-30 px-6 pt-4 pb-2 pointer-events-none">
+        <nav
+          aria-label="Primary"
+          className="pointer-events-auto max-w-6xl mx-auto flex items-center gap-2 rounded-pill
+            bg-white/90 backdrop-blur border border-surface-200 shadow-soft-md px-3 py-2"
+        >
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2.5 pe-2 ps-1 rounded-pill focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+            aria-label={t('common.appName')}
+          >
+            <img src={usamLogo} alt="" aria-hidden="true" className="h-8 w-auto" />
+            <span className="font-display font-extrabold text-ink tracking-tight hidden xl:inline">
               {t('common.appName')}
             </span>
-            <div className="flex items-center gap-2">
-              <SearchBar />
-              <LanguageSwitchButton />
-              <NotificationBell />
-              <button
-                onClick={handleLogout}
-                aria-label={t('common.logout')}
-                className="btn btn-secondary shadow-none"
-              >
-                <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
-                <span className="hidden sm:inline">{t('common.logout')}</span>
-              </button>
-            </div>
-          </div>
-        </header>
+          </Link>
 
-        {/* Page content — spring-based fade/slide transition on route change. */}
-        <main className="flex-1 pb-24 lg:pb-8">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <PageTransition key={location.pathname}>
-              <Outlet />
-            </PageTransition>
-          </AnimatePresence>
-        </main>
+          <div className="flex items-center gap-1 flex-1 justify-center">
+            {primaryNav.map((item) => {
+              const isActive = activeKey === item.key
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.key}
+                  to={item.to}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`relative flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-bold transition-colors ${
+                    isActive ? 'text-primary-700' : 'text-slate-500 hover:text-primary-600'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId="desktop-nav-pill"
+                      className="absolute inset-0 rounded-pill bg-primary-50"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <Icon
+                    className="relative w-4.5 h-4.5 shrink-0"
+                    strokeWidth={isActive ? 2.5 : 2}
+                    fill={isActive ? 'currentColor' : 'none'}
+                    fillOpacity={isActive ? 0.12 : 0}
+                  />
+                  <span className="relative">{t(`nav.${item.key}`)}</span>
+                </Link>
+              )
+            })}
+            <button
+              onClick={() => setMoreOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={moreOpen}
+              className={`relative flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-bold transition-colors ${
+                isMoreActive ? 'text-primary-700' : 'text-slate-500 hover:text-primary-600'
+              }`}
+            >
+              {isMoreActive && (
+                <motion.span
+                  layoutId="desktop-nav-pill"
+                  className="absolute inset-0 rounded-pill bg-primary-50"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <MoreHorizontal className="relative w-4.5 h-4.5" strokeWidth={2} />
+              <span className="relative">{t('nav.more')}</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <SearchBar />
+            <LanguageSwitchButton />
+            <NotificationBell />
+            <button
+              onClick={handleLogout}
+              aria-label={t('common.logout')}
+              className="icon-chip bg-surface-100 text-slate-500 hover:bg-surface-200 w-10 h-10 transition-colors"
+            >
+              <LogOut className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
+            </button>
+          </div>
+        </nav>
       </div>
+
+      {/* MOBILE: slim top brand bar (bottom tab bar handles nav below). */}
+      <header className="lg:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-surface-200">
+        <div className="px-4 sm:px-6 py-3 flex justify-between items-center">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2.5 rounded-control focus-visible:ring-2 focus-visible:ring-primary-300 focus:outline-none"
+            aria-label={t('common.appName')}
+          >
+            <img src={usamLogo} alt="" aria-hidden="true" className="h-8 w-auto" />
+            <span className="text-lg font-display font-bold text-ink tracking-tight hidden sm:inline">
+              {t('common.appName')}
+            </span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <SearchBar />
+            <LanguageSwitchButton />
+            <NotificationBell />
+            <button
+              onClick={handleLogout}
+              aria-label={t('common.logout')}
+              className="btn btn-secondary shadow-none"
+            >
+              <LogOut className="w-4 h-4 rtl:scale-x-[-1]" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Page content — spring-based fade/slide transition on route change. */}
+      <main className="flex-1 pb-24 lg:pb-10">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <PageTransition key={location.pathname}>
+            <Outlet />
+          </PageTransition>
+        </AnimatePresence>
+      </main>
 
       {/* Bottom tab bar — mobile-first primary navigation.
           Real branching (not cosmetic): icon/label size tokens and vertical
