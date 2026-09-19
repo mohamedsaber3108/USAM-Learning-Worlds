@@ -136,19 +136,29 @@ export function LearningInsightsPage() {
   return (
     <div className="min-h-screen bg-surface-50">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Branded gradient hero header — consistent with every other
+            learner-facing page (dashboard, progress, achievements, etc.). */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="mb-8"
+          className="relative overflow-hidden rounded-blob bg-brand-hero text-white p-6 sm:p-8 mb-8 shadow-lift"
         >
-          <h2 className="font-display font-bold text-slate-900 text-2xl mb-1 flex items-center gap-2">
-            <Zap className="w-6 h-6 text-primary-600" strokeWidth={2} />
-            Your Learning Journey
-          </h2>
-          <p className="text-slate-500 text-sm">
-            A look back at everything you've been up to lately.
-          </p>
+          <div aria-hidden className="dots-layer opacity-[0.15]" />
+          <div aria-hidden className="absolute -top-10 -end-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative flex items-center gap-3">
+            <div className="icon-chip bg-white/15 text-white w-12 h-12 shrink-0">
+              <Zap className="w-6 h-6" strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="font-display font-extrabold text-white text-2xl sm:text-3xl mb-1 tracking-tight">
+                Your Learning Journey
+              </h1>
+              <p className="text-white/80 text-sm">
+                A look back at everything you've been up to lately.
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Stats cards — reuses DashboardPage's stat-card convention */}
