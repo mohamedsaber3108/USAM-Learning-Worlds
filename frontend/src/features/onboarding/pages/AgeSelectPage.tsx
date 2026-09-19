@@ -68,7 +68,7 @@ export function AgeSelectPage() {
 
   return (
     <OnboardingLayout step={3} totalSteps={5} stepKey="age">
-      <div className="max-w-xl w-full bg-white rounded-3xl shadow-soft-lg px-8 py-10 sm:px-12 sm:py-12">
+      <div className="max-w-xl w-full bg-white rounded-blob shadow-hero border border-surface-200/60 px-8 py-10 sm:px-12 sm:py-12">
         {/* A quiet icon-chip anchor above the headline — matches the visual
             grammar WelcomePage established (character/glyph before text)
             instead of jumping straight to a bare heading. */}
@@ -81,10 +81,10 @@ export function AgeSelectPage() {
           >
             <Backpack className="w-7 h-7" />
           </motion.div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 leading-tight [text-wrap:balance]">
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink mb-2 leading-tight [text-wrap:balance]">
             {t('onboarding.age.title')}
           </h1>
-          <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
+          <p className="text-slate-600 leading-relaxed max-w-sm mx-auto">
             {t('onboarding.age.subtitle')}
           </p>
         </div>
@@ -113,7 +113,7 @@ export function AgeSelectPage() {
                 className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-start transition-all duration-150 ${
                   isSelected
                     ? 'border-primary-500 ring-2 ring-primary-200 bg-primary-50 shadow-soft-md'
-                    : `border-gray-200 hover:border-gray-300 hover:shadow-soft ${band.tint.split(' ').filter(c => c.startsWith('bg-')).join(' ')}`
+                    : `border-surface-200 hover:border-primary-200 hover:shadow-soft ${band.tint.split(' ').filter(c => c.startsWith('bg-')).join(' ')}`
                 }`}
               >
                 <div
@@ -124,10 +124,10 @@ export function AgeSelectPage() {
                   <Icon className="w-8 h-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-lg font-bold text-gray-900 leading-snug">
+                  <p className="font-display text-lg font-extrabold text-ink leading-snug">
                     {t(`onboarding.age.bands.${band.key}.label`)}
                   </p>
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-sm text-slate-600 leading-relaxed">
                     {t(`onboarding.age.bands.${band.key}.blurb`)}
                   </p>
                 </div>

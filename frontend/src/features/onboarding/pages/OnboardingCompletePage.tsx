@@ -18,7 +18,7 @@ export function OnboardingCompletePage() {
 
   return (
     <OnboardingLayout step={5} totalSteps={5} stepKey="complete">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-soft-lg px-8 py-10 sm:px-10 sm:py-12 text-center">
+      <div className="max-w-md w-full bg-white rounded-blob shadow-hero border border-surface-200/60 px-8 py-10 sm:px-10 sm:py-12 text-center">
         {/* Azouz sees the learner off from onboarding into the dashboard —
             closes the loop opened on WelcomePage instead of ending on an
             anonymous success glyph. The party-popper badge layers ON the
@@ -40,10 +40,10 @@ export function OnboardingCompletePage() {
           </span>
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight [text-wrap:balance]">
+        <h1 className="font-display text-3xl font-extrabold text-ink mb-3 leading-tight [text-wrap:balance]">
           {t('onboarding.complete.title')}
         </h1>
-        <p className="text-gray-600 leading-relaxed max-w-sm mx-auto mb-8">
+        <p className="text-slate-600 leading-relaxed max-w-sm mx-auto mb-8">
           {t('onboarding.complete.subtitle')}
         </p>
 
@@ -57,7 +57,7 @@ export function OnboardingCompletePage() {
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 + i * 0.08 }}
-              className="flex items-center gap-2.5 text-sm text-gray-700"
+              className="flex items-center gap-2.5 text-sm text-slate-700"
             >
               <CheckCircle2 className="w-5 h-5 text-success-500 flex-shrink-0" />
               <span className="leading-snug">{item}</span>

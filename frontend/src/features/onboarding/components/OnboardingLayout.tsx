@@ -44,16 +44,26 @@ export function OnboardingLayout({ children, step, totalSteps, stepKey }: Onboar
   const percent = Math.min(100, Math.max(0, (step / totalSteps) * 100))
 
   return (
-    <div className="min-h-dvh bg-surface-100 flex flex-col items-center px-4 py-10 sm:py-14">
-      {/* Ambient depth — a single soft radial wash in the brand hue, not a
-          flat empty surface. Same primary token as everything else on the
-          page, just very low opacity, so it reads as atmosphere not decor. */}
+    <div className="relative min-h-dvh bg-brand-soft flex flex-col items-center px-4 py-10 sm:py-14 overflow-hidden">
+      {/* Ambient depth — a soft radial wash in the TEAL brand hue (was an
+          off-brand indigo before). Low opacity so it reads as atmosphere. */}
       <div
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
-            'radial-gradient(ellipse 60% 50% at 50% -10%, rgba(79,70,229,0.08), transparent 60%)',
+            'radial-gradient(ellipse 60% 50% at 50% -10%, rgba(43,112,97,0.10), transparent 62%)',
         }}
+        aria-hidden="true"
+      />
+      {/* Subtle dot-grid texture so the canvas feels playful, not clinical. */}
+      <div className="dots-layer -z-10 opacity-40" aria-hidden="true" />
+      {/* Slow drifting brand blobs for gentle life behind the card. */}
+      <div
+        className="hero-glow -z-10 w-72 h-72 -top-10 -start-16 animate-drift"
+        aria-hidden="true"
+      />
+      <div
+        className="hero-glow -z-10 w-80 h-80 bottom-0 -end-20 bg-secondary-300/25 animate-drift [animation-delay:2s]"
         aria-hidden="true"
       />
 
@@ -61,8 +71,8 @@ export function OnboardingLayout({ children, step, totalSteps, stepKey }: Onboar
         {/* Brand mark — small, quiet orientation anchor so onboarding still
             feels like part of USAM rather than a bare wizard. */}
         <div className="mb-8 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-primary-500" aria-hidden="true" />
-          <span className="text-sm font-semibold tracking-wide text-slate-500">
+          <span className="w-2.5 h-2.5 rounded-full bg-primary-500 animate-pulse-soft" aria-hidden="true" />
+          <span className="text-sm font-display font-bold tracking-wide text-primary-700">
             USAM Learning Worlds
           </span>
         </div>

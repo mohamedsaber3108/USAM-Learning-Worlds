@@ -49,12 +49,12 @@ export function CharacterIntroPage() {
 
   return (
     <OnboardingLayout step={4} totalSteps={5} stepKey="character">
-      <div className="max-w-lg w-full bg-white rounded-3xl shadow-soft-lg px-8 py-10 sm:px-12 sm:py-12 overflow-hidden">
+      <div className="max-w-lg w-full bg-white rounded-blob shadow-hero border border-surface-200/60 px-8 py-10 sm:px-12 sm:py-12 overflow-hidden">
         <div className="text-center mb-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 leading-tight [text-wrap:balance]">
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink mb-1 leading-tight [text-wrap:balance]">
             {t('onboarding.character.title')}
           </h1>
-          <p className="text-gray-500 text-sm leading-relaxed">
+          <p className="text-slate-500 text-sm leading-relaxed">
             {t('onboarding.character.subtitle')}
           </p>
         </div>
@@ -99,14 +99,14 @@ export function CharacterIntroPage() {
                 </span>
               </motion.div>
 
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{current.name}</h2>
-              <p className="text-primary-600 font-medium mb-5 text-sm">
+              <h2 className="font-display text-2xl font-extrabold text-ink mb-1">{current.name}</h2>
+              <p className="text-primary-600 font-semibold mb-5 text-sm">
                 {t(`onboarding.character.${current.i18nKey}.role`)}
               </p>
 
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl text-start mb-2">
+              <div className="flex items-start gap-3 p-4 bg-surface-100 rounded-xl text-start mb-2">
                 <MessageCircle className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700 text-sm sm:text-[15px] leading-relaxed">
+                <p className="text-slate-700 text-sm sm:text-[15px] leading-relaxed">
                   “{t(`onboarding.character.${current.i18nKey}.quote`)}”
                 </p>
               </div>
@@ -131,7 +131,7 @@ export function CharacterIntroPage() {
               aria-label={t('onboarding.character.dotAriaLabel', { name: c.name })}
               onClick={() => go(i, i > index ? 1 : -1)}
               className={`h-2 rounded-full transition-all duration-200 ${
-                i === index ? 'w-6 bg-primary-500' : 'w-2 bg-gray-200 hover:bg-gray-300'
+                i === index ? 'w-6 bg-primary-500' : 'w-2 bg-surface-300 hover:bg-primary-200'
               }`}
             />
           ))}

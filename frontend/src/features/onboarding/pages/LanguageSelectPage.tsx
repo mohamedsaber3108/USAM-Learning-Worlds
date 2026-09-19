@@ -29,7 +29,7 @@ export function LanguageSelectPage() {
 
   return (
     <OnboardingLayout step={1} totalSteps={5} stepKey="language">
-      <div className="max-w-lg w-full bg-white rounded-3xl shadow-soft-lg p-8 sm:p-10 text-center">
+      <div className="max-w-lg w-full bg-white rounded-blob shadow-hero border border-surface-200/60 p-8 sm:p-10 text-center">
         <motion.div
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -39,10 +39,10 @@ export function LanguageSelectPage() {
           <Languages className="w-8 h-8 text-primary-600" strokeWidth={2} />
         </motion.div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink mb-2">
           {t('onboarding.language.title')}
         </h1>
-        <p className="text-gray-500 mb-8">{t('onboarding.language.subtitle')}</p>
+        <p className="text-slate-500 mb-8">{t('onboarding.language.subtitle')}</p>
 
         <div className="grid grid-cols-2 gap-4">
           {LANGUAGES.map((lang) => {
@@ -57,7 +57,7 @@ export function LanguageSelectPage() {
                 className={`relative flex flex-col items-center gap-1 p-5 rounded-2xl border-2 transition-colors ${
                   isSelected
                     ? 'border-primary-500 bg-primary-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-surface-200 hover:border-primary-200 hover:bg-surface-50'
                 }`}
               >
                 {isSelected && (
@@ -65,8 +65,8 @@ export function LanguageSelectPage() {
                     <Check className="w-3 h-3" strokeWidth={3} />
                   </span>
                 )}
-                <span className="text-xl font-bold text-gray-900">{lang.nativeLabel}</span>
-                <span className="text-xs text-gray-500">{lang.sublabel}</span>
+                <span className="font-display text-xl font-extrabold text-ink">{lang.nativeLabel}</span>
+                <span className="text-xs text-slate-500">{lang.sublabel}</span>
               </motion.button>
             )
           })}

@@ -11,7 +11,7 @@ export function WelcomePage() {
 
   return (
     <OnboardingLayout step={2} totalSteps={5} stepKey="welcome">
-      <div className="max-w-lg w-full bg-white rounded-3xl shadow-soft-lg px-8 py-10 sm:px-12 sm:py-12 text-center">
+      <div className="max-w-lg w-full bg-white rounded-blob shadow-hero border border-surface-200/60 px-8 py-10 sm:px-12 sm:py-12 text-center">
         {/* Lead with a real character face rather than a generic sparkle
             icon-in-a-circle — Azouz is the guide every learner meets first,
             so this is the moment to put a face on the product, not a
@@ -32,10 +32,10 @@ export function WelcomePage() {
           </span>
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight [text-wrap:balance]">
+        <h1 className="font-display text-3xl font-extrabold text-ink mb-3 leading-tight [text-wrap:balance]">
           {t('onboarding.welcome.title')}
         </h1>
-        <p className="text-gray-600 text-lg leading-relaxed max-w-md mx-auto mb-10">
+        <p className="text-slate-600 text-lg leading-relaxed max-w-md mx-auto mb-10">
           {t('onboarding.welcome.subtitle')}
         </p>
 
