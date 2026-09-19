@@ -60,20 +60,20 @@ export function StoryReaderPage() {
 
         {isError && (
           <div className="card text-center py-8">
-            <p className="text-gray-700">Could not load this story right now.</p>
+            <p className="text-slate-700">Could not load this story right now.</p>
           </div>
         )}
 
         {story && currentPage && (
           <div className="card">
-            <p className="text-xs text-gray-400 mb-4">
+            <p className="text-xs text-slate-400 mb-4">
               Page {currentPage.pageNumber} of {story.pages.length}
               {currentPage.safetyReviewed && (
                 <span className="ms-2 text-emerald-600">✓ Safety reviewed</span>
               )}
             </p>
 
-            <div className="prose prose-slate max-w-none whitespace-pre-line text-gray-800 leading-relaxed mb-6">
+            <div className="prose prose-slate max-w-none whitespace-pre-line text-ink leading-relaxed mb-6">
               {currentPage.text}
             </div>
 
@@ -83,7 +83,7 @@ export function StoryReaderPage() {
                   <button
                     key={idx}
                     onClick={() => choose(choice.nextPageNumber)}
-                    className="w-full text-start px-4 py-3 rounded-lg border-2 border-primary-200 hover:border-primary-500 hover:bg-primary-50 transition-colors font-medium text-gray-800"
+                    className="w-full text-start px-4 py-3 rounded-lg border-2 border-primary-200 hover:border-primary-500 hover:bg-primary-50 transition-colors font-medium text-ink"
                   >
                     {choice.label}
                   </button>
@@ -112,7 +112,7 @@ export function StoryReaderPage() {
                   setHistory((h) => h.slice(0, -1))
                   setCurrentPageNumber(prev)
                 }}
-                className="mt-4 text-sm text-gray-500 hover:text-gray-700"
+                className="mt-4 text-sm text-slate-500 hover:text-slate-700"
               >
                 <span className="inline-block rtl:scale-x-[-1]">←</span> Go back a page
               </button>

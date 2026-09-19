@@ -91,10 +91,10 @@ export function EnglishStrandsPage() {
         {/* CEFR filter */}
         <div className="card mb-6">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-gray-700">CEFR Level:</span>
+            <span className="text-sm font-medium text-slate-700">CEFR Level:</span>
             <button
               className={`px-3 py-1 min-h-11 rounded text-sm font-medium ${
-                cefrFilter === '' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700'
+                cefrFilter === '' ? 'bg-primary-600 text-white' : 'bg-surface-200 text-slate-700'
               }`}
               onClick={() => setCefrFilter('')}
             >
@@ -104,7 +104,7 @@ export function EnglishStrandsPage() {
               <button
                 key={level}
                 className={`px-3 py-1 min-h-11 rounded text-sm font-medium ${
-                  cefrFilter === level ? 'bg-primary-600 text-white' : CEFR_COLORS[level] || 'bg-gray-100 text-gray-700'
+                  cefrFilter === level ? 'bg-primary-600 text-white' : CEFR_COLORS[level] || 'bg-surface-200 text-slate-700'
                 }`}
                 onClick={() => setCefrFilter(level)}
               >
@@ -119,7 +119,7 @@ export function EnglishStrandsPage() {
           <div className="flex flex-wrap gap-2">
             <button
               className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                activeFamily === null ? 'bg-secondary-600 text-white' : 'bg-gray-100 text-gray-700'
+                activeFamily === null ? 'bg-secondary-600 text-white' : 'bg-surface-200 text-slate-700'
               }`}
               onClick={() => setActiveFamily(null)}
             >
@@ -129,7 +129,7 @@ export function EnglishStrandsPage() {
               <button
                 key={fam.value}
                 className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                  activeFamily === fam.value ? 'bg-secondary-600 text-white' : 'bg-gray-100 text-gray-700'
+                  activeFamily === fam.value ? 'bg-secondary-600 text-white' : 'bg-surface-200 text-slate-700'
                 }`}
                 onClick={() => setActiveFamily(fam.value)}
               >
@@ -142,13 +142,13 @@ export function EnglishStrandsPage() {
         {isLoading && (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-gray-600">Loading strands...</p>
+            <p className="mt-4 text-slate-600">Loading strands...</p>
           </div>
         )}
 
         {isError && (
           <div className="card text-center py-8">
-            <p className="text-gray-700">Could not load English strands right now.</p>
+            <p className="text-slate-700">Could not load English strands right now.</p>
           </div>
         )}
 
@@ -159,7 +159,7 @@ export function EnglishStrandsPage() {
               if (items.length === 0) return null
               return (
                 <section key={fam.value}>
-                  <h2 className="text-xl font-heading font-bold text-gray-900 mb-3">
+                  <h2 className="text-xl font-heading font-bold text-ink mb-3">
                     {FAMILY_ICON[fam.value]} {fam.label}
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -168,13 +168,13 @@ export function EnglishStrandsPage() {
                       .map((strand) => (
                         <div key={strand.id} className="card hover:shadow-soft-hover transition-shadow">
                           <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold text-gray-900 line-clamp-2">
+                            <h3 className="font-semibold text-ink line-clamp-2">
                               {strand.name}
                             </h3>
                             {strand.cefrLevel && (
                               <span
                                 className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
-                                  CEFR_COLORS[strand.cefrLevel] || 'bg-gray-100 text-gray-800'
+                                  CEFR_COLORS[strand.cefrLevel] || 'bg-surface-200 text-ink'
                                 }`}
                               >
                                 {strand.cefrLevel}
@@ -182,7 +182,7 @@ export function EnglishStrandsPage() {
                             )}
                           </div>
                           {strand.description && (
-                            <p className="text-sm text-gray-600 line-clamp-3">{strand.description}</p>
+                            <p className="text-sm text-slate-600 line-clamp-3">{strand.description}</p>
                           )}
                         </div>
                       ))}
@@ -193,7 +193,7 @@ export function EnglishStrandsPage() {
 
             {(strands || []).length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">No strands found for this filter</p>
+                <p className="text-slate-600 text-lg">No strands found for this filter</p>
               </div>
             )}
           </div>

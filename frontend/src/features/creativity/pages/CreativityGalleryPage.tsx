@@ -101,7 +101,7 @@ export function CreativityGalleryPage() {
         <div className="flex gap-2 mb-4 flex-wrap">
           <button
             className={`px-3 py-1 min-h-11 rounded-full text-sm border ${
-              ageFilter === '' ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300'
+              ageFilter === '' ? 'bg-purple-600 text-white border-purple-600' : 'border-surface-300'
             }`}
             onClick={() => setAgeFilter('')}
           >
@@ -111,7 +111,7 @@ export function CreativityGalleryPage() {
             <button
               key={band}
               className={`px-3 py-1 min-h-11 rounded-full text-sm border ${
-                ageFilter === band ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300'
+                ageFilter === band ? 'bg-purple-600 text-white border-purple-600' : 'border-surface-300'
               }`}
               onClick={() => setAgeFilter(band)}
             >
@@ -127,15 +127,15 @@ export function CreativityGalleryPage() {
             key={p.id}
             onClick={() => setSelectedPrompt(p)}
             className={`text-start rounded-xl border p-4 hover:shadow-md transition ${
-              selectedPrompt?.id === p.id ? 'border-purple-500 ring-2 ring-purple-200' : 'border-gray-200'
+              selectedPrompt?.id === p.id ? 'border-purple-500 ring-2 ring-purple-200' : 'border-surface-200'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-medium text-purple-600">{ageBandLabel(p.ageBand)}</span>
-              {p.domain && <span className="text-xs text-gray-400">{p.domain.name}</span>}
+              {p.domain && <span className="text-xs text-slate-400">{p.domain.name}</span>}
             </div>
             <h3 className="font-semibold">{p.title}</h3>
-            <p className="text-sm text-gray-600 mt-1 line-clamp-3">{p.prompt}</p>
+            <p className="text-sm text-slate-600 mt-1 line-clamp-3">{p.prompt}</p>
           </button>
         ))}
       </div>
@@ -143,7 +143,7 @@ export function CreativityGalleryPage() {
       {selectedPrompt && (
         <section className="mt-8 border-t pt-6">
           <h2 className="text-lg font-bold">{selectedPrompt.title}</h2>
-          <p className="text-sm text-gray-700 mt-2 mb-4">{selectedPrompt.prompt}</p>
+          <p className="text-sm text-slate-700 mt-2 mb-4">{selectedPrompt.prompt}</p>
 
           <div className="space-y-3">
             <input
@@ -162,11 +162,11 @@ export function CreativityGalleryPage() {
               aria-invalid={draft.trim().length === 0}
             />
             {draft.length === 0 && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-slate-400">
                 Write a little something before you submit — even a sentence is a great start!
               </p>
             )}
-            <label className="flex items-center gap-2 text-sm text-gray-600">
+            <label className="flex items-center gap-2 text-sm text-slate-600">
               <input
                 type="checkbox"
                 checked={makePublic}
@@ -189,23 +189,23 @@ export function CreativityGalleryPage() {
           </div>
 
           <div className="mt-8">
-            <h3 className="text-sm font-semibold text-gray-500 mb-3">Public gallery for this prompt</h3>
+            <h3 className="text-sm font-semibold text-slate-500 mb-3">Public gallery for this prompt</h3>
             {galleryLoading ? (
-              <p className="text-sm text-gray-400">Loading gallery...</p>
+              <p className="text-sm text-slate-400">Loading gallery...</p>
             ) : gallery && gallery.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {gallery.map((sub) => (
-                  <div key={sub.id} className="rounded-lg border border-gray-200 p-3">
+                  <div key={sub.id} className="rounded-lg border border-surface-200 p-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm font-medium">{sub.title || 'Untitled'}</span>
-                      <span className="text-xs text-gray-400">{sub.learner?.displayName ?? 'Learner'}</span>
+                      <span className="text-xs text-slate-400">{sub.learner?.displayName ?? 'Learner'}</span>
                     </div>
-                    <p className="text-sm text-gray-700 line-clamp-4">{sub.content}</p>
+                    <p className="text-sm text-slate-700 line-clamp-4">{sub.content}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-400">No public creations yet — be the first to share!</p>
+              <p className="text-sm text-slate-400">No public creations yet — be the first to share!</p>
             )}
           </div>
         </section>

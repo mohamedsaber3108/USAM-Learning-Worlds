@@ -45,8 +45,8 @@ export function LearningPathDetailPage() {
         ) : path ? (
           <>
             <div className="card mb-6">
-              <h2 className="text-2xl font-heading font-bold text-gray-900 mb-2">{path.name}</h2>
-              <p className="text-gray-600 mb-2">{path.description}</p>
+              <h2 className="text-2xl font-heading font-bold text-ink mb-2">{path.name}</h2>
+              <p className="text-slate-600 mb-2">{path.description}</p>
               <div className="flex gap-2">
                 {path.domain?.name && (
                   <span className="px-2 py-1 rounded text-xs font-medium bg-primary-100 text-primary-800">
@@ -54,7 +54,7 @@ export function LearningPathDetailPage() {
                   </span>
                 )}
                 {path.ageBand && (
-                  <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                  <span className="px-2 py-1 rounded text-xs font-medium bg-surface-200 text-ink">
                     {path.ageBand}
                   </span>
                 )}
@@ -63,12 +63,12 @@ export function LearningPathDetailPage() {
               {progress && (
                 <div className="mt-4">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">Progress</span>
+                    <span className="text-slate-600">Progress</span>
                     <span className="font-semibold text-primary-600">
                       {Math.round(progress.percentComplete || 0)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div className="w-full bg-surface-200 rounded-full h-2.5 overflow-hidden">
                     <div
                       className="bg-primary-500 h-2.5 rounded-full"
                       style={{ width: `${progress.percentComplete || 0}%` }}
@@ -96,17 +96,17 @@ export function LearningPathDetailPage() {
                           ? 'border-primary-400 bg-primary-50'
                           : isCompleted
                           ? 'border-success-200 bg-success-50'
-                          : 'border-gray-200 bg-gray-50'
+                          : 'border-surface-200 bg-surface-100'
                       }`}
                     >
                       <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white font-semibold text-sm shrink-0">
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-ink">
                           {node.entityName || node.entityId}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-slate-500">
                           {node.entityType}
                           {node.isOptional ? ' · optional' : ''}
                         </p>
@@ -117,7 +117,7 @@ export function LearningPathDetailPage() {
                         ) : isCurrent ? (
                           <ArrowRight className="w-5 h-5 text-primary-600" strokeWidth={2} />
                         ) : (
-                          <Square className="w-5 h-5 text-gray-400" strokeWidth={2} />
+                          <Square className="w-5 h-5 text-slate-400" strokeWidth={2} />
                         )}
                       </span>
                     </li>
@@ -127,7 +127,7 @@ export function LearningPathDetailPage() {
             </div>
           </>
         ) : (
-          <p className="text-gray-600">Learning path not found</p>
+          <p className="text-slate-600">Learning path not found</p>
         )}
       </main>
     </div>

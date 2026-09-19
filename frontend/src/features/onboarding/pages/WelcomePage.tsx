@@ -49,7 +49,7 @@ export function WelcomePage() {
             <div className="icon-chip bg-primary-100 text-primary-600 w-10 h-10 flex-shrink-0">
               <Rocket className="w-5 h-5" />
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed">
+            <p className="text-sm text-slate-700 leading-relaxed">
               {t('onboarding.welcome.missionsPoint')}
             </p>
           </motion.div>
@@ -62,13 +62,13 @@ export function WelcomePage() {
             <div className="icon-chip bg-secondary-100 text-secondary-600 w-10 h-10 flex-shrink-0">
               <BookOpen className="w-5 h-5" />
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed">
+            <p className="text-sm text-slate-700 leading-relaxed">
               {t('onboarding.welcome.guidePoint')}
             </p>
           </motion.div>
         </div>
 
-        <p className="text-gray-500 text-sm mb-7">{t('onboarding.welcome.getToKnow')}</p>
+        <p className="text-slate-500 text-sm mb-7">{t('onboarding.welcome.getToKnow')}</p>
 
         <button
           onClick={() => navigate('/onboarding/age')}

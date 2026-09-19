@@ -86,11 +86,11 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg bg-gray-50 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <div className="rounded-lg bg-surface-100 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           {mission.title}
         </p>
-        <p className="text-sm text-gray-600">{mission.prompt}</p>
+        <p className="text-sm text-slate-600">{mission.prompt}</p>
       </div>
 
       {mission.runner === 'blockly' ? (
@@ -107,8 +107,8 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
             {running ? 'Running…' : 'Run'}
           </button>
 
-          <div className="rounded-lg border border-gray-200 overflow-hidden" aria-label="Output">
-            <div className="border-b border-gray-200 px-4 py-2 text-xs text-gray-500 bg-gray-50">
+          <div className="rounded-lg border border-surface-200 overflow-hidden" aria-label="Output">
+            <div className="border-b border-surface-200 px-4 py-2 text-xs text-slate-500 bg-surface-100">
               Output
             </div>
             <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words px-4 py-3 font-mono text-xs leading-6">
@@ -118,15 +118,15 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
                   {output.stderr && <div className="text-red-600">{output.stderr}</div>}
                 </>
               ) : (
-                <div className="text-gray-400">Drag some blocks, then press Run.</div>
+                <div className="text-slate-400">Drag some blocks, then press Run.</div>
               )}
             </pre>
           </div>
         </>
       ) : mission.language === 'python' ? (
         <>
-          <div className="rounded-lg border border-gray-200 overflow-hidden">
-            <div className="border-b border-gray-200 px-4 py-2 text-xs text-gray-500 font-mono bg-gray-50">
+          <div className="rounded-lg border border-surface-200 overflow-hidden">
+            <div className="border-b border-surface-200 px-4 py-2 text-xs text-slate-500 font-mono bg-surface-100">
               main.py
             </div>
             <textarea
@@ -148,8 +148,8 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
             {running ? 'Running…' : 'Run'}
           </button>
 
-          <div className="rounded-lg border border-gray-200 overflow-hidden" aria-label="Output">
-            <div className="border-b border-gray-200 px-4 py-2 text-xs text-gray-500 bg-gray-50">
+          <div className="rounded-lg border border-surface-200 overflow-hidden" aria-label="Output">
+            <div className="border-b border-surface-200 px-4 py-2 text-xs text-slate-500 bg-surface-100">
               Output
             </div>
             <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words px-4 py-3 font-mono text-xs leading-6">
@@ -159,7 +159,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
                   {output.stderr && <div className="text-red-600">{output.stderr}</div>}
                 </>
               ) : (
-                <div className="text-gray-400">Nothing yet. Press Run.</div>
+                <div className="text-slate-400">Nothing yet. Press Run.</div>
               )}
             </pre>
           </div>
@@ -176,7 +176,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {gradeResult && (
-        <div className="rounded-lg border border-gray-200 p-4 space-y-2" aria-label="Grading">
+        <div className="rounded-lg border border-surface-200 p-4 space-y-2" aria-label="Grading">
           <p className="text-sm font-semibold">
             {gradeResult.passed ? 'All checks passed!' : `${Math.round(gradeResult.score * 100)}% passing`}
           </p>

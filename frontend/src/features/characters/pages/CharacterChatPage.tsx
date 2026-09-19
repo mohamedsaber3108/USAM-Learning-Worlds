@@ -113,7 +113,7 @@ export function CharacterChatPage() {
         {/* Chat window */}
         <div className="card flex-1 mb-4 min-h-[400px] max-h-[60vh] overflow-y-auto flex flex-col gap-3 p-4">
           {messages.length === 0 && (
-            <p className="text-gray-500 text-sm text-center my-auto">
+            <p className="text-slate-500 text-sm text-center my-auto">
               {character
                 ? `Say hi to ${character.name} to start chatting.`
                 : 'Loading character...'}
@@ -127,7 +127,7 @@ export function CharacterChatPage() {
                   ? 'self-end bg-primary-600 text-white'
                   : msg.isError
                   ? 'self-start bg-red-50 text-red-800 border border-red-200'
-                  : 'self-start bg-gray-100 text-gray-900'
+                  : 'self-start bg-surface-200 text-ink'
               }`}
             >
               {msg.role === 'character' && character && (
@@ -137,7 +137,7 @@ export function CharacterChatPage() {
             </div>
           ))}
           {mutation.isPending && (
-            <div className="self-start bg-gray-100 text-gray-500 px-4 py-2 rounded-2xl text-sm">
+            <div className="self-start bg-surface-200 text-slate-500 px-4 py-2 rounded-2xl text-sm">
               {character?.name ?? 'Character'} is thinking...
             </div>
           )}

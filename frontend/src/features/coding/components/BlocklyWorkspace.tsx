@@ -149,7 +149,7 @@ export const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorksp
       <div
         ref={containerRef}
         aria-label="Visual block coding workspace"
-        className="h-[420px] w-full rounded-lg border border-gray-200"
+        className="h-[420px] w-full rounded-lg border border-surface-200"
       />
     )
   },

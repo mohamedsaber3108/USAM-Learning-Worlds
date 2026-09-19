@@ -67,15 +67,15 @@ export function StoriesListPage() {
                 className="card hover:shadow-soft-hover transition-shadow block"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h2 className="text-lg font-heading font-bold text-gray-900">
+                  <h2 className="text-lg font-heading font-bold text-ink">
                     {story.domain?.icon || '📖'} {story.title}
                   </h2>
                   <span className="ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold bg-primary-100 text-primary-800">
                     {AGE_LABEL[story.ageBand] || story.ageBand}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 line-clamp-3 mb-2">{story.summary}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-sm text-slate-600 line-clamp-3 mb-2">{story.summary}</p>
+                <p className="text-xs text-slate-400">
                   {story.domain?.name} · {story._count?.pages ?? 0} pages
                 </p>
               </Link>

@@ -109,7 +109,7 @@ export function WorldPathMap({ domains, selectedDomainId, onSelectDomain }: Worl
                     ? isSelected
                       ? 'bg-primary-600 border-primary-700 text-white'
                       : 'bg-white border-primary-400 text-primary-700 hover:border-primary-600'
-                    : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
+                    : 'bg-surface-200 border-surface-300 text-slate-400 cursor-not-allowed'
                 }`}
                 aria-label={
                   domain.isUnlocked
@@ -129,7 +129,7 @@ export function WorldPathMap({ domains, selectedDomainId, onSelectDomain }: Worl
                 {domain.isUnlocked ? (
                   <span
                     className={`text-[10px] font-medium ${
-                      isSelected ? 'text-white/90' : 'text-gray-500'
+                      isSelected ? 'text-white/90' : 'text-slate-500'
                     }`}
                   >
                     {domain.masteredCount}/{domain.conceptCount} ({progressPct}%)
@@ -149,7 +149,7 @@ export function WorldPathMap({ domains, selectedDomainId, onSelectDomain }: Worl
                   className={`world-path-connector shrink-0 rounded-full ${
                     domain.isUnlocked && domains[index + 1]?.isUnlocked
                       ? 'bg-primary-400'
-                      : 'bg-gray-300'
+                      : 'bg-surface-300'
                   } sm:w-10 sm:h-1.5 w-1.5 h-10 my-1 sm:my-0 sm:mx-1`}
                   aria-hidden="true"
                 />

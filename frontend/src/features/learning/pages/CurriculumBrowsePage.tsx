@@ -300,7 +300,7 @@ export function CurriculumBrowsePage() {
         {/* Domain -> Competency -> Concept hierarchy */}
         {!selectedDomainId ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">Pick a domain above to browse its concepts</p>
+            <p className="text-slate-600 text-lg">Pick a domain above to browse its concepts</p>
           </div>
         ) : conceptsIsError ? (
           <ErrorState
@@ -315,7 +315,7 @@ export function CurriculumBrowsePage() {
           <div className="space-y-6">
             {competencyGroups.map(group => (
               <div key={group.competencyId} className="card">
-                <h3 className="text-lg font-heading font-semibold mb-4 text-gray-900 flex items-center gap-2">
+                <h3 className="text-lg font-heading font-semibold mb-4 text-ink flex items-center gap-2">
                   <Puzzle className="w-5 h-5" strokeWidth={2} />
                   {group.competencyName}
                 </h3>
@@ -336,7 +336,7 @@ export function CurriculumBrowsePage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">No concepts found for this domain</p>
+            <p className="text-slate-600 text-lg">No concepts found for this domain</p>
           </div>
         )}
       </main>
@@ -361,28 +361,28 @@ function ConceptCard({ concept }: { concept: Concept; assumedUnlocked: boolean }
       }`}
     >
       <div className="flex items-start justify-between mb-2">
-        <h4 className="font-semibold text-gray-900 line-clamp-2">{concept.name}</h4>
+        <h4 className="font-semibold text-ink line-clamp-2">{concept.name}</h4>
         <span className="text-xl ms-2">
           {isLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400" strokeWidth={2} />
+            <Loader2 className="w-5 h-5 animate-spin text-slate-400" strokeWidth={2} />
           ) : unlocked ? (
             <Unlock className="w-5 h-5 text-success-600" strokeWidth={2} />
           ) : (
-            <Lock className="w-5 h-5 text-gray-400" strokeWidth={2} />
+            <Lock className="w-5 h-5 text-slate-400" strokeWidth={2} />
           )}
         </span>
       </div>
       {concept.description && (
-        <p className="text-sm text-gray-600 line-clamp-2 mb-3">{concept.description}</p>
+        <p className="text-sm text-slate-600 line-clamp-2 mb-3">{concept.description}</p>
       )}
       {progress && progress.required > 0 && (
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-slate-500">
           Prerequisites: {progress.completed}/{progress.required} complete
         </div>
       )}
       <span
         className={`inline-block mt-2 px-2 py-1 rounded text-xs font-medium ${
-          unlocked ? 'bg-success-100 text-success-800' : 'bg-gray-100 text-gray-600'
+          unlocked ? 'bg-success-100 text-success-800' : 'bg-surface-200 text-slate-600'
         }`}
       >
         {unlocked ? 'Unlocked' : 'Locked'}

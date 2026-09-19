@@ -32,7 +32,7 @@ export function CrossCurricularConceptDetailPage() {
   if (!category || !meta) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Unknown cross-curricular category.</p>
+        <p className="text-slate-600">Unknown cross-curricular category.</p>
       </div>
     )
   }
@@ -55,17 +55,17 @@ export function CrossCurricularConceptDetailPage() {
         )}
         {isError && (
           <div className="card text-center py-8">
-            <p className="text-gray-700">Could not load this concept.</p>
+            <p className="text-slate-700">Could not load this concept.</p>
           </div>
         )}
         {concept && (
           <div className="card">
             <div className="flex items-start justify-between mb-4">
-              <h1 className="text-2xl font-heading font-bold text-gray-900">{concept.name}</h1>
+              <h1 className="text-2xl font-heading font-bold text-ink">{concept.name}</h1>
               {concept.ageAppropriate ? (
                 <span
                   className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
-                    AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
+                    AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-surface-200 text-ink'
                   }`}
                 >
                   {concept.ageAppropriate}
@@ -76,9 +76,9 @@ export function CrossCurricularConceptDetailPage() {
                 </span>
               ) : null}
             </div>
-            <p className="text-sm text-gray-500 mb-4">{concept.category}</p>
+            <p className="text-sm text-slate-500 mb-4">{concept.category}</p>
             {concept.description && (
-              <p className="text-gray-700 leading-relaxed">{concept.description}</p>
+              <p className="text-slate-700 leading-relaxed">{concept.description}</p>
             )}
           </div>
         )}

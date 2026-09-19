@@ -126,7 +126,7 @@ export function CrossCurricularPage() {
   if (!category || !meta) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Unknown cross-curricular category.</p>
+        <p className="text-slate-600">Unknown cross-curricular category.</p>
       </div>
     )
   }
@@ -154,14 +154,14 @@ export function CrossCurricularPage() {
         {showAgeBand && (
         <div className="card mb-6">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-gray-700">Age Band:</span>
+            <span className="text-sm font-medium text-slate-700">Age Band:</span>
             {AGE_BANDS.map((band) => (
               <button
                 key={band.value}
                 className={`px-3 py-1 min-h-11 rounded text-sm font-medium ${
                   ageBandFilter === band.value
                     ? 'bg-primary-600 text-white'
-                    : AGE_BAND_COLORS[band.value] || 'bg-gray-100 text-gray-700'
+                    : AGE_BAND_COLORS[band.value] || 'bg-surface-200 text-slate-700'
                 }`}
                 onClick={() => setAgeBandFilter(band.value)}
               >
@@ -178,7 +178,7 @@ export function CrossCurricularPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                  activeCategory === null ? 'bg-secondary-600 text-white' : 'bg-gray-100 text-gray-700'
+                  activeCategory === null ? 'bg-secondary-600 text-white' : 'bg-surface-200 text-slate-700'
                 }`}
                 onClick={() => setActiveCategory(null)}
               >
@@ -188,7 +188,7 @@ export function CrossCurricularPage() {
                 <button
                   key={cat}
                   className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                    activeCategory === cat ? 'bg-secondary-600 text-white' : 'bg-gray-100 text-gray-700'
+                    activeCategory === cat ? 'bg-secondary-600 text-white' : 'bg-surface-200 text-slate-700'
                   }`}
                   onClick={() => setActiveCategory(cat)}
                 >
@@ -202,13 +202,13 @@ export function CrossCurricularPage() {
         {isLoading && (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-gray-600">Loading concepts...</p>
+            <p className="mt-4 text-slate-600">Loading concepts...</p>
           </div>
         )}
 
         {isError && (
           <div className="card text-center py-8">
-            <p className="text-gray-700">Could not load {meta.title} concepts right now.</p>
+            <p className="text-slate-700">Could not load {meta.title} concepts right now.</p>
           </div>
         )}
 
@@ -219,7 +219,7 @@ export function CrossCurricularPage() {
               if (items.length === 0) return null
               return (
                 <section key={cat}>
-                  <h2 className="text-xl font-heading font-bold text-gray-900 mb-3">
+                  <h2 className="text-xl font-heading font-bold text-ink mb-3">
                     {humanizeCategory(cat)}
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -232,13 +232,13 @@ export function CrossCurricularPage() {
                           className="card hover:shadow-soft-hover transition-shadow block"
                         >
                           <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold text-gray-900 line-clamp-2">
+                            <h3 className="font-semibold text-ink line-clamp-2">
                               {concept.name}
                             </h3>
                             {concept.ageAppropriate ? (
                               <span
                                 className={`ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold ${
-                                  AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-gray-100 text-gray-800'
+                                  AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-surface-200 text-ink'
                                 }`}
                               >
                                 {concept.ageAppropriate.replace('AGE_', '').replace('_', '-')}
@@ -250,7 +250,7 @@ export function CrossCurricularPage() {
                             ) : null}
                           </div>
                           {concept.description && (
-                            <p className="text-sm text-gray-600 line-clamp-3">{concept.description}</p>
+                            <p className="text-sm text-slate-600 line-clamp-3">{concept.description}</p>
                           )}
                         </Link>
                       ))}
@@ -261,7 +261,7 @@ export function CrossCurricularPage() {
 
             {(concepts || []).length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">No concepts found for this filter</p>
+                <p className="text-slate-600 text-lg">No concepts found for this filter</p>
               </div>
             )}
           </div>

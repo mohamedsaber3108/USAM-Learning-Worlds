@@ -110,7 +110,7 @@ export function EnglishCoachPage() {
               key={m.id}
               onClick={() => setMode(m.id)}
               className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                mode === m.id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                mode === m.id ? 'bg-primary-600 text-white' : 'bg-surface-200 text-slate-700 hover:bg-surface-200'
               }`}
             >
               {m.icon} {m.label}
@@ -121,7 +121,7 @@ export function EnglishCoachPage() {
         {/* Chat window */}
         <div className="card flex-1 mb-4 min-h-[400px] max-h-[60vh] overflow-y-auto flex flex-col gap-3 p-4">
           {messages.length === 0 && (
-            <p className="text-gray-500 text-sm text-center my-auto">
+            <p className="text-slate-500 text-sm text-center my-auto">
               Pick a mode above and send a message to start practicing English with your AI coach.
             </p>
           )}
@@ -133,14 +133,14 @@ export function EnglishCoachPage() {
                   ? 'self-end bg-primary-600 text-white'
                   : msg.isError
                   ? 'self-start bg-red-50 text-red-800 border border-red-200'
-                  : 'self-start bg-gray-100 text-gray-900'
+                  : 'self-start bg-surface-200 text-ink'
               }`}
             >
               {msg.text}
             </div>
           ))}
           {mutation.isPending && (
-            <div className="self-start bg-gray-100 text-gray-500 px-4 py-2 rounded-2xl text-sm">
+            <div className="self-start bg-surface-200 text-slate-500 px-4 py-2 rounded-2xl text-sm">
               Coach is thinking...
             </div>
           )}
