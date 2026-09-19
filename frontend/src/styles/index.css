@@ -126,10 +126,11 @@
       text-slate-700 hover:bg-surface-100 active:translate-y-0;
   }
 
-  /* Cards — restrained radius, layered soft shadow, subtle lift on hover */
+  /* Cards — depth comes from a crisp hairline border + warm canvas contrast
+     (design-reference principle), with only a whisper of shadow. */
   .card {
-    @apply bg-white rounded-card shadow-soft p-6 border border-surface-200/70
-      transition-all duration-200 hover:shadow-soft-md;
+    @apply bg-white rounded-card shadow-soft p-6 border border-surface-200
+      transition-all duration-200 hover:border-surface-300 hover:shadow-soft-md;
   }
 
   /* Stat card — ONE tint color used tastefully (bg tint + colored icon chip), not a full gradient block */

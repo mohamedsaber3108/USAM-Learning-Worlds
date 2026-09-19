@@ -93,14 +93,16 @@ export default {
           800: '#991b1b',
           900: '#7f1d1d',
         },
-        // Neutral surface tones — the off-white / light-gray family from the
-        // brand palette. Cool-neutral (a hair toward the teal) so white cards
-        // sit on a calm, slightly cool canvas rather than a pure clinical gray.
+        // Neutral surface tones — WARM off-white family (design-reference
+        // synthesis: MindMarket cream #f5f1e4, Wispr #ffffeb, Subframe #fafafa
+        // all reject clinical cool gray for a paper-warm canvas that makes a
+        // kids' product feel inviting, not clinical). Nudged warm (a hair
+        // toward cream/amber) so white cards sit on a soft sunlit page.
         surface: {
-          50: '#f7f9f8',
-          100: '#eef1f0',
-          200: '#e0e5e3',
-          300: '#cdd6d3',
+          50: '#fbfaf7',
+          100: '#f5f2ec',
+          200: '#e9e4da',
+          300: '#d8d2c5',
         },
         // INK — true near-black, mirrors the black in the logo/wordmark. Used
         // for the highest-contrast headings and the brand mark itself.
@@ -202,12 +204,15 @@ export default {
         'dot-grid': '22px 22px',
       },
       boxShadow: {
-        // Soft, multi-layer shadows — teal-tinted rather than neutral black so
-        // depth harmonizes with the brand instead of muddying it.
-        soft: '0 1px 2px rgba(10,41,38,0.05), 0 4px 12px rgba(10,41,38,0.07)',
-        'soft-md': '0 2px 8px rgba(10,41,38,0.07), 0 8px 24px rgba(10,41,38,0.08)',
-        'soft-lg': '0 4px 12px rgba(10,41,38,0.09), 0 16px 40px rgba(10,41,38,0.10)',
-        'soft-hover': '0 4px 16px rgba(10,41,38,0.10), 0 12px 32px rgba(10,41,38,0.12)',
+        // FLATTER, lighter shadows (design-reference synthesis: Apple, Linear,
+        // MindMarket, Wispr, Subframe, Increase, Caldera, Slush ALL build depth
+        // from surface-color contrast + hairline borders, NOT heavy drop
+        // shadows). Everyday cards now use a whisper-light warm shadow so they
+        // read crisp and flat; real elevation is reserved for hero/lift only.
+        soft: '0 1px 2px rgba(30,20,5,0.04), 0 1px 3px rgba(30,20,5,0.03)',
+        'soft-md': '0 1px 3px rgba(30,20,5,0.05), 0 4px 10px rgba(30,20,5,0.05)',
+        'soft-lg': '0 2px 6px rgba(30,20,5,0.06), 0 10px 24px rgba(30,20,5,0.07)',
+        'soft-hover': '0 2px 8px rgba(30,20,5,0.07), 0 8px 20px rgba(30,20,5,0.08)',
         // Tinted glows for correct/incorrect resolution states — same hue as
         // the success/error tokens above, not a generic black shadow. Used
         // sparingly on the single activity card that just resolved.
