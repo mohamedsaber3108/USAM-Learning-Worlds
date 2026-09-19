@@ -60,7 +60,7 @@
   }
 
   h1, h2, h3 {
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Nunito', 'Manrope', sans-serif;
     letter-spacing: -0.01em;
   }
 
@@ -82,30 +82,48 @@
 }
 
 @layer components {
-  /* Buttons — flat fill, soft shadow on hover only, no chunky 3D offset */
+  /* ---------------------------------------------------------------------
+   * TACTILE 3D BUTTONS (design-language synthesis: Duolingo/Aaply/Playful).
+   * Solid fill + a darker SOLID bottom border that reads as physical depth,
+   * NO drop shadow. Pressing the button (active) sinks it by shrinking the
+   * bottom border and nudging it down, so it feels like a real key press.
+   * The whole app inherits this because every page uses .btn-*.
+   *
+   * Radius: fully rounded pill for a friendly, chunky kid feel.
+   * ------------------------------------------------------------------- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-control
-      font-semibold text-sm transition-all duration-150
-      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white;
+    @apply relative inline-flex items-center justify-center gap-2 px-6 py-2.5
+      rounded-pill font-bold text-sm select-none
+      transition-[transform,background-color,border-color] duration-100
+      border-b-[4px] active:translate-y-[2px] active:border-b-[2px]
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+      focus-visible:ring-offset-white disabled:opacity-60
+      disabled:pointer-events-none;
   }
 
+  /* Primary — teal brand fill, darker teal "shadow" edge. */
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-400
-      shadow-soft hover:shadow-soft-hover;
+    @apply bg-primary-500 text-white border-primary-700
+      hover:bg-primary-400 focus-visible:ring-primary-400;
   }
 
+  /* Secondary — white surface with a solid gray depth edge. */
   .btn-secondary {
-    @apply bg-white text-primary-700 border border-surface-200 hover:bg-surface-100
-      focus:ring-primary-300 shadow-soft;
+    @apply bg-white text-primary-700 border-surface-300
+      hover:bg-surface-50 focus-visible:ring-primary-300;
   }
 
+  /* Accent — warm amber CTA, darker amber edge. Used sparingly. */
   .btn-accent {
-    @apply bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-300
-      shadow-soft hover:shadow-soft-hover;
+    @apply bg-accent-500 text-white border-accent-700
+      hover:bg-accent-400 focus-visible:ring-accent-300;
   }
 
+  /* Outline — quiet, no depth edge (keeps the same footprint via a
+     transparent bottom border so it aligns with sibling buttons). */
   .btn-outline {
-    @apply bg-transparent border border-surface-200 text-slate-700 hover:bg-surface-100;
+    @apply bg-transparent border-b-transparent border border-surface-300
+      text-slate-700 hover:bg-surface-100 active:translate-y-0;
   }
 
   /* Cards — restrained radius, layered soft shadow, subtle lift on hover */
@@ -290,18 +308,21 @@
    * .card/.stat-card etc are untouched so all current pages keep working.
    * ===================================================================== */
 
-  /* Large pill CTA — the flagship "start" button on marketing surfaces. */
+  /* Large pill CTA — the flagship "start" button on marketing surfaces.
+     Tactile 3D: solid teal fill + darker teal depth edge, sinks on press. */
   .btn-hero {
     @apply inline-flex items-center justify-center gap-2 rounded-pill px-8 py-4
-      text-base font-bold text-white bg-brand-hero shadow-hero
-      transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0
+      text-base font-extrabold text-white bg-primary-500 border-b-[5px] border-primary-700
+      transition-[transform,background-color] duration-100
+      hover:bg-primary-400 active:translate-y-[3px] active:border-b-[2px]
       focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-300/60;
   }
 
   .btn-hero-accent {
     @apply inline-flex items-center justify-center gap-2 rounded-pill px-8 py-4
-      text-base font-bold text-white bg-sunrise shadow-hero
-      transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0
+      text-base font-extrabold text-white bg-accent-500 border-b-[5px] border-accent-700
+      transition-[transform,background-color] duration-100
+      hover:bg-accent-400 active:translate-y-[3px] active:border-b-[2px]
       focus:outline-none focus-visible:ring-4 focus-visible:ring-accent-300/60;
   }
 
@@ -328,7 +349,7 @@
 
   /* Decorative dotted backdrop layer (place absolutely, aria-hidden). */
   .dots-layer {
-    @apply pointer-events-none absolute inset-0 bg-dot-grid bg-dot-grid opacity-60;
+    @apply pointer-events-none absolute inset-0 bg-dot-grid opacity-60;
   }
 
   /* Section shell — consistent max width + horizontal padding. */

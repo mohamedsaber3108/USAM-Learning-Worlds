@@ -176,20 +176,23 @@ export default {
         },
       },
       fontFamily: {
-        // Display: used SPARINGLY for big numbers/headlines only.
-        display: ['"Manrope"', 'sans-serif'],
-        // `heading` alias — several older pages authored headings with
-        // `font-heading` before the display token existed. Alias it to the
-        // same Manrope display stack so those 14 pages get proper heading
-        // weight instead of silently falling back to the body font. New
-        // code should use `font-display`.
-        heading: ['"Manrope"', 'sans-serif'],
+        // DISPLAY / HEADINGS — Nunito, a warm rounded sans that reads
+        // friendly-but-credible for an 8-14 kids' product (design-reference
+        // synthesis: Duolingo/Aaply/Playful all use rounded geometric
+        // display faces). Weights 600-900. Falls back to Manrope/system.
+        display: ['"Nunito"', '"Manrope"', 'sans-serif'],
+        // `heading` alias for legacy pages authored with font-heading.
+        heading: ['"Nunito"', '"Manrope"', 'sans-serif'],
         // Body/UI: clean, readable, not babyish at 14 y/o.
         sans: ['"Inter"', 'sans-serif'],
       },
       borderRadius: {
-        card: '14px',
-        control: '12px',
+        // Friendlier, rounder card corners (design-language synthesis:
+        // Duolingo/Playful/Aaply all use generous card radii for a warm,
+        // approachable kid-appropriate feel). Bumped from 14px so every
+        // .card / .stat-card surface across the app reads softer at once.
+        card: '20px',
+        control: '14px',
         // Softer, friendlier radii for hero/marketing surfaces and big
         // playful cards (kid-appropriate roundness without going bubbly).
         blob: '28px',
