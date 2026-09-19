@@ -121,3 +121,53 @@ inherits it automatically — the identity transforms all screens at once.
 | SVZ | designs | Type-led hierarchy, single accent punctuation | Dark void, red, ornamental serif |
 | Agence Foudre | designs | Whitespace, one accent | Magenta, 230px Beni display |
 | Dylanbrouwer | designs | Weighted motion easings, single accent dot | Dark hero, ABC Gravity monument |
+
+
+---
+
+## Reconstruction decision (mandate §28)
+
+After a full audit (Phase 2–3) of both the frontend and backend of the real
+target worktree `M:\USAM-main`:
+
+**Decision: C — targeted structural rebuild of the PRESENTATION layer**, while
+preserving the working architecture, routing, backend contracts, i18n, RTL,
+age-adaptation, and character system. Explicitly **not** D/E (rebuild-from-zero).
+
+### Why not from zero (D/E)
+The audit proved the frontend is not a thin template. It already has:
+- 60+ pages covering **every** backend capability (auth, onboarding, dashboard,
+  missions browse/detail/player/complete, learning concepts + prerequisite
+  graph + paths + flashcards + visual-language, projects + portfolio +
+  milestones + collaborators, community + moderation, gamification
+  progression/streak/rank/achievements/leaderboard/cosmetics/streak-freeze,
+  daily goals, mastery, characters gallery + chat, stories reader, creativity,
+  English strands + coach, cross-curricular ×7, thinking-skills ×3, voice,
+  analytics/learning-events, parents dashboard + time-limits, 16 admin pages).
+- A real react-query data layer wired to the **verified** API surface, JWT +
+  dual-token refresh interceptor, a design-token system, AppShell + floating
+  pill nav, i18n with real Arabic RTL mirroring, `useAgeAdaptation` driving
+  genuine per-age render branching, and a bespoke `CharacterFace` SVG system
+  (15 characters, evolution stages).
+
+The mandate's own hard rules (zero feature loss, no fake flows, must reflect the
+real backend, keep the branch deployable) would be **violated** by retyping a
+correct 60-page backend-connected app from scratch — it would guarantee
+temporary feature loss and broken flows. So the highest-quality path is to keep
+the correct skeleton and rebuild the visual/layout presentation that is the
+actual source of the "ugly arrangement" complaint.
+
+### Contract verification (no fake flows)
+Confirmed against the real backend (`M:\USAM-main\backend`): controllers use a
+single `api` global prefix; `learning` and `characters` controllers are
+`@Controller('learning')` / `@Controller('characters')`, so `/api/learning/*`
+and `/api/characters/*` **match** the frontend's calls. Auth response shape,
+enums (AgeBand, MasteryState, MissionRunStatus, CosmeticCategory, etc.), and the
+localStorage token/user/language contract are all aligned. No contract bug — the
+work is presentation, not re-plumbing.
+
+### Two-worktree caution (root cause of prior confusion)
+There are two worktrees. Sandboxed `grep_search`/`file_search` and some relative
+`read_file` paths resolve to `M:\USAM Learning Worlds` — an **older, thinner**
+copy (plain gray dashboard, ~15 routes, no AppShell/i18n). The real, deployed,
+rich app is `M:\USAM-main`. Always verify against explicit `M:\USAM-main` paths.
