@@ -54,54 +54,60 @@ export function LandingPage() {
     setPreferredCharacter(name)
   }
 
+  const CHAR_TINTS = ['#f59e0b', '#3b90f6', '#8b5cf6', '#10b981']
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      {/* ============================= HERO ============================= */}
-      <div className="relative bg-brand-hero text-white overflow-hidden">
-        {/* Decorative drifting blobs + dot grid */}
-        <div aria-hidden className="absolute -top-24 -start-24 w-96 h-96 rounded-full bg-sky-400/20 blur-3xl animate-drift" />
-        <div aria-hidden className="absolute top-32 -end-24 w-[26rem] h-[26rem] rounded-full bg-secondary-300/20 blur-3xl animate-drift" style={{ animationDelay: '3s' }} />
-        <div aria-hidden className="dots-layer opacity-[0.15]" />
+      {/* ============================= HERO =============================
+          BRIGHT, warm, energetic canvas (not a dark teal wall). Light
+          gradient sky + floating colorful blobs + dot grid, dark ink text
+          for high contrast, and a big playful character stage. */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-white to-white">
+        {/* Colorful ambient blobs — one per world hue, softly drifting. */}
+        <div aria-hidden className="absolute -top-28 -start-24 w-[30rem] h-[30rem] rounded-full bg-sky-300/40 blur-3xl animate-drift" />
+        <div aria-hidden className="absolute -top-16 end-0 w-[24rem] h-[24rem] rounded-full bg-secondary-300/40 blur-3xl animate-drift" style={{ animationDelay: '2s' }} />
+        <div aria-hidden className="absolute top-40 start-1/3 w-[22rem] h-[22rem] rounded-full bg-grape-300/30 blur-3xl animate-drift" style={{ animationDelay: '4s' }} />
+        <div aria-hidden className="dots-layer opacity-[0.5]" />
 
         {/* Nav */}
         <header className="relative section-x flex items-center justify-between h-20">
           <div className="flex items-center gap-2.5">
-            <img src={usamLogo} alt="" aria-hidden className="h-9 w-auto brand-logo-invert" />
-            <span className="font-display font-bold text-lg">{t('common.appName')}</span>
+            <img src={usamLogo} alt="" aria-hidden className="h-9 w-auto" />
+            <span className="font-display font-extrabold text-lg text-ink">{t('common.appName')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="chip-glass hover:bg-white/25 transition-colors">
+            <Link to="/login" className="btn btn-secondary">
               {t('landing.logIn')}
             </Link>
           </div>
         </header>
 
         {/* Hero body */}
-        <section className="relative section-x pt-8 pb-20 lg:pt-14 lg:pb-28 grid lg:grid-cols-2 gap-10 items-center">
+        <section className="relative section-x pt-8 pb-24 lg:pt-14 lg:pb-32 grid lg:grid-cols-2 gap-10 items-center">
           <div className="text-center lg:text-start">
             <motion.span
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 rounded-pill bg-white/15 border border-white/20 px-4 py-1.5 text-sm font-semibold backdrop-blur-sm"
+              className="inline-flex items-center gap-2 rounded-pill bg-white border border-secondary-200 text-secondary-700 px-4 py-1.5 text-sm font-bold shadow-soft"
             >
-              <Star className="w-4 h-4 fill-secondary-300 text-secondary-300" />
+              <Star className="w-4 h-4 fill-secondary-400 text-secondary-400" />
               For curious minds, ages 8–14
             </motion.span>
 
             <motion.h1
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-              className="mt-5 font-display font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl leading-[1.05]"
+              className="mt-5 font-display font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-ink"
             >
               Learning worlds kids{' '}
-              <span className="relative whitespace-nowrap">
+              <span className="relative whitespace-nowrap text-primary-600">
                 <span className="relative z-10">actually</span>
-                <span aria-hidden className="absolute inset-x-0 bottom-1 h-3 bg-secondary-400/60 -rotate-1 rounded" />
+                <span aria-hidden className="absolute inset-x-0 bottom-1 h-3 bg-secondary-300 -rotate-1 rounded" />
               </span>{' '}
               want to explore
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
-              className="mt-5 text-lg text-white/80 max-w-xl mx-auto lg:mx-0"
+              className="mt-5 text-lg text-slate-600 max-w-xl mx-auto lg:mx-0"
             >
               {t('landing.heroSubtitle')}
             </motion.p>
@@ -114,45 +120,48 @@ export function LandingPage() {
                 {t('landing.startLearning')}
                 <ArrowRight className="w-5 h-5 rtl:scale-x-[-1]" />
               </Link>
-              <Link to="/login" className="chip-glass px-6 py-4 text-base hover:bg-white/25 transition-colors w-full sm:w-auto justify-center">
+              <Link to="/login" className="btn btn-secondary px-6 py-4 text-base w-full sm:w-auto justify-center">
                 {t('landing.logIn')}
               </Link>
             </motion.div>
           </div>
 
-          {/* Big animated mascots cluster */}
+          {/* Big animated mascot stage — a bright card with each guide on a
+              colorful tinted disc so the characters POP instead of floating
+              on a dark wall. */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 120 }}
-            className="relative mx-auto"
+            className="relative mx-auto w-full max-w-md"
           >
-            <div className="relative w-[20rem] h-[20rem] sm:w-[24rem] sm:h-[24rem]">
-              <div aria-hidden className="absolute inset-0 rounded-blob bg-white/10 backdrop-blur-sm border border-white/15" />
-              {LANDING_CHARACTERS.map((c, i) => {
-                const positions = [
-                  'top-2 start-10', 'top-8 end-4', 'bottom-10 start-4', 'bottom-2 end-12',
-                ]
-                const pos = positions[i] ?? 'top-2 start-10'
-                return (
-                  <div key={c.name} className={`absolute ${pos} animate-bob`} style={{ animationDelay: `${i * 0.6}s` }}>
-                    <div className="rounded-full bg-white/90 shadow-hero p-1.5">
-                      <CharacterFace characterId={c.name} size={i === 0 ? 132 : 104} />
+            <div className="relative rounded-blob bg-white shadow-hero border border-surface-200/70 p-6 sm:p-8">
+              <div aria-hidden className="dots-layer opacity-40 rounded-blob overflow-hidden" />
+              <div className="relative grid grid-cols-2 gap-4 sm:gap-6">
+                {LANDING_CHARACTERS.map((c, i) => (
+                  <motion.div
+                    key={c.name}
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + i * 0.1, type: 'spring', stiffness: 180 }}
+                    className="flex flex-col items-center"
+                  >
+                    <div
+                      className="rounded-full p-3 shadow-lift animate-bob"
+                      style={{ backgroundColor: `${CHAR_TINTS[i] ?? '#f59e0b'}22`, animationDelay: `${i * 0.5}s` }}
+                    >
+                      <CharacterFace characterId={c.name} size={96} />
                     </div>
-                    <p className="text-center mt-1 text-xs font-bold text-white/90">{c.name}</p>
-                  </div>
-                )
-              })}
+                    <p className="mt-2 font-display font-extrabold text-sm text-ink">{c.name}</p>
+                    <p className="text-[11px] font-semibold text-slate-500">{c.role}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         </section>
-
-        {/* Wave divider */}
-        <svg aria-hidden className="relative block w-full h-12 sm:h-16 text-white" viewBox="0 0 1440 80" preserveAspectRatio="none">
-          <path fill="currentColor" d="M0 40c240 40 480 40 720 20s480-40 720-20v40H0z" />
-        </svg>
       </div>
 
       {/* ==================== INTERACTIVE PICKER ==================== */}
-      <section className="section-x -mt-6 relative z-10 pb-16">
+      <section className="section-x relative z-10 pb-16">
         <div className="card-playful max-w-3xl mx-auto">
           <div className="text-center">
             <p className="eyebrow justify-center">{t('landing.tryTitle')}</p>
@@ -247,8 +256,8 @@ export function LandingPage() {
       </section>
 
       {/* ==================== FINAL CTA ==================== */}
-      <section className="relative bg-brand-hero text-white overflow-hidden">
-        <div aria-hidden className="absolute inset-0 dots-layer opacity-[0.12]" />
+      <section className="relative bg-aurora text-white overflow-hidden">
+        <div aria-hidden className="absolute inset-0 dots-layer opacity-[0.15]" />
         <div className="relative section-x py-20 text-center">
           <BookOpen className="w-12 h-12 mx-auto mb-4 text-secondary-300" />
           <h2 className="font-display font-extrabold text-3xl sm:text-4xl">Start your first mission today</h2>
