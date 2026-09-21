@@ -100,6 +100,14 @@ export const ar: TranslationKeys = {
     recentMissions: 'آخر المهمات',
     missionCompleted: 'مكتملة',
     missionInProgress: 'قيد التنفيذ',
+    recommendedTitle: 'مقترَح ليك',
+    recMinutes: '{{count}} دقيقة',
+    recTypes: {
+      MISSION: 'مهمّة',
+      ACTIVITY: 'تمرين',
+      REVIEW: 'مراجعة',
+      PROJECT: 'مشروع',
+    },
     quickActions: {
       learn: 'تعلّم',
       missions: 'المهمات',

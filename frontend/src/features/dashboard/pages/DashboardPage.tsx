@@ -30,6 +30,7 @@ import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
+import { RecommendationsSection } from '../components/RecommendationsSection'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DashboardSkeleton } from '@/components/common/Skeleton'
@@ -289,6 +290,11 @@ export function DashboardPage() {
             </motion.div>
           )
         })()}
+
+        {/* Recommended for you — surfaces the backend Adaptive/Recommendation
+            engine (previously had NO frontend). Age-adaptive item count; the
+            section self-hides when the engine has no signal yet. */}
+        <RecommendationsSection maxItems={adapt.density === 'simple' ? 2 : 4} />
 
         {/* Stats — the core loop (Level + XP) is ONE hero card with real
             visual weight (tinted surface, big ring, big numbers), not just

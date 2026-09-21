@@ -98,6 +98,14 @@ export const en = {
     recentMissions: 'Recent Missions',
     missionCompleted: 'Completed',
     missionInProgress: 'In Progress',
+    recommendedTitle: 'Recommended for you',
+    recMinutes: '{{count}} min',
+    recTypes: {
+      MISSION: 'Mission',
+      ACTIVITY: 'Practice',
+      REVIEW: 'Review',
+      PROJECT: 'Project',
+    },
     quickActions: {
       learn: 'Learn',
       missions: 'Missions',
