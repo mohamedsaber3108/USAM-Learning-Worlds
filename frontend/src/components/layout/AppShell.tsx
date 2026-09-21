@@ -34,7 +34,6 @@ import { LanguageSwitchButton } from './LanguageSwitchButton'
 import { PageTransition } from '@/components/motion/PageTransition'
 import { NotificationBell } from './NotificationBell'
 import { SearchBar } from './SearchBar'
-import usamLogo from '@/assets/usam-logo.png'
 
 /**
  * AppShell — the one persistent navigation frame for every authenticated page.
@@ -185,7 +184,7 @@ export function AppShell() {
             className="flex items-center gap-2.5 pe-2 ps-1 rounded-pill focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
             aria-label={t('common.appName')}
           >
-            <img src={usamLogo} alt="" aria-hidden="true" className="h-8 w-auto" />
+            <span className="inline-flex items-center justify-center h-8 px-2.5 rounded-lg bg-primary-600 text-white font-display font-extrabold tracking-tight" dir="ltr">USAM</span>
             <span className="font-display font-extrabold text-ink tracking-tight hidden xl:inline">
               {t('common.appName')}
             </span>
@@ -264,7 +263,7 @@ export function AppShell() {
             className="flex items-center gap-2.5 rounded-control focus-visible:ring-2 focus-visible:ring-primary-300 focus:outline-none"
             aria-label={t('common.appName')}
           >
-            <img src={usamLogo} alt="" aria-hidden="true" className="h-8 w-auto" />
+            <span className="inline-flex items-center justify-center h-8 px-2.5 rounded-lg bg-primary-600 text-white font-display font-extrabold tracking-tight" dir="ltr">USAM</span>
             <span className="text-lg font-display font-bold text-ink tracking-tight hidden sm:inline">
               {t('common.appName')}
             </span>

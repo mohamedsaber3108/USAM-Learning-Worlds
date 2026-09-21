@@ -47,8 +47,18 @@ autonomy + portfolio/entrepreneurship surfaced.
 
 ## 5. Dependency-ordered execution slices (mandate §35)
 
+> **Updated after live-screenshot + traceability evidence (see 02, 03).** Two
+> live bugs (garbled wordmark; Arabic landing showing English) and confirmed
+> un-surfaced power engines (adaptive, worlds, credentials, simulation) changed
+> the sequence: a **Slice 0 (brand + i18n hygiene)** is inserted first because
+> it is unambiguous, user-requested, and visible on every screen.
+
 Each slice = a complete, tested, deployable increment (keeps branch green):
 
+0. **Brand + i18n hygiene** — replace garbled `usam-logo.png` header mark with a
+   clean text **"USAM"** wordmark + localized tagline; wire ALL hardcoded English
+   strings on LandingPage (and audit other pages) into i18n so Arabic is truly
+   Arabic. Cherry-pick the 6 orphaned backend fixes onto this branch.
 1. **Design-system hardening** — finalize tokens/primitives, add missing states
    (locked/first-time/offline) to `CharacterState`/`Skeleton`. ✅ largely done.
 2. **Shell + nav IA** — floating pill nav ✅; regroup labels; age-adaptive nav set.
@@ -93,7 +103,9 @@ line.
 
 ## 9. Immediate next action
 
-Begin **Slice 3 (Home as a living world)** — highest visible impact — but only
-after the user confirms a screenshot so the rebuild is grounded, per the
-verification principle. Remaining plan sub-docs (02–16) authored per slice as it
-is executed, not as upfront stubs.
+Screenshots received and reconciled (02, 03). Begin **Slice 0 (brand + i18n
+hygiene)** now — it is unambiguous, user-requested (clean "USAM" wordmark), and
+fixes a bug visible on every page (Arabic showing English). Then Slice 3 (Home
+as a living world), which must also surface the adaptive "next step" and Worlds
+engines (traceability #32, #34) rather than being an isolated dashboard reskin.
+Remaining plan sub-docs (04–16) authored per slice as executed.
