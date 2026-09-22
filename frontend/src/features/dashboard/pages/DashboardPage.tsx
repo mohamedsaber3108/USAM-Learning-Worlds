@@ -33,6 +33,7 @@ import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { RecommendationsSection } from '../components/RecommendationsSection'
 import { InterestChips } from '../components/InterestChips'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DashboardSkeleton } from '@/components/common/Skeleton'
@@ -234,7 +235,7 @@ export function DashboardPage() {
             >
               {(user?.displayName || 'L').charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h2
                 className={`font-display font-extrabold mb-1 flex items-center gap-2 flex-wrap tracking-tight ${
                   adapt.density === 'simple' ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl'
@@ -249,6 +250,14 @@ export function DashboardPage() {
                 )}
               </h2>
               <p className="text-white/80 text-sm">{t(`dashboard.greetingSubtext.${adapt.copyTone}`)}</p>
+            </div>
+            {/* Companion character — Home feels like entering a world WITH your
+                guide (Azouz greets you), not a bare dashboard. Bobs gently;
+                hidden on the smallest screens to keep the greeting readable. */}
+            <div className="hidden sm:block shrink-0 animate-bob" aria-hidden>
+              <div className="rounded-full bg-white/15 p-1.5">
+                <CharacterFace characterId="Azouz" size={adapt.density === 'simple' ? 80 : 64} />
+              </div>
             </div>
           </div>
         </motion.div>
