@@ -1377,3 +1377,13 @@ export const safetyEscalationApi = {
     }),
 }
 
+
+// ==================== Credentials (Open Badges 3.0) ====================
+// Surfaces the backend Credentials engine — real verifiable achievement
+// credentials the learner has earned (was backend-only; traceability #36).
+export const credentialsApi = {
+  // The authenticated learner's earned credentials (non-revoked).
+  getMine: () => apiClient.get('/credentials/me'),
+  // Public verification document by stable UID (no auth needed).
+  verify: (uid: string) => apiClient.get(`/credentials/${uid}`),
+}

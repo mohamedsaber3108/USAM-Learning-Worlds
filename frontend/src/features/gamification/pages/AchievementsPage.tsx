@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { gamificationApi } from '@/lib/api/endpoints'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
+import { CredentialsSection } from '../components/CredentialsSection'
 
 export function AchievementsPage() {
   const { data: achievements, isLoading, isError, refetch } = useQuery({
@@ -56,6 +57,11 @@ export function AchievementsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Verified Open-Badge credentials — real earned, third-party-verifiable
+            credentials from the backend Credentials engine (was backend-only).
+            Independent of the in-app achievements query; self-hides when none. */}
+        <CredentialsSection />
+
         {isError ? (
           <ErrorState
             character="Azouz"

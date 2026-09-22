@@ -119,6 +119,13 @@ export const ar: TranslationKeys = {
       english: 'الإنجليزية',
     },
   },
+  achievements: {
+    credentialsTitle: 'شهادات موثّقة',
+    credentialsSubtitle: 'أوسمة حقيقية تقدر تشاركها وتتحقّق منها في أي مكان.',
+    credentialIssued: 'صدرت في',
+    credentialVerify: 'تحقّق من الشهادة',
+    credentialFallback: 'شهادة إنجاز',
+  },
   landing: {
     logIn: 'تسجيل الدخول',
     heroTitle: 'عالم تعلّم الأطفال بيتمنّوا يستكشفوه بجد',

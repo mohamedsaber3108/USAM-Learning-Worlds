@@ -117,6 +117,13 @@ export const en = {
       english: 'English',
     },
   },
+  achievements: {
+    credentialsTitle: 'Verified credentials',
+    credentialsSubtitle: 'Real, shareable badges you can verify anywhere.',
+    credentialIssued: 'Issued',
+    credentialVerify: 'Verify credential',
+    credentialFallback: 'Achievement credential',
+  },
   landing: {
     logIn: 'Log in',
     heroTitle: 'Learning worlds kids actually want to explore',
