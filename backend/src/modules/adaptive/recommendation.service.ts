@@ -99,24 +99,79 @@ export class RecommendationService {
 
     const completedIds = completedMissions.map((m) => m.missionId);
 
-    // Find missions learner hasn't completed
+    // Learner's onboarding interests (real data, Learner.preferences.interests)
+    // are used to WEIGHT mission recommendations toward what the child said
+    // they love — closing the interests -> recommendations loop end-to-end.
+    const interests = await this.getLearnerInterests(learnerId);
+
+    // Find missions learner hasn't completed. Include world.domain so we can
+    // match a mission's domain against the learner's interests.
     const availableMissions = await this.prisma.mission.findMany({
       where: {
         isActive: true,
         id: { notIn: completedIds },
       },
+      include: { world: { include: { domain: true } } },
       orderBy: { order: 'asc' },
-      take: 5,
+      take: 12,
     });
 
-    return availableMissions.map((mission, index) => ({
-      type: 'MISSION' as const,
-      entityId: mission.id,
-      title: mission.title,
-      reason: index === 0 ? 'Next in your learning path' : 'Recommended mission',
-      priority: 70 - index * 5,
-      estimatedMinutes: mission.estimatedMinutes,
-    }));
+    // Map interest slugs to the domain slugs they align with. Interest slugs
+    // come from the onboarding InterestsPage (math/science/language/coding/
+    // arts/world/thinking/entrepreneurship).
+    const interestMatchesDomain = (domainSlug?: string | null): boolean => {
+      if (!domainSlug || interests.length === 0) return false;
+      const d = domainSlug.toLowerCase();
+      return interests.some((it) => {
+        const key = it.toLowerCase();
+        if (key === 'world') return true; // broad interest
+        if (key === 'coding') return d.includes('cod') || d.includes('tech');
+        if (key === 'language') return d.includes('engl') || d.includes('lang');
+        if (key === 'arts') return d.includes('art') || d.includes('creativ') || d.includes('design');
+        if (key === 'thinking') return d.includes('think') || d.includes('problem') || d.includes('logic');
+        if (key === 'entrepreneurship') return d.includes('entrepreneur') || d.includes('business');
+        return d.includes(key); // math, science, ...
+      });
+    };
+
+    const ranked = availableMissions.map((mission, index) => {
+      const matches = interestMatchesDomain(mission.world?.domain?.slug);
+      // Base priority follows curriculum order; an interest match adds a
+      // meaningful boost so loved topics surface first without ignoring order.
+      const basePriority = 70 - index * 5;
+      const priority = matches ? basePriority + 15 : basePriority;
+      const reason = matches
+        ? 'Picked for something you love'
+        : index === 0
+          ? 'Next in your learning path'
+          : 'Recommended mission';
+      return {
+        type: 'MISSION' as const,
+        entityId: mission.id,
+        title: mission.title,
+        reason,
+        priority,
+        estimatedMinutes: mission.estimatedMinutes ?? undefined,
+      };
+    });
+
+    // Return the top 5 by the (now interest-weighted) priority.
+    return ranked.sort((a, b) => b.priority - a.priority).slice(0, 5);
+  }
+
+  /**
+   * Read the learner's onboarding interests from Learner.preferences.interests.
+   * Returns [] when none set (new learner) — callers treat that as "no
+   * interest weighting", so recommendations degrade gracefully.
+   */
+  private async getLearnerInterests(learnerId: string): Promise<string[]> {
+    const learner = await this.prisma.learner.findUnique({
+      where: { id: learnerId },
+      select: { preferences: true },
+    });
+    const prefs = (learner?.preferences as Record<string, any> | null) ?? {};
+    const interests = prefs.interests;
+    return Array.isArray(interests) ? (interests as string[]) : [];
   }
 
   /**
