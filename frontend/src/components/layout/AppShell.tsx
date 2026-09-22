@@ -118,6 +118,7 @@ const moreItems: MoreItem[] = [
   { key: 'achievements', to: '/achievements', icon: Trophy },
   { key: 'leaderboard', to: '/leaderboard', icon: BarChart3 },
   { key: 'progress', to: '/progress', icon: TrendingUp },
+  { key: 'balanced', to: '/balanced', icon: Sparkles },
   { key: 'voiceChat', to: '/voice-chat', icon: Mic },
   { key: 'characters', to: '/characters', icon: Sparkles },
   { key: 'timeLimits', to: '/parents', icon: Timer },
