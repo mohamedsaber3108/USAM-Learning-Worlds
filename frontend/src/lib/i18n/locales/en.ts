@@ -20,6 +20,8 @@ export const en = {
   more: {
     title: 'More',
     close: 'Close',
+    worlds: 'Worlds',
+    worldsDesc: 'Explore your learning worlds',
     shop: 'Shop',
     shopDesc: 'Spend XP on borders, badges, titles & themes',
     myJourney: 'My Journey',
@@ -123,6 +125,18 @@ export const en = {
     credentialIssued: 'Issued',
     credentialVerify: 'Verify credential',
     credentialFallback: 'Achievement credential',
+  },
+  worlds: {
+    title: 'Learning Worlds',
+    subtitle: 'Explore worlds, unlock new ones as you learn.',
+    loading: 'Mapping your worlds...',
+    locked: 'Locked',
+    missions: '{{count}} missions',
+    errorTitle: "Couldn't load your worlds",
+    errorMessage: "No worries — let's try that again.",
+    emptyTitle: 'Your worlds are being prepared',
+    emptyMessage: 'Start a mission and your first world will open up!',
+    emptyAction: 'Browse missions',
   },
   landing: {
     logIn: 'Log in',

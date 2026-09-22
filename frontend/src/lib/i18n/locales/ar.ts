@@ -22,6 +22,8 @@ export const ar: TranslationKeys = {
   more: {
     title: 'المزيد',
     close: 'إغلاق',
+    worlds: 'العوالم',
+    worldsDesc: 'استكشف عوالم التعلّم',
     shop: 'المتجر',
     shopDesc: 'استخدم نقاط الخبرة لشراء إطارات وشعارات وألقاب وثيمات جديدة',
     myJourney: 'رحلتي',
@@ -125,6 +127,18 @@ export const ar: TranslationKeys = {
     credentialIssued: 'صدرت في',
     credentialVerify: 'تحقّق من الشهادة',
     credentialFallback: 'شهادة إنجاز',
+  },
+  worlds: {
+    title: 'عوالم التعلّم',
+    subtitle: 'استكشف العوالم، وافتح عوالم جديدة كل ما تتعلّم.',
+    loading: 'بنرسم عوالمك...',
+    locked: 'مقفول',
+    missions: '{{count}} مهمّة',
+    errorTitle: 'مقدرناش نحمّل عوالمك',
+    errorMessage: 'ولا يهمّك — نجرّب تاني.',
+    emptyTitle: 'عوالمك بيتم تجهيزها',
+    emptyMessage: 'ابدأ مهمّة وأول عالم ليك هيتفتح!',
+    emptyAction: 'تصفّح المهمات',
   },
   landing: {
     logIn: 'تسجيل الدخول',
