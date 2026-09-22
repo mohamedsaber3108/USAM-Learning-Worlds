@@ -107,6 +107,7 @@ export const ar: TranslationKeys = {
     missionCompleted: 'مكتملة',
     missionInProgress: 'قيد التنفيذ',
     recommendedTitle: 'مقترَح ليك',
+    interestsTitle: 'معمول لللي بتحبه',
     recMinutes: '{{count}} دقيقة',
     recTypes: {
       MISSION: 'مهمّة',

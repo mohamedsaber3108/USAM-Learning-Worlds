@@ -32,6 +32,7 @@ import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { RecommendationsSection } from '../components/RecommendationsSection'
+import { InterestChips } from '../components/InterestChips'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DashboardSkeleton } from '@/components/common/Skeleton'
@@ -293,6 +294,10 @@ export function DashboardPage() {
             </motion.div>
           )
         })()}
+
+        {/* Your interests — surfaces onboarding interests as actionable chips
+            (closes the loop: captured -> shown -> navigable). Self-hides when none. */}
+        <InterestChips />
 
         {/* Recommended for you — surfaces the backend Adaptive/Recommendation
             engine (previously had NO frontend). Age-adaptive item count; the

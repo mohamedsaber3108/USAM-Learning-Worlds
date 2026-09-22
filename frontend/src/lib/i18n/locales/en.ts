@@ -105,6 +105,7 @@ export const en = {
     missionCompleted: 'Completed',
     missionInProgress: 'In Progress',
     recommendedTitle: 'Recommended for you',
+    interestsTitle: 'Made for what you love',
     recMinutes: '{{count}} min',
     recTypes: {
       MISSION: 'Mission',
