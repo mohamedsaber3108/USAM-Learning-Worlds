@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Check, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { missionsApi, codingSandboxApi } from '@/lib/api/endpoints'
 import { CodeMissionRunner } from '@/features/coding/components/CodeMissionRunner'
@@ -23,6 +24,7 @@ interface AnswerFeedback {
 }
 
 export function MissionPlayerPage() {
+  const { t } = useTranslation()
   const { runId } = useParams<{ runId: string }>()
   const navigate = useNavigate()
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -58,7 +60,7 @@ export function MissionPlayerPage() {
       setError('')
     },
     onError: (err: any) => {
-      setError(err.response?.data?.message || 'Submission failed')
+      setError(err.response?.data?.message || t('missionPlayer.submissionFailed'))
     },
   })
 
@@ -94,7 +96,7 @@ export function MissionPlayerPage() {
       <div className="min-h-screen bg-surface-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
-          <p className="mt-4 text-slate-600">Loading...</p>
+          <p className="mt-4 text-slate-600">{t('missionPlayer.loading')}</p>
         </div>
       </div>
     )
@@ -104,7 +106,7 @@ export function MissionPlayerPage() {
     return (
       <div className="min-h-screen bg-surface-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-600">No activities found</p>
+          <p className="text-slate-600">{t('missionPlayer.noActivities')}</p>
         </div>
       </div>
     )
@@ -113,7 +115,7 @@ export function MissionPlayerPage() {
   const handleSubmit = () => {
     const answer = answers[currentActivity.id]
     if (!answer) {
-      setError('Please provide an answer')
+      setError(t('missionPlayer.provideAnswer'))
       return
     }
 
@@ -139,8 +141,6 @@ export function MissionPlayerPage() {
     })
   }
 
-  const stepsRemaining = activities.length - (currentIndex + 1)
-
   return (
     <div className="min-h-screen bg-surface-50">
       {/* Header */}
@@ -148,12 +148,13 @@ export function MissionPlayerPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-xl font-heading font-bold text-slate-900">
-              {run.mission?.title || 'Mission'}
+              {run.mission?.title || t('missionPlayer.missionFallback')}
             </h1>
             <span className="text-sm font-medium text-slate-500">
-              {stepsRemaining > 0
-                ? `${stepsRemaining} step${stepsRemaining === 1 ? '' : 's'} left`
-                : 'Final step'}
+              {t('missionPlayer.stepCounter', {
+                current: currentIndex + 1,
+                total: activities.length,
+              })}
             </span>
           </div>
           <MissionStepper total={activities.length} current={currentIndex} />
@@ -249,7 +250,7 @@ export function MissionPlayerPage() {
                 disabled={currentIndex === 0 || feedback !== null}
                 className="btn btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronLeft className="w-4 h-4 rtl:scale-x-[-1]" /> Previous
+                <ChevronLeft className="w-4 h-4 rtl:scale-x-[-1]" /> {t('missionPlayer.previous')}
               </motion.button>
 
               {feedback === null ? (
@@ -260,7 +261,7 @@ export function MissionPlayerPage() {
                   disabled={submitMutation.isPending}
                   className="btn btn-primary disabled:opacity-50"
                 >
-                  {submitMutation.isPending ? 'Checking...' : 'Check'}
+                  {submitMutation.isPending ? t('missionPlayer.checking') : t('missionPlayer.check')}
                 </motion.button>
               ) : (
                 <motion.button
@@ -273,12 +274,12 @@ export function MissionPlayerPage() {
                   className="btn btn-primary disabled:opacity-50"
                 >
                   {completeMutation.isPending
-                    ? 'Finishing...'
+                    ? t('missionPlayer.checking')
                     : currentIndex === activities.length - 1
-                    ? 'Complete Mission'
+                    ? t('missionPlayer.completeMission')
                     : (
                       <span className="inline-flex items-center gap-1">
-                        Next <ChevronRight className="w-4 h-4 rtl:scale-x-[-1]" />
+                        {t('missionPlayer.next')} <ChevronRight className="w-4 h-4 rtl:scale-x-[-1]" />
                       </span>
                     )}
                 </motion.button>
