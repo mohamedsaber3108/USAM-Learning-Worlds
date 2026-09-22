@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
@@ -89,13 +90,15 @@ export function SimulationsPage() {
               const v = CATEGORY_VISUAL[sim.category ?? ''] ?? { icon: Gamepad2, tint: 'bg-primary-50 text-primary-600' }
               const Icon = v.icon
               return (
-                <motion.a
+                <motion.div
                   key={sim.id}
-                  href={`/simulations/${sim.slug}`}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="card group flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                >
+                <Link
+                  to={`/simulations/${sim.slug}`}
+                  className="card group flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                 >
                   <div className={`icon-chip ${v.tint} w-12 h-12 mb-3 group-hover:scale-105 transition-transform`}>
                     <Icon className="w-6 h-6" strokeWidth={2} />
@@ -108,7 +111,8 @@ export function SimulationsPage() {
                     {t('simulations.start', 'Start scenario')}
                     <ArrowRight className="w-3.5 h-3.5 rtl:scale-x-[-1]" strokeWidth={2.5} />
                   </span>
-                </motion.a>
+                </Link>
+                </motion.div>
               )
             })}
           </div>
