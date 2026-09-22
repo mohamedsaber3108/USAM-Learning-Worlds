@@ -11,6 +11,11 @@ export const authApi = {
 
   refresh: (refreshToken: string) =>
     apiClient.post('/auth/refresh', { refreshToken }),
+
+  // Persist onboarding learner preferences (interests, learning style, goals)
+  // → PATCH /auth/me/preferences (merged server-side onto Learner.preferences).
+  updatePreferences: (data: { interests?: string[]; learningStyle?: string; goals?: string[]; extra?: Record<string, unknown> }) =>
+    apiClient.patch('/auth/me/preferences', data),
 }
 
 // ==================== Gamification ====================

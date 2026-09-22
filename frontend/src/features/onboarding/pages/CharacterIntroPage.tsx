@@ -48,7 +48,7 @@ export function CharacterIntroPage() {
   }
 
   return (
-    <OnboardingLayout step={4} totalSteps={5} stepKey="character">
+    <OnboardingLayout step={5} totalSteps={6} stepKey="character">
       <div className="max-w-lg w-full bg-white rounded-blob shadow-hero border border-surface-200/60 px-8 py-10 sm:px-12 sm:py-12 overflow-hidden">
         <div className="text-center mb-2">
           <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink mb-1 leading-tight [text-wrap:balance]">

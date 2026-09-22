@@ -6,6 +6,7 @@ import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { WelcomePage } from '@/features/onboarding/pages/WelcomePage'
 import { LanguageSelectPage } from '@/features/onboarding/pages/LanguageSelectPage'
 import { AgeSelectPage } from '@/features/onboarding/pages/AgeSelectPage'
+import { InterestsPage } from '@/features/onboarding/pages/InterestsPage'
 import { CharacterIntroPage } from '@/features/onboarding/pages/CharacterIntroPage'
 import { OnboardingCompletePage } from '@/features/onboarding/pages/OnboardingCompletePage'
 import { MissionsBrowsePage } from '@/features/missions/pages/MissionsBrowsePage'
@@ -135,6 +136,14 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <AgeSelectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/onboarding/interests"
+        element={
+          <ProtectedRoute>
+            <InterestsPage />
           </ProtectedRoute>
         }
       />

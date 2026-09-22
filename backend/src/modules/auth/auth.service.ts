@@ -205,6 +205,39 @@ export class AuthService {
     return { learner };
   }
 
+  /**
+   * Persist onboarding learner preferences (interests, learning prefs, etc.)
+   * onto Learner.preferences (Json). Merges with existing preferences so
+   * partial updates from separate onboarding steps don't clobber each other.
+   */
+  async updateLearnerPreferences(userId: string, preferences: Record<string, any>) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { learner: true },
+    });
+    if (!user || !user.learner) {
+      throw new NotFoundException('Learner profile not found for this account');
+    }
+    const existing = (user.learner.preferences as Record<string, any> | null) ?? {};
+    const merged = { ...existing, ...preferences };
+    const learner = await this.prisma.learner.update({
+      where: { id: user.learner.id },
+      data: { preferences: merged },
+    });
+
+    await this.auditLog.record({
+      actorUserId: userId,
+      actorRole: 'LEARNER',
+      action: 'UPDATE_PREFERENCES',
+      targetType: 'Learner',
+      targetId: user.learner.id,
+      before: { preferences: existing },
+      after: { preferences: merged },
+    });
+
+    return { learner };
+  }
+
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.prisma.user.findUnique({
       where: { email },

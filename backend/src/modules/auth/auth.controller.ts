@@ -1,7 +1,7 @@
 import { Controller, Post, Patch, Body, UseGuards, Get } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, UpdateAgeBandDto, RefreshDto } from './dto';
+import { RegisterDto, LoginDto, UpdateAgeBandDto, UpdatePreferencesDto, RefreshDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -56,5 +56,14 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async updateAgeBand(@CurrentUser() user: any, @Body() dto: UpdateAgeBandDto) {
     return this.authService.updateLearnerAgeBand(user.id, dto.ageBand);
+  }
+
+  // Persists onboarding learner preferences (interests, learning style, goals)
+  // onto Learner.preferences. Merged server-side so separate onboarding steps
+  // can each PATCH their slice without clobbering earlier ones.
+  @Patch('me/preferences')
+  @UseGuards(JwtAuthGuard)
+  async updatePreferences(@CurrentUser() user: any, @Body() dto: UpdatePreferencesDto) {
+    return this.authService.updateLearnerPreferences(user.id, dto as Record<string, any>);
   }
 }

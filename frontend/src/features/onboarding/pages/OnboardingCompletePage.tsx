@@ -17,7 +17,7 @@ export function OnboardingCompletePage() {
   ]
 
   return (
-    <OnboardingLayout step={5} totalSteps={5} stepKey="complete">
+    <OnboardingLayout step={6} totalSteps={6} stepKey="complete">
       <div className="max-w-md w-full bg-white rounded-blob shadow-hero border border-surface-200/60 px-8 py-10 sm:px-10 sm:py-12 text-center">
         {/* Azouz sees the learner off from onboarding into the dashboard —
             closes the loop opened on WelcomePage instead of ending on an

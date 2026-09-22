@@ -23,6 +23,7 @@ const STEP_LABELS = [
   { key: 'language', fallback: 'Language' },
   { key: 'welcome', fallback: 'Welcome' },
   { key: 'age', fallback: 'About you' },
+  { key: 'interests', fallback: 'Interests' },
   { key: 'character', fallback: 'Your guides' },
   { key: 'complete', fallback: 'All set' },
 ] as const

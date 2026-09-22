@@ -58,7 +58,7 @@ export function AgeSelectPage() {
         }
       }
 
-      navigate('/onboarding/character')
+      navigate('/onboarding/interests')
     } catch (err: any) {
       setError(err.response?.data?.message || t('onboarding.age.error'))
     } finally {
@@ -67,7 +67,7 @@ export function AgeSelectPage() {
   }
 
   return (
-    <OnboardingLayout step={3} totalSteps={5} stepKey="age">
+    <OnboardingLayout step={3} totalSteps={6} stepKey="age">
       <div className="max-w-xl w-full bg-white rounded-blob shadow-hero border border-surface-200/60 px-8 py-10 sm:px-12 sm:py-12">
         {/* A quiet icon-chip anchor above the headline — matches the visual
             grammar WelcomePage established (character/glyph before text)
