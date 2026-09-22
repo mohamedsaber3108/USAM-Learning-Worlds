@@ -113,9 +113,11 @@ export const en = {
       PROJECT: 'Project',
     },
     quickActions: {
+      worlds: 'Worlds',
       learn: 'Learn',
       missions: 'Missions',
       projects: 'Projects',
+      balanced: 'Balance',
       community: 'Community',
       achievements: 'Achievements',
       leaderboard: 'Leaderboard',

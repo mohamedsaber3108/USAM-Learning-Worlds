@@ -17,6 +17,7 @@ import {
   Mic,
   Languages,
   Users2,
+  Globe2,
   TrendingUp,
   CheckCircle2,
   Clock,
@@ -38,10 +39,12 @@ import { DashboardSkeleton } from '@/components/common/Skeleton'
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
 // `labelKey` resolves against dashboard.quickActions.* in both locales.
 const quickActions = [
+  { to: '/worlds', labelKey: 'worlds', icon: Globe2, tint: 'bg-sky-50 text-sky-600' },
   { to: '/learn', labelKey: 'learn', icon: BookOpen, tint: 'bg-primary-50 text-primary-600' },
   { to: '/missions', labelKey: 'missions', icon: Target, tint: 'bg-accent-50 text-accent-600' },
   { to: '/projects', labelKey: 'projects', icon: Palette, tint: 'bg-secondary-50 text-secondary-600' },
-  { to: '/community', labelKey: 'community', icon: Sparkles, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/balanced', labelKey: 'balanced', icon: Sparkles, tint: 'bg-grape-50 text-grape-600' },
+  { to: '/community', labelKey: 'community', icon: Users2, tint: 'bg-primary-50 text-primary-600' },
   { to: '/achievements', labelKey: 'achievements', icon: Trophy, tint: 'bg-warning-50 text-warning-600' },
   { to: '/leaderboard', labelKey: 'leaderboard', icon: BarChart3, tint: 'bg-success-50 text-success-600' },
   { to: '/voice-chat', labelKey: 'voiceChat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },

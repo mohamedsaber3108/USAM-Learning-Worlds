@@ -115,9 +115,11 @@ export const ar: TranslationKeys = {
       PROJECT: 'مشروع',
     },
     quickActions: {
+      worlds: 'العوالم',
       learn: 'تعلّم',
       missions: 'المهمات',
       projects: 'المشاريع',
+      balanced: 'التوازن',
       community: 'المجتمع',
       achievements: 'الإنجازات',
       leaderboard: 'لوحة الصدارة',
