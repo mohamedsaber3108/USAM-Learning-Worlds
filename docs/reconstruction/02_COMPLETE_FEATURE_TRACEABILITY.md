@@ -42,11 +42,11 @@ i18n=EN+AR wired · Status.
 | 29 | Creativity gallery/prompts/submissions | Y | Y | Y | 2 | 2 | 2 | 2 | Works; visibility controls. |
 | 30 | Cross-curricular ×7 categories | Y | Y | Y | 2 | Y | 2 | 2 | One parameterized page; verify all 7 reachable. |
 | 31 | Thinking skills ×3 engines | Y | Y | Y | 2 | 2 | 2 | 2 | Reachable via nav? currently semi-hidden → 6. |
-| 32 | Adaptive: ZPD/recommendations/next-activity | Y (rich) | Y | none | 10 | 2 | 2 | 4 | Powerful engine, NO learner-facing surface. Feed dashboard "next step" + Learn hub (Slice 3/10). |
+| 32 | Adaptive: ZPD/recommendations/next-activity | Y (rich) | Y | Y | 1 | Y | Y | 1 | ✅ SURFACED — dashboard "Recommended for you" (RecommendationsSection), real /adaptive/recommendations, age-adaptive, EN+AR, self-hiding. |
 | 33 | Learning events / analytics ("My Journey") | Y | Y | Y | 2 | 2 | 2 | 2 | Insights page exists (branded hero added). |
-| 34 | Worlds | Y | Y | none | 10 | 2 | 2 | 4 | worldsApi exists, no World page. Core to "living world" — build (Slice 3/4). |
-| 35 | Notifications | Y | Y | bell | 2 | 2 | 2 | 4 | Bell in shell; no center/streak-at-risk surfacing → partial. |
-| 36 | Credentials (Open Badges / OB3) | Y | none | none | 10 | 2 | 2 | 4 | Backend issues real credentials; NO frontend. Surface in achievements/portfolio. |
+| 34 | Worlds | Y | Y | Y | 1 | Y | Y | 1 | ✅ SURFACED — /worlds map page (WorldsPage), real per-learner unlock states + mission counts, nav entry, EN+AR. |
+| 35 | Notifications | Y | Y | Y | 1 | 2 | 2 | 1 | ✅ COMPLETE — NotificationBell polls unread, lists, mark-read/all. (Also fixed: bell was white-on-white/invisible in new light nav.) |
+| 36 | Credentials (Open Badges / OB3) | Y | Y | Y | 1 | 2 | Y | 1 | ✅ SURFACED — Achievements "Verified credentials" (CredentialsSection), real /credentials/me + public verify link, EN+AR, self-hiding. |
 | 37 | Reflection (post-mission) | Y | Y | in-complete | 2 | 2 | 2 | 2 | On mission-complete; expand. |
 | 38 | Simulation engine | Y | none | none | 10 | 12 | 2 | 4 | Backend engine, no surface, needs research on UX. |
 | 39 | Parent dashboard | Y | Y | Y | 2 | n/a | 2 | 2 | Charts exist; audited as strong. |

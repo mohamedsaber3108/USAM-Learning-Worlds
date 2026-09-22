@@ -1387,3 +1387,15 @@ export const credentialsApi = {
   // Public verification document by stable UID (no auth needed).
   verify: (uid: string) => apiClient.get(`/credentials/${uid}`),
 }
+
+// ==================== Simulations (branching decision scenarios) ====================
+// Surfaces the backend Simulation engine — interactive branching scenarios
+// (entrepreneurship, financial literacy, digital safety, science, civic).
+// Was backend-only with no frontend route (traceability #38).
+export const simulationsApi = {
+  list: (params?: { ageBand?: string; category?: string }) =>
+    apiClient.get('/simulations', { params }),
+  getScenario: (slug: string) => apiClient.get(`/simulations/${slug}`),
+  getNode: (scenarioId: string, nodeKey: string) =>
+    apiClient.get(`/simulations/${scenarioId}/nodes/${nodeKey}`),
+}

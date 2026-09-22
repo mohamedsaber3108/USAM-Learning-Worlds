@@ -23,6 +23,7 @@ import {
   Zap,
   FolderKanban,
   Globe2,
+  Gamepad2,
   Settings,
   FlaskConical,
   ShieldCheck,
@@ -110,6 +111,7 @@ interface MoreItem {
 
 const moreItems: MoreItem[] = [
   { key: 'worlds', to: '/worlds', icon: Globe2 },
+  { key: 'simulations', to: '/simulations', icon: Gamepad2 },
   { key: 'shop', to: '/shop', icon: ShoppingBag },
   { key: 'myJourney', to: '/insights', icon: Zap },
   { key: 'myPortfolio', to: '/portfolio', icon: FolderKanban },
