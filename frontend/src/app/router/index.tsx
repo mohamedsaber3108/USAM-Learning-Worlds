@@ -28,6 +28,7 @@ import { LearningPathDetailPage } from '@/features/learning/pages/LearningPathDe
 import { FlashcardsStudyPage } from '@/features/learning/pages/FlashcardsStudyPage'
 import { VisualLanguageStudyPage } from '@/features/learning/pages/VisualLanguageStudyPage'
 import { ParentTimeLimitsPage } from '@/features/parents/pages/ParentTimeLimitsPage'
+import { ParentPrivacyPage } from '@/features/parents/pages/ParentPrivacyPage'
 import { EnglishStrandsPage } from '@/features/english/pages/EnglishStrandsPage'
 import { EnglishCoachPage } from '@/features/english/pages/EnglishCoachPage'
 import { CharacterChatPage } from '@/features/characters/pages/CharacterChatPage'
@@ -216,6 +217,7 @@ export function AppRouter() {
           }
         />
         <Route path="/parents/children/:learnerId/time-limits" element={<ParentTimeLimitsPage />} />
+        <Route path="/parents/children/:learnerId/privacy" element={<ParentPrivacyPage />} />
 
         {/* Voice Chat (Voice Pipeline v1) */}
         <Route

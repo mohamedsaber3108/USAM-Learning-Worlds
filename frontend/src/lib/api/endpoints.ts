@@ -1399,3 +1399,22 @@ export const simulationsApi = {
   getNode: (scenarioId: string, nodeKey: string) =>
     apiClient.get(`/simulations/${scenarioId}/nodes/${nodeKey}`),
 }
+
+// ==================== Legal / Consent (COPPA/GDPR — guardian-only) ====================
+// Surfaces the backend Legal Compliance engine — parental consent capture,
+// per-purpose consent status, GDPR data export + deletion. Safety-critical;
+// was backend-only with no frontend (traceability #43).
+export const legalApi = {
+  getConsent: (learnerId: string) => apiClient.get(`/legal/consent/${learnerId}`),
+  captureConsent: (data: {
+    learnerId: string
+    purpose: string
+    granted: boolean
+    policyVersion?: string
+    jurisdiction?: string
+    verificationMethod?: string
+  }) => apiClient.post('/legal/consent', data),
+  exportData: (learnerId: string) => apiClient.get(`/legal/export/${learnerId}`),
+  deleteData: (learnerId: string, reason?: string) =>
+    apiClient.post(`/legal/delete/${learnerId}`, { reason }),
+}
