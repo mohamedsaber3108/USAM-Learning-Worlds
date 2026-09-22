@@ -130,7 +130,7 @@ export function SearchBar() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="p-2 min-w-11 min-h-11 flex items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+        className="p-2 min-w-11 min-h-11 flex items-center justify-center rounded-full text-slate-500 hover:text-primary-600 hover:bg-surface-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
         aria-label="Search"
       >
         <Search className="w-5 h-5" />
@@ -142,8 +142,8 @@ export function SearchBar() {
 
   return (
     <div className="relative">
-      <div className="flex items-center bg-white/10 rounded-full px-3 py-1.5 gap-2 min-w-[160px] sm:min-w-[220px]">
-        <Search className="w-4 h-4 text-white/70 shrink-0" />
+      <div className="flex items-center bg-surface-100 border border-surface-200 rounded-full px-3 py-1.5 gap-2 min-w-[160px] sm:min-w-[220px]">
+        <Search className="w-4 h-4 text-slate-400 shrink-0" />
         <input
           ref={inputRef}
           value={q}
@@ -153,14 +153,14 @@ export function SearchBar() {
           role="combobox"
           aria-expanded={debounced.length >= 2}
           aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
-          className="bg-transparent text-white placeholder-white/50 text-sm outline-none flex-1 min-w-0"
+          className="bg-transparent text-ink placeholder-slate-400 text-sm outline-none flex-1 min-w-0"
         />
         <button
           onClick={handleClose}
           aria-label="Close search"
-          className="min-w-11 min-h-11 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-full"
+          className="min-w-11 min-h-11 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 rounded-full"
         >
-          <X className="w-4 h-4 text-white/70" />
+          <X className="w-4 h-4 text-slate-400" />
         </button>
       </div>
 
