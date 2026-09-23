@@ -32,6 +32,8 @@ export const en = {
     myJourneyDesc: 'Your activity timeline, patterns & stats',
     myPortfolio: 'My Portfolio',
     myPortfolioDesc: 'Your best showcased projects, all in one place',
+    plans: 'Plans',
+    plansDesc: 'Compare plans and upgrade your family',
     achievements: 'Achievements',
     achievementsDesc: 'Badges & milestones',
     leaderboard: 'Leaderboard',

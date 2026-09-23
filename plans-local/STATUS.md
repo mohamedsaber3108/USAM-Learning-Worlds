@@ -3,7 +3,13 @@
 > Live status per mandate §6. Updated every slice. Seeded from work already
 > shipped and verified against `https://kids.usamif.com`.
 
-Branch `fix/p0-p1-remediation` · HEAD `2b9e92e` · Live bundle `index-CRvFwmIK.js` (verified live 2026-09-23)
+Branch `fix/p0-p1-remediation` · HEAD `dfc294c` · Live bundle `index-THaV01Iq.js` (verified live 2026-09-23)
+
+> Deploy note: raw-SQL migrations must be run with the connection string from
+> `backend/.env` — `$DATABASE_URL` is NOT exported in the shell, so bare `psql
+> "$DATABASE_URL"` connects as OS user `ubuntu` and fails ("role ubuntu does
+> not exist"). Use:
+> `DB_URL="$(grep -E '^DATABASE_URL=' backend/.env | head -1 | cut -d= -f2- | tr -d '\"')" && psql "$DB_URL" -f <migration>`
 
 Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planned
 
@@ -49,15 +55,15 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | **G-5 evidence portfolio (mastery+credentials+projects)** | 2b9e92e | no | ✅ live |
 
 | **G-4 packaging/pricing spec (47 + 48)** | 5c4a8fe | no | ✅ pushed |
-| **G-4 7a+7b: seed 4 plans + 3 gates (missions/voice/aiTutor)** | pending | **YES** | 🟡 built+tested (53 BE tests), commit pending |
+| **G-4 7a+7b: seed 4 plans + 3 gates (missions/voice/aiTutor)** | 04c4aa9/6353e03 | **YES** | ✅ live — 4 plans seeded, FREE aiTutor=false verified |
 
-| **G-4 7c: /plans page + upgrade flow (frontend)** | pending | no | 🟡 built+verified, commit pending |
+| **G-4 7c: /plans page + upgrade flow (frontend)** | dfc294c | no | ✅ live (/plans 200) |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
-| Deploy 7a+7b+7c (BACKEND migration + pm2 restart, THEN frontend rebuild) | 🟡 |
+| **/plans discoverable via More menu (nav)** | pending | no | 🟡 built+verified, commit pending |
 | G-4 7d: real payment gateway behind provider interface | 📋 |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
 

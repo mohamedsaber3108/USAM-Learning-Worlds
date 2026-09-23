@@ -34,6 +34,8 @@ export const ar: TranslationKeys = {
     myJourneyDesc: 'خط زمني لنشاطك وإحصائياتك',
     myPortfolio: 'معرض أعمالي',
     myPortfolioDesc: 'أفضل مشاريعك في مكان واحد',
+    plans: 'الباقات',
+    plansDesc: 'قارن الباقات وطوّر باقة عيلتك',
     achievements: 'الإنجازات',
     achievementsDesc: 'الأوسمة والمحطات المهمة',
     leaderboard: 'لوحة الصدارة',

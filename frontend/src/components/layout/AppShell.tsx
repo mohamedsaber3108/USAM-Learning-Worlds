@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   FileText,
   MessageSquareText,
+  Crown,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { LanguageToggle } from './LanguageToggle'
@@ -121,6 +122,7 @@ const moreItems: MoreItem[] = [
   { key: 'balanced', to: '/balanced', icon: Sparkles },
   { key: 'voiceChat', to: '/voice-chat', icon: Mic },
   { key: 'characters', to: '/characters', icon: Sparkles },
+  { key: 'plans', to: '/plans', icon: Crown },
   { key: 'timeLimits', to: '/parents', icon: Timer },
 ]
 
