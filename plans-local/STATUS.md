@@ -3,7 +3,7 @@
 > Live status per mandate §6. Updated every slice. Seeded from work already
 > shipped and verified against `https://kids.usamif.com`.
 
-Branch `fix/p0-p1-remediation` · HEAD `48b3bde` · Live bundle `index-D1OMWY6o.js`
+Branch `fix/p0-p1-remediation` · HEAD `46c0cc1` · Live bundle `index-D1OMWY6o.js`
 
 Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planned
 
@@ -40,12 +40,14 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | Home companion character (Azouz) | a19a09c | no | ✅ |
 | Deployment verification script | 47c71f8 | no | ✅ |
 | **Mission reward loop fix + player/complete i18n** | 48b3bde | no | ✅ |
+| plans-local master reconstruction program | f9aa4c8 | no | ✅ |
+| **Mission Learn teaching step (G-1) + unit tests** | 46c0cc1 | no | 🟡 built+pushed, awaiting live deploy |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
-| plans-local founding docs (this batch) | 🟡 |
+| Deploy + live-verify 46c0cc1 (Learn step) | 🟡 |
 
 ## Blocked
 
@@ -55,7 +57,7 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 
 ## Next (from gap register)
 
-1. 📋 Mission **"Learn" teaching step** before practice (top child-truth gap).
-2. 📋 Deeper "living world" Home visual.
-3. 📋 E2E tests for the 7 critical journeys.
-4. 📋 Packaging/pricing product model (Phase 3) → then entitlement UI.
+1. 📋 E2E tests for the critical journeys (G-2).
+2. 📋 Deeper "living world" Home visual (G-3).
+3. 📋 Portfolio/evidence child surface (G-5).
+4. 📋 Packaging/pricing product model spec first (G-4, Phase 3) → then entitlement UI.
