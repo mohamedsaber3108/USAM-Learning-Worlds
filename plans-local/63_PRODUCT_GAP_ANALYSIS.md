@@ -38,9 +38,15 @@ Last updated: 2026-09-22 · HEAD `48b3bde`
 - **Done so far (commit pending):** reward-loop completion page (4 tests, locks
   the outcome-shape fix), Learn-step player wiring (2 tests), teaching
   extractor (6 tests). Suite now 4 files / 14 tests, all green.
-- **Remaining:** onboarding step-through, login, RTL toggle, recommendations/
-  worlds/simulations render. Tracked as G-2b.
-- **Status:** 🟡 core reward/learn journeys covered; G-2b remaining.
+- **G-2b done:** login (validation + success stores tokens/navigates, 2 tests)
+  and language/RTL (dir/lang mirror, persistence, real AR strings, 4 tests).
+  Added an in-memory localStorage polyfill to `src/test/setup.ts` (jsdom had
+  none). Suite now 6 files / 20 tests, all green.
+- **Remaining:** onboarding step-through, recommendations/worlds/simulations
+  render smoke tests. Tracked as G-2c (lower priority — those are read-only
+  render paths).
+- **Status:** 🟡 all critical *write/navigation* journeys covered; G-2c render
+  smoke tests remain.
 
 ## P1 — Coherence & value
 

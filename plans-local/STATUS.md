@@ -43,13 +43,14 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | plans-local master reconstruction program | f9aa4c8 | no | ✅ |
 | **Mission Learn teaching step (G-1) + unit tests** | 46c0cc1 | no | ✅ live (bundle index-CM4B5Wy5.js, verified 2026-09-23) |
 
-| **G-2 integration tests: reward loop + Learn step** | pending | no | 🟡 built+tested (14 tests), commit pending |
+| **G-2 integration tests: reward loop + Learn step** | 7b7fd7e | no | ✅ pushed (14 tests) |
+| **G-2b integration tests: login + language/RTL** | pending | no | 🟡 tested (20 tests total), commit pending |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
-| G-2b remaining journey tests (onboarding/login/RTL) | 📋 |
+| G-2c render smoke tests (onboarding/recommendations/worlds) | 📋 |
 
 ## Blocked
 
