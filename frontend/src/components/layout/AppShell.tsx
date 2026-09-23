@@ -171,6 +171,14 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-surface-50 flex flex-col">
+      {/* Skip link (WCAG 2.4.1 Bypass Blocks) — visually hidden until focused,
+          lets keyboard/screen-reader users jump past the nav to the page. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:start-3 focus:rounded-control focus:bg-primary-600 focus:px-4 focus:py-2 focus:text-white focus:font-semibold focus:shadow-lift"
+      >
+        {t('a11y.skipToContent')}
+      </a>
       {/* ============================================================
           DESKTOP: FLOATING PILL NAVIGATION (design-reference synthesis —
           MindMarket / Wispr / Subframe / Caldera all float the nav as a
@@ -291,7 +299,7 @@ export function AppShell() {
       </header>
 
       {/* Page content — spring-based fade/slide transition on route change. */}
-      <main className="flex-1 pb-24 lg:pb-10">
+      <main id="main-content" tabIndex={-1} className="flex-1 pb-24 lg:pb-10">
         <AnimatePresence mode="popLayout" initial={false}>
           <PageTransition key={location.pathname}>
             <Outlet />

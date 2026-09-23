@@ -11,6 +11,9 @@ export const ar: TranslationKeys = {
     logout: 'تسجيل الخروج',
     login: 'تسجيل الدخول',
   },
+  a11y: {
+    skipToContent: 'تخطّي إلى المحتوى',
+  },
   nav: {
     home: 'الرئيسية',
     learn: 'تعلّم',

@@ -92,7 +92,11 @@ Last updated: 2026-09-22 · HEAD `48b3bde`
 ## P2 — Depth & polish
 
 - **G-6** Curriculum content volume per age band (spec 13/14 + content ops).
-- **G-7** Accessibility audit pass (WCAG) across shipped pages (§45, §19).
+- **G-7** ✅ DONE — Accessibility pass: added skip-to-content link (WCAG 2.4.1)
+  + focusable `#main-content` landmark in AppShell; installed vitest-axe and
+  added an automated axe gate (3 tests) proving no detectable violations in the
+  reconstruction pages. EN+AR. Full WCAG conformance still needs manual AT
+  testing + expert review (noted in the test). Suite now 23 tests.
 - **G-8** ✅ DONE — Orphan-engine sweep complete, see
   `66_FINAL_ENGINE_INVENTORY.md`. All 42 modules / ~55 controllers classified
   (learner/parent-facing · infra/admin-only · gap). Only one real orphan.

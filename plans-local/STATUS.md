@@ -64,7 +64,8 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | Item | State |
 | --- | --- |
 | **/plans discoverable via More menu (nav)** | 8e00d09 | no | ✅ live |
-| **G-8 orphan-engine sweep (66_FINAL_ENGINE_INVENTORY)** | pending | no | 🟡 doc written, commit pending |
+| **G-8 orphan-engine sweep (66_FINAL_ENGINE_INVENTORY)** | 4f42efb | no | ✅ |
+| **G-7 accessibility: skip link + axe gate (3 tests)** | pending | no | 🟡 built+verified, commit pending |
 | G-4 7d: real payment gateway behind provider interface | 📋 |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
 

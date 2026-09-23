@@ -9,6 +9,9 @@ export const en = {
     logout: 'Logout',
     login: 'Log in',
   },
+  a11y: {
+    skipToContent: 'Skip to content',
+  },
   nav: {
     home: 'Home',
     learn: 'Learn',

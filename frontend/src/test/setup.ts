@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom'
-import { beforeEach } from 'vitest'
+import { beforeEach, expect } from 'vitest'
+import * as axeMatchers from 'vitest-axe/matchers'
+
+// Enable `expect(...).toHaveNoViolations()` for accessibility tests.
+expect.extend(axeMatchers)
 
 /**
  * jsdom in this project is started without a persistent localStorage backend
