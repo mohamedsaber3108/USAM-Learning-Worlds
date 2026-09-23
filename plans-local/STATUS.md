@@ -51,12 +51,14 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | **G-4 packaging/pricing spec (47 + 48)** | 5c4a8fe | no | ✅ pushed |
 | **G-4 7a+7b: seed 4 plans + 3 gates (missions/voice/aiTutor)** | pending | **YES** | 🟡 built+tested (53 BE tests), commit pending |
 
+| **G-4 7c: /plans page + upgrade flow (frontend)** | pending | no | 🟡 built+verified, commit pending |
+
 ## In progress
 
 | Item | State |
 | --- | --- |
-| Deploy 7a+7b (BACKEND: run migration + pm2 restart) | 🟡 |
-| G-4 7c: /plans + upgrade UI (frontend) | 📋 |
+| Deploy 7a+7b+7c (BACKEND migration + pm2 restart, THEN frontend rebuild) | 🟡 |
+| G-4 7d: real payment gateway behind provider interface | 📋 |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
 
 ## Blocked

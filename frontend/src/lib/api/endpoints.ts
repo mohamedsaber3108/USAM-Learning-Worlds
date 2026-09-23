@@ -1423,3 +1423,35 @@ export const legalApi = {
   deleteData: (learnerId: string, reason?: string) =>
     apiClient.post(`/legal/delete/${learnerId}`, { reason }),
 }
+
+// ==================== Entitlements (plans / pricing) ====================
+// Surfaces the backend Entitlements engine (GET /entitlements/plans,
+// GET /entitlements/me, POST /entitlements/subscribe). Plans are seeded from
+// plans-local/47_PRICING_PACKAGING.md; `features` is the flag/limit payload
+// the backend gates read via hasFeature()/getLimit(). The `me` endpoint keys
+// off the logged-in user (a guardian sees their own effective plan).
+export interface PlanRecord {
+  id: string
+  code: string
+  name: string
+  description?: string | null
+  priceCents: number
+  currency: string
+  interval: 'MONTH' | 'YEAR' | 'ONE_TIME'
+  features: Record<string, unknown>
+  isActive: boolean
+}
+
+export interface MyEntitlements {
+  plan: PlanRecord | null
+  features: Record<string, unknown>
+}
+
+export const entitlementsApi = {
+  listPlans: () => apiClient.get<PlanRecord[]>('/entitlements/plans'),
+  getMine: () => apiClient.get<MyEntitlements>('/entitlements/me'),
+  subscribe: (planCode: string) =>
+    apiClient.post('/entitlements/subscribe', { planCode }),
+  cancel: (subscriptionId: string) =>
+    apiClient.post(`/entitlements/cancel/${subscriptionId}`),
+}
