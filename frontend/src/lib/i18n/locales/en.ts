@@ -151,6 +151,21 @@ export const en = {
     locked: 'Locked',
     missionCount: '{{count}} missions',
   },
+  portfolio: {
+    title: 'My Portfolio',
+    subtitle: 'Your growth story — mastery, credentials, and your best work.',
+    stats: {
+      mastered: 'Skills mastered',
+      credentials: 'Credentials earned',
+      showcased: 'Projects showcased',
+    },
+    projectsTitle: 'Showcased projects',
+    loading: 'Mira is gathering your best work...',
+    showcasedBadge: 'Showcased',
+    emptyTitle: 'Nothing showcased yet',
+    emptyMessage: 'Finish a project and showcase it to see your best work shine here!',
+    emptyAction: 'Go to my projects',
+  },
   balanced: {
     title: 'Balanced Development',
     subtitle: 'How you are growing across every kind of skill.',

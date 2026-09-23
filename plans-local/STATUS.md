@@ -45,13 +45,14 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 
 | **G-2 integration tests: reward loop + Learn step** | 7b7fd7e | no | ✅ pushed (14 tests) |
 | **G-2b integration tests: login + language/RTL** | 783bf6b | no | ✅ pushed (20 tests) |
-| **G-3 living-world Home: World Journey strip** | pending | no | 🟡 built+verified, commit pending |
+| **G-3 living-world Home: World Journey strip** | 7c7c2ee | no | ✅ pushed |
+| **G-5 evidence portfolio (mastery+credentials+projects)** | pending | no | 🟡 built+verified, commit pending |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
-| Deploy + live-verify G-3 | 🟡 |
+| Deploy + live-verify G-3 + G-5 (frontend) | 🟡 |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
 
 ## Blocked

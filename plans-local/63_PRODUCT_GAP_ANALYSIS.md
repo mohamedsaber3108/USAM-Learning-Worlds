@@ -72,11 +72,16 @@ Last updated: 2026-09-22 · HEAD `48b3bde`
 - **Status:** 📋 P1, spec-first.
 
 ### G-5 · Portfolio / evidence child-facing surface
-- **Current:** `projects` + `credentials` engines live; portfolio UX partial.
-- **Requirement:** North Star WHY (parent) + §37.
-- **New solution:** a child portfolio surface aggregating project artifacts +
-  credentials + mastery evidence.
-- **Status:** 📋 P1.
+- **Current (was):** `/portfolio` showed only showcased projects, hardcoded
+  English, no aggregation of the other evidence the engines already produce.
+- **Requirement:** North Star WHY (parent value) + §37.
+- **Done (commit pending):** rebuilt `MyPortfolioPage` into a real evidence
+  portfolio aggregating three live sources — mastery (GET /mastery/by-domain →
+  skills mastered), credentials (GET /credentials/me, via the reused
+  CredentialsSection), and showcased projects (GET /projects/my) — with an
+  at-a-glance evidence summary. Fully internationalized (portfolio.* keys,
+  EN + AR). Self-hiding / real empty states per source.
+- **Status:** 🟡 shipped to repo; awaiting deploy.
 
 ## P2 — Depth & polish
 

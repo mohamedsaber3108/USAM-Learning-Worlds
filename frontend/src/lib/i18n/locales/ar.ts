@@ -153,6 +153,21 @@ export const ar: TranslationKeys = {
     locked: 'مقفول',
     missionCount: '{{count}} مهمّة',
   },
+  portfolio: {
+    title: 'معرض أعمالي',
+    subtitle: 'قصة تقدّمك — الإتقان والشهادات وأحسن أعمالك.',
+    stats: {
+      mastered: 'مهارات اتقنتها',
+      credentials: 'شهادات كسبتها',
+      showcased: 'مشاريع معروضة',
+    },
+    projectsTitle: 'المشاريع المعروضة',
+    loading: 'ميرا بتجمع أحسن أعمالك...',
+    showcasedBadge: 'معروض',
+    emptyTitle: 'لسه مفيش حاجة معروضة',
+    emptyMessage: 'خلّص مشروع واعرضه عشان تشوف أحسن أعمالك بتلمع هنا!',
+    emptyAction: 'روح لمشاريعي',
+  },
   balanced: {
     title: 'التطوّر المتوازن',
     subtitle: 'إزاي بتنمو في كل نوع من المهارات.',
