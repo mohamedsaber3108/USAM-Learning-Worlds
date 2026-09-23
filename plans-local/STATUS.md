@@ -49,14 +49,14 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | **G-5 evidence portfolio (mastery+credentials+projects)** | 2b9e92e | no | ✅ live |
 
 | **G-4 packaging/pricing spec (47 + 48)** | 5c4a8fe | no | ✅ pushed |
-| **G-4 impl 7a+7b: seed 4 plans + missionsPerDay gate** | pending | **YES** | 🟡 built+tested, commit pending |
+| **G-4 7a+7b: seed 4 plans + 3 gates (missions/voice/aiTutor)** | pending | **YES** | 🟡 built+tested (53 BE tests), commit pending |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
 | Deploy 7a+7b (BACKEND: run migration + pm2 restart) | 🟡 |
-| G-4 7c: /plans + upgrade UI; 7b more gates (voice/aiTutor) | 📋 |
+| G-4 7c: /plans + upgrade UI (frontend) | 📋 |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
 
 ## Blocked

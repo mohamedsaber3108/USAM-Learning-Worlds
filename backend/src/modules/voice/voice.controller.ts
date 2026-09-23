@@ -9,6 +9,7 @@
 import {
   BadRequestException,
   Controller,
+  ForbiddenException,
   Post,
   UploadedFile,
   UseGuards,
@@ -19,12 +20,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { VoiceService } from './voice.service';
+import { EntitlementsService } from '../entitlements/entitlements.service';
 import { VoiceTurnDto } from './dto/voice-turn.dto';
 
 @Controller('voice')
 @UseGuards(JwtAuthGuard)
 export class VoiceController {
-  constructor(private readonly voiceService: VoiceService) {}
+  constructor(
+    private readonly voiceService: VoiceService,
+    private readonly entitlements: EntitlementsService,
+  ) {}
 
   @Post('turn')
   @UseInterceptors(FileInterceptor('audio'))
@@ -37,6 +42,20 @@ export class VoiceController {
     if (!learnerId) {
       throw new BadRequestException('Only learners can use the voice pipeline');
     }
+
+    // Entitlement gate (G-4): voice is a paid capability (FAMILY/SCHOOL). Gate
+    // on the learner's billing owner's plan `voice` flag before doing any
+    // ASR/TTS work — the most expensive pipeline sits behind the highest tier.
+    const ownerUserId = await this.entitlements.resolveOwnerUserIdForLearner(learnerId);
+    const voiceAllowed = ownerUserId
+      ? await this.entitlements.hasFeature(ownerUserId, 'voice')
+      : false;
+    if (!voiceAllowed) {
+      throw new ForbiddenException(
+        'Voice chat is available on the Family plan. Upgrade to talk with your learning companion.',
+      );
+    }
+
     if (!audio || !audio.buffer) {
       throw new BadRequestException('No audio file provided (field name must be "audio")');
     }

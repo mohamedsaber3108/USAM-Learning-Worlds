@@ -11,6 +11,7 @@ import { Module } from '@nestjs/common';
 import { VoiceController } from './voice.controller';
 import { VoiceService } from './voice.service';
 import { AIModule } from '../ai/ai.module';
+import { EntitlementsModule } from '../entitlements/entitlements.module';
 import { WhisperSidecarSttProvider } from './providers/whisper-sidecar.stt-provider';
 import { PiperSidecarTtsProvider } from './providers/piper-sidecar.tts-provider';
 import {
@@ -19,7 +20,7 @@ import {
 } from './interfaces/voice-provider.interface';
 
 @Module({
-  imports: [AIModule],
+  imports: [AIModule, EntitlementsModule],
   controllers: [VoiceController],
   providers: [
     VoiceService,

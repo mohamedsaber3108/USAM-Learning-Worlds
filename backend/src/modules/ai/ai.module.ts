@@ -27,6 +27,7 @@ import { EmbeddingService } from './services/embedding.service';
 import { EnglishLearningModule } from '../english-learning/grammar-check.module';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { EntitlementsModule } from '../entitlements/entitlements.module';
 import { AIEvalService } from './ai-eval.service';
 import { AdminAIEvalController } from './admin-ai-eval.controller';
 import { MemoryGovernanceService } from './memory-governance.service';
@@ -36,7 +37,7 @@ import { AdminSafetyPolicyController } from './admin-safety-policy.controller';
 import { AdminPromptTemplateController } from './admin-prompt-template.controller';
 
 @Module({
-  imports: [EnglishLearningModule, AuthModule, NotificationsModule],
+  imports: [EnglishLearningModule, AuthModule, NotificationsModule, EntitlementsModule],
   controllers: [
     AIController,
     CharacterController,

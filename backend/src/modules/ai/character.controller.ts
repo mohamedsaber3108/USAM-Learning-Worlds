@@ -20,6 +20,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CharacterService } from './character.service';
 import { ConversationService } from './services/conversation.service';
+import { EntitlementsService } from '../entitlements/entitlements.service';
 import { ConversationType, ConversationStatus } from '@prisma/client';
 
 @Controller('characters')
@@ -28,6 +29,7 @@ export class CharacterController {
   constructor(
     private characterService: CharacterService,
     private conversationService: ConversationService,
+    private entitlements: EntitlementsService,
   ) {}
 
   // ============================================
@@ -128,6 +130,19 @@ export class CharacterController {
 
     if (!learnerId) {
       throw new ForbiddenException('Only learners can chat with characters');
+    }
+
+    // Entitlement gate (G-4): live AI-tutor conversation is a paid capability.
+    // FREE resolves aiTutor:false; EXPLORER/FAMILY/SCHOOL resolve true. Gate on
+    // the learner's billing owner's plan before generating an AI response.
+    const ownerUserId = await this.entitlements.resolveOwnerUserIdForLearner(learnerId);
+    const aiAllowed = ownerUserId
+      ? await this.entitlements.hasFeature(ownerUserId, 'aiTutor')
+      : false;
+    if (!aiAllowed) {
+      throw new ForbiddenException(
+        'Chatting with your learning companion is available on a paid plan. Upgrade to unlock the AI tutor.',
+      );
     }
 
     const response = await this.characterService.generateResponse(
