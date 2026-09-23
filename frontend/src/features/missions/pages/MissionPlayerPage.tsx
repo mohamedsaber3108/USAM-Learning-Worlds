@@ -8,6 +8,8 @@ import { missionsApi, codingSandboxApi } from '@/lib/api/endpoints'
 import { CodeMissionRunner } from '@/features/coding/components/CodeMissionRunner'
 import { CharacterAvatar } from '@/features/characters/components/CharacterAvatar'
 import { getCharacterVisual } from '@/features/characters/lib/characterVisuals'
+import { LearnStep } from '@/features/missions/components/LearnStep'
+import { extractTeaching } from '@/features/missions/lib/teaching'
 import {
   getMissionCompanionName,
   getCompanionLine,
@@ -32,6 +34,9 @@ export function MissionPlayerPage() {
   const [error, setError] = useState('')
   const [feedback, setFeedback] = useState<AnswerFeedback | null>(null)
   const [streak, setStreak] = useState(0)
+  // Activity ids for which the learner has passed (or skipped) the Learn beat.
+  // Once seen, we don't re-show the teaching card for that activity in this run.
+  const [learnedIds, setLearnedIds] = useState<Set<number>>(() => new Set())
 
   const { data: run, isLoading } = useQuery({
     queryKey: ['mission-run', runId],
@@ -75,6 +80,21 @@ export function MissionPlayerPage() {
 
   const activities = run?.mission?.activities || []
   const currentActivity = activities[currentIndex]
+
+  // Teaching (the "Learn" beat) for the current activity. When present and not
+  // yet acknowledged for this activity, we show the LearnStep before practice.
+  const teaching = currentActivity ? extractTeaching(currentActivity) : null
+  const showLearnStep = !!teaching && !!currentActivity && !learnedIds.has(currentActivity.id)
+
+  const markLearned = () => {
+    if (currentActivity) {
+      setLearnedIds(prev => {
+        const next = new Set(prev)
+        next.add(currentActivity.id)
+        return next
+      })
+    }
+  }
 
   // Reset the per-activity feedback banner whenever the learner moves to a
   // new activity (Next/Previous), so it never lingers on the wrong question.
@@ -173,6 +193,20 @@ export function MissionPlayerPage() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {showLearnStep && teaching ? (
+          <LearnStep
+            title={
+              currentActivity.content?.question ||
+              currentActivity.content?.problem ||
+              currentActivity.content?.prompt ||
+              currentActivity.title ||
+              t('missionLearn.badge')
+            }
+            teaching={teaching}
+            onReady={markLearned}
+            onSkip={markLearned}
+          />
+        ) : (
         <motion.div
           key={currentActivity.id}
           initial={{ opacity: 0, y: 8 }}
@@ -287,6 +321,7 @@ export function MissionPlayerPage() {
             </div>
           )}
         </motion.div>
+        )}
       </main>
     </div>
   )

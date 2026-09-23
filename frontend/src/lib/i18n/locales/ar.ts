@@ -568,6 +568,13 @@ export const ar: TranslationKeys = {
     activitiesValue: '{{completed}} / {{target}}',
     goalComplete: 'خلّصت هدف النهارده — شغل تحفة!',
   },
+  missionLearn: {
+    badge: 'اتعلّم',
+    keyPointsTitle: 'النقط المهمة',
+    exampleTitle: 'شوف المثال ده',
+    ready: 'أنا جاهز',
+    skip: 'تخطّي للتمرين',
+  },
   missionPlayer: {
     loading: 'بنجهّز مهمتك...',
     missionFallback: 'مهمة',

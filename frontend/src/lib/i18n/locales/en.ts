@@ -567,6 +567,13 @@ export const en = {
     activitiesValue: '{{completed}} / {{target}}',
     goalComplete: 'Goal complete for today — nice work!',
   },
+  missionLearn: {
+    badge: 'Learn',
+    keyPointsTitle: 'Key points',
+    exampleTitle: 'Here\'s an example',
+    ready: "I'm ready",
+    skip: 'Skip to practice',
+  },
   missionPlayer: {
     loading: 'Getting your mission ready...',
     missionFallback: 'Mission',
