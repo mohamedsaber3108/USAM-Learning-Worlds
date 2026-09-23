@@ -41,13 +41,15 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | Deployment verification script | 47c71f8 | no | ✅ |
 | **Mission reward loop fix + player/complete i18n** | 48b3bde | no | ✅ |
 | plans-local master reconstruction program | f9aa4c8 | no | ✅ |
-| **Mission Learn teaching step (G-1) + unit tests** | 46c0cc1 | no | 🟡 built+pushed, awaiting live deploy |
+| **Mission Learn teaching step (G-1) + unit tests** | 46c0cc1 | no | ✅ live (bundle index-CM4B5Wy5.js, verified 2026-09-23) |
+
+| **G-2 integration tests: reward loop + Learn step** | pending | no | 🟡 built+tested (14 tests), commit pending |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
-| Deploy + live-verify 46c0cc1 (Learn step) | 🟡 |
+| G-2b remaining journey tests (onboarding/login/RTL) | 📋 |
 
 ## Blocked
 

@@ -28,13 +28,19 @@ Last updated: 2026-09-22 · HEAD `48b3bde`
 - **Test:** player renders Learn step then Practice; skippable; EN+AR.
 - **Status:** 📋 NEXT.
 
-### G-2 · No end-to-end tests for critical journeys
-- **Current:** 1 vitest file (2 tests).
+### G-2 · Thin test coverage of critical journeys
+- **Current (was):** 1 vitest file (2 tests).
 - **Requirement:** mandate §18, §53 — verified critical flows.
-- **New solution:** E2E (Playwright or vitest+RTL flows) for: register →
-  onboarding → first mission → reward; login; language/RTL toggle;
-  recommendations; worlds; simulations player; privacy consent.
-- **Status:** 📋 P0 after G-1.
+- **Decision:** integration tests with Testing Library + jsdom against mocked
+  APIs (matches existing stack; no heavy Playwright/CI-browser dependency).
+  A shared `src/test/renderWithProviders.tsx` harness wraps Query + Router +
+  i18n so tests exercise real hooks.
+- **Done so far (commit pending):** reward-loop completion page (4 tests, locks
+  the outcome-shape fix), Learn-step player wiring (2 tests), teaching
+  extractor (6 tests). Suite now 4 files / 14 tests, all green.
+- **Remaining:** onboarding step-through, login, RTL toggle, recommendations/
+  worlds/simulations render. Tracked as G-2b.
+- **Status:** 🟡 core reward/learn journeys covered; G-2b remaining.
 
 ## P1 — Coherence & value
 
