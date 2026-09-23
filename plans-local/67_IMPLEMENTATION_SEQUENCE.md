@@ -31,8 +31,11 @@ Every step is a self-contained slice: implement → verify (tsc/build/lint/test)
 | 3 | E2E: recommendations / worlds / simulations / consent | G-2 | no | after #2 |
 | 4 | Living-world Home depth | G-3 | maybe | after #2 |
 | 5 | Portfolio/evidence child surface | G-5 | maybe | after #3 |
-| 6 | **Spec** 47_PRICING_PACKAGING + 48_BUSINESS_MODEL | G-4 | — | before any billing UI |
-| 7 | Packaging domain model + entitlement checks | G-4 | **yes** | after #6 spec |
+| 6 | **Spec** 47_PRICING_PACKAGING + 48_BUSINESS_MODEL | G-4 | — | ✅ DONE |
+| 7a | Seed FREE/EXPLORER/FAMILY/SCHOOL plans + add TRIALING status | G-4 | **yes** | after #6 spec ✅ → NEXT |
+| 7b | Wire real gates (missionsPerDay/voice/aiTutor/maxLearners) via hasFeature/getLimit | G-4 | **yes** | after 7a |
+| 7c | `/plans` + upgrade UI (never before 7a+7b) | G-4 | no | after 7b |
+| 7d | Real payment gateway behind provider interface | G-4 | **yes** | after 7c |
 | 8 | Orphan-engine sweep + doc | G-8 | no | rolling |
 | 9 | Accessibility audit pass | G-7 | no | rolling |
 | 10 | Curriculum content per age band | G-6 | content | ongoing |

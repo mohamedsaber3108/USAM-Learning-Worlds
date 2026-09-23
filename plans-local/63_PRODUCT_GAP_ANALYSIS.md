@@ -62,14 +62,20 @@ Last updated: 2026-09-22 · HEAD `48b3bde`
 - **Status:** 🟡 shipped to repo; deeper age-band-tuned world state is a future
   refinement (G-3b) but the living-world entry surface is in place.
 
-### G-4 · Packaging / pricing product model absent
-- **Current:** `entitlements` module exists; no Product→Plan→Package→Entitlement
-  model, no pricing, no UI.
+### G-4 · Packaging / pricing product model
+- **Current:** backend already has `Plan` + `Subscription` models and an
+  `EntitlementsService` (`hasFeature`/`getLimit`, FREE fallback) + a payment
+  provider abstraction — a solid foundation, but no plans defined, no product
+  packaging decisions, no pricing, no UI.
 - **Requirement:** mandate §10, §11, §36; parent-value audit item 4.
-- **New solution:** define the packaging model spec (47/48) FIRST, then domain
-  model, then entitlement checks, then UI. **No pricing UI before the model
-  exists** (mandate §36).
-- **Status:** 📋 P1, spec-first.
+- **Spec done (commit pending):** `47_PRICING_PACKAGING.md` (four plans
+  FREE/EXPLORER/FAMILY/SCHOOL with concrete `features` payloads mapped onto the
+  existing `Plan.features` JSON, prices anchored to competitor research, trial,
+  feature-flag key registry) + `48_BUSINESS_MODEL.md` (unit economics, AI/voice
+  cost governance via voice caps, funnel, parent-value↔price mapping, risks).
+- **Implementation sequenced (spec 67, 7a–7d):** seed plans → wire real gates →
+  `/plans` UI → payment gateway. **No pricing UI before seed+gates** (§36).
+- **Status:** ✅ spec complete; 🟡 implementation queued (backend-first).
 
 ### G-5 · Portfolio / evidence child-facing surface
 - **Current (was):** `/portfolio` showed only showcased projects, hardcoded

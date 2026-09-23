@@ -3,7 +3,7 @@
 > Live status per mandate §6. Updated every slice. Seeded from work already
 > shipped and verified against `https://kids.usamif.com`.
 
-Branch `fix/p0-p1-remediation` · HEAD `46c0cc1` · Live bundle `index-D1OMWY6o.js`
+Branch `fix/p0-p1-remediation` · HEAD `2b9e92e` · Live bundle `index-CRvFwmIK.js` (verified live 2026-09-23)
 
 Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planned
 
@@ -45,14 +45,16 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 
 | **G-2 integration tests: reward loop + Learn step** | 7b7fd7e | no | ✅ pushed (14 tests) |
 | **G-2b integration tests: login + language/RTL** | 783bf6b | no | ✅ pushed (20 tests) |
-| **G-3 living-world Home: World Journey strip** | 7c7c2ee | no | ✅ pushed |
-| **G-5 evidence portfolio (mastery+credentials+projects)** | pending | no | 🟡 built+verified, commit pending |
+| **G-3 living-world Home: World Journey strip** | 7c7c2ee | no | ✅ live |
+| **G-5 evidence portfolio (mastery+credentials+projects)** | 2b9e92e | no | ✅ live |
+
+| **G-4 packaging/pricing spec (47 + 48)** | pending | no | 🟡 written, commit pending |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
-| Deploy + live-verify G-3 + G-5 (frontend) | 🟡 |
+| G-4 impl: seed plans → wire gates → /plans UI (spec'd, sequenced 7a–7d) | 📋 |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
 
 ## Blocked
