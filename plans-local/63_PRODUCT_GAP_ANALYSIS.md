@@ -93,8 +93,12 @@ Last updated: 2026-09-22 · HEAD `48b3bde`
 
 - **G-6** Curriculum content volume per age band (spec 13/14 + content ops).
 - **G-7** Accessibility audit pass (WCAG) across shipped pages (§45, §19).
-- **G-8** Orphan-engine sweep: confirm each of the 42 modules has a child- or
-  parent-facing surface OR is documented as infra-only (mandate §23, §30).
+- **G-8** ✅ DONE — Orphan-engine sweep complete, see
+  `66_FINAL_ENGINE_INVENTORY.md`. All 42 modules / ~55 controllers classified
+  (learner/parent-facing · infra/admin-only · gap). Only one real orphan.
+- **G-9** ⚠⛔ `coding-coach` engine (AI debug/review/explain/challenge) has no
+  frontend. Intended home: an "Ask the coach" affordance in CodeMissionRunner.
+  BLOCKED on Bedrock creds (unverifiable agent-side), same as ai-tutor/voice.
 
 ## ⛔ Blocked
 
