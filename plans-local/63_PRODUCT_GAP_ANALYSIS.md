@@ -51,11 +51,16 @@ Last updated: 2026-09-22 · HEAD `48b3bde`
 ## P1 — Coherence & value
 
 ### G-3 · "Living world" Home depth
-- **Current:** Home has companion + recommendations + interest chips, but the
-  "world" framing is light.
+- **Current (was):** Home had companion + recommendations + interest chips, but
+  the six-worlds "world" framing was absent from the home surface.
 - **Requirement:** North Star — "a living world that adapts."
-- **New solution:** world/character presence on Home tied to progress + age band.
-- **Status:** 📋 P1.
+- **Done (commit pending):** `WorldJourneyStrip` on Home — a horizontal journey
+  of the learner's worlds with real unlock state + mission counts from the
+  Worlds engine, step-numbered, linking into the full map. Self-hides when
+  unavailable. Shared `worldVisual.ts` domain→icon/gradient map extracted from
+  WorldsPage so both surfaces render worlds identically (DRY). EN + AR.
+- **Status:** 🟡 shipped to repo; deeper age-band-tuned world state is a future
+  refinement (G-3b) but the living-world entry surface is in place.
 
 ### G-4 · Packaging / pricing product model absent
 - **Current:** `entitlements` module exists; no Product→Plan→Package→Entitlement

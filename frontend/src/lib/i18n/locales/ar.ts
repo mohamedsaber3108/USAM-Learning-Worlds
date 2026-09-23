@@ -147,6 +147,12 @@ export const ar: TranslationKeys = {
     emptyMessage: 'ابدأ مهمّة وأول عالم ليك هيتفتح!',
     emptyAction: 'تصفّح المهمات',
   },
+  worldJourney: {
+    title: 'عوالمك',
+    viewMap: 'شوف الخريطة',
+    locked: 'مقفول',
+    missionCount: '{{count}} مهمّة',
+  },
   balanced: {
     title: 'التطوّر المتوازن',
     subtitle: 'إزاي بتنمو في كل نوع من المهارات.',

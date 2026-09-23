@@ -33,6 +33,7 @@ import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { RecommendationsSection } from '../components/RecommendationsSection'
 import { InterestChips } from '../components/InterestChips'
+import { WorldJourneyStrip } from '../components/WorldJourneyStrip'
 import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
@@ -261,6 +262,12 @@ export function DashboardPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Living-world journey — the learner's worlds as a path/map right at
+            the top of Home, tying the six-worlds North Star into the home
+            surface. Real unlock state + mission counts from the Worlds engine;
+            self-hides when unavailable. */}
+        <WorldJourneyStrip />
 
         {/* Continue learning — the ONE clear next action (Duolingo/Prodigy
             "single visible path" pattern). Resumes an in-progress mission

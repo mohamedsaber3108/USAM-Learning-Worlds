@@ -145,6 +145,12 @@ export const en = {
     emptyMessage: 'Start a mission and your first world will open up!',
     emptyAction: 'Browse missions',
   },
+  worldJourney: {
+    title: 'Your worlds',
+    viewMap: 'View map',
+    locked: 'Locked',
+    missionCount: '{{count}} missions',
+  },
   balanced: {
     title: 'Balanced Development',
     subtitle: 'How you are growing across every kind of skill.',

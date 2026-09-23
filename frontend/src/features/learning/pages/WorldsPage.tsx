@@ -3,10 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
-  Globe2, Lock, ArrowRight, Calculator, FlaskConical, Languages,
-  Code2, Palette, BookOpen, Sparkles, Brain,
+  Globe2, Lock, ArrowRight, Sparkles,
 } from 'lucide-react'
 import { worldsApi, type WorldRecord } from '@/lib/api/endpoints'
+import { visualFor } from '@/features/learning/lib/worldVisual'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
 
 /**
@@ -18,28 +18,9 @@ import { LoadingState, EmptyState, ErrorState } from '@/components/common/Charac
  * explore, with real unlock state and mission counts from the engine.
  *
  * No fake data — everything rendered comes from worldsApi.list().
+ * Domain → icon/gradient mapping is shared via ../lib/worldVisual so the
+ * Home world-journey strip renders worlds identically.
  */
-
-// Map a domain slug to an icon + gradient so each world reads as a distinct
-// place. Falls back to a neutral globe for any unseeded domain.
-const DOMAIN_VISUAL: Record<string, { icon: typeof Globe2; grad: string }> = {
-  mathematics: { icon: Calculator, grad: 'from-sky-400 to-sky-600' },
-  math: { icon: Calculator, grad: 'from-sky-400 to-sky-600' },
-  science: { icon: FlaskConical, grad: 'from-primary-400 to-primary-600' },
-  language: { icon: Languages, grad: 'from-grape-400 to-grape-600' },
-  english: { icon: Languages, grad: 'from-grape-400 to-grape-600' },
-  technology: { icon: Code2, grad: 'from-success-400 to-success-600' },
-  coding: { icon: Code2, grad: 'from-success-400 to-success-600' },
-  arts: { icon: Palette, grad: 'from-bubble-400 to-bubble-600' },
-  creativity: { icon: Palette, grad: 'from-bubble-400 to-bubble-600' },
-  'social-studies': { icon: Globe2, grad: 'from-accent-400 to-accent-600' },
-  'critical-thinking': { icon: Brain, grad: 'from-primary-400 to-grape-500' },
-  reading: { icon: BookOpen, grad: 'from-accent-400 to-secondary-500' },
-}
-
-function visualFor(slug: string) {
-  return DOMAIN_VISUAL[slug] ?? { icon: Globe2, grad: 'from-primary-400 to-primary-600' }
-}
 
 export function WorldsPage() {
   const { t } = useTranslation()

@@ -1,7 +1,16 @@
-import { describe, it, expect } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { screen } from '@testing-library/react'
 import { renderWithProviders } from '@/test/renderWithProviders'
 import { MissionCompletePage } from './MissionCompletePage'
+
+// The score/XP numbers animate via useCountUp (a ~900ms rAF animation). We're
+// asserting the page reads the CORRECT value from the outcome shape, not the
+// animation itself — so make the count-up resolve to its final value
+// synchronously to keep these tests deterministic (no timing flakiness under
+// full-suite CPU load).
+vi.mock('@/lib/hooks/useCountUp', () => ({
+  useCountUp: (value: number) => value,
+}))
 
 /**
  * Locks in the reward-loop fix (commit 48b3bde). The page previously read
@@ -30,10 +39,9 @@ describe('MissionCompletePage', () => {
       state: { result: passResult, runId: 'run-1' },
     })
 
-    // Score counts up to 90% and XP to +95 (animation eases to the final
-    // value over ~900ms, so allow the count-up to settle).
-    await waitFor(() => expect(screen.getByText('90%')).toBeInTheDocument(), { timeout: 3000 })
-    await waitFor(() => expect(screen.getByText('+95')).toBeInTheDocument(), { timeout: 3000 })
+    // Score is read from outcome.finalScore (90) and XP from outcome.xp.amount (95).
+    expect(await screen.findByText('90%')).toBeInTheDocument()
+    expect(screen.getByText('+95')).toBeInTheDocument()
     expect(screen.getByText('Great Job!')).toBeInTheDocument()
   })
 
@@ -64,7 +72,7 @@ describe('MissionCompletePage', () => {
       state: { result: failResult, runId: 'run-2' },
     })
 
-    await waitFor(() => expect(screen.getByText('40%')).toBeInTheDocument(), { timeout: 3000 })
+    expect(await screen.findByText('40%')).toBeInTheDocument()
     expect(screen.getByText(/practice a bit more/i)).toBeInTheDocument()
     expect(screen.queryByText(/reached level/i)).not.toBeInTheDocument()
   })
