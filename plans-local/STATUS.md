@@ -48,13 +48,15 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | **G-3 living-world Home: World Journey strip** | 7c7c2ee | no | ✅ live |
 | **G-5 evidence portfolio (mastery+credentials+projects)** | 2b9e92e | no | ✅ live |
 
-| **G-4 packaging/pricing spec (47 + 48)** | pending | no | 🟡 written, commit pending |
+| **G-4 packaging/pricing spec (47 + 48)** | 5c4a8fe | no | ✅ pushed |
+| **G-4 impl 7a+7b: seed 4 plans + missionsPerDay gate** | pending | **YES** | 🟡 built+tested, commit pending |
 
 ## In progress
 
 | Item | State |
 | --- | --- |
-| G-4 impl: seed plans → wire gates → /plans UI (spec'd, sequenced 7a–7d) | 📋 |
+| Deploy 7a+7b (BACKEND: run migration + pm2 restart) | 🟡 |
+| G-4 7c: /plans + upgrade UI; 7b more gates (voice/aiTutor) | 📋 |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
 
 ## Blocked

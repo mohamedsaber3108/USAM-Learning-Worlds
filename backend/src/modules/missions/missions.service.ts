@@ -7,6 +7,7 @@ import { MisconceptionService } from '../misconceptions/misconception.service';
 import { InterventionService } from '../interventions/intervention.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ProgressionService } from '../gamification/progression.service';
+import { EntitlementsService } from '../entitlements/entitlements.service';
 
 @Injectable()
 export class MissionsService {
@@ -19,6 +20,7 @@ export class MissionsService {
     private interventionService: InterventionService,
     private notificationsService: NotificationsService,
     private progressionService: ProgressionService,
+    private entitlementsService: EntitlementsService,
   ) {}
 
   /**
@@ -85,9 +87,15 @@ export class MissionsService {
     });
 
     if (existingRun) {
-      // Resume existing run
+      // Resume existing run — resuming never counts against the daily cap.
       return this.getMissionRun(existingRun.id);
     }
+
+    // Entitlement gate (G-4): enforce the plan's missionsPerDay cap before
+    // creating a NEW run. Paid tiers set missionsPerDay: null (unlimited) so
+    // this is a no-op for them; FREE is capped. Throws ForbiddenException when
+    // the cap is reached.
+    await this.entitlementsService.assertCanStartMission(learnerId);
 
     // Create new run
     const run = await this.prisma.missionRun.create({

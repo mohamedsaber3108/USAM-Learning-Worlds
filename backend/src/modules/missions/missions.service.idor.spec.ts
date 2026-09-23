@@ -16,6 +16,7 @@ function makeService(prisma: any, progression?: any) {
     {} as any, // interventionService
     { emitMissionMilestone: jest.fn() } as any, // notificationsService
     progression ?? ({ awardXP: jest.fn().mockResolvedValue({ awarded: true }) } as any),
+    { assertCanStartMission: jest.fn().mockResolvedValue({ allowed: true }) } as any, // entitlementsService
   );
 }
 

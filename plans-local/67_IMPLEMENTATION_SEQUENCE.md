@@ -32,8 +32,8 @@ Every step is a self-contained slice: implement → verify (tsc/build/lint/test)
 | 4 | Living-world Home depth | G-3 | maybe | after #2 |
 | 5 | Portfolio/evidence child surface | G-5 | maybe | after #3 |
 | 6 | **Spec** 47_PRICING_PACKAGING + 48_BUSINESS_MODEL | G-4 | — | ✅ DONE |
-| 7a | Seed FREE/EXPLORER/FAMILY/SCHOOL plans + add TRIALING status | G-4 | **yes** | after #6 spec ✅ → NEXT |
-| 7b | Wire real gates (missionsPerDay/voice/aiTutor/maxLearners) via hasFeature/getLimit | G-4 | **yes** | after 7a |
+| 7a | Seed FREE/EXPLORER/FAMILY/SCHOOL plans (TRIALING already in enum) | G-4 | **yes** | ✅ DONE (migration 20260924) |
+| 7b | Wire missionsPerDay gate via entitlements.assertCanStartMission | G-4 | **yes** | ✅ DONE (more gates: voice/aiTutor next) |
 | 7c | `/plans` + upgrade UI (never before 7a+7b) | G-4 | no | after 7b |
 | 7d | Real payment gateway behind provider interface | G-4 | **yes** | after 7c |
 | 8 | Orphan-engine sweep + doc | G-8 | no | rolling |

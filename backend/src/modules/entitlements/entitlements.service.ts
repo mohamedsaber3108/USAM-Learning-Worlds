@@ -7,7 +7,7 @@
  * tier logic. Subscription creation goes through the PaymentProvider
  * abstraction, so switching on a real gateway later requires no changes here.
  */
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import {
   PAYMENT_PROVIDER,
@@ -73,6 +73,62 @@ export class EntitlementsService {
     const features = (plan?.features as Record<string, unknown>) ?? {};
     const value = features[key];
     return typeof value === 'number' ? value : null;
+  }
+
+  /**
+   * Resolve the billing owner (a User id) for a given learner. Entitlements
+   * are owned by a guardian, so we prefer the learner's active guardian's
+   * userId; when a learner has no guardian (self-managed account) we fall
+   * back to the learner's own userId. Never throws — a learner with neither
+   * resolvable owner simply gets FREE-tier entitlements downstream.
+   */
+  async resolveOwnerUserIdForLearner(learnerId: string): Promise<string | null> {
+    const learner = await this.prisma.learner.findUnique({
+      where: { id: learnerId },
+      select: {
+        userId: true,
+        guardianships: {
+          where: { status: 'ACTIVE' },
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+          select: { guardian: { select: { userId: true } } },
+        },
+      },
+    });
+    if (!learner) return null;
+    return learner.guardianships[0]?.guardian?.userId ?? learner.userId;
+  }
+
+  /**
+   * Enforce the plan's `missionsPerDay` cap for a learner. A null/absent limit
+   * means unlimited (paid tiers). Only counts mission runs the learner STARTED
+   * today (UTC day), so resuming an already-started run is never blocked.
+   * Returns the limit info so callers/tests can reason about it; throws
+   * ForbiddenException when the cap is reached.
+   */
+  async assertCanStartMission(learnerId: string): Promise<{ allowed: true; limit: number | null; startedToday: number }> {
+    const ownerUserId = await this.resolveOwnerUserIdForLearner(learnerId);
+    const limit = ownerUserId ? await this.getLimit(ownerUserId, 'missionsPerDay') : 3;
+
+    // No numeric limit => unlimited (paid tiers set missionsPerDay: null).
+    if (limit === null) {
+      return { allowed: true, limit: null, startedToday: 0 };
+    }
+
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const startedToday = await this.prisma.missionRun.count({
+      where: { learnerId, startedAt: { gte: startOfDay } },
+    });
+
+    if (startedToday >= limit) {
+      throw new ForbiddenException(
+        `You've reached today's limit of ${limit} missions on the free plan. Come back tomorrow, or upgrade for unlimited missions.`,
+      );
+    }
+
+    return { allowed: true, limit, startedToday };
   }
 
   /**
