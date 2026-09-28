@@ -68,7 +68,16 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | **G-8 orphan-engine sweep (66_FINAL_ENGINE_INVENTORY)** | 4f42efb | no | ✅ |
 | **G-7 accessibility: skip link + axe gate (3 tests)** | 61678d4 | no | ✅ |
 | **G-9 Ask-the-Coach panel (coding-coach engine surfaced)** | 8a84f03 | no | ✅ built (⛔ AI runtime unverified — Bedrock) |
-| **docs/platform-audit index (recovery-mandate reconciliation)** | pending | no | 🟡 this batch |
+| **docs/platform-audit index (recovery-mandate reconciliation)** | aa2cd67 | no | ✅ |
+| **Frontend Reconstruction Phase A: §38 research+architecture docs** | pending | no | 🟡 this batch (10 Bible artifacts) |
+
+## Frontend Reconstruction Program (Reference Bible §39)
+Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND_REBUILD_ARCHITECTURE.md`), deployable each phase, zero engine loss.
+| Phase | State |
+| --- | --- |
+| A research + architecture (§38 docs) | 🟡 this batch |
+| B design-system layer (Radix + owned components) | 📋 next |
+| C shell + world-map Home · D world/mission spine · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
 
 ## In progress
 

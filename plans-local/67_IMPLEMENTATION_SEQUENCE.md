@@ -53,3 +53,29 @@ Every step is a self-contained slice: implement → verify (tsc/build/lint/test)
 ## Blocked, parked until unblocked
 
 - AI tutor / voice realtime (G-B1) — needs Bedrock creds on server.
+
+---
+
+## Frontend Reconstruction Program (Reference Bible §39) — added 2026-09-23
+
+Derived from `docs/frontend/FRONTEND_REBUILD_ARCHITECTURE.md`. Strategy is
+**incremental shell-first route replacement** (not big-bang delete) so the
+Lovable-connected branch stays deployable and no backend engine is orphaned
+(Bible §35/§37). Legacy pages are deleted per-phase only after their replacement
+is live + verified.
+
+| Phase | Scope | State |
+| --- | --- | --- |
+| A. Research + architecture (§38 docs) | reference bible, OSS matrix, product bible, competitor + learning-science research, page/flow inventory, design system, rebuild architecture, voice + english registries | ✅ this batch |
+| B. Design-system layer | Radix-backed `ui/*` + owned `system/*` components (+ Storybook POC) | 📋 next |
+| C. Shell + Home | age-adaptive AppShell/nav + world-map Home | 📋 |
+| D. World/mission spine | world map + world detail (+ mission player already rebuilt) | 📋 |
+| E. Domain surfaces | English, Coding (+CodeMirror where needed), AI-learning (NEW), practice, creativity/thinking, stories, simulations | 📋 |
+| F. Projects/portfolio/progress | project workspace (NEW), progress/mastery rework, achievements | 📋 |
+| G. Parent area | dashboard, linking, weekly reports (NEW), consent (keep), billing | 📋 |
+| H. QA gate | Playwright E2E, responsive, a11y, Lighthouse, visual | 📋 |
+| I. Production gate | Bible §37 checklist; reconcile repo ↔ deploy | 📋 |
+
+External blockers (stop only for these): Bedrock creds (AI/voice/coach runtime),
+payment processor + keys (G-4 7d), legal jurisdiction review, irreversible product
+decisions (drop-a-domain / final pricing).
