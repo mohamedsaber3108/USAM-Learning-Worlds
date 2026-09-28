@@ -1455,3 +1455,31 @@ export const entitlementsApi = {
   cancel: (subscriptionId: string) =>
     apiClient.post(`/entitlements/cancel/${subscriptionId}`),
 }
+
+// ==================== Coding Coach (AI coding help) ====================
+// Surfaces the backend Coding Coach engine (POST /coding-coach/{debug,explain,
+// review,challenge}) — a real AI coding-help service that had no frontend
+// (orphan-engine sweep G-8 → G-9). AI-backed (Bedrock), so callers must handle
+// failure gracefully: when the model is unavailable these requests error and
+// the UI degrades to a "coach is resting" state rather than breaking the
+// mission. Request/response shapes mirror coding-coach.service.ts.
+export interface CoachDebugResponse {
+  diagnosis?: string
+  suggestedFix?: string
+  explanation?: string
+  learningPoints?: string[]
+}
+
+export interface CoachExplainResponse {
+  code?: string
+  explanation?: string
+  keyConceptsintroduced?: string[]
+  analogies?: string[]
+}
+
+export const codingCoachApi = {
+  debug: (data: { code: string; language: string; error?: string; expectedBehavior?: string }) =>
+    apiClient.post<CoachDebugResponse>('/coding-coach/debug', data),
+  explain: (data: { code: string; language: string }) =>
+    apiClient.post<CoachExplainResponse>('/coding-coach/explain', data),
+}

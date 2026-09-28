@@ -631,6 +631,16 @@ export const en = {
     ready: "I'm ready",
     skip: 'Skip to practice',
   },
+  codingCoach: {
+    title: 'Ask the coach',
+    subtitle: 'Stuck? Codey can explain your code or help you debug.',
+    explain: 'Explain this',
+    debug: 'Help me debug',
+    writeSomething: 'Write some code first, then ask the coach.',
+    thinking: 'Codey is looking at your code...',
+    unavailable: "Codey is resting right now — keep coding, and try again in a bit!",
+    suggestedFix: 'Try this',
+  },
   missionPlayer: {
     loading: 'Getting your mission ready...',
     missionFallback: 'Mission',

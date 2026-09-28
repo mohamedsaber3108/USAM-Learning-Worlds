@@ -14,6 +14,7 @@ import { Play, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { runPython } from './PyodideRunner'
 import { SandpackMission } from './SandpackMission'
 import { BlocklyWorkspace, type BlocklyWorkspaceHandle } from './BlocklyWorkspace'
+import { CodingCoachPanel } from './CodingCoachPanel'
 import { codingSandboxApi, type CodingSandboxMission } from '@/lib/api/endpoints'
 
 export interface CodeMissionRunnerProps {
@@ -198,6 +199,14 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
             </p>
           )}
         </div>
+      )}
+
+      {/* Ask the Coach (G-9) — surfaces the coding-coach engine so a stuck
+          learner can get an explain/debug hint on their current code. AI-backed
+          and self-hiding-on-failure; the mission works fully without it. Not
+          shown for Blockly (visual blocks aren't text the coach reasons over). */}
+      {mission.runner !== 'blockly' && (
+        <CodingCoachPanel code={code} language={mission.language} />
       )}
     </div>
   )

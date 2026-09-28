@@ -632,6 +632,16 @@ export const ar: TranslationKeys = {
     ready: 'أنا جاهز',
     skip: 'تخطّي للتمرين',
   },
+  codingCoach: {
+    title: 'اسأل الكوتش',
+    subtitle: 'واقف؟ كودي يقدر يشرحلك الكود أو يساعدك تصلّح الأخطاء.',
+    explain: 'اشرحلي ده',
+    debug: 'ساعدني أصلّح',
+    writeSomething: 'اكتب شوية كود الأول، وبعدين اسأل الكوتش.',
+    thinking: 'كودي بيبصّ على الكود بتاعك...',
+    unavailable: 'كودي مرتاح دلوقتي — كمّل كودك وجرّب تاني بعد شوية!',
+    suggestedFix: 'جرّب كده',
+  },
   missionPlayer: {
     loading: 'بنجهّز مهمتك...',
     missionFallback: 'مهمة',
