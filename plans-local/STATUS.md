@@ -6,11 +6,18 @@
 Branch `fix/p0-p1-remediation` · HEAD `8a84f03` · Last live-verified bundle `index-B5sC8ROB.js` (2026-09-23)
 > Note: commits after `8e00d09` (G-7 `61678d4`, G-9 `8a84f03`) are pushed but await a frontend redeploy to go live.
 
-> Deploy note: raw-SQL migrations must be run with the connection string from
-> `backend/.env` — `$DATABASE_URL` is NOT exported in the shell, so bare `psql
-> "$DATABASE_URL"` connects as OS user `ubuntu` and fails ("role ubuntu does
-> not exist"). Use:
+> Deploy note (migrations): raw-SQL migrations must be run with the connection
+> string from `backend/.env` — `$DATABASE_URL` is NOT exported in the shell, so
+> bare `psql "$DATABASE_URL"` connects as OS user `ubuntu` and fails ("role
+> ubuntu does not exist"). Use:
 > `DB_URL="$(grep -E '^DATABASE_URL=' backend/.env | head -1 | cut -d= -f2- | tr -d '\"')" && psql "$DB_URL" -f <migration>`
+>
+> Deploy note (dependencies): **whenever `frontend/package.json` changes (new
+> deps), the deploy MUST run `npm install` before `npm run build`** — otherwise
+> the server's node_modules lacks the new packages and tsc fails with "Cannot
+> find module". Full frontend deploy with deps:
+> `cd frontend && npm install && rm -rf dist node_modules/.vite && npm run build && sudo systemctl reload nginx`
+> (Phase B added @radix-ui/* + class-variance-authority — this applied there.)
 
 Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planned
 
