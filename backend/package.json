@@ -118,5 +118,10 @@
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
+  },
+  "overridesRationale": "Security overrides (audit 72): pin transitive deps to patched versions WITHOUT a NestJS major bump. multer<=2.2.0 DoS (runtime-reachable via voice upload) -> 2.4.0; lodash<=4.17.23 code-injection/proto-pollution -> 4.18.1. NOT npm audit fix --force. protobufjs/OTel remain research.",
+  "overrides": {
+    "multer": "^2.4.0",
+    "lodash": "^4.18.1"
   }
 }

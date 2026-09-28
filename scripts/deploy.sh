@@ -46,8 +46,29 @@ ok "source at $LOCAL_COMMIT"
 
 # --------------------------------------------------------------- 2. BACKEND (optional)
 if [ "$DEPLOY_BACKEND" = "1" ]; then
-  log "[2/7] Backend: install + build + restart"
+  log "[2/7] Backend: install + build + drift gates + tests + restart"
   ( cd backend && npm ci --include=dev && npm run build ) || die "backend build failed"
+
+  # MANDATORY DRIFT GATES (audit 71): both caught real production defects
+  # (SubscriptionStatus enum drift that 500'd all mission starts; 11 missing
+  # columns). They are permanent, non-optional gates now — the deploy STOPS
+  # (never restarts/cuts over) if the live DB schema drifts from the code.
+  #   - check:enum-drift  : every Prisma enum has a matching Postgres type+values
+  #   - check:migrations  : every CREATE TABLE / ADD COLUMN exists in the live DB
+  # These read DATABASE_URL from backend/.env the same way Prisma does.
+  ( cd backend && npm run check:enum-drift ) || die "ENUM DRIFT detected — see audit 71; fix before deploy"
+  ( cd backend && npm run check:migrations ) || die "MIGRATION DRIFT detected — apply missing migrations before deploy"
+  ok "drift gates passed (enum + migrations)"
+
+  # Backend test suite as a release gate (opt-out only via SKIP_BACKEND_TESTS=1
+  # for emergencies, which must be a conscious choice, not a default).
+  if [ "${SKIP_BACKEND_TESTS:-0}" = "1" ]; then
+    log "  backend tests: SKIPPED (SKIP_BACKEND_TESTS=1 — emergency override)"
+  else
+    ( cd backend && npm test ) || die "backend tests failed"
+    ok "backend tests passed"
+  fi
+
   pm2 restart usam-backend --update-env || die "pm2 restart failed"
   ok "backend rebuilt + restarted"
 else
