@@ -98,7 +98,17 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | **PHASE D COMPLETE** — Home→Map→Detail→Mission spine coherent, real state, 37 tests, deployed | — | — | ✅ |
 | **E domain surfaces** (English → Coding → AI → Practice → Creativity/Thinking → Stories → Simulations) | — | — | 🟡 in progress |
 | **E1 English strands reworked to standard** | 312bcf2 | no | ✅ DEPLOYED (bundle index-aBTHjwOD.js) |
-| **E2 Coding landing page (/coding)** — NEW browse/entry surface; real CodingConcept progression + Codey + mission entry; Home quick-action | pending | no | 🟡 built+verified (40 tests), commit pending |
+| **E2 Coding landing page (/coding)** | 312be65 | no | 🟡 PUSHED (not yet deployed) — 40 tests |
+| **Domain Completion Matrix (68) — tightened Phase-E audit** | pending | no | 🟡 this batch |
+
+> ⛔ **Phase E owner decision required.** Full code trace (2026-09-28) shows most
+> "domains" (English, AI-literacy, creativity, thinking) are **catalog metadata +
+> Bedrock-gated coach**, not runnable learn→practice→assess→master→evidence flows.
+> Only Missions/Coding, Simulations, and Flashcards have a real runnable+evidence
+> flow. Completing catalog domains is BACKEND architecture + content work. See
+> `68_DOMAIN_COMPLETION_MATRIX.md`. Awaiting choice: (A) route catalogs through the
+> Mission engine · (B) build a domain-specific English engine · (C) honestly reframe
+> domain pages as explore+coach+jump-to-missions (buildable now). Recommendation: C now, A long-term.
 | F projects/portfolio/progress · G parent · H QA gate · I production gate | — | — | 📋 |
 
 ## In progress
