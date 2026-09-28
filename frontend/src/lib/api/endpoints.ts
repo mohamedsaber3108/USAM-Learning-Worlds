@@ -393,6 +393,30 @@ export const englishApi = {
 
   getStrand: (slug: string) =>
     apiClient.get<EnglishStrand>(`/english/strands/${slug}`),
+  // Option A: the real English learning path (skills → competencies → mission +
+  // learner mastery) through the shared spine.
+  getLearningPath: () => apiClient.get<EnglishPath>('/english/path'),
+}
+
+export interface EnglishPathCompetency {
+  id: string
+  name: string
+  description: string | null
+  cefrLevel: string | null
+  missionId: string | null
+  missionTitle: string | null
+  masteryState: 'NOT_STARTED' | 'NOVICE' | 'DEVELOPING' | 'PROFICIENT' | 'MASTERED' | string
+  confidence: number
+}
+export interface EnglishPathSkill {
+  id: string
+  name: string
+  slug: string
+  competencies: EnglishPathCompetency[]
+}
+export interface EnglishPath {
+  domain: { id: string; name: string; slug: string } | null
+  skills: EnglishPathSkill[]
 }
 
 /**

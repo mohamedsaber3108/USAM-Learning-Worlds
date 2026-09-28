@@ -372,9 +372,17 @@ model Competency {
   description String?
   order       Int      @default(0)
   isActive    Boolean  @default(true)
+  // Domain-plugin taxonomy (Option A): an English competency's PRIMARY/home
+  // EnglishStrand (family × CEFR). Taxonomy metadata only — CEFR is NOT stored
+  // here (it lives on the strand, the source of truth); learning runs through
+  // the shared spine (Objective→Activity→Mission→Evidence→Mastery). Null for
+  // non-English competencies. A CompetencyStrand join can be added later for
+  // genuinely cross-strand competencies without reworking this FK.
+  strandId    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  strand         EnglishStrand?           @relation(fields: [strandId], references: [id], onDelete: SetNull)
   skill          Skill                    @relation(fields: [skillId], references: [id], onDelete: Cascade)
   concepts       Concept[]
   objectives     LearningObjective[]
@@ -1743,6 +1751,10 @@ model EnglishStrand {
   order       Int                  @default(0)
   isActive    Boolean              @default(true)
   createdAt   DateTime             @default(now())
+
+  // Option A: strands classify English competencies (taxonomy), they are not
+  // a parallel learning engine. Competencies plug into the shared spine.
+  competencies Competency[]
 
   @@index([slug])
   @@index([strandType])

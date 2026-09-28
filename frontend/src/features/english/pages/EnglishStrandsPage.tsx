@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   Languages, MessageCircle, BookOpen, PencilLine, Mic, Ear, BookMarked,
-  PenLine, MessagesSquare, Drama, Keyboard,
+  PenLine, MessagesSquare, Drama, Keyboard, CheckCircle2, Circle, PlayCircle,
 } from 'lucide-react'
 import { englishApi, type EnglishStrand, type EnglishStrandFamily } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
@@ -52,6 +52,13 @@ export function EnglishStrandsPage() {
       englishApi.listStrands(cefrFilter ? { cefrLevel: cefrFilter } : undefined).then((res) => res.data),
   })
 
+  // Option A: the real learning path (skills → competencies → mission + mastery).
+  const { data: path } = useQuery({
+    queryKey: ['english-path'],
+    queryFn: () => englishApi.getLearningPath().then((res) => res.data),
+  })
+  const pathSkills = path?.skills?.filter((s) => s.competencies.length > 0) ?? []
+
   const grouped: Record<string, EnglishStrand[]> = {}
   for (const strand of strands || []) {
     const fam = strand.strandType || 'VOCABULARY'
@@ -86,6 +93,77 @@ export function EnglishStrandsPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* CURRENT LEARNING PATH (Option A) — the real spine: competencies with
+            live mastery state, each launching its real mission. Shown ABOVE the
+            strand catalog: "what do I learn next?" before "what can I browse?".
+            Mission ids come from the API (GET /english/path), never hardcoded. */}
+        {pathSkills.length > 0 && (
+          <section className="mb-8" aria-labelledby="english-path-heading">
+            <h2 id="english-path-heading" className="text-lg font-display font-bold text-slate-900 mb-1">
+              {t('english.pathTitle')}
+            </h2>
+            <p className="text-sm text-slate-500 mb-4">{t('english.pathSubtitle')}</p>
+            <div className="space-y-6">
+              {pathSkills.map((skill) => (
+                <div key={skill.id}>
+                  <h3 className="font-display font-semibold text-slate-700 mb-2">{skill.name}</h3>
+                  <ul className="space-y-2">
+                    {skill.competencies.map((c) => {
+                      const mastered = c.masteryState === 'MASTERED' || c.masteryState === 'PROFICIENT'
+                      const started = c.masteryState !== 'NOT_STARTED'
+                      const StateIcon = mastered ? CheckCircle2 : started ? PlayCircle : Circle
+                      const stateTint = mastered
+                        ? 'text-success-600'
+                        : started
+                        ? 'text-primary-600'
+                        : 'text-slate-300'
+                      const inner = (
+                        <div className="flex items-center gap-3 rounded-card border-2 border-surface-200/70 bg-white p-4 hover:border-primary-300 transition-colors">
+                          <StateIcon className={`w-5 h-5 shrink-0 ${stateTint}`} strokeWidth={2} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-display font-semibold text-slate-900">{c.name}</span>
+                              {c.cefrLevel && (
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">{c.cefrLevel}</span>
+                              )}
+                              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 text-slate-500">
+                                {t(`english.mastery.${String(c.masteryState).toLowerCase()}`, { defaultValue: String(c.masteryState) })}
+                              </span>
+                            </div>
+                            {c.description && <p className="text-sm text-slate-500 line-clamp-1">{c.description}</p>}
+                          </div>
+                          {c.missionId && (
+                            <span className="btn btn-primary shrink-0 hidden sm:inline-flex text-sm px-3 py-1.5">
+                              {started ? t('missionPlayer.continue') : t('english.startLearning')}
+                            </span>
+                          )}
+                        </div>
+                      )
+                      return (
+                        <li key={c.id}>
+                          {c.missionId ? (
+                            <Link
+                              to={`/missions/${c.missionId}`}
+                              className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded-card"
+                            >
+                              {inner}
+                            </Link>
+                          ) : (
+                            <div aria-disabled title={t('english.comingSoon')} className="opacity-70">{inner}</div>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* EXPLORE ENGLISH — the strand catalog (discovery, secondary). */}
+        <h2 className="text-lg font-display font-bold text-slate-900 mb-3">{t('english.exploreTitle')}</h2>
+
         {/* CEFR filter */}
         <div className="card mb-6">
           <div className="flex flex-wrap items-center gap-2">

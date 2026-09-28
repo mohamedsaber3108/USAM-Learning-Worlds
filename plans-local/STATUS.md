@@ -111,6 +111,23 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 > domain pages as explore+coach+jump-to-missions (buildable now). Recommendation: C now, A long-term.
 | F projects/portfolio/progress · G parent · H QA gate · I production gate | — | — | 📋 |
 
+## DECISION: OPTION A (canonical shared spine). English vertical slice
+| Item | State |
+| --- | --- |
+| Taxonomy validated (strand = family×CEFR; CEFR stays on strand; Competency.strandId = primary FK only, NO cefrLevel dup) — plan 69 amended | ✅ |
+| Schema migration `20260929_competency_english_strand.sql` (strandId FK+index, idempotent) | 🟡 built, **NOT yet applied to DB** |
+| TS seed `seed-english-vocabulary-slice.ts` (real A1 content: domain→skill→competency(strand-tagged)→objective→3 activities→mission) | 🟡 built, **NOT yet run** |
+| `GET /english/path` (projection over the shared spine + learner mastery) | 🟡 built (BE build clean) |
+| English Path UI (real mission links, live mastery, CEFR from API, no hardcoded id) | 🟡 built (FE build clean) |
+| Integration test: English SELECT/MATCH → Evidence(competencyId)+mastery via REAL evaluator (3 tests) | ✅ 56 BE tests pass |
+| **LIVE DB verification** (apply migration + run seed + query persisted Evidence/MasteryRecord after a real submit) | ⛔ pending deploy — the real proof |
+| **English domain status** | **PARTIAL / reconstruction in progress** — NOT complete until live-verified |
+
+Deferred (documented in 69/70): specialized English activity types (PRONUNCIATION/
+DICTATION/SHADOWING/SPEAKING/CLOZE/READING_COMP/WRITING/ROLEPLAY) + voice contracts;
+CompetencyStrand join for cross-strand competencies (additive when needed); content
+scale-out; generalize `/english/path` → `/domains/:slug/path` after the slice is proven live (§11).
+
 ## In progress
 
 | Item | State |
