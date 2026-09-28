@@ -75,8 +75,8 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND_REBUILD_ARCHITECTURE.md`), deployable each phase, zero engine loss.
 | Phase | State |
 | --- | --- |
-| A research + architecture (§38 docs) | 🟡 this batch |
-| B design-system layer (Radix + owned components) | 📋 next |
+| A research + architecture (§38 docs) | ✅ cf4399a |
+| **B design-system layer (Radix + owned components)** | 🟡 primitives built+tested (Dialog/Menu/Tabs/Tooltip/Popover/Toast/Progress/Field), 28 tests, axe-clean — this batch |
 | C shell + world-map Home · D world/mission spine · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
 
 ## In progress
