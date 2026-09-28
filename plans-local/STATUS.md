@@ -98,8 +98,11 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | **PHASE D COMPLETE** — Home→Map→Detail→Mission spine coherent, real state, 37 tests, deployed | — | — | ✅ |
 | **E domain surfaces** (English → Coding → AI → Practice → Creativity/Thinking → Stories → Simulations) | — | — | 🟡 in progress |
 | **E1 English strands reworked to standard** | 312bcf2 | no | ✅ DEPLOYED (bundle index-aBTHjwOD.js) |
-| **E2 Coding landing page (/coding)** | 312be65 | no | 🟡 PUSHED (not yet deployed) — 40 tests |
-| **Domain Completion Matrix (68) — tightened Phase-E audit** | pending | no | 🟡 this batch |
+| **E2 Coding landing page (/coding)** | 312be65 | no | ✅ deployed |
+| **Coding VERTICAL SLICE — full loop LIVE PROVEN** | 80f4818 | **YES** | ✅ prod: run 7d26808d, CODE submit correct 0.9 → Evidence CREATION + Mastery DEVELOPING for coding-competency-loops-intro |
+| **Generic domain path** `/learning/domains/:slug/path` | 8340c8c | **YES** | ✅ live for coding + english (english shows cefrLevel A1) |
+| **Platform hardening** (displayName not-unique · enum-drift audit+guard · dep audit · maintenance runbook) | 47e3346→b93fc0e | **YES** | ✅ displayName live-verified; check:enum-drift guard found 5 more real drifts (fix migration 20260930_fix_drift_intervention_escalation_fsrs.sql pending apply) |
+| **Domain Completion Matrix (68) — tightened Phase-E audit** | 80b853d | no | ✅ English+Coding both VERTICAL-SLICE PROVEN live |
 
 > ⛔ **Phase E owner decision required.** Full code trace (2026-09-28) shows most
 > "domains" (English, AI-literacy, creativity, thinking) are **catalog metadata +

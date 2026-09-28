@@ -12,8 +12,9 @@
 Last updated: 2026-09-29 · HEAD `8340c8c`
 
 ## Shared-spine status (the canonical architecture)
-- ✅ **Spine proven**: English vocabulary A1 slice ran the full loop live on prod
-  (Evidence + MasteryRecord); Coding slice built + code-proven (live pending).
+- ✅ **Spine proven on 2 domains LIVE**: English vocabulary A1 AND Coding loops-intro
+  both ran the full loop on prod (Evidence + MasteryRecord + reviewDue), through
+  the same shared engine — English via SELECT/MATCH, Coding via CODE.
 - ✅ **Generic domain path**: `GET /learning/domains/:slug/path` (`DomainPathService`)
   — one projection for all domains; `/english/path` delegates to it. (8340c8c)
 - ✅ **Regression contract**: `canonical-domain-loop.harness.ts` parameterized by
@@ -81,7 +82,7 @@ parent/recommendation surfaces. (✅ generic path `/learning/domains/:slug/path`
 
 ---
 
-## CODING — status: 🟢 VERTICAL-SLICE BUILT (code-proven; live proof pending deploy)
+## CODING — status: 🟢 VERTICAL-SLICE PROVEN (live 2026-09-28)
 > CORRECTION (2026-09-29): earlier rows here were WRONG. A full code trace
 > (context-gatherer) found NO `CodeMissionRunner`, NO Pyodide/Sandpack/Blockly
 > executor, and NO `/coding-sandbox/submissions` route anywhere in the repo —
@@ -111,7 +112,7 @@ parent/recommendation surfaces. (✅ generic path `/learning/domains/:slug/path`
 | 10 | Parent/progress | 🟡 | mastery now persists (queryable); `GET /coding/learner/progress` filters by Domain name "Coding" — the seed uses that exact name so it now resolves. |
 | 11–13 | Responsive/RTL/a11y | ✅ | E2 |
 | 14 | Tests | ✅ (slice) | `coding-vertical-slice.spec.ts` (3) + coding case in the canonical-domain-loop harness. |
-| 15 | Deploy verified | ⛔ **pending** | seed + backend redeploy not yet run on prod; then a live learner submit must show Evidence(CREATION)+Mastery for `coding-competency-loops-intro`. |
+| 15 | Deploy verified | ✅ **LIVE 2026-09-28** | seed run on prod; learner `48c5b342…` started run `7d26808d…` on `coding-mission-first-loops`, submitted `coding-act-loops-print-1-to-3` → `correct:true, score:0.9`; `evidence` CREATION (attemptId `6ee742b1…`) + `mastery_records` DEVELOPING/conf 0.685/evidenceCount 2/reviewDue set for `coding-competency-loops-intro`; generic `/learning/domains/coding/path` returns it live. |
 
 **Remaining to reach full domain-complete:** live proof (deploy + seed + real
 submit); real sandboxed code execution + test-case grading (replace keyword

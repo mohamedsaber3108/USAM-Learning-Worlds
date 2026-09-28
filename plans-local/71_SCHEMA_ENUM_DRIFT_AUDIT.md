@@ -144,7 +144,29 @@ from this list is live drift. (The app already runs auth/missions/mastery, which
 use Role/MissionType/MasteryState/etc., so those baseline types almost certainly
 exist as real enums — but `check:enum-drift` proves it rather than assuming.)
 
+## Live guard run 2026-09-28 — found MORE real drift (guard working as intended)
+Running `npm run check:enum-drift` on prod (after 20260930_fix_enum_drift.sql
+applied cleanly — ConsentPurpose/DataSubjectRequest*/ContentSource now OK) surfaced
+5 pre-existing drifts + `check:migrations` found 11 missing columns, all from
+migrations that were NON-idempotent and never applied to prod:
+- MISSING TYPE: `InterventionTrigger`, `InterventionStatus` (Intervention Engine had
+  NO migration file at all — only in schema), `EscalationResolutionType`
+  (`20260909_add_teacher_mentor_escalation_resolution.sql`, non-idempotent, unapplied).
+- MISSING VALUE: `CharacterRole` += DIGITAL_GUARDIAN
+  (`20260902_add_digital_guardian_character_role.sql`); `ConversationType` += DEBATE,
+  INTERVIEW (`20260903_add_debate_interview_conversation_types.sql`).
+- MISSING COLUMNS (11): `flashcard_reviews.*` (FSRS, `20260910_add_fsrs_flashcard_state.sql`),
+  `projects.{domainIds,isCrossDomain}` (`20260909_add_cross_domain_project_engine_v1.sql`),
+  `safety_escalations.{resolutionType,resolutionNote}`.
+
+**Fix:** `20260930_fix_drift_intervention_escalation_fsrs.sql` — ONE consolidated,
+fully-guarded, re-runnable migration that creates all 3 enum types, adds the 3 enum
+values (IF NOT EXISTS), creates `intervention_recommendations` (+FKs/indexes), and
+adds all 11 columns (ADD COLUMN IF NOT EXISTS). Apply on prod, then re-run
+`check:enum-drift` + `check:migrations` — both must go green.
+
 ## Follow-ups
-- Run `npm run check:enum-drift` on prod after applying 20260930_fix_enum_drift.sql;
-  paste output into this doc as the recorded baseline.
-- Add `check:enum-drift` (and `check:migrations`) as a gate step in `scripts/deploy.sh`.
+- Apply `20260930_fix_drift_intervention_escalation_fsrs.sql` on prod; re-run both
+  guards; paste the clean output here as the recorded baseline.
+- Add `check:enum-drift` (and `check:migrations`) as a gate step in `scripts/deploy.sh`
+  so an unapplied/non-idempotent migration fails the deploy, not a live query.
