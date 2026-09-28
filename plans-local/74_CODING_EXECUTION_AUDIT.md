@@ -113,6 +113,27 @@
 - This distinction will be recorded on the Evidence (`context.executionPolicy`)
   so mastery/credential logic can treat them differently later.
 
+## JS execution (task #4) — status
+Sandpack (`SandpackMission`, `@codesandbox/sandpack-react`) is KEPT — it runs JS
+in its sandboxed preview iframe (no app-context `eval`; `externalResources: []`,
+navigator/open-in-codesandbox disabled). `CodeMissionRunner` now builds
+`testOutcomes` from the captured console stdout for `stdout-equals`/`stdout-contains`
+tests and POSTs them to the same server-graded path (server re-validates). So JS
+stdout exercises grade through the identical spine as Python. `function-call` /
+`result-equals` tests are NOT yet supported on the JS path (those exercises use
+Python today) — documented limitation, not a broken path.
+
+## Blockly (task #5) — status: architecture wired, block-editor UI deferred
+Blockly is designed as a **content flag, not a separate engine**: an Activity sets
+`content.runner = 'blockly'`, the backend `getMission`/`parseExerciseSpec` returns
+`runner: 'blockly'`, and blocks are meant to generate Python that runs through the
+EXACT same Pyodide worker + test-model + Evidence path. No parallel grading/mastery.
+However, **no Blockly dependency is installed** (`package.json` has no `blockly`),
+so the visual block-editor UI does not exist yet. Adding it is a dependency +
+UI task (generate Python from blocks, feed `runPythonTests`) — deferred and
+documented rather than fabricated. The spine is ready to receive it with zero
+backend/evidence changes.
+
 ## Plan for this batch (tasks 2–13)
 Harden the existing stack, re-point the seeded slice to the sandbox assertion
 path with a real test model, enrich Evidence, wire coach context, add tests +

@@ -234,6 +234,8 @@ export class CodingSandboxService {
     const { outcomes, passed, score, testsPassed, testsTotal } = graded;
 
     // AI code review — static text analysis only, never executes the code.
+    // Feed the real failing-test + task context so Codey guides toward the
+    // specific gap (not a vacuum review, not the full solution).
     let coachFeedback: string | null = null;
     try {
       const review = await this.codingCoach.reviewCode({
@@ -241,10 +243,17 @@ export class CodingSandboxService {
         code: submission.code,
         language: submission.language,
         objectiveId: activity.objectiveId,
+        taskPrompt: spec.prompt,
+        failingTests: outcomes
+          .filter((o) => !o.passed)
+          .map((o) => ({ description: o.description, actual: o.actual })),
+        hintsUsed: submission.hintsUsed,
+        attemptNumber: submission.attemptNumber,
       });
       coachFeedback = review.feedback;
     } catch {
       // AI feedback is best-effort; a failure here must not block grading.
+      // (Bedrock runtime may be externally unavailable — grading still lands.)
       coachFeedback = null;
     }
 

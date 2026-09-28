@@ -149,7 +149,24 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
         <SandpackMission
           starterCode={code}
           onResult={(r) => {
-            void submit(r.stdout, r.stderr, r.result, 0, false);
+            // JS runs in the Sandpack sandbox; we grade its console output
+            // against the mission's stdout-* tests. The `actual` for each such
+            // test is the captured stdout; the server re-validates it (client
+            // `passed` is advisory). function-call/result-equals tests aren't
+            // supported on the JS path yet — those exercises use Python.
+            const outcomes: CodingTestOutcome[] = (mission.tests ?? [])
+              .filter((t) => t.kind === 'stdout-equals' || t.kind === 'stdout-contains')
+              .map((t) => ({
+                id: t.id,
+                description: t.description,
+                hidden: Boolean(t.hidden),
+                passed:
+                  t.kind === 'stdout-equals'
+                    ? r.stdout.trim() === String(t.expectedOutput ?? '').trim()
+                    : r.stdout.includes(String(t.expectedOutput ?? '')),
+                actual: r.stdout,
+              }));
+            void submit(r.stdout, r.stderr, r.result, 0, false, outcomes.length ? outcomes : undefined);
           }}
         />
       )}

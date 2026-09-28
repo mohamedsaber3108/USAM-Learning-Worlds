@@ -40,6 +40,14 @@ export interface CodeReviewRequest {
   code: string;
   language: string;
   objectiveId?: string;
+  /**
+   * Real task/test context so Codey can GUIDE toward the specific failing
+   * test rather than review in a vacuum. All optional/back-compat.
+   */
+  taskPrompt?: string;
+  failingTests?: { description: string; actual?: string }[];
+  hintsUsed?: number;
+  attemptNumber?: number;
 }
 
 /**
@@ -206,19 +214,36 @@ export class CodingCoachService {
     await this.moderateLearnerInput(request.learnerId, request.code, 'CODE');
     const context = await this.learnerContext.buildContext(request.learnerId);
 
-    const prompt = `You are reviewing code written by a ${context.age}-year-old learner.
+    // Failing-test + task context so Codey guides toward the specific gap.
+    const taskLine = request.taskPrompt ? `\nThe task: ${request.taskPrompt}\n` : '';
+    const failing = request.failingTests ?? [];
+    const failingBlock = failing.length
+      ? `\nTests that did NOT pass yet:\n` +
+        failing
+          .slice(0, 5)
+          .map((f) => `- ${f.description}${f.actual ? ` (their output: ${String(f.actual).slice(0, 120)})` : ''}`)
+          .join('\n') +
+        `\n`
+      : '';
+    const effortLine =
+      typeof request.attemptNumber === 'number' || typeof request.hintsUsed === 'number'
+        ? `\n(Attempt #${request.attemptNumber ?? 1}, hints used: ${request.hintsUsed ?? 0}.)\n`
+        : '';
 
+    const prompt = `You are Codey, coaching a ${context.age}-year-old learner on their code.
+${taskLine}
 Code:
 \`\`\`${request.language}
 ${request.code}
 \`\`\`
+${failingBlock}${effortLine}
+Coach them toward fixing it THEMSELVES — do NOT write the full solution. Provide:
+1. What works well (specific + encouraging)
+2. For the failing test(s): a guiding question or hint that points at the cause,
+   not the answer (e.g. "what does your loop do on the last number?")
+3. One small next step to try
 
-Provide:
-1. What works well (be specific and encouraging)
-2. Suggestions for improvement (focus on 1-2 key points)
-3. One new concept they could learn next
-
-Be encouraging! Focus on growth, not perfection.
+Be warm and encouraging. Never paste a complete working solution.
 
 ${this.hallucinationControl.getPromptGuardrail()}`;
 
