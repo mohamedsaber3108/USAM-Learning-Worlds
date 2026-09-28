@@ -16,6 +16,7 @@ import {
   Trophy,
   Mic,
   Languages,
+  Code2,
   Users2,
   Globe2,
   TrendingUp,
@@ -50,6 +51,7 @@ const quickActions = [
   { to: '/leaderboard', labelKey: 'leaderboard', icon: BarChart3, tint: 'bg-success-50 text-success-600' },
   { to: '/voice-chat', labelKey: 'voiceChat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
   { to: '/english', labelKey: 'english', icon: Languages, tint: 'bg-accent-50 text-accent-600' },
+  { to: '/coding', labelKey: 'coding', icon: Code2, tint: 'bg-success-50 text-success-600' },
 ]
 
 // Age-adaptive copy now lives in frontend/src/lib/i18n/locales/{en,ar}.ts

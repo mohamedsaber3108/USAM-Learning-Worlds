@@ -22,6 +22,7 @@ import { LeaderboardPage } from '@/features/gamification/pages/LeaderboardPage'
 import { ProgressPage } from '@/features/gamification/pages/ProgressPage'
 import { WorldsPage } from '@/features/learning/pages/WorldsPage'
 import { WorldDetailPage } from '@/features/learning/pages/WorldDetailPage'
+import { CodingPage } from '@/features/coding/pages/CodingPage'
 import { BalancedDevelopmentPage } from '@/features/gamification/pages/BalancedDevelopmentPage'
 import { SimulationsPage } from '@/features/learning/pages/SimulationsPage'
 import { SimulationPlayerPage } from '@/features/learning/pages/SimulationPlayerPage'
@@ -248,6 +249,8 @@ export function AppRouter() {
         {/* English (Strands browser + Coach chat) */}
         <Route path="/english" element={<EnglishStrandsPage />} />
         <Route path="/english/coach" element={<EnglishCoachPage />} />
+        {/* Coding domain landing */}
+        <Route path="/coding" element={<CodingPage />} />
 
         {/* Character Universe (gallery with progressive unlock + per-character chat) */}
         <Route

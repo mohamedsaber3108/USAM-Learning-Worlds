@@ -97,7 +97,8 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | **D World Detail + enriched GET /worlds/:id (real mission status)** | fc44974 | **YES** | ✅ **DEPLOYED + VERIFIED** (bundle index-CxZemZJ2.js; /api/worlds/:id 401 live) |
 | **PHASE D COMPLETE** — Home→Map→Detail→Mission spine coherent, real state, 37 tests, deployed | — | — | ✅ |
 | **E domain surfaces** (English → Coding → AI → Practice → Creativity/Thinking → Stories → Simulations) | — | — | 🟡 in progress |
-| **E1 English strands reworked to standard** (i18n EN+AR, CharacterState, tokens, lucide, RTL; real 9-strand data preserved) | pending | no | 🟡 built+verified, commit pending |
+| **E1 English strands reworked to standard** | 312bcf2 | no | ✅ DEPLOYED (bundle index-aBTHjwOD.js) |
+| **E2 Coding landing page (/coding)** — NEW browse/entry surface; real CodingConcept progression + Codey + mission entry; Home quick-action | pending | no | 🟡 built+verified (40 tests), commit pending |
 | F projects/portfolio/progress · G parent · H QA gate · I production gate | — | — | 📋 |
 
 ## In progress

@@ -149,6 +149,7 @@ export const en = {
       leaderboard: 'Leaderboard',
       voiceChat: 'Voice Chat',
       english: 'English',
+      coding: 'Coding',
     },
   },
   achievements: {
@@ -192,6 +193,24 @@ export const en = {
       in_progress: 'In progress',
       available: 'Start',
       locked: 'Locked',
+    },
+  },
+  coding: {
+    title: 'Coding',
+    subtitle: 'From thinking in steps to writing real code — with Codey.',
+    intro: 'Follow the path: start with computational thinking, move to blocks, then write real Python and JavaScript.',
+    missions: 'Coding missions',
+    loading: 'Codey is loading the coding path...',
+    errorTitle: "Couldn't load the coding path",
+    errorMessage: "No worries — let's try that again.",
+    emptyTitle: 'The coding path is being prepared',
+    emptyMessage: 'Jump into a coding mission to start building right away!',
+    tryKicker: 'Ready to build?',
+    tryTitle: 'Start a coding mission',
+    band: {
+      foundations: 'Foundations',
+      blocks: 'Blocks',
+      code: 'Code',
     },
   },
   english: {

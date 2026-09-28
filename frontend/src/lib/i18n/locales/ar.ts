@@ -151,6 +151,7 @@ export const ar: TranslationKeys = {
       leaderboard: 'لوحة الصدارة',
       voiceChat: 'محادثة صوتية',
       english: 'الإنجليزية',
+      coding: 'البرمجة',
     },
   },
   achievements: {
@@ -194,6 +195,24 @@ export const ar: TranslationKeys = {
       in_progress: 'شغّالة',
       available: 'ابدأ',
       locked: 'مقفول',
+    },
+  },
+  coding: {
+    title: 'البرمجة',
+    subtitle: 'من التفكير بالخطوات لكتابة كود حقيقي — مع كودي.',
+    intro: 'اتبع المسار: ابدأ بالتفكير الحسابي، وبعدين البلوكات، وبعدين اكتب بايثون وجافاسكريبت حقيقي.',
+    missions: 'مهام البرمجة',
+    loading: 'كودي بيحمّل مسار البرمجة...',
+    errorTitle: 'مقدرناش نحمّل مسار البرمجة',
+    errorMessage: 'ولا يهمّك — نجرّب تاني.',
+    emptyTitle: 'مسار البرمجة بيتجهّز',
+    emptyMessage: 'ادخل مهمة برمجة وابدأ تبني على طول!',
+    tryKicker: 'جاهز تبني؟',
+    tryTitle: 'ابدأ مهمة برمجة',
+    band: {
+      foundations: 'الأساسيات',
+      blocks: 'البلوكات',
+      code: 'الكود',
     },
   },
   english: {
