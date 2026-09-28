@@ -94,8 +94,11 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | **C app shell: age-adaptive navigation + distinct parent shell** | ✅ b56bcbf — **DEPLOYED** (same build; navModel young/mid/older/parent; legacy nav DELETED) |
 | **Deploy pipeline: scripts/deploy.sh (fail-fast, npm ci, drift detection)** | ✅ 8590fde — DEPLOYED + verified (drift detection live) |
 | **D living-world Home (hero)** | ✅ 115f3d4 — DEPLOYED (bundle index-Bvtwe1DH.js) |
-| **D World Detail page + enriched GET /worlds/:id (real mission status)** | 🟡 this batch — Home→Map→Detail→Mission spine; backend getWorld returns per-learner COMPLETED/IN_PROGRESS/AVAILABLE/LOCKED + sequential unlock; world cards link to /worlds/:id; 37 tests |
-| E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
+| **D World Detail + enriched GET /worlds/:id (real mission status)** | fc44974 | **YES** | ✅ **DEPLOYED + VERIFIED** (bundle index-CxZemZJ2.js; /api/worlds/:id 401 live) |
+| **PHASE D COMPLETE** — Home→Map→Detail→Mission spine coherent, real state, 37 tests, deployed | — | — | ✅ |
+| **E domain surfaces** (English → Coding → AI → Practice → Creativity/Thinking → Stories → Simulations) | — | — | 🟡 in progress |
+| **E1 English strands reworked to standard** (i18n EN+AR, CharacterState, tokens, lucide, RTL; real 9-strand data preserved) | pending | no | 🟡 built+verified, commit pending |
+| F projects/portfolio/progress · G parent · H QA gate · I production gate | — | — | 📋 |
 
 ## In progress
 
