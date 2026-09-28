@@ -577,7 +577,8 @@ async function seedProjectsAndRubrics() {
   console.log('🌱 Seeding project templates and rubrics...\n');
 
   // Find (or fall back to first available) learner to own template projects.
-  let learner = await prisma.learner.findUnique({
+  // displayName is not unique, so findFirst (not findUnique) — dev seed only.
+  let learner = await prisma.learner.findFirst({
     where: { displayName: 'AlexTheExplorer' },
   });
 

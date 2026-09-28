@@ -48,7 +48,11 @@ model Learner {
   userId           String        @unique
   firstName        String
   lastName         String?
-  displayName      String        @unique
+  // Human-friendly, child-chosen name. NOT unique: real children routinely
+  // share first names / nicknames, and this platform has no username concept
+  // (login is by User.email; identity is the immutable `id`). displayName must
+  // never be used for auth, login, or lookup. Kept indexed for search only.
+  displayName      String
   ageBand          AgeBand?
   avatarUrl        String?
   dateOfBirth      DateTime?

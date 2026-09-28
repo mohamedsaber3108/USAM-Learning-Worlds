@@ -174,9 +174,10 @@ export class CredentialsService {
       },
       validFrom: params.issuedAt.toISOString(),
       credentialSubject: {
-        // Subject is identified by an internal, non-PII id URN. We use the
-        // learner's chosen displayName (already unique + not legal PII) for
-        // the human-readable name only.
+        // Subject is identified by an internal, non-PII id URN (the immutable
+        // learner id) — NOT by displayName. displayName is a non-unique,
+        // human-readable name only (not legal PII), used purely for the
+        // credential's display `name`.
         id: `urn:usam:learner:${params.learnerId}`,
         type: ['AchievementSubject'],
         name: params.learnerDisplayName,
