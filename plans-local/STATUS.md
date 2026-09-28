@@ -76,8 +76,9 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | Phase | State |
 | --- | --- |
 | A research + architecture (§38 docs) | ✅ cf4399a |
-| **B design-system layer (Radix + owned components)** | 🟡 primitives built+tested (Dialog/Menu/Tabs/Tooltip/Popover/Toast/Progress/Field), 28 tests, axe-clean — this batch |
-| C shell + world-map Home · D world/mission spine · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
+| **B design-system layer (Radix + owned components)** | ✅ 2d570cb — primitives built+tested (Dialog/Menu/Tabs/Tooltip/Popover/Toast/Progress/Field), axe-clean |
+| **C app shell: age-adaptive navigation + distinct parent shell** | 🟡 this batch — navModel (young/mid/older/parent) drives desktop+mobile nav; legacy hardcoded primaryNav/moreItems DELETED; 34 tests |
+| D world-map Home · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
 
 ## In progress
 

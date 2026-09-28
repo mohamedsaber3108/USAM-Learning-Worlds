@@ -3,35 +3,20 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import {
-  Home,
-  BookOpen,
-  Target,
-  Users2,
-  UserCircle2,
   MoreHorizontal,
-  Trophy,
-  BarChart3,
-  TrendingUp,
-  Mic,
-  Timer,
   LogOut,
   X,
   Languages,
   Palette,
-  Sparkles,
-  ShoppingBag,
   Zap,
-  FolderKanban,
-  Globe2,
-  Gamepad2,
   Settings,
   FlaskConical,
   ShieldCheck,
   FileText,
   MessageSquareText,
-  Crown,
 } from 'lucide-react'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
+import { getNavModel, ageBandToNavBand, type NavBand } from './navModel'
 import { LanguageToggle } from './LanguageToggle'
 import { LanguageSwitchButton } from './LanguageSwitchButton'
 import { PageTransition } from '@/components/motion/PageTransition'
@@ -62,70 +47,6 @@ import { SearchBar } from './SearchBar'
  *     labels stay one-word to match audit guidance.
  */
 
-interface NavItem {
-  key: string
-  icon: typeof Home
-  to: string
-  // Which route prefixes should highlight this tab as active
-  match: (path: string) => boolean
-}
-
-const primaryNav: NavItem[] = [
-  {
-    key: 'home',
-    icon: Home,
-    to: '/dashboard',
-    match: (p) => p === '/' || p === '/dashboard',
-  },
-  {
-    key: 'learn',
-    icon: BookOpen,
-    to: '/learn',
-    match: (p) =>
-      p.startsWith('/learn') || p.startsWith('/english') || p.startsWith('/projects') || p.startsWith('/cross-curricular'),
-  },
-  {
-    key: 'missions',
-    icon: Target,
-    to: '/missions',
-    match: (p) => p.startsWith('/missions'),
-  },
-  {
-    key: 'community',
-    icon: Users2,
-    to: '/community',
-    match: (p) => p.startsWith('/community'),
-  },
-  {
-    key: 'profile',
-    icon: UserCircle2,
-    to: '/parents',
-    match: (p) => p.startsWith('/parents'),
-  },
-]
-
-interface MoreItem {
-  key: string
-  to: string
-  icon: typeof Trophy
-}
-
-const moreItems: MoreItem[] = [
-  { key: 'worlds', to: '/worlds', icon: Globe2 },
-  { key: 'simulations', to: '/simulations', icon: Gamepad2 },
-  { key: 'shop', to: '/shop', icon: ShoppingBag },
-  { key: 'myJourney', to: '/insights', icon: Zap },
-  { key: 'myPortfolio', to: '/portfolio', icon: FolderKanban },
-  { key: 'achievements', to: '/achievements', icon: Trophy },
-  { key: 'leaderboard', to: '/leaderboard', icon: BarChart3 },
-  { key: 'progress', to: '/progress', icon: TrendingUp },
-  { key: 'balanced', to: '/balanced', icon: Sparkles },
-  { key: 'voiceChat', to: '/voice-chat', icon: Mic },
-  { key: 'characters', to: '/characters', icon: Sparkles },
-  { key: 'plans', to: '/plans', icon: Crown },
-  { key: 'timeLimits', to: '/parents', icon: Timer },
-]
-
 export function AppShell() {
   const { t } = useTranslation()
   const location = useLocation()
@@ -143,18 +64,24 @@ export function AppShell() {
   const isSimpleDensity = adapt.density === 'simple'
   const isDetailedDensity = adapt.density === 'detailed'
 
+  // Age-adaptive navigation model (Phase C). Parents get a DISTINCT shell;
+  // children get band-specific destinations (young=minimal/voice-forward →
+  // older=fuller+search). Single source of truth for desktop + mobile nav.
+  const navBand: NavBand = user?.role === 'GUARDIAN' || user?.role === 'PARENT'
+    ? 'parent'
+    : ageBandToNavBand(user?.learner?.ageBand)
+  const navModel = useMemo(() => getNavModel(navBand), [navBand])
+  const primaryNav = navModel.primary
+  const moreItems = navModel.secondary
+
   const activeKey = useMemo(() => {
-    // "More" pages count as active on their own tab (not a bottom-bar entry)
     const found = primaryNav.find((item) => item.match(location.pathname))
     return found?.key ?? null
-  }, [location.pathname])
+  }, [primaryNav, location.pathname])
 
   const isMoreActive = useMemo(
-    () =>
-      ['/achievements', '/leaderboard', '/progress', '/voice-chat', '/characters', '/shop', '/insights', '/portfolio'].some((p) =>
-        location.pathname.startsWith(p)
-      ) || location.pathname.startsWith('/parents/children'),
-    [location.pathname]
+    () => moreItems.some((item) => item.match(location.pathname)),
+    [moreItems, location.pathname]
   )
 
   const handleLogout = () => {
