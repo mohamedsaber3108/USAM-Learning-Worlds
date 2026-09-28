@@ -91,12 +91,17 @@ psql "$DB_URL" -c "SELECT tablename, tableowner FROM pg_tables
   WHERE tablename IN ('safety_escalations','flashcard_reviews','intervention_recommendations') ORDER BY tablename;"
 ```
 
-Fix — **Option A (do now, minimal):** run the 9 ALTERs as the table OWNER/admin role
-(the 9 ADD COLUMN IF NOT EXISTS statements from the migration; they're idempotent).
-**Option B (root cause, follow-up):** `ALTER TABLE safety_escalations OWNER TO <app_role>;
-ALTER TABLE flashcard_reviews OWNER TO <app_role>;` as admin, so future migrations
-by the app role don't hit this. Broad ownership change = shared-system decision;
-raise before doing B. After either, re-run `npm run check:migrations` → must be green.
+Diagnosis result (2026-09-28): app role = `usam_user`; `safety_escalations` +
+`flashcard_reviews` owned by `postgres`; everything else by `usam_user`.
+
+**RESOLVED via Option A:** ran the 9 idempotent `ADD COLUMN IF NOT EXISTS` as the
+owner role — `sudo -u postgres psql -d usam <<'SQL' … SQL` (DB name `usam` from
+DATABASE_URL). All 9 applied; `npm run check:migrations` → ✅ green. No ownership
+reassignment done (Option B not needed).
+
+For any FUTURE migration that touches a `postgres`-owned table (safety_escalations,
+flashcard_reviews), apply it as `sudo -u postgres psql -d usam` rather than the app
+role. The `check:migrations` guard will flag it if forgotten.
 
 ## B. Host reboot (`*** System restart required ***`)
 

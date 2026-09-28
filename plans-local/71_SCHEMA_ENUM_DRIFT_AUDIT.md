@@ -172,14 +172,16 @@ Prisma enum has a matching Postgres enum type with identical values. No enum
 drift."** The SubscriptionStatus bug class is closed platform-wide, and the guard
 is now the standing regression net.
 
-Residual (NOT enum drift): 9 `ADD COLUMN` on `safety_escalations` +
-`flashcard_reviews` failed with `must be owner of table` — a DB table-OWNERSHIP
-privilege issue, not enum/type drift. Tracked in `73_PROD_MAINTENANCE_RUNBOOK.md`
-§A2 (run the ALTERs as the table owner, or reassign ownership to the app role).
-`check:migrations` will stay red on those 9 columns until that is done.
+Residual (RESOLVED 2026-09-28): 9 `ADD COLUMN` on `safety_escalations` +
+`flashcard_reviews` initially failed `must be owner of table` — those two tables
+are owned by `postgres`, while the app role `usam_user` owns the rest. Fixed by
+running the 9 idempotent `ADD COLUMN IF NOT EXISTS` as `postgres`
+(`sudo -u postgres psql -d usam`). **`check:migrations` now ✅ green** (all tables
++ all columns present). No ownership reassignment was needed. See runbook §A2.
 
-## Follow-ups
-- Resolve the table-ownership blocker (runbook §A2) so the 9 columns land; re-run
-  `check:migrations` → green.
+## Status: ZERO drift on prod
+- `check:enum-drift` → ✅ 45/45 Prisma enums match the DB.
+- `check:migrations` → ✅ all CREATE TABLE + ADD COLUMN present.
+Both guards should be wired into `scripts/deploy.sh` as gate steps so this stays true.
 - Add `check:enum-drift` (and `check:migrations`) as a gate step in `scripts/deploy.sh`
   so an unapplied/non-idempotent migration fails the deploy, not a live query.
