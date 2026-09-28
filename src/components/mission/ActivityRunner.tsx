@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Lightbulb, Mic, Send, ShieldQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,18 @@ import type {
 } from "@/types/mission";
 import { effortMet } from "@/services/mission";
 import { cn } from "@/lib/utils";
-import { CodeMissionRunner } from "@/components/coding/CodeMissionRunner";
 import { codingSandboxAPI } from "@/services/api";
+
+/**
+ * Lazy-loaded so the coding runtime (Sandpack bundle, editor, etc.) is only
+ * fetched when a learner actually opens a `kind: "coding"` activity — never on
+ * Home / English / other non-coding missions. Pyodide itself is already
+ * lazy (loaded from CDN inside a Web Worker at run time), so this split keeps
+ * the heavy JS coding deps out of the default missions chunk. (task #9)
+ */
+const CodeMissionRunner = lazy(() =>
+  import("@/components/coding/CodeMissionRunner").then((m) => ({ default: m.CodeMissionRunner })),
+);
 
 /**
  * Presentation metadata for every supported activity kind.
@@ -198,7 +208,11 @@ function CodingActivitySurface({ activityId, runId }: { activityId: string; runI
   if (missionQuery.isError || !missionQuery.data) {
     return <p className="text-sm text-destructive">Coding mission unavailable.</p>;
   }
-  return <CodeMissionRunner mission={missionQuery.data} runId={runId} />;
+  return (
+    <Suspense fallback={<p className="text-sm text-muted-foreground">Loading the code editor…</p>}>
+      <CodeMissionRunner mission={missionQuery.data} runId={runId} />
+    </Suspense>
+  );
 }
 
 function WorkSurface({

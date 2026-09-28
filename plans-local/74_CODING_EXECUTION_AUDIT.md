@@ -80,8 +80,19 @@
 4. **Evidence.context is thin** (runner only). Add testsPassed/testsTotal,
    attempt#, hints, errors, execTime, language, activity version.
 5. **Coach lacks failing-test context** (task #7).
-6. **Lazy-loading unverified** — confirm Pyodide/Sandpack chunks load only on
-   coding routes (task #9).
+6. **Lazy-loading** (task #9) — RESOLVED. Findings + fix:
+   - Pyodide is ALREADY lazy: `PyodideRunner` loads it via `importScripts(CDN)`
+     inside a Worker built from a Blob string, so the `pyodide` npm package is
+     NOT in the frontend bundle graph at all — fetched at run time only.
+   - Sandpack WAS eagerly pulled into the missions route: `missions.$missionId`
+     → `ActivityRunner` → (static) `CodeMissionRunner` → `SandpackMission` →
+     `@codesandbox/sandpack-react`. So English/other non-coding missions loaded
+     the heavy Sandpack dep. FIXED: `ActivityRunner` now `React.lazy()`-imports
+     `CodeMissionRunner` and renders it under `<Suspense>` — the coding chunk
+     (Sandpack + editor) loads ONLY when a `kind:"coding"` activity opens.
+   - Verification: confirmed by import-graph analysis; the exact chunk split is
+     confirmed by `vite build` in the deploy pipeline (frontend node_modules is
+     not present in this worktree, so a local `vite build` couldn't be run here).
 7. **No automated test of the sandbox grading path** beyond size limits — add
    pass/fail/partial/syntax/runtime coverage + canonical-loop (task #10).
 
