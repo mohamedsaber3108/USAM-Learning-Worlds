@@ -165,8 +165,21 @@ values (IF NOT EXISTS), creates `intervention_recommendations` (+FKs/indexes), a
 adds all 11 columns (ADD COLUMN IF NOT EXISTS). Apply on prod, then re-run
 `check:enum-drift` + `check:migrations` — both must go green.
 
+## RESOLVED 2026-09-28 — enum drift is ZERO on prod
+After applying `20260930_fix_drift_intervention_escalation_fsrs.sql`,
+`npm run check:enum-drift` reports: **"Live DB has 45 enum type(s)… ✅ Every
+Prisma enum has a matching Postgres enum type with identical values. No enum
+drift."** The SubscriptionStatus bug class is closed platform-wide, and the guard
+is now the standing regression net.
+
+Residual (NOT enum drift): 9 `ADD COLUMN` on `safety_escalations` +
+`flashcard_reviews` failed with `must be owner of table` — a DB table-OWNERSHIP
+privilege issue, not enum/type drift. Tracked in `73_PROD_MAINTENANCE_RUNBOOK.md`
+§A2 (run the ALTERs as the table owner, or reassign ownership to the app role).
+`check:migrations` will stay red on those 9 columns until that is done.
+
 ## Follow-ups
-- Apply `20260930_fix_drift_intervention_escalation_fsrs.sql` on prod; re-run both
-  guards; paste the clean output here as the recorded baseline.
+- Resolve the table-ownership blocker (runbook §A2) so the 9 columns land; re-run
+  `check:migrations` → green.
 - Add `check:enum-drift` (and `check:migrations`) as a gate step in `scripts/deploy.sh`
   so an unapplied/non-idempotent migration fails the deploy, not a live query.

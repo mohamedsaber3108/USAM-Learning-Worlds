@@ -64,6 +64,40 @@ progression, guardianships) and retry. Document whichever path was needed.
 
 ---
 
+## A2. DB table-ownership blocker (found 2026-09-28)
+
+Applying `20260930_fix_drift_intervention_escalation_fsrs.sql` on prod: the enum
+types, `intervention_recommendations` table, and enum-value additions ALL applied
+(enum drift now 0 — `check:enum-drift` green, 45/45). But the 9 `ALTER TABLE …
+ADD COLUMN` on `safety_escalations` (2) and `flashcard_reviews` (7) failed with:
+```
+ERROR: must be owner of table safety_escalations
+ERROR: must be owner of table flashcard_reviews
+```
+Root cause: **the app DB role (DATABASE_URL) is not the OWNER of those two
+tables** — it can CREATE TYPE/TABLE (owns what it creates: intervention_* worked)
+but cannot ALTER tables owned by a different role (likely `postgres`/admin from an
+older baseline apply). This is a privileges issue, not a migration bug. The 9
+columns are additive, non-breaking, and NOT on the English/Coding hot path (FSRS
+flashcard scheduler state; safety-escalation human-resolution audit trail), so
+nothing live-proven is affected — but the FSRS scheduler + escalation-resolution
+features stay degraded until the columns exist.
+
+Diagnose ownership:
+```bash
+DB_URL="$(grep -E '^DATABASE_URL=' backend/.env | head -1 | cut -d= -f2- | tr -d '"')"
+psql "$DB_URL" -c "SELECT current_user AS app_role;"
+psql "$DB_URL" -c "SELECT tablename, tableowner FROM pg_tables
+  WHERE tablename IN ('safety_escalations','flashcard_reviews','intervention_recommendations') ORDER BY tablename;"
+```
+
+Fix — **Option A (do now, minimal):** run the 9 ALTERs as the table OWNER/admin role
+(the 9 ADD COLUMN IF NOT EXISTS statements from the migration; they're idempotent).
+**Option B (root cause, follow-up):** `ALTER TABLE safety_escalations OWNER TO <app_role>;
+ALTER TABLE flashcard_reviews OWNER TO <app_role>;` as admin, so future migrations
+by the app role don't hit this. Broad ownership change = shared-system decision;
+raise before doing B. After either, re-run `npm run check:migrations` → must be green.
+
 ## B. Host reboot (`*** System restart required ***`)
 
 ### Why a restart is flagged
