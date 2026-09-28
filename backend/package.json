@@ -24,6 +24,8 @@
     "prisma:seed": "ts-node prisma/seed.ts",
     "seed:english:strands": "ts-node -r tsconfig-paths/register prisma/seeds/seed-english-strands.ts",
     "seed:english:vocabulary": "ts-node -r tsconfig-paths/register prisma/seeds/seed-english-vocabulary-slice.ts",
+    "seed:coding:concepts": "ts-node -r tsconfig-paths/register prisma/seeds/seed-coding-concepts.ts",
+    "seed:coding:vertical": "ts-node -r tsconfig-paths/register prisma/seeds/seed-coding-vertical-slice.ts",
     "check:migrations": "ts-node -r tsconfig-paths/register scripts/check-migrations-applied.ts",
     "embeddings:backfill": "ts-node -r tsconfig-paths/register scripts/backfill-concept-embeddings.ts",
     "voice:benchmark": "ts-node -r tsconfig-paths/register scripts/benchmark-eg-arabic-stt.ts"
