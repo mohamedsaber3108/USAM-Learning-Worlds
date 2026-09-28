@@ -9,7 +9,21 @@
 > Legend: ✅ real+wired · 🟡 partial/entry-only · ⛔ blocked (needs owner/creds) ·
 > ❌ missing (no backend capability) · N/A.
 
-Last updated: 2026-09-28 · HEAD `312be65`
+Last updated: 2026-09-29 · HEAD `8340c8c`
+
+## Shared-spine status (the canonical architecture)
+- ✅ **Spine proven**: English vocabulary A1 slice ran the full loop live on prod
+  (Evidence + MasteryRecord); Coding slice built + code-proven (live pending).
+- ✅ **Generic domain path**: `GET /learning/domains/:slug/path` (`DomainPathService`)
+  — one projection for all domains; `/english/path` delegates to it. (8340c8c)
+- ✅ **Regression contract**: `canonical-domain-loop.harness.ts` parameterized by
+  domain drives START→ACTIVITY→ATTEMPT→EVIDENCE→MASTERY→REVIEW→RECOMMENDATION
+  through the real evaluator + mastery algorithm; English + Coding registered. (1f20ddd)
+- Platform hygiene: displayName no longer unique (47e3346); enum/schema-drift
+  audit + fixes (030dbf5, plan 71). Two migrations + coding seed await the next deploy.
+
+> ONE LIVE VERTICAL SLICE ≠ FULL DOMAIN COMPLETE. The slice proves the
+> architecture; curriculum breadth proves the product.
 
 ---
 
@@ -62,31 +76,47 @@ backend redeployed. This unblocked mission starts for ALL domains, not just Engl
 links it to the taxonomy and it runs the shared spine. **Remaining to reach full
 domain-complete:** scale content breadth (more competencies/activities per strand ×
 CEFR band, ~72/band target in plan 69), specialized activity types + voice, English
-parent/recommendation surfaces, and generalize `/english/path` → `/domains/:slug/path`.
+parent/recommendation surfaces. (✅ generic path `/learning/domains/:slug/path` shipped
+— commit 8340c8c — `/english/path` now delegates to the shared `DomainPathService`.)
 
 ---
 
-## CODING — status: 🟡 ENTRY + SANDBOX exist; flow partially real via Missions
+## CODING — status: 🟢 VERTICAL-SLICE BUILT (code-proven; live proof pending deploy)
+> CORRECTION (2026-09-29): earlier rows here were WRONG. A full code trace
+> (context-gatherer) found NO `CodeMissionRunner`, NO Pyodide/Sandpack/Blockly
+> executor, and NO `/coding-sandbox/submissions` route anywhere in the repo —
+> that code does not exist. Coding was a CATALOG ISLAND identical to English's
+> old state: a flat `CodingConcept` table + AI-coach endpoints
+> (`/coding/challenge|review|debug`) that never create an ActivityAttempt or
+> call `recordEvidence`. There was no Coding Domain/Skill/Competency/Objective/
+> Mission/Activity chain at all; the frontend said "coming soon".
+>
+> RESOLVED (commit 80f4818): built a real coding vertical slice through the SAME
+> shared engine English uses — `seed-coding-vertical-slice.ts`: Domain **Coding**
+> → Skill(Programming Fundamentals) → Competency(`coding-competency-loops-intro`)
+> → Objective → Mission(`coding-mission-first-loops`, GUIDED) → 3 activities
+> (1 SELECT + 2 CODE with `requiredKeywords`) → MissionActivity.
+
 | # | Criterion | State | Evidence |
 | --- | --- | --- | --- |
-| 1 | Entry | ✅ | `CodingPage` /coding (E2, pushed 312be65): real CodingConcept progression |
-| 2 | Learning flow | 🟡 | Concept catalog → mission entry. Concepts are catalog (like English) but coding **does** have a runnable path via Missions (below). |
-| 3 | Practice | ✅ | Coding runs through the **Mission player** (`CodeMissionRunner`: Pyodide/Sandpack/Blockly) — real in-browser execution + grading (`/coding-sandbox/submissions`). |
-| 4 | Assessment | ✅ | Mission activity evaluation + coding-sandbox grading. |
-| 5 | Mastery | ✅ | Mission submit → `recordEvidence` (via missions.service). |
-| 6 | Recommendation | 🟡 | Generic adaptive recommendations include missions. |
-| 7 | Evidence | ✅ | Via mission mastery + credentials. |
-| 8 | Character | ✅ | Codey coach panel in the mission runner (`CodingCoachPanel`, ⛔ AI runtime Bedrock). |
+| 1 | Entry surface | ✅ | `CodingLearning` /coding concept browser (E2). |
+| 2 | Learning flow | ✅ (slice, code) | Real Domain→Skill→Competency→Objective→Mission→Activity chain seeded; teaching context on each activity. |
+| 3 | Practice | ✅ (slice, code) | 3 activities run through the shared **Mission player** (`submitActivity`); CODE graded by `ActivityEvaluator.evaluateCode` (server-side `requiredKeywords`). Real in-sandbox execution (Pyodide/tests) is a documented later upgrade. |
+| 4 | Assessment | ✅ (slice) | FORMATIVE SELECT/CODE + SUMMATIVE CODE via the real evaluator. |
+| 5 | Mastery | ✅ (slice, code) | `submitActivity` → `recordEvidence(competencyId=coding-competency-loops-intro)` → MasteryRecord, same shared path English proved live. |
+| 6 | Recommendation | 🟡 | reviewDue scheduling via shared mastery; coding-specific recommendation surface not built. |
+| 7 | Evidence | ✅ (slice, code) | CODE→CREATION, SELECT→KNOWLEDGE evidence against the coding competency (`coding-vertical-slice.spec.ts`, 3 tests). |
+| 8 | Character | 🟡 | Codey coach endpoints exist (Bedrock-gated); not yet tied into this graded loop. |
 | 9 | Voice | N/A | not core to coding |
-| 10 | Parent/progress | 🟡 | Via generic mastery/portfolio, not coding-specific |
+| 10 | Parent/progress | 🟡 | mastery now persists (queryable); `GET /coding/learner/progress` filters by Domain name "Coding" — the seed uses that exact name so it now resolves. |
 | 11–13 | Responsive/RTL/a11y | ✅ | E2 |
-| 14 | Tests | ✅ | CodingPage (3) + teaching/mission tests |
-| 15 | Deploy verified | 🟡 | /coding pushed, awaiting deploy |
+| 14 | Tests | ✅ (slice) | `coding-vertical-slice.spec.ts` (3) + coding case in the canonical-domain-loop harness. |
+| 15 | Deploy verified | ⛔ **pending** | seed + backend redeploy not yet run on prod; then a live learner submit must show Evidence(CREATION)+Mastery for `coding-competency-loops-intro`. |
 
-**Gap:** the /coding concept catalog isn't linked to specific coding missions
-(same catalog-island issue as English, but coding is rescued by the generic
-Mission engine already running real coding activities). Verifying the
-concept→mission link is the remaining coding work.
+**Remaining to reach full domain-complete:** live proof (deploy + seed + real
+submit); real sandboxed code execution + test-case grading (replace keyword
+check); more competencies/activities across the 18 concepts; wire the
+`CodingConcept` catalog to these missions; coding coach into the graded loop.
 
 ---
 
