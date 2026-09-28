@@ -137,4 +137,24 @@ describe('CodingSandboxService — server-side grading', () => {
     expect(res.passed).toBe(false);
     expect(res.score).toBe(0);
   });
+
+  it('a syntax/runtime error (error text as actual) fails all tests', async () => {
+    // On a define-time error the client reports the error string as `actual`
+    // for every test; none match the expected output -> all fail, evidence
+    // records the failure + hadRuntimeError.
+    const { svc, recordEvidence } = makeService();
+    const res = await svc.submitResult('ME', {
+      ...base,
+      stderr: 'SyntaxError: invalid syntax',
+      testOutcomes: [
+        { id: 't1', description: '', hidden: false, passed: false, actual: 'SyntaxError: invalid syntax' },
+        { id: 't2', description: '', hidden: false, passed: false, actual: 'SyntaxError: invalid syntax' },
+      ],
+    });
+    expect(res.passed).toBe(false);
+    expect(res.score).toBe(0);
+    const [, , , passed, , context] = recordEvidence.mock.calls[0];
+    expect(passed).toBe(false);
+    expect(context.hadRuntimeError).toBe(true);
+  });
 });
