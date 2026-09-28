@@ -121,7 +121,8 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | English Path UI (real mission links, live mastery, CEFR from API, no hardcoded id) | 🟡 built (FE build clean) |
 | Integration test: English SELECT/MATCH → Evidence(competencyId)+mastery via REAL evaluator (3 tests) | ✅ 56 BE tests pass |
 | **LIVE DB — content spine** (Competency/Mission/MissionActivity persisted) | ✅ **VERIFIED** on server after `npm run seed:english:strands` + `seed:english:vocabulary`: competency has strandId (vocabulary-building), missionActivities=3, full slice 7/7 (domain/skill/competency/objective/activities=3/mission/missionAct=3) |
-| **LIVE DB — learning loop** (real submit → Evidence + MasteryRecord) | ⛔ **BLOCKED by live schema drift, now fixed in code** — see below |
+| **LIVE DB — learning loop** (real submit → Evidence + MasteryRecord) | ✅ **VERIFIED on prod DB 2026-09-28** — submit `correct:true,score:1` → `evidence` KNOWLEDGE (attemptId `347929f4…`, competencyId `english-competency-everyday-words-a1`) + `mastery_records` DEVELOPING/0.725/reviewDue 2026-10-12. Required fixing the enum-drift bug below (commit `b1b44cd`, backend redeployed). |
+| **English domain status** | 🟢 **VERTICAL-SLICE PROVEN** — Vocabulary/A1 slice runs the full loop live via the shared engine; breadth (more content, specialized types, voice, parent surface) still to scale per plan 69. |
 
 > **🔴 Live schema-drift bug found while proving the loop (blocks ALL mission
 > starts, every domain).** `POST /api/missions/:id/start` 500s:
@@ -156,7 +157,7 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 > ```
 > Then re-run the verification queries (below). The vocabulary seed prints a
 > one-line summary: `competency=… strand=… mission=… activities=3/3`.
-| **English domain status** | **PARTIAL / reconstruction in progress** — NOT complete until live-verified |
+| **English domain status** | 🟢 **VERTICAL-SLICE PROVEN (live 2026-09-28)** — first slice loop verified on prod DB; breadth still to scale (plan 69) |
 
 Deferred (documented in 69/70): specialized English activity types (PRONUNCIATION/
 DICTATION/SHADOWING/SPEAKING/CLOZE/READING_COMP/WRITING/ROLEPLAY) + voice contracts;

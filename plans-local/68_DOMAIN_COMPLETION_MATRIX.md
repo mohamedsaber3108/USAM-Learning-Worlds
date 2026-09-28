@@ -21,34 +21,48 @@ Last updated: 2026-09-28 · HEAD `312be65`
 
 ---
 
-## ENGLISH — status: 🟡 ENTRY-ONLY. **Not domain-complete. Backend capability gap.**
-Verified by full code trace (context-gatherer, files cited in commit history).
+## ENGLISH — status: 🟢 VERTICAL-SLICE PROVEN (live). Vocabulary/A1 slice runs the full loop; breadth still to scale.
+Option A decided + built. First slice (Everyday Words A1) **verified end-to-end on
+the live DB 2026-09-28** — a real learner submit produced Evidence + MasteryRecord
+against the English competency through the SHARED Mission engine (no English-only
+engine). Prior "catalog island" state is resolved for this slice.
+
+**Live proof (server, prod DB):** learner `48c5b342…` started
+`english-mission-everyday-words`, submitted `english-act-everyday-fruit`
+(`selectedAnswers:["apple"]`) → `correct:true, score:1`. Persisted rows:
+`evidence` = KNOWLEDGE, success=t, score=1, attemptId `347929f4…`, competencyId
+`english-competency-everyday-words-a1`; `mastery_records` = state **DEVELOPING**,
+confidence **0.725**, evidenceCount 1, reviewDue 2026-10-12 (Bull recalc worker
+ran); `activity_attempts` row linked to run `3ed518f3…`.
+(Unblocked by fixing a live schema-drift bug: `Subscription.status`/`Plan.interval`
+were Prisma enums but the DB columns are TEXT → every `startMission` 500'd
+`type "public.SubscriptionStatus" does not exist`. Fixed enum→String, commit `b1b44cd`,
+backend redeployed. This unblocked mission starts for ALL domains, not just English.)
 
 | # | Criterion | State | Evidence |
 | --- | --- | --- | --- |
-| 1 | Entry surface | ✅ | `EnglishStrandsPage` reworked (E1, deployed 312bcf2): 9 strand families, CEFR filter, i18n, states, RTL |
-| 2 | Learning flow | ❌ | Strand cards are **non-interactive display divs** — no navigation, no strand detail route. `getStrand()` is orphaned client code. |
-| 3 | Practice | ❌ | **No runnable English activity exists** (frontend or backend). No listening/speaking/pronunciation/writing/dictation/shadowing exercise anywhere. |
-| 4 | Assessment | ❌ | None. |
-| 5 | Mastery | ❌ | Coach never calls `recordEvidence`; no English mastery persisted. |
-| 6 | Recommendation | ❌ | No English-specific recommendation. |
-| 7 | Evidence | ❌ | None emitted. |
-| 8 | Character | 🟡 | Luma/coach present in UI; not tied to a learning loop. |
-| 9 | Voice | ⛔ | `/voice-chat` exists but not English-strand-tied; pronunciation endpoint is a **placeholder score**; STT real scoring unbuilt + Bedrock-gated. |
-| 10 | Parent/progress | ❌ | No English progress surfaced. |
+| 1 | Entry surface | ✅ | `EnglishStrandsPage` (E1, 312bcf2) + Learning Path section links to real missions (no hardcoded id) via `GET /api/english/path` |
+| 2 | Learning flow | ✅ (slice) | Domain(english)→Skill(english-vocabulary)→Competency(strand-tagged)→Objective→Activities→Mission→MissionActivity seeded + live-verified (7/7). Teaching content (context/keyPoints) on each activity. |
+| 3 | Practice | ✅ (slice) | 3 runnable activities (2 SELECT + 1 MATCH) run through the shared **Mission player**; live submit graded `correct:true`. Specialized types (speaking/pronunciation/etc.) still deferred. |
+| 4 | Assessment | ✅ (slice) | FORMATIVE SELECT + SUMMATIVE MATCH via `ActivityEvaluator` (real, not stub). |
+| 5 | Mastery | ✅ (slice) | `mastery_records` DEVELOPING/0.725 persisted live via shared `MasteryService` + Bull recalc. |
+| 6 | Recommendation | 🟡 | reviewDue set (2026-10-12) drives review scheduling; broader next-step recommendation surface not yet English-specific. |
+| 7 | Evidence | ✅ (slice) | `evidence` KNOWLEDGE row persisted live against the English competency, linked to attempt. |
+| 8 | Character | 🟡 | Luma referenced in mission copy; coach chat not yet tied into this graded loop. |
+| 9 | Voice | ⛔ | pronunciation/STT real scoring unbuilt + Bedrock-gated (deferred per plan 69). |
+| 10 | Parent/progress | 🟡 | Mastery now persists so progress is queryable; parent-facing English surface not yet built. |
 | 11 | Responsive | ✅ | E1 |
 | 12 | RTL/i18n | ✅ | E1 (EN+AR) |
 | 13 | Accessibility | ✅ | E1 (axe pattern, aria-pressed) |
-| 14 | Tests | 🟡 | Entry page covered indirectly; no flow tests (no flow to test) |
-| 15 | Deploy verified | ✅ (entry only) | 312bcf2 live |
-| — | **Coach** (conversation/grammar/vocab/reading) | ⛔ | Real wired chat UI, **Bedrock-gated runtime**. AI-generation, not graded practice. Pronunciation mode missing from UI. |
+| 14 | Tests | ✅ (slice) | `english-vertical-slice.spec.ts` (3 tests, real evaluator) + live end-to-end DB proof. |
+| 15 | Deploy verified | ✅ | Schema migration `20260929…` applied; seeds run (`seed:english:strands`+`seed:english:vocabulary`); enum-drift fix `b1b44cd` redeployed; loop verified on prod DB. |
+| — | **Coach** (conversation/grammar/vocab/reading) | ⛔ | Bedrock-gated runtime — separate from the graded Mission loop above. |
 
-**Root gap:** `EnglishStrand` is a **catalog island** — no relation to Domain/
-Mission/Activity/Mastery; no attached content. A complete English domain needs
-BACKEND work (attach activities to strands OR route strands through the Mission
-engine; add assessment→evidence→CEFR persistence; STT for speaking). This is an
-**owner architecture decision + backend build**, not a frontend rework. ⛔ BLOCKED
-on that decision.
+**Resolved:** the vocabulary A1 slice is no longer a catalog island — `Competency.strandId`
+links it to the taxonomy and it runs the shared spine. **Remaining to reach full
+domain-complete:** scale content breadth (more competencies/activities per strand ×
+CEFR band, ~72/band target in plan 69), specialized activity types + voice, English
+parent/recommendation surfaces, and generalize `/english/path` → `/domains/:slug/path`.
 
 ---
 
