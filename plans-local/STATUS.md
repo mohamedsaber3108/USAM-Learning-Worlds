@@ -12,12 +12,19 @@ Branch `fix/p0-p1-remediation` · HEAD `8a84f03` · Last live-verified bundle `i
 > ubuntu does not exist"). Use:
 > `DB_URL="$(grep -E '^DATABASE_URL=' backend/.env | head -1 | cut -d= -f2- | tr -d '\"')" && psql "$DB_URL" -f <migration>`
 >
-> Deploy note (dependencies): **whenever `frontend/package.json` changes (new
-> deps), the deploy MUST run `npm install` before `npm run build`** — otherwise
-> the server's node_modules lacks the new packages and tsc fails with "Cannot
-> find module". Full frontend deploy with deps:
-> `cd frontend && npm install && rm -rf dist node_modules/.vite && npm run build && sudo systemctl reload nginx`
-> (Phase B added @radix-ui/* + class-variance-authority — this applied there.)
+> Deploy runbook: **use `bash scripts/deploy.sh`** — the authoritative fail-fast
+> pipeline (git pull → `npm ci --include=dev` → Radix-dep verify → tsc → build →
+> nginx reload ONLY on success → verify-deployment). Flags: `DEPLOY_BACKEND=1`
+> (also build+restart backend), `RUN_TESTS=1` (also run frontend tests).
+> Root cause of the Phase-B deploy failure: the old command did `git pull &&
+> npm run build` with NO dependency sync, so the server built against a stale
+> node_modules and tsc failed "Cannot find module @radix-ui/*". `npm ci` fixes
+> this deterministically from the lockfile. deploy.sh writes
+> `dist/deploy-meta.json` (commit/lockHash/builtAt) so verify-deployment.sh can
+> detect commit drift.
+>
+> PUSHED != DEPLOYED: a commit is only "live" after scripts/deploy.sh succeeds
+> AND verify-deployment.sh is all-green against the deployed artifact.
 
 Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planned
 
@@ -83,8 +90,9 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | Phase | State |
 | --- | --- |
 | A research + architecture (§38 docs) | ✅ cf4399a |
-| **B design-system layer (Radix + owned components)** | ✅ 2d570cb — primitives built+tested (Dialog/Menu/Tabs/Tooltip/Popover/Toast/Progress/Field), axe-clean |
-| **C app shell: age-adaptive navigation + distinct parent shell** | 🟡 this batch — navModel (young/mid/older/parent) drives desktop+mobile nav; legacy hardcoded primaryNav/moreItems DELETED; 34 tests |
+| **B design-system layer (Radix + owned components)** | ✅ 2d570cb — **DEPLOYED** (bundle index-Bq9NvNTl.js live 2026-09-28) |
+| **C app shell: age-adaptive navigation + distinct parent shell** | ✅ b56bcbf — **DEPLOYED** (same build; navModel young/mid/older/parent; legacy nav DELETED) |
+| **Deploy pipeline: scripts/deploy.sh (fail-fast, npm ci, drift detection)** | 🟡 this batch |
 | D world-map Home · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
 
 ## In progress

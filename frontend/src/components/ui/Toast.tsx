@@ -49,7 +49,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <RadixToast.Root
               key={item.id}
               duration={4000}
-              onOpenChange={(open) => {
+              onOpenChange={(open: boolean) => {
                 if (!open) setItems((prev) => prev.filter((i) => i.id !== item.id))
               }}
               className={cn(

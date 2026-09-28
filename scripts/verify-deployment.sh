@@ -36,11 +36,37 @@ if [ -d "$REPO/.git" ]; then
   info "branch: $BRANCH"
   info "local commit:  $LOCAL"
   info "remote commit: $REMOTE"
-  [ "$LOCAL" = "$REMOTE" ] && pass "local matches remote" || fail "local ($LOCAL) != remote ($REMOTE) — pull/deploy needed"
+  if [ "$LOCAL" = "$REMOTE" ]; then
+    pass "local matches remote"
+  elif [ -n "${SOURCE_COMMIT:-}" ]; then
+    # Invoked by deploy.sh, which already enforced local==remote before build;
+    # a lag here is just the shell checkout, not the deployed artifact.
+    info "checkout local ($LOCAL) != remote ($REMOTE) — deployed-artifact commit is authoritative (see deploy-meta)"
+  else
+    fail "local ($LOCAL) != remote ($REMOTE) — pull/deploy needed"
+  fi
   DIRTY=$(git status --porcelain 2>/dev/null | grep -v "frontend/.env" | wc -l)
   [ "$DIRTY" -eq 0 ] && pass "working tree clean" || info "$DIRTY uncommitted change(s) (ignoring frontend/.env)"
 else
   info "repo not found at $REPO (skipping git state)"
+fi
+
+# Deploy metadata (written by scripts/deploy.sh at build time) — the authoritative
+# record of WHICH commit the deployed artifact was actually built from. This is
+# what "deployed commit" means; the git checkout can lag without changing what's live.
+META="$REPO/frontend/dist/deploy-meta.json"
+if [ -f "$META" ]; then
+  DEPLOYED_COMMIT=$(grep -o '"commit": *"[^"]*"' "$META" | cut -d'"' -f4)
+  DEPLOYED_LOCK=$(grep -o '"lockHash": *"[^"]*"' "$META" | cut -d'"' -f4)
+  BUILT_AT=$(grep -o '"builtAt": *"[^"]*"' "$META" | cut -d'"' -f4)
+  info "deployed commit: ${DEPLOYED_COMMIT:-<none>} (built $BUILT_AT, lock $DEPLOYED_LOCK)"
+  if [ -n "${SOURCE_COMMIT:-}" ] && [ -n "$DEPLOYED_COMMIT" ]; then
+    [ "$SOURCE_COMMIT" = "$DEPLOYED_COMMIT" ] \
+      && pass "deployed artifact matches source commit ($DEPLOYED_COMMIT)" \
+      || fail "DRIFT: deployed artifact ($DEPLOYED_COMMIT) != source ($SOURCE_COMMIT) — rebuild"
+  fi
+else
+  info "no dist/deploy-meta.json (built by an older/manual path; run scripts/deploy.sh for drift detection)"
 fi
 
 # Frontend build hash: what index.html references vs what dist serves.
