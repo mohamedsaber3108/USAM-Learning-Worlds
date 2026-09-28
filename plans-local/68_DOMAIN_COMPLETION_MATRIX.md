@@ -15,6 +15,19 @@ Last updated: 2026-09-29 · HEAD `8340c8c`
 - ✅ **Spine proven on 2 domains LIVE**: English vocabulary A1 AND Coding loops-intro
   both ran the full loop on prod (Evidence + MasteryRecord + reviewDue), through
   the same shared engine — English via SELECT/MATCH, Coding via CODE.
+- ✅ **Coding real execution** (plans 74/75): keyword grading REPLACED by real
+  Pyodide/WASM execution (Web Worker, 8s kill) + a versioned test model
+  (function-call/stdout, visible+hidden tests) graded server-side (client result
+  re-validated, not trusted). Security threat-model + limits documented; coding
+  runtime lazy-loaded; Codey coach gets failing-test context. CODE-proven
+  (16 coding tests); live re-proof pending the deploy below.
+- ✅ **AI Literacy + Creativity vertical slices** built (code-proven) via the SAME
+  spine — no new engines. AI: SELECT/MATCH (what-is-AI); Creativity: SELECT+CREATE
+  (brainstorming). Live proof pending deploy.
+- ✅ **Canonical-loop regression harness** now covers 5 domains (English×2, Coding,
+  AI Literacy, Creativity).
+- ✅ **Deploy hardened**: check:enum-drift + check:migrations + backend tests are
+  MANDATORY gates in scripts/deploy.sh. Security overrides (multer/lodash) applied.
 - ✅ **Generic domain path**: `GET /learning/domains/:slug/path` (`DomainPathService`)
   — one projection for all domains; `/english/path` delegates to it. (8340c8c)
 - ✅ **Regression contract**: `canonical-domain-loop.harness.ts` parameterized by
