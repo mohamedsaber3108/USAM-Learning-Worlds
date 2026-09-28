@@ -20,6 +20,15 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../../database/prisma.service';
 import { MasteryService } from '../mastery/mastery.service';
 import { CodingCoachService } from '../ai/services/coding-coach.service';
+import {
+  parseExerciseSpec,
+  gradeAgainstSpec,
+  canonical,
+  CODING_TEST_MODEL_VERSION,
+  type CodingExerciseSpec,
+  type CodingTest,
+  type CodingTestOutcome,
+} from './coding-test-model';
 
 export type SandboxLanguage = 'python' | 'javascript';
 
@@ -47,6 +56,12 @@ export const SANDBOX_LIMITS = {
   MAX_RESULT_CHARS: 50_000,
 } as const;
 
+/**
+ * Mission spec served to the browser runner. Carries the full test model
+ * (visible tests shown to the learner; hidden tests are sent so the browser
+ * can run them, but the UI hides their expected values). No code is executed
+ * server-side — this is the exercise definition only.
+ */
 export interface CodingMissionSpec {
   activityId: string;
   title: string;
@@ -54,20 +69,10 @@ export interface CodingMissionSpec {
   runner: 'pyodide' | 'sandpack' | 'blockly';
   prompt: string;
   starterCode: string;
-  /**
-   * Expected-output assertions. Each assertion is checked against the
-   * client-reported result (stdout text match, or exact/contains match on
-   * a returned value). No code is ever executed here — this is pure
-   * string/JSON comparison against what the browser already ran.
-   */
-  assertions: CodingAssertion[];
-}
-
-export interface CodingAssertion {
-  id: string;
-  description: string;
-  type: 'stdout-equals' | 'stdout-contains' | 'result-equals';
-  expected: string;
+  timeoutMs: number;
+  executionPolicy: 'FORMATIVE' | 'CREDENTIAL';
+  testModelVersion: number;
+  tests: CodingTest[];
 }
 
 export interface SubmitResultDto {
@@ -81,12 +86,15 @@ export interface SubmitResultDto {
   result?: unknown;
   durationMs?: number;
   timedOut?: boolean;
-}
-
-export interface AssertionOutcome {
-  id: string;
-  description: string;
-  passed: boolean;
+  /**
+   * Per-test outcomes the CLIENT computed. The server RE-VALIDATES each
+   * against the exercise spec (see gradeAgainstSpec) — client `passed` is
+   * never trusted, only the reported `actual` output is re-checked.
+   */
+  testOutcomes?: CodingTestOutcome[];
+  /** Learner effort metadata for richer Evidence (not trusted for grading). */
+  hintsUsed?: number;
+  attemptNumber?: number;
 }
 
 @Injectable()
@@ -115,88 +123,31 @@ export class CodingSandboxService {
       throw new BadRequestException('Activity is not a coding mission');
     }
 
-    const content = (activity.content as any) ?? {};
-    const language: SandboxLanguage = content.language === 'javascript' ? 'javascript' : 'python';
-
-    // Blockly missions are visual-block Python: the block editor generates
-    // Python that runs through the exact same Pyodide path + grading. A
-    // mission opts in via content.runner === 'blockly'; otherwise the runner
-    // is chosen by language (sandpack for JS, pyodide for Python).
-    const runner: CodingMissionSpec['runner'] =
-      content.runner === 'blockly'
-        ? 'blockly'
-        : language === 'javascript'
-          ? 'sandpack'
-          : 'pyodide';
+    // parseExerciseSpec validates the content, upconverts legacy `assertions`,
+    // and normalizes language/runner/timeout/policy. A malformed spec throws
+    // here (mapped to 400) rather than silently degrading to "no tests => pass".
+    let spec: CodingExerciseSpec;
+    try {
+      spec = parseExerciseSpec({
+        ...(activity.content as any),
+        prompt: (activity.content as any)?.prompt ?? activity.description ?? '',
+      });
+    } catch (e: any) {
+      throw new BadRequestException(`Coding activity has an invalid exercise spec: ${e?.message ?? e}`);
+    }
 
     return {
       activityId: activity.id,
       title: activity.title,
-      language,
-      runner,
-      prompt: content.prompt ?? activity.description ?? '',
-      starterCode: content.starterCode ?? '',
-      assertions: Array.isArray(content.assertions) ? content.assertions : [],
+      language: spec.language,
+      runner: spec.runner,
+      prompt: spec.prompt,
+      starterCode: spec.starterCode,
+      timeoutMs: spec.timeoutMs,
+      executionPolicy: spec.executionPolicy,
+      testModelVersion: spec.testModelVersion,
+      tests: spec.tests,
     };
-  }
-
-  /**
-   * Validate already-executed client results against the mission's
-   * expected-output spec. Pure comparison — no execution of any kind.
-   */
-  private validate(spec: CodingMissionSpec, submission: SubmitResultDto): {
-    outcomes: AssertionOutcome[];
-    passed: boolean;
-    score: number;
-  } {
-    if (submission.timedOut) {
-      return { outcomes: [], passed: false, score: 0 };
-    }
-
-    if (spec.assertions.length === 0) {
-      // No deterministic assertions defined — fall back to "ran without error"
-      const ok = !submission.stderr;
-      return {
-        outcomes: [
-          { id: 'ran-without-error', description: 'Code ran without raising an error', passed: ok },
-        ],
-        passed: ok,
-        score: ok ? 1 : 0,
-      };
-    }
-
-    const outcomes = spec.assertions.map((assertion) => {
-      let passed = false;
-      switch (assertion.type) {
-        case 'stdout-equals':
-          passed = submission.stdout.trim() === assertion.expected.trim();
-          break;
-        case 'stdout-contains':
-          passed = submission.stdout.includes(assertion.expected);
-          break;
-        case 'result-equals':
-          passed = this.stringifyResult(submission.result) === assertion.expected;
-          break;
-        default:
-          passed = false;
-      }
-      return { id: assertion.id, description: assertion.description, passed };
-    });
-
-    const passedCount = outcomes.filter((o) => o.passed).length;
-    const score = outcomes.length ? passedCount / outcomes.length : 0;
-
-    return { outcomes, passed: passedCount === outcomes.length, score };
-  }
-
-  private stringifyResult(result: unknown): string {
-    if (result === undefined) return '';
-    if (typeof result === 'string') return result;
-    try {
-      return JSON.stringify(result);
-    } catch {
-      return String(result);
-    }
   }
 
   /**
@@ -228,7 +179,7 @@ export class CodingSandboxService {
       );
     }
 
-    if (this.stringifyResult(submission.result).length > SANDBOX_LIMITS.MAX_RESULT_CHARS) {
+    if (canonical(submission.result).length > SANDBOX_LIMITS.MAX_RESULT_CHARS) {
       throw new BadRequestException(
         `Captured result exceeds the ${SANDBOX_LIMITS.MAX_RESULT_CHARS}-character limit`,
       );
@@ -264,8 +215,23 @@ export class CodingSandboxService {
       throw new NotFoundException('Coding activity not found');
     }
 
-    const spec = await this.getMission(submission.activityId);
-    const { outcomes, passed, score } = this.validate(spec, submission);
+    // Parse the authoritative spec from the Activity (never trust the client's
+    // idea of the tests) and grade the client-reported outcomes against it.
+    let spec: CodingExerciseSpec;
+    try {
+      spec = parseExerciseSpec({
+        ...(activity.content as any),
+        prompt: (activity.content as any)?.prompt ?? activity.description ?? '',
+      });
+    } catch (e: any) {
+      throw new BadRequestException(`Coding activity has an invalid exercise spec: ${e?.message ?? e}`);
+    }
+
+    // A timed-out run fails outright (infinite loop / too slow) regardless of
+    // any outcomes the client reports.
+    const reported = submission.timedOut ? [] : submission.testOutcomes ?? [];
+    const graded = gradeAgainstSpec(spec, reported);
+    const { outcomes, passed, score, testsPassed, testsTotal } = graded;
 
     // AI code review — static text analysis only, never executes the code.
     let coachFeedback: string | null = null;
@@ -294,7 +260,7 @@ export class CodingSandboxService {
           result: submission.result ?? null,
           durationMs: submission.durationMs ?? null,
           timedOut: submission.timedOut ?? false,
-          assertionOutcomes: outcomes,
+          testOutcomes: outcomes, // server-authoritative
           executedBy: spec.runner, // client-side runner, never the backend
         } as any,
         success: passed,
@@ -304,13 +270,31 @@ export class CodingSandboxService {
     });
 
     if (activity.objective?.competencyId) {
+      // Rich Evidence.context justifies the mastery signal without storing
+      // unbounded telemetry. The mastery engine stays generic — Coding just
+      // produces richer context. executionPolicy records the trust tier so
+      // credential logic can distinguish FORMATIVE (browser) evidence later.
       await this.masteryService.recordEvidence(
         learnerId,
         activity.objective.competencyId,
         'CREATION',
         passed,
         score,
-        { activityId: activity.id, attemptId: attempt.id, runner: spec.runner },
+        {
+          activityId: activity.id,
+          attemptId: attempt.id,
+          runner: spec.runner,
+          language: spec.language,
+          executionPolicy: spec.executionPolicy,
+          testModelVersion: spec.testModelVersion,
+          testsPassed,
+          testsTotal,
+          hintsUsed: typeof submission.hintsUsed === 'number' ? submission.hintsUsed : 0,
+          attemptNumber: typeof submission.attemptNumber === 'number' ? submission.attemptNumber : 1,
+          hadRuntimeError: Boolean(submission.stderr),
+          timedOut: Boolean(submission.timedOut),
+          durationMs: submission.durationMs ?? null,
+        },
         attempt.id,
       );
     }
@@ -320,6 +304,8 @@ export class CodingSandboxService {
       outcomes,
       passed,
       score,
+      testsPassed,
+      testsTotal,
       coachFeedback,
     };
   }
