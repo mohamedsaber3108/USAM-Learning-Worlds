@@ -69,6 +69,52 @@ runCanonicalDomainLoop({
   },
 });
 
+// ─── AI Literacy (SELECT → KNOWLEDGE) ──────────────────────────────────────
+runCanonicalDomainLoop({
+  domain: 'AI Literacy / What is AI (SELECT)',
+  missionId: 'ai-mission-meet-ai',
+  learnerId: 'LEARNER_AI',
+  expectedCompetency: 'ai-competency-what-is-ai',
+  expectedEvidenceType: 'KNOWLEDGE',
+  activity: {
+    id: 'ai-act-what-is-ai',
+    type: 'SELECT',
+    assessmentPurpose: 'FORMATIVE',
+    content: {
+      question: 'What is artificial intelligence (AI)?',
+      options: [
+        'A computer program that learns from examples to make guesses',
+        'A living robot that thinks and feels like a person',
+        'Magic inside the computer',
+        'A kind of video game',
+      ],
+      correctAnswers: ['A computer program that learns from examples to make guesses'],
+    },
+  },
+  correctResponse: { selectedAnswers: ['A computer program that learns from examples to make guesses'] },
+  incorrectResponse: { selectedAnswers: ['Magic inside the computer'] },
+});
+
+// ─── Creativity (CREATE → CREATION) ────────────────────────────────────────
+runCanonicalDomainLoop({
+  domain: 'Creativity / Brainstorming (CREATE)',
+  missionId: 'creativity-mission-idea-spark',
+  learnerId: 'LEARNER_CREATE',
+  expectedCompetency: 'creativity-competency-brainstorming',
+  expectedEvidenceType: 'CREATION',
+  activity: {
+    id: 'creativity-act-brainstorm-uses',
+    type: 'CREATE',
+    assessmentPurpose: 'SUMMATIVE',
+    content: {
+      prompt: 'Think of at least 3 creative uses for a paperclip.',
+      rubric: ['At least 3 ideas', 'Ideas are different', 'At least one unusual idea'],
+    },
+  },
+  correctResponse: { submission: 'hook, bookmark, zipper pull, tiny antenna, lock pick' },
+  incorrectResponse: {},
+});
+
 // ─── Coding (CODE → CREATION) ──────────────────────────────────────────────
 // Fixture mirrors the evaluator's CODE contract: content.requiredKeywords must
 // all appear in response.code. This is the harness-level (evaluator) proof; the
