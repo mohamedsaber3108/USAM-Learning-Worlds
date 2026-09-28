@@ -110,8 +110,19 @@ export class WorldsService {
     return engaged;
   }
 
-  async getWorld(id: string) {
-    return this.prisma.world.findUnique({
+  /**
+   * A single world with its active missions, enriched with REAL per-learner
+   * state for the World Detail surface:
+   *   - world.isUnlocked (same signal as the worlds list)
+   *   - each mission.status: 'COMPLETED' | 'IN_PROGRESS' | 'AVAILABLE' | 'LOCKED'
+   *   - each mission.bestScore (from the learner's best completed run)
+   *   - each mission.locked: sequential gating — a mission is locked until the
+   *     previous mission in the world is completed (classic path progression).
+   * When learnerId is null (unauthenticated/guardian preview) missions are
+   * returned as AVAILABLE/unlocked with no per-learner status.
+   */
+  async getWorld(id: string, learnerId: string | null = null) {
+    const world = await this.prisma.world.findUnique({
       where: { id },
       include: {
         domain: { select: { id: true, name: true, slug: true } },
@@ -121,5 +132,47 @@ export class WorldsService {
         },
       },
     });
+    if (!world) return null;
+
+    // World unlock state (reuse the same starter/engagement signal).
+    let worldUnlocked = WorldsService.STARTER_WORLD_ORDERS.has(world.order);
+    if (learnerId && !worldUnlocked) {
+      const engaged = await this.getDomainEngagementSet(learnerId);
+      worldUnlocked = engaged.has(world.domain?.slug ?? '');
+    }
+
+    // Per-learner run status for this world's missions (COMPLETED wins over
+    // IN_PROGRESS). Score is computed at completion time and not persisted on
+    // the run, so we surface status only — not a fabricated score.
+    const statusByMission = new Map<string, 'COMPLETED' | 'IN_PROGRESS'>();
+    if (learnerId) {
+      const missionIds = world.missions.map((m) => m.id);
+      const runs = await this.prisma.missionRun.findMany({
+        where: { learnerId, missionId: { in: missionIds } },
+        select: { missionId: true, status: true },
+        orderBy: { startedAt: 'desc' },
+      });
+      for (const run of runs) {
+        const prev = statusByMission.get(run.missionId);
+        if (run.status === 'COMPLETED') statusByMission.set(run.missionId, 'COMPLETED');
+        else if (!prev && run.status === 'IN_PROGRESS') statusByMission.set(run.missionId, 'IN_PROGRESS');
+      }
+    }
+
+    // Sequential locking: a mission unlocks once the previous one is completed.
+    let prevCompleted = true; // first mission is available when the world is unlocked
+    const missions = world.missions.map((m) => {
+      const runStatus = statusByMission.get(m.id);
+      const locked = !worldUnlocked || !prevCompleted;
+      let status: 'COMPLETED' | 'IN_PROGRESS' | 'AVAILABLE' | 'LOCKED';
+      if (runStatus === 'COMPLETED') status = 'COMPLETED';
+      else if (runStatus === 'IN_PROGRESS') status = 'IN_PROGRESS';
+      else if (locked) status = 'LOCKED';
+      else status = 'AVAILABLE';
+      prevCompleted = runStatus === 'COMPLETED';
+      return { ...m, status, locked };
+    });
+
+    return { ...world, isUnlocked: worldUnlocked, missions };
   }
 }

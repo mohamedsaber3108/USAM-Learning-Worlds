@@ -20,8 +20,8 @@ export class WorldsController {
   }
 
   @Get(':id')
-  async getWorld(@Param('id') id: string) {
-    const world = await this.worldsService.getWorld(id);
+  async getWorld(@Param('id') id: string, @CurrentUser() user: any) {
+    const world = await this.worldsService.getWorld(id, user?.learner?.id ?? null);
     if (!world) {
       throw new NotFoundException('World not found');
     }

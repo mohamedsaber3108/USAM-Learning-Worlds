@@ -93,8 +93,9 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | **B design-system layer (Radix + owned components)** | ✅ 2d570cb — **DEPLOYED** (bundle index-Bq9NvNTl.js live 2026-09-28) |
 | **C app shell: age-adaptive navigation + distinct parent shell** | ✅ b56bcbf — **DEPLOYED** (same build; navModel young/mid/older/parent; legacy nav DELETED) |
 | **Deploy pipeline: scripts/deploy.sh (fail-fast, npm ci, drift detection)** | ✅ 8590fde — DEPLOYED + verified (drift detection live) |
-| **D living-world Home (hero): companion + next-action + progress ribbon + world-journey** | 🟡 this batch — replaced welcome-banner + continue-learning card; legacy blocks + unused imports DELETED; 34 tests |
-| D world detail · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
+| **D living-world Home (hero)** | ✅ 115f3d4 — DEPLOYED (bundle index-Bvtwe1DH.js) |
+| **D World Detail page + enriched GET /worlds/:id (real mission status)** | 🟡 this batch — Home→Map→Detail→Mission spine; backend getWorld returns per-learner COMPLETED/IN_PROGRESS/AVAILABLE/LOCKED + sequential unlock; world cards link to /worlds/:id; 37 tests |
+| E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
 
 ## In progress
 

@@ -811,9 +811,24 @@ export interface WorldRecord {
   isUnlocked: boolean
 }
 
+export type WorldMissionStatus = 'COMPLETED' | 'IN_PROGRESS' | 'AVAILABLE' | 'LOCKED'
+export interface WorldMissionRecord {
+  id: string
+  title: string
+  description: string
+  type: string
+  estimatedMinutes?: number | null
+  order: number
+  status: WorldMissionStatus
+  locked: boolean
+}
+export interface WorldDetailRecord extends WorldRecord {
+  missions: WorldMissionRecord[]
+}
+
 export const worldsApi = {
   list: () => apiClient.get<WorldRecord[]>('/worlds'),
-  getOne: (id: string) => apiClient.get('/worlds/' + id),
+  getOne: (id: string) => apiClient.get<WorldDetailRecord>('/worlds/' + id),
 }
 
 // ==================== Creativity Engine ====================

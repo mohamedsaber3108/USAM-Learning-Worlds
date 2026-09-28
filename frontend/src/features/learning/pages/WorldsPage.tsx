@@ -77,7 +77,7 @@ export function WorldsPage() {
                   transition={{ delay: i * 0.05 }}
                   {...(locked ? {} : { whileHover: { y: -4 } })}
                   disabled={locked}
-                  onClick={() => !locked && navigate(`/learn?domain=${world.domain?.slug || ''}`)}
+                  onClick={() => !locked && navigate(`/worlds/${world.id}`)}
                   aria-label={world.name}
                   className={`world-tile bg-gradient-to-br ${v.grad} min-h-[11rem] flex flex-col justify-between text-start ${
                     locked ? 'opacity-70 grayscale cursor-not-allowed' : ''

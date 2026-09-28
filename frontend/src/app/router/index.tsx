@@ -21,6 +21,7 @@ import { AchievementsPage } from '@/features/gamification/pages/AchievementsPage
 import { LeaderboardPage } from '@/features/gamification/pages/LeaderboardPage'
 import { ProgressPage } from '@/features/gamification/pages/ProgressPage'
 import { WorldsPage } from '@/features/learning/pages/WorldsPage'
+import { WorldDetailPage } from '@/features/learning/pages/WorldDetailPage'
 import { BalancedDevelopmentPage } from '@/features/gamification/pages/BalancedDevelopmentPage'
 import { SimulationsPage } from '@/features/learning/pages/SimulationsPage'
 import { SimulationPlayerPage } from '@/features/learning/pages/SimulationPlayerPage'
@@ -193,6 +194,7 @@ export function AppRouter() {
 
         {/* Worlds — learner-facing map of the Worlds engine */}
         <Route path="/worlds" element={<WorldsPage />} />
+        <Route path="/worlds/:id" element={<WorldDetailPage />} />
         {/* Simulations — branching decision-scenario engine */}
         <Route path="/simulations" element={<SimulationsPage />} />
         <Route path="/simulations/:slug" element={<SimulationPlayerPage />} />

@@ -65,7 +65,7 @@ export function WorldJourneyStrip() {
           return (
             <Link
               key={world.id}
-              to="/worlds"
+              to={locked ? '/worlds' : `/worlds/${world.id}`}
               className="snap-start shrink-0 w-40 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded-card"
               aria-label={world.name}
             >
