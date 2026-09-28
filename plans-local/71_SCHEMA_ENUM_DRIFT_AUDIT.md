@@ -104,7 +104,47 @@ the runtime defect is strictly backend DB casting.)
 - Regression: `enum-drift.spec.ts` asserts the entitlements query shape and that the
   legal-compliance consent list enumerates all `ConsentPurpose` values without error.
 
+## Automated protection (added)
+`backend/scripts/check-enum-drift.ts` (`npm run check:enum-drift`) is the guard
+against this whole bug class. It reads every Prisma enum from the generated
+client's DMMF (45 enums) and diffs against the live DB's `pg_type`/`pg_enum`,
+failing (exit 1) on:
+- **MISSING TYPE** — a Prisma enum with no Postgres type (the SubscriptionStatus
+  bug: queries casting to it 500). This is the high-signal check.
+- **VALUE MISMATCH** — a Prisma enum whose values differ from the DB type.
+
+It complements `check:migrations` (which checks table/column existence but not
+TYPE-level drift). Wire both into the deploy pipeline BEFORE traffic flips, so an
+enum/DB mismatch fails the deploy instead of the first production query. Run:
+```
+cd backend && npm run check:enum-drift    # needs DATABASE_URL
+```
+Note: after the fixes in this pass (Subscription/Plan → String; ConsentPurpose /
+DataSubjectRequest* / ContentSource enum types created by 20260930_fix_enum_drift.sql),
+this check should pass clean once that migration is applied to prod. If it reports
+MISSING TYPE for any of those three, the migration hasn't been applied yet.
+
+## §D live spot-check — RUN ON PROD (records the baseline-enum truth)
+The ~18 baseline enums (Role, UserStatus, AgeBand, LearnerStatus,
+GuardianRelationship, GuardianshipStatus, ActivityType, DifficultyLevel,
+MasteryState, EvidenceType, MissionType, MissionRunStatus, ProjectState,
+ProjectVisibility, XPSource, CharacterRole, InterventionTrigger, InterventionStatus)
+have no tracked CREATE TYPE. `check:enum-drift` now covers them automatically, but
+record a one-time manual snapshot too:
+```
+DB_URL="$(grep -E '^DATABASE_URL=' backend/.env | head -1 | cut -d= -f2- | tr -d '"')"
+# All enum types + values that actually exist in prod:
+psql "$DB_URL" -c "SELECT t.typname, string_agg(e.enumlabel, ',' ORDER BY e.enumsortorder) AS values
+  FROM pg_type t JOIN pg_enum e ON e.enumtypid=t.oid
+  JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname='public'
+  GROUP BY t.typname ORDER BY t.typname;"
+```
+Expected: all 45 Prisma enums present with matching values. Any Prisma enum absent
+from this list is live drift. (The app already runs auth/missions/mastery, which
+use Role/MissionType/MasteryState/etc., so those baseline types almost certainly
+exist as real enums — but `check:enum-drift` proves it rather than assuming.)
+
 ## Follow-ups
-- Run the §D live spot check and record results (do NOT assume baseline enums are safe).
-- Consider adding a CI check that diffs Prisma enums vs a `pg_type` dump of the target
-  DB, so this drift class is caught before deploy rather than at query time.
+- Run `npm run check:enum-drift` on prod after applying 20260930_fix_enum_drift.sql;
+  paste output into this doc as the recorded baseline.
+- Add `check:enum-drift` (and `check:migrations`) as a gate step in `scripts/deploy.sh`.
