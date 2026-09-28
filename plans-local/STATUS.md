@@ -120,7 +120,31 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | `GET /english/path` (projection over the shared spine + learner mastery) | 🟡 built (BE build clean) |
 | English Path UI (real mission links, live mastery, CEFR from API, no hardcoded id) | 🟡 built (FE build clean) |
 | Integration test: English SELECT/MATCH → Evidence(competencyId)+mastery via REAL evaluator (3 tests) | ✅ 56 BE tests pass |
-| **LIVE DB verification** (run seed + query persisted Competency/Mission/MissionActivity, then Evidence/MasteryRecord after a real submit) | ⛔ pending — migration ✅ applied; seed must be run on server (see command below), then a real submit proves Evidence+Mastery |
+| **LIVE DB — content spine** (Competency/Mission/MissionActivity persisted) | ✅ **VERIFIED** on server after `npm run seed:english:strands` + `seed:english:vocabulary`: competency has strandId (vocabulary-building), missionActivities=3, full slice 7/7 (domain/skill/competency/objective/activities=3/mission/missionAct=3) |
+| **LIVE DB — learning loop** (real submit → Evidence + MasteryRecord) | ⛔ **BLOCKED by live schema drift, now fixed in code** — see below |
+
+> **🔴 Live schema-drift bug found while proving the loop (blocks ALL mission
+> starts, every domain).** `POST /api/missions/:id/start` 500s:
+> `type "public.SubscriptionStatus" does not exist`. Chain:
+> `startMission → EntitlementsService.assertCanStartMission → getActivePlan →
+> prisma.subscription.findFirst({ where:{ status:{ in:['ACTIVE','TRIALING'] }}})`.
+> Root cause: `Subscription.status` (and `Plan.interval`) were modelled as Prisma
+> **enums** (`SubscriptionStatus`, `BillingInterval`), but `20260916_add_entitlements.sql`
+> created those columns as plain **TEXT** — the Postgres enum types were never
+> created. The generated client casts to the nonexistent enum type → query error.
+> Fix: schema `status`/`interval` → `String` (match the TEXT the migration made);
+> removed the two unused enum decls. `prisma generate` + `nest build` + 56 tests ✅.
+> Requires a **backend redeploy** (regenerated client) — no DB change needed
+> (columns already TEXT). After redeploy, re-run the loop proof below.
+>
+> Loop proof (after backend redeploy), using a real learner (`learner@test.com`
+> is NOT seeded on prod — register one via `POST /api/auth/register` or use an
+> existing learner). API base is `http://localhost:3000/api` (global prefix
+> `/api`, port 3000). Login → `POST /api/missions/english-mission-everyday-words/start`
+> → `POST /api/missions/runs/:runId/submit` `{activityId:"english-act-everyday-fruit",
+> response:{selectedAnswers:["apple"]}}` → expect `correct:true`, then an
+> `evidence` row (KNOWLEDGE, competencyId `english-competency-everyday-words-a1`)
+> + a `mastery_records` row (state/confidence update via the Bull recalc worker).
 
 > **English seed is a one-off content op — deploy does NOT run it.** `seed.ts`
 > uses non-idempotent `.create()` (fresh-DB only) and never wired English in.

@@ -58,7 +58,7 @@ model Learner {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
   guardianships         Guardianship[]
   progression           Progression?
   masteryRecords        MasteryRecord[]
@@ -117,8 +117,8 @@ model Guardian {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  guardianships Guardianship[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guardianships  Guardianship[]
   consentRecords ConsentRecord[]
 
   @@index([userId])
@@ -166,27 +166,27 @@ enum GuardianshipStatus {
 // ============================================
 
 model ConsentRecord {
-  id           String        @id @default(uuid())
+  id                 String         @id @default(uuid())
   // The guardian who granted/revoked consent, and the child it covers.
-  guardianId   String
-  learnerId    String
+  guardianId         String
+  learnerId          String
   // What the consent is FOR — granular, purpose-specific (COPPA/GDPR both
   // require consent to be specific, not blanket).
-  purpose      ConsentPurpose
-  granted      Boolean
+  purpose            ConsentPurpose
+  granted            Boolean
   // Version of the privacy policy / consent text the guardian agreed to,
   // so we can prove exactly what was consented to at the time.
-  policyVersion String
+  policyVersion      String
   // Jurisdiction that governed this consent (drives which rules applied).
-  jurisdiction String       @default("US")
+  jurisdiction       String         @default("US")
   // COPPA requires a *verifiable* parental consent method; record which one
   // was used (e.g. 'credit-card', 'signed-form', 'gov-id', 'email-plus').
   verificationMethod String?
   // Audit trail of who/where.
-  ipAddress    String?
-  userAgent    String?
-  grantedAt    DateTime      @default(now())
-  revokedAt    DateTime?
+  ipAddress          String?
+  userAgent          String?
+  grantedAt          DateTime       @default(now())
+  revokedAt          DateTime?
 
   guardian Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
   learner  Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
@@ -213,18 +213,18 @@ enum ConsentPurpose {
 }
 
 model DataSubjectRequest {
-  id           String              @id @default(uuid())
-  learnerId    String
+  id                    String                   @id @default(uuid())
+  learnerId             String
   // The guardian who raised the request on the child's behalf.
   requestedByGuardianId String?
-  type         DataSubjectRequestType
-  status       DataSubjectRequestStatus @default(PENDING)
+  type                  DataSubjectRequestType
+  status                DataSubjectRequestStatus @default(PENDING)
   // For EXPORT: where the generated export was stored (if any).
-  exportLocation String?
+  exportLocation        String?
   // Free-text detail / reason / processing notes.
-  notes        String?
-  requestedAt  DateTime            @default(now())
-  completedAt  DateTime?
+  notes                 String?
+  requestedAt           DateTime                 @default(now())
+  completedAt           DateTime?
 
   learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
@@ -259,48 +259,53 @@ enum DataSubjectRequestStatus {
 // ============================================
 
 model Plan {
-  id            String   @id @default(uuid())
+  id          String   @id @default(uuid())
   // Stable code used in entitlement checks, e.g. 'FREE', 'FAMILY', 'SCHOOL'.
-  code          String   @unique
-  name          String
-  description   String?
+  code        String   @unique
+  name        String
+  description String?
   // Price in minor units (e.g. cents) + currency; 0 for free.
-  priceCents    Int      @default(0)
-  currency      String   @default("USD")
-  interval      BillingInterval @default(MONTH)
+  priceCents  Int      @default(0)
+  currency    String   @default("USD")
+  // Stored as TEXT in the DB (see 20260916_add_entitlements.sql). NOT a Postgres
+  // enum: the entitlements migration deliberately used plain TEXT, so the Prisma
+  // field must be String too. Modelling it as a Prisma enum made the generated
+  // client cast to a `public.BillingInterval` type that was never created,
+  // producing `type ... does not exist` at query time. Values: MONTH|YEAR|ONE_TIME.
+  interval    String   @default("MONTH")
   // The capability flags/limits this plan grants, e.g.
   // { "maxLearners": 3, "voice": true, "aiTutor": true }.
-  features      Json     @default("{}")
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  features    Json     @default("{}")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   subscriptions Subscription[]
 
   @@map("plans")
 }
 
-enum BillingInterval {
-  MONTH
-  YEAR
-  ONE_TIME
-}
-
 model Subscription {
-  id            String   @id @default(uuid())
+  id                String    @id @default(uuid())
   // Billing owner (a guardian). Kept as a plain id (not FK) so an org/school
   // billing owner can be supported later without a schema change.
-  ownerUserId   String
-  planId        String
-  status        SubscriptionStatus @default(ACTIVE)
+  ownerUserId       String
+  planId            String
+  // Stored as TEXT in the DB (see 20260916_add_entitlements.sql), NOT a Postgres
+  // enum. Modelling it as a Prisma enum made the client cast to a
+  // `public.SubscriptionStatus` type that was never created, so every
+  // getActivePlan()/assertCanStartMission() query 500'd with
+  // `type "public.SubscriptionStatus" does not exist` — which blocked ALL
+  // mission starts on the live DB. Values: ACTIVE|TRIALING|PAST_DUE|CANCELED|EXPIRED.
+  status            String    @default("ACTIVE")
   // Provider abstraction: which payment provider backs this subscription and
   // its id there. 'manual' = no gateway (comped/admin-granted).
-  provider      String   @default("manual")
-  providerRef   String?
-  currentPeriodEnd DateTime?
-  cancelAtPeriodEnd Boolean @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  provider          String    @default("manual")
+  providerRef       String?
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   plan Plan @relation(fields: [planId], references: [id], onDelete: Restrict)
 
@@ -308,14 +313,6 @@ model Subscription {
   @@index([planId])
   @@index([status])
   @@map("subscriptions")
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  TRIALING
-  PAST_DUE
-  CANCELED
-  EXPIRED
 }
 
 // ============================================
@@ -382,15 +379,15 @@ model Competency {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  strand         EnglishStrand?           @relation(fields: [strandId], references: [id], onDelete: SetNull)
-  skill          Skill                    @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  concepts       Concept[]
-  objectives     LearningObjective[]
-  masteryRecords MasteryRecord[]
-  prerequisites  CompetencyPrerequisite[] @relation("competency")
-  dependents     CompetencyPrerequisite[] @relation("prerequisite")
-  projects       Project[]
-  interventions  InterventionRecommendation[]
+  strand               EnglishStrand?               @relation(fields: [strandId], references: [id], onDelete: SetNull)
+  skill                Skill                        @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  concepts             Concept[]
+  objectives           LearningObjective[]
+  masteryRecords       MasteryRecord[]
+  prerequisites        CompetencyPrerequisite[]     @relation("competency")
+  dependents           CompetencyPrerequisite[]     @relation("prerequisite")
+  projects             Project[]
+  interventions        InterventionRecommendation[]
   credentialDefinition CredentialDefinition?
 
   @@index([skillId])
@@ -443,13 +440,13 @@ model Activity {
   createdAt               DateTime          @default(now())
   updatedAt               DateTime          @updatedAt
 
-  objective             LearningObjective      @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
-  attempts              ActivityAttempt[]
-  missionActivities     MissionActivity[]
-  generatedFromTemplate QuestionTemplate?      @relation("GeneratedFromTemplate", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
-  cognitiveLoadSignals  CognitiveLoadSignal[]
-  misconceptionPatterns MisconceptionPattern[]
-  qualityFlags          AssessmentQualityFlag[]
+  objective                  LearningObjective           @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  attempts                   ActivityAttempt[]
+  missionActivities          MissionActivity[]
+  generatedFromTemplate      QuestionTemplate?           @relation("GeneratedFromTemplate", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
+  cognitiveLoadSignals       CognitiveLoadSignal[]
+  misconceptionPatterns      MisconceptionPattern[]
+  qualityFlags               AssessmentQualityFlag[]
   difficultyCalibrationFlags DifficultyCalibrationFlag[]
 
   @@index([objectiveId])
@@ -601,24 +598,24 @@ model CredentialDefinition {
 }
 
 model Credential {
-  id             String   @id @default(uuid())
-  learnerId      String
-  definitionId   String
+  id            String    @id @default(uuid())
+  learnerId     String
+  definitionId  String
   // Snapshot of the mastery evidence at issue time (confidence + count) so
   // the credential remains meaningful even if the record later changes.
-  confidence     Float
-  evidenceCount  Int
+  confidence    Float
+  evidenceCount Int
   // The full Open Badges 3.0 / Verifiable Credential JSON document.
-  assertionJson  Json
+  assertionJson Json
   // Stable public identifier used inside the credential's `id` URL and for
   // verification lookups. Distinct from the DB primary key.
-  credentialUid  String   @unique
+  credentialUid String    @unique
   // Optional detached signature (JWS/proof). Null until a signing key is
   // configured; the credential shape is valid unsigned for internal use.
-  proofJws       String?
-  revokedAt      DateTime?
-  revokedReason  String?
-  issuedAt       DateTime @default(now())
+  proofJws      String?
+  revokedAt     DateTime?
+  revokedReason String?
+  issuedAt      DateTime  @default(now())
 
   learner    Learner              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   definition CredentialDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
@@ -852,7 +849,7 @@ model Progression {
 }
 
 model XPGain {
-  id        String   @id @default(uuid())
+  id            String   @id @default(uuid())
   // FK INTEGRITY FIX (audit T-P1-2 / DB-1): this column references
   // Progression.id, NOT Learner.id — it was previously misnamed `learnerId`,
   // which made joins to Learner silently wrong. Renamed the Prisma field to
@@ -1232,9 +1229,9 @@ model PromptTemplate {
 // architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md "AI Prompt/Policy
 // Engine" row (Safety & Parent Engine bundle).
 model SafetyPolicy {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
   ageBand       AgeBand
-  policyVersion Int       @default(1)
+  policyVersion Int      @default(1)
   // Rule payload, e.g.:
   // {
   //   "maxHealthySessionMinutes": 45,
@@ -1245,11 +1242,11 @@ model SafetyPolicy {
   //   "dependencyPhrases": ["..."]
   // }
   rules         Json
-  changelog     String?   @db.Text
-  isActive      Boolean   @default(true)
-  effectiveFrom DateTime  @default(now())
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  changelog     String?  @db.Text
+  isActive      Boolean  @default(true)
+  effectiveFrom DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // One version number per age band - callers resolve "the active
   // policy for this ageBand" by isActive + latest effectiveFrom, but
@@ -1528,22 +1525,22 @@ enum ContentSourceType {
 // ============================================
 
 model ContentLicense {
-  id          String   @id @default(uuid())
+  id                  String   @id @default(uuid())
   // SPDX-style identifier where one exists (e.g. "CC-BY-4.0", "CC0-1.0",
   // "public-domain", "proprietary", "OGL-3.0").
-  spdxId      String   @unique
-  name        String
-  url         String?
+  spdxId              String   @unique
+  name                String
+  url                 String?
   // Whether this license permits commercial use (USAM is a commercial
   // product, so this gates whether content is safe to ship).
-  commercialUse Boolean @default(false)
+  commercialUse       Boolean  @default(false)
   // Whether attribution is required when using the content.
-  requiresAttribution Boolean @default(true)
+  requiresAttribution Boolean  @default(true)
   // Whether derivative works are permitted (we adapt passages for age).
-  allowsDerivatives Boolean @default(true)
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  allowsDerivatives   Boolean  @default(true)
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   sources ContentSource[]
 
@@ -1551,24 +1548,24 @@ model ContentLicense {
 }
 
 model ContentSource {
-  id           String            @id @default(uuid())
-  name         String
-  sourceType   ContentSourceType @default(HUMAN_AUTHORED)
+  id          String            @id @default(uuid())
+  name        String
+  sourceType  ContentSourceType @default(HUMAN_AUTHORED)
   // Origin URL / dataset home page / publisher reference.
-  url          String?
+  url         String?
   // Human-readable attribution string to display where the content is used
   // (satisfies license attribution requirements).
-  attribution  String?
+  attribution String?
   // Original author/publisher, distinct from the USAM actor who imported it.
-  author       String?
-  publisher    String?
-  licenseId    String?
+  author      String?
+  publisher   String?
+  licenseId   String?
   // Free-text notes: import date rationale, adaptation notes, etc.
-  notes        String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  license      ContentLicense?   @relation(fields: [licenseId], references: [id], onDelete: SetNull)
+  license      ContentLicense? @relation(fields: [licenseId], references: [id], onDelete: SetNull)
   contentItems ContentItem[]
 
   @@index([licenseId])
@@ -2329,11 +2326,11 @@ enum ExperimentStatus {
 }
 
 model ExperimentAssignment {
-  id           String     @id @default(uuid())
+  id           String   @id @default(uuid())
   learnerId    String
   experimentId String
   variant      String
-  assignedAt   DateTime   @default(now())
+  assignedAt   DateTime @default(now())
 
   learner    Learner    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
@@ -2604,22 +2601,22 @@ enum MediaAssetType {
 // can reference by id. No CDN/transcode step; assetUrl points at a
 // pre-hosted static file.
 model MediaAsset {
-  id             String         @id @default(uuid())
-  title          String
-  slug           String         @unique
-  type           MediaAssetType
-  assetUrl       String
-  thumbnailUrl   String?
-  description    String?
-  domainSlug     String?
-  ageAppropriate AgeBand
-  license        String         @default("USAM Original")
-  source         String         @default("USAM Original")
-  attribution    String?
+  id              String         @id @default(uuid())
+  title           String
+  slug            String         @unique
+  type            MediaAssetType
+  assetUrl        String
+  thumbnailUrl    String?
+  description     String?
+  domainSlug      String?
+  ageAppropriate  AgeBand
+  license         String         @default("USAM Original")
+  source          String         @default("USAM Original")
+  attribution     String?
   durationSeconds Int?
-  order          Int            @default(0)
-  isActive       Boolean        @default(true)
-  createdAt      DateTime       @default(now())
+  order           Int            @default(0)
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
 
   @@index([slug])
   @@index([type])
@@ -2643,16 +2640,16 @@ enum SimulationCategory {
 // point at another decision point id (or null = ending), mirroring the
 // already-real Story/StoryPage choiceOptions branching pattern.
 model SimulationScenario {
-  id             String              @id @default(uuid())
+  id             String             @id @default(uuid())
   title          String
-  slug           String              @unique
+  slug           String             @unique
   category       SimulationCategory
   description    String
   ageAppropriate AgeBand
   startNodeId    String?
-  isActive       Boolean             @default(true)
-  order          Int                 @default(0)
-  createdAt      DateTime            @default(now())
+  isActive       Boolean            @default(true)
+  order          Int                @default(0)
+  createdAt      DateTime           @default(now())
 
   nodes SimulationDecisionPoint[]
 
@@ -2692,16 +2689,16 @@ enum VisualLanguageCategory {
 }
 
 model VisualLanguageCard {
-  id             String                  @id @default(uuid())
+  id             String                 @id @default(uuid())
   word           String
-  slug           String                  @unique
+  slug           String                 @unique
   category       VisualLanguageCategory
   imageUrl       String
   caption        String
   ageAppropriate AgeBand
-  order          Int                     @default(0)
-  isActive       Boolean                 @default(true)
-  createdAt      DateTime                @default(now())
+  order          Int                    @default(0)
+  isActive       Boolean                @default(true)
+  createdAt      DateTime               @default(now())
 
   @@index([slug])
   @@index([category])
