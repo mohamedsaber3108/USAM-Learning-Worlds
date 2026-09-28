@@ -3,7 +3,8 @@
 > Live status per mandate §6. Updated every slice. Seeded from work already
 > shipped and verified against `https://kids.usamif.com`.
 
-Branch `fix/p0-p1-remediation` · HEAD `dfc294c` · Live bundle `index-THaV01Iq.js` (verified live 2026-09-23)
+Branch `fix/p0-p1-remediation` · HEAD `8a84f03` · Last live-verified bundle `index-B5sC8ROB.js` (2026-09-23)
+> Note: commits after `8e00d09` (G-7 `61678d4`, G-9 `8a84f03`) are pushed but await a frontend redeploy to go live.
 
 > Deploy note: raw-SQL migrations must be run with the connection string from
 > `backend/.env` — `$DATABASE_URL` is NOT exported in the shell, so bare `psql
@@ -65,9 +66,17 @@ Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planne
 | --- | --- |
 | **/plans discoverable via More menu (nav)** | 8e00d09 | no | ✅ live |
 | **G-8 orphan-engine sweep (66_FINAL_ENGINE_INVENTORY)** | 4f42efb | no | ✅ |
-| **G-7 accessibility: skip link + axe gate (3 tests)** | pending | no | 🟡 built+verified, commit pending |
-| G-4 7d: real payment gateway behind provider interface | 📋 |
+| **G-7 accessibility: skip link + axe gate (3 tests)** | 61678d4 | no | ✅ |
+| **G-9 Ask-the-Coach panel (coding-coach engine surfaced)** | 8a84f03 | no | ✅ built (⛔ AI runtime unverified — Bedrock) |
+| **docs/platform-audit index (recovery-mandate reconciliation)** | pending | no | 🟡 this batch |
+
+## In progress
+
+| Item | State |
+| --- | --- |
+| G-4 7d: real payment gateway behind provider interface | 📋 ⛔ needs processor + keys |
 | G-2c render smoke tests (onboarding/recommendations) | 📋 |
+| G-6 per-age-band curriculum content scaffolding | 📋 |
 
 ## Blocked
 
