@@ -176,6 +176,17 @@ export const en = {
     locked: 'Locked',
     missionCount: '{{count}} missions',
   },
+  home: {
+    heroLabel: 'Your world',
+    welcome: 'Hi {{name}}!',
+    levelChip: 'Level {{level}}',
+    xp: 'XP',
+    streakChip: '{{count}}-day streak',
+    continueMission: 'Continue your mission',
+    pickUp: 'Pick up where you left off',
+    nextStep: "Today's next step",
+    start: 'Start',
+  },
   portfolio: {
     title: 'My Portfolio',
     subtitle: 'Your growth story — mastery, credentials, and your best work.',

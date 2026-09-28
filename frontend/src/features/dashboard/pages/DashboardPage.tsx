@@ -22,8 +22,6 @@ import {
   CheckCircle2,
   Clock,
   Award,
-  Play,
-  ArrowRight,
 } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, cosmeticsApi, dailyGoalsApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
@@ -34,7 +32,7 @@ import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { RecommendationsSection } from '../components/RecommendationsSection'
 import { InterestChips } from '../components/InterestChips'
 import { WorldJourneyStrip } from '../components/WorldJourneyStrip'
-import { CharacterFace } from '@/features/characters/components/CharacterFace'
+import { LivingWorldHero } from '../components/LivingWorldHero'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DashboardSkeleton } from '@/components/common/Skeleton'
@@ -63,14 +61,6 @@ const quickActions = [
 // Real per-equipped-cosmetic rendering — not a settings toggle. These maps
 // translate the AvatarCosmetic.iconOrStyleKey seeded in the backend into
 // actual Tailwind classes / hex values applied on this page.
-const BORDER_RING_CLASS: Record<string, string> = {
-  'border-slate': 'ring-4 ring-slate-300',
-  'border-gold': 'ring-4 ring-secondary-400',
-  'border-blue': 'ring-4 ring-primary-400',
-  'border-purple': 'ring-4 ring-purple-400',
-  'border-diamond': 'ring-4 ring-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.65)]',
-}
-
 const THEME_ACCENT_HEX: Record<string, string> = COSMETIC_THEME_HEX
 
 const THEME_ACCENT_CHIP_CLASS: Record<string, string> = {
@@ -139,7 +129,6 @@ export function DashboardPage() {
     queryFn: () => dailyGoalsApi.getProgress().then(res => res.data),
   })
 
-  const equippedBorderKey: string | null = equippedCosmetics?.BORDER?.iconOrStyleKey ?? null
   const equippedTitleName: string | null = equippedCosmetics?.TITLE?.name ?? null
   const equippedThemeKey: string | null = equippedCosmetics?.COLOR_THEME?.iconOrStyleKey ?? null
   const themeAccentHex = equippedThemeKey ? THEME_ACCENT_HEX[equippedThemeKey] : undefined
@@ -217,99 +206,43 @@ export function DashboardPage() {
     <div className="min-h-screen bg-surface-50">
       {/* Main Content — header + bottom nav now come from AppShell */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome hero banner — branded gradient surface gives the logged-in
-            home real visual energy consistent with the marketing landing,
-            instead of a bare heading on gray. Decorative + aria-hidden dots. */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="relative overflow-hidden rounded-blob bg-brand-hero text-white p-6 sm:p-8 mb-8 shadow-lift"
-        >
-          <div aria-hidden className="dots-layer opacity-[0.15]" />
-          <div aria-hidden className="absolute -top-10 -end-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
-          <div className="relative flex items-center gap-4">
-            <div
-              className={`w-16 h-16 rounded-full bg-white/90 flex items-center justify-center text-primary-700 font-display font-bold text-xl flex-shrink-0 ${
-                BORDER_RING_CLASS[equippedBorderKey || 'border-slate'] || BORDER_RING_CLASS['border-slate']
-              }`}
-            >
-              {(user?.displayName || 'L').charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2
-                className={`font-display font-extrabold mb-1 flex items-center gap-2 flex-wrap tracking-tight ${
-                  adapt.density === 'simple' ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl'
-                }`}
-              >
-                {t('dashboard.welcomeBack', { name: user?.displayName || t('dashboard.defaultLearnerName') })}
-                {equippedTitleName && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 text-white align-middle">
-                    <Sparkles className="w-3.5 h-3.5" strokeWidth={2} />
-                    {equippedTitleName}
-                  </span>
-                )}
-              </h2>
-              <p className="text-white/80 text-sm">{t(`dashboard.greetingSubtext.${adapt.copyTone}`)}</p>
-            </div>
-            {/* Companion character — Home feels like entering a world WITH your
-                guide (Azouz greets you), not a bare dashboard. Bobs gently;
-                hidden on the smallest screens to keep the greeting readable. */}
-            <div className="hidden sm:block shrink-0 animate-bob" aria-hidden>
-              <div className="rounded-full bg-white/15 p-1.5">
-                <CharacterFace characterId="Azouz" size={adapt.density === 'simple' ? 80 : 64} />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Living-world journey — the learner's worlds as a path/map right at
-            the top of Home, tying the six-worlds North Star into the home
-            surface. Real unlock state + mission counts from the Worlds engine;
-            self-hides when unavailable. */}
-        <WorldJourneyStrip />
-
-        {/* Continue learning — the ONE clear next action (Duolingo/Prodigy
-            "single visible path" pattern). Resumes an in-progress mission
-            run when there is one; otherwise routes to the missions hub.
-            Real data: derived from recentMissions (missionsApi.getHistory). */}
+        {/* Living-world hero (Phase D) — companion greeting + the ONE next
+            action + a real progress ribbon (level/XP/streak), all from the
+            existing gamification/mission queries. Replaces the old welcome
+            banner + separate continue-learning card. */}
         {(() => {
           const inProgress = Array.isArray(recentMissions)
             ? recentMissions.find((r: any) => r.status === 'IN_PROGRESS')
             : null
-          const to = inProgress ? `/missions/play/${inProgress.id}` : '/missions'
-          const title = inProgress
-            ? inProgress.mission?.title || 'Continue your mission'
+          const nextTo = inProgress ? `/missions/play/${inProgress.id}` : '/missions'
+          const nextTitle = inProgress
+            ? inProgress.mission?.title || t('home.continueMission', 'Continue your mission')
             : t('dashboard.quickActions.missions')
-          const label = inProgress ? 'Continue' : 'Start'
+          const nextKicker = inProgress
+            ? t('home.pickUp', 'Pick up where you left off')
+            : t('home.nextStep', "Today's next step")
+          const nextLabel = inProgress ? t('missionPlayer.continue') : t('home.start', 'Start')
           return (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.08 }}
-              className="mb-8"
-            >
-              <Link
-                to={to}
-                className="card-playful flex items-center gap-4 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-              >
-                <div className="icon-chip bg-primary-600 text-white w-14 h-14 shrink-0 group-hover:scale-105 transition-transform">
-                  <Play className="w-6 h-6" strokeWidth={2.5} fill="currentColor" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-primary-600">
-                    {inProgress ? 'Pick up where you left off' : "Today's next step"}
-                  </p>
-                  <p className="font-display font-bold text-ink text-lg truncate">{title}</p>
-                </div>
-                <span className="btn-hero shrink-0 hidden sm:inline-flex">
-                  {label} <ArrowRight className="w-5 h-5 rtl:scale-x-[-1]" strokeWidth={2.5} />
-                </span>
-                <ArrowRight className="w-6 h-6 text-primary-600 sm:hidden rtl:scale-x-[-1]" strokeWidth={2.5} />
-              </Link>
-            </motion.div>
+            <LivingWorldHero
+              displayName={user?.displayName || t('dashboard.defaultLearnerName')}
+              companion="Azouz"
+              adapt={adapt}
+              greeting={t(`dashboard.greetingSubtext.${adapt.copyTone}`)}
+              nextTo={nextTo}
+              nextTitle={nextTitle}
+              nextKicker={nextKicker}
+              nextLabel={nextLabel}
+              level={progression?.level || 1}
+              totalXp={progression?.totalXP || 0}
+              streak={streak?.currentStreak || 0}
+              equippedTitle={equippedTitleName}
+            />
           )
         })()}
+
+        {/* Living-world journey — the learner's worlds as a path/map right
+            after the hero. Real unlock state + mission counts; self-hides. */}
+        <WorldJourneyStrip />
 
         {/* Your interests — surfaces onboarding interests as actionable chips
             (closes the loop: captured -> shown -> navigable). Self-hides when none. */}

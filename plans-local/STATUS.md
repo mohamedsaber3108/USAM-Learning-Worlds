@@ -92,8 +92,9 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | A research + architecture (§38 docs) | ✅ cf4399a |
 | **B design-system layer (Radix + owned components)** | ✅ 2d570cb — **DEPLOYED** (bundle index-Bq9NvNTl.js live 2026-09-28) |
 | **C app shell: age-adaptive navigation + distinct parent shell** | ✅ b56bcbf — **DEPLOYED** (same build; navModel young/mid/older/parent; legacy nav DELETED) |
-| **Deploy pipeline: scripts/deploy.sh (fail-fast, npm ci, drift detection)** | 🟡 this batch |
-| D world-map Home · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
+| **Deploy pipeline: scripts/deploy.sh (fail-fast, npm ci, drift detection)** | ✅ 8590fde — DEPLOYED + verified (drift detection live) |
+| **D living-world Home (hero): companion + next-action + progress ribbon + world-journey** | 🟡 this batch — replaced welcome-banner + continue-learning card; legacy blocks + unused imports DELETED; 34 tests |
+| D world detail · E domain surfaces · F projects/portfolio/progress · G parent · H QA gate · I production gate | 📋 |
 
 ## In progress
 

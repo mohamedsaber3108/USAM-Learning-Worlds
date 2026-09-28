@@ -178,6 +178,17 @@ export const ar: TranslationKeys = {
     locked: 'مقفول',
     missionCount: '{{count}} مهمّة',
   },
+  home: {
+    heroLabel: 'عالمك',
+    welcome: 'أهلاً يا {{name}}!',
+    levelChip: 'المستوى {{level}}',
+    xp: 'نقطة',
+    streakChip: 'سلسلة {{count}} يوم',
+    continueMission: 'كمّل مهمتك',
+    pickUp: 'كمّل من حيث وقفت',
+    nextStep: 'خطوتك النهارده',
+    start: 'ابدأ',
+  },
   portfolio: {
     title: 'معرض أعمالي',
     subtitle: 'قصة تقدّمك — الإتقان والشهادات وأحسن أعمالك.',
