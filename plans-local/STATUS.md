@@ -115,12 +115,23 @@ Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND
 | Item | State |
 | --- | --- |
 | Taxonomy validated (strand = family×CEFR; CEFR stays on strand; Competency.strandId = primary FK only, NO cefrLevel dup) — plan 69 amended | ✅ |
-| Schema migration `20260929_competency_english_strand.sql` (strandId FK+index, idempotent) | 🟡 built, **NOT yet applied to DB** |
-| TS seed `seed-english-vocabulary-slice.ts` (real A1 content: domain→skill→competency(strand-tagged)→objective→3 activities→mission) | 🟡 built, **NOT yet run** |
+| Schema migration `20260929_competency_english_strand.sql` (strandId FK+index, idempotent) | ✅ **APPLIED to live DB** (4cd3037) — verified: `competencies.strandId` col + FK→english_strands + index all present |
+| TS seed `seed-english-vocabulary-slice.ts` (real A1 content: domain→skill→competency(strand-tagged)→objective→3 activities→mission) | 🟡 built + **runnable script added** (`npm run seed:english:vocabulary`), **NOT yet run on server** — verification queries returned 0 rows because deploy does not run one-off seeds |
 | `GET /english/path` (projection over the shared spine + learner mastery) | 🟡 built (BE build clean) |
 | English Path UI (real mission links, live mastery, CEFR from API, no hardcoded id) | 🟡 built (FE build clean) |
 | Integration test: English SELECT/MATCH → Evidence(competencyId)+mastery via REAL evaluator (3 tests) | ✅ 56 BE tests pass |
-| **LIVE DB verification** (apply migration + run seed + query persisted Evidence/MasteryRecord after a real submit) | ⛔ pending deploy — the real proof |
+| **LIVE DB verification** (run seed + query persisted Competency/Mission/MissionActivity, then Evidence/MasteryRecord after a real submit) | ⛔ pending — migration ✅ applied; seed must be run on server (see command below), then a real submit proves Evidence+Mastery |
+
+> **English seed is a one-off content op — deploy does NOT run it.** `seed.ts`
+> uses non-idempotent `.create()` (fresh-DB only) and never wired English in.
+> The strands + vocabulary slice run as standalone scripts. On the server, in
+> `~/USAM-Learning-Worlds/backend`, after pulling the branch + `npm ci`:
+> ```
+> npm run seed:english:strands      # idempotent upserts — safe to re-run
+> npm run seed:english:vocabulary   # requires strands first; fails loudly if VOCABULARY strand missing
+> ```
+> Then re-run the verification queries (below). The vocabulary seed prints a
+> one-line summary: `competency=… strand=… mission=… activities=3/3`.
 | **English domain status** | **PARTIAL / reconstruction in progress** — NOT complete until live-verified |
 
 Deferred (documented in 69/70): specialized English activity types (PRONUNCIATION/

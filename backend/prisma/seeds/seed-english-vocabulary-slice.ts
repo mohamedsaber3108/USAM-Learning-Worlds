@@ -104,22 +104,33 @@ async function main() {
   });
 
   // Taxonomy: the VOCABULARY strand (family × CEFR). CEFR lives on the strand.
+  // The strands are the taxonomy source of truth — this slice tags its
+  // competency with its PRIMARY strand, it does NOT invent one. If the strands
+  // have not been seeded yet, fail loudly rather than silently persisting a
+  // null strandId (that would be a fake, taxonomy-less completion).
   const vocabStrand = await prisma.englishStrand.findFirst({
     where: { strandType: 'VOCABULARY' },
     orderBy: { order: 'asc' },
   });
+  if (!vocabStrand) {
+    throw new Error(
+      'No VOCABULARY EnglishStrand found. Run `npm run seed:english:strands` ' +
+        'before seeding the English vocabulary slice so the competency can be ' +
+        'tagged with its taxonomy strand.',
+    );
+  }
 
   // Competency: Everyday words (A1), tagged with its PRIMARY strand.
   const competency = await prisma.competency.upsert({
     where: { id: COMPETENCY_ID },
-    update: { strandId: vocabStrand?.id ?? null },
+    update: { strandId: vocabStrand.id },
     create: {
       id: COMPETENCY_ID,
       skillId: skill.id,
       name: 'Everyday words (A1)',
       description: 'Recognise and match everyday English words.',
       order: 1,
-      strandId: vocabStrand?.id ?? null,
+      strandId: vocabStrand.id,
     },
   });
 
@@ -185,7 +196,7 @@ async function main() {
 
   console.log(
     `English vocabulary slice seeded: domain=${domain.slug} skill=${skill.slug} ` +
-      `competency=${competency.id} strand=${vocabStrand?.slug ?? '(none)'} ` +
+      `competency=${competency.id} strand=${vocabStrand.slug} ` +
       `mission=${mission.id} activities=${n}/${ACTIVITIES.length}`,
   );
 }
