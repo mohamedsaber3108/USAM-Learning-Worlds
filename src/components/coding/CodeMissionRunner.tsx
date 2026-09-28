@@ -13,9 +13,14 @@ import { useState } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { runPython } from '@/components/coding/PyodideRunner';
+import { runPython, runPythonTests, type PyTest } from '@/components/coding/PyodideRunner';
 import { SandpackMission } from '@/components/coding/SandpackMission';
-import { codingSandboxAPI, type CodingSandboxMission, type CodingSandboxResult } from '@/services/api';
+import {
+  codingSandboxAPI,
+  type CodingSandboxMission,
+  type CodingSandboxResult,
+  type CodingTestOutcome,
+} from '@/services/api';
 
 export interface CodeMissionRunnerProps {
   mission: CodingSandboxMission;
@@ -29,8 +34,16 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
   const [output, setOutput] = useState<{ stdout: string; stderr: string } | null>(null);
   const [gradeResult, setGradeResult] = useState<CodingSandboxResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(1);
 
-  async function submit(stdout: string, stderr: string, result: unknown, durationMs: number, timedOut: boolean) {
+  async function submit(
+    stdout: string,
+    stderr: string,
+    result: unknown,
+    durationMs: number,
+    timedOut: boolean,
+    testOutcomes?: CodingTestOutcome[],
+  ) {
     setOutput({ stdout, stderr });
     try {
       const graded = await codingSandboxAPI.submitResult({
@@ -43,9 +56,12 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
         result,
         durationMs,
         timedOut,
+        testOutcomes,
+        attemptNumber: attempt,
       });
       setGradeResult(graded);
       setError(null);
+      setAttempt((n) => n + 1);
     } catch (e: any) {
       setError(e?.message ?? 'Could not submit results for grading.');
     }
@@ -54,8 +70,31 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
   async function runPyodide() {
     setRunning(true);
     setGradeResult(null);
-    const { stdout, stderr, result, durationMs, timedOut } = await runPython(code);
-    await submit(stdout, stderr, result, durationMs, timedOut);
+
+    const tests = mission.tests ?? [];
+    if (tests.length > 0) {
+      // Run the learner's code against the exercise's tests. The client-runnable
+      // slice of each test (id/kind/functionName/args) + a local expected map for
+      // immediate UI feedback; the server re-validates `actual` authoritatively.
+      const pyTests: PyTest[] = tests.map((t) => ({
+        id: t.id,
+        description: t.description,
+        hidden: t.hidden,
+        kind: t.kind,
+        functionName: t.functionName,
+        args: t.args,
+        stdin: t.stdin,
+      }));
+      const expectedByTest = Object.fromEntries(
+        tests.map((t) => [t.id, { kind: t.kind, expectedOutput: t.expectedOutput, expectedReturn: t.expectedReturn }]),
+      );
+      const { stdout, stderr, outcomes, durationMs, timedOut } = await runPythonTests(code, pyTests, expectedByTest);
+      await submit(stdout, stderr, undefined, durationMs, timedOut, outcomes);
+    } else {
+      // No tests: plain run (ran-without-error is graded server-side).
+      const { stdout, stderr, result, durationMs, timedOut } = await runPython(code);
+      await submit(stdout, stderr, result, durationMs, timedOut);
+    }
     setRunning(false);
   }
 

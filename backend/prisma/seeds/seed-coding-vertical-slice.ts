@@ -64,16 +64,34 @@ const ACTIVITIES = [
     difficulty: 'EASY' as const,
     assessmentPurpose: 'FORMATIVE' as const,
     content: {
+      // Real test-model spec (coding-test-model v1) — graded by the
+      // coding-sandbox path with actual Pyodide execution + server re-validation,
+      // NOT the old keyword heuristic.
+      testModelVersion: 1,
+      language: 'python',
+      runner: 'pyodide',
+      executionPolicy: 'FORMATIVE',
+      timeoutMs: 8000,
       prompt: 'Use a for loop to print the numbers 1, 2 and 3, each on its own line.',
       context:
         'A "for" loop repeats code. `for i in range(1, 4):` counts i = 1, 2, 3. Inside the loop, `print(i)` shows each number. The two lines together print 1, 2, 3.',
-      // Shared ActivityEvaluator.evaluateCode: correct when ALL of these appear
-      // in the submitted code (case-sensitive substring). Kept minimal + robust
-      // so a genuinely-correct loop passes without real execution.
-      requiredKeywords: ['for', 'print'],
-      language: 'python',
       starterCode: '# write a loop that prints 1, 2, 3\n',
       sampleSolution: 'for i in range(1, 4):\n    print(i)',
+      tests: [
+        {
+          id: 'print123-stdout',
+          description: 'Prints 1, 2, 3 each on its own line',
+          kind: 'stdout-equals',
+          expectedOutput: '1\n2\n3',
+        },
+        {
+          id: 'print123-contains-2',
+          description: 'The number 2 appears in the output',
+          hidden: true,
+          kind: 'stdout-contains',
+          expectedOutput: '2',
+        },
+      ],
     },
   },
   {
@@ -84,13 +102,27 @@ const ACTIVITIES = [
     difficulty: 'EASY' as const,
     assessmentPurpose: 'SUMMATIVE' as const,
     content: {
-      prompt: 'Use a for loop to add the numbers 1 to 5 into a total, then print the total.',
-      context:
-        'Start a total at 0, loop over the numbers with `for`, add each to the total, then `print` the total. This shows a loop that builds up a result.',
-      requiredKeywords: ['for', 'print'],
+      testModelVersion: 1,
       language: 'python',
-      starterCode: 'total = 0\n# loop and add, then print total\n',
-      sampleSolution: 'total = 0\nfor i in range(1, 6):\n    total = total + i\nprint(total)',
+      runner: 'pyodide',
+      executionPolicy: 'FORMATIVE',
+      timeoutMs: 8000,
+      prompt: 'Write a function total_1_to_5() that returns the sum of the numbers 1 to 5 (which is 15).',
+      context:
+        'Start a total at 0, loop over the numbers 1..5 with `for`, add each to the total, then return the total. 1+2+3+4+5 = 15.',
+      starterCode: 'def total_1_to_5():\n    # loop and add, then return the total\n    pass\n',
+      sampleSolution:
+        'def total_1_to_5():\n    total = 0\n    for i in range(1, 6):\n        total = total + i\n    return total\n',
+      tests: [
+        {
+          id: 'sum-returns-15',
+          description: 'total_1_to_5() returns 15',
+          kind: 'function-call',
+          functionName: 'total_1_to_5',
+          args: [],
+          expectedReturn: 15,
+        },
+      ],
     },
   },
 ];

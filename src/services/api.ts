@@ -334,14 +334,39 @@ export const codingAPI = {
 // CODING SANDBOX API (Pyodide/Sandpack — zero backend execution)
 // ============================================
 
+/** One test case in a coding exercise (mirrors backend coding-test-model). */
+export interface CodingTest {
+  id: string;
+  description: string;
+  hidden?: boolean;
+  kind: 'stdout-equals' | 'stdout-contains' | 'function-call' | 'result-equals';
+  stdin?: string;
+  expectedOutput?: string;
+  functionName?: string;
+  args?: unknown[];
+  expectedReturn?: unknown;
+}
+
+/** Per-test outcome the client computes and reports (server re-validates). */
+export interface CodingTestOutcome {
+  id: string;
+  description: string;
+  hidden: boolean;
+  passed: boolean;
+  actual?: string;
+}
+
 export interface CodingSandboxMission {
   activityId: string;
   title: string;
   language: 'python' | 'javascript';
-  runner: 'pyodide' | 'sandpack';
+  runner: 'pyodide' | 'sandpack' | 'blockly';
   prompt: string;
   starterCode: string;
-  assertions: Array<{ id: string; description: string; type: string; expected: string }>;
+  timeoutMs: number;
+  executionPolicy: 'FORMATIVE' | 'CREDENTIAL';
+  testModelVersion: number;
+  tests: CodingTest[];
 }
 
 export interface CodingSandboxSubmission {
@@ -354,11 +379,17 @@ export interface CodingSandboxSubmission {
   result?: unknown;
   durationMs?: number;
   timedOut?: boolean;
+  /** Per-test outcomes computed client-side; server re-validates `actual`. */
+  testOutcomes?: CodingTestOutcome[];
+  hintsUsed?: number;
+  attemptNumber?: number;
 }
 
 export interface CodingSandboxResult {
   attempt: any;
-  outcomes: Array<{ id: string; description: string; passed: boolean }>;
+  outcomes: Array<{ id: string; description: string; hidden?: boolean; passed: boolean }>;
+  testsPassed?: number;
+  testsTotal?: number;
   passed: boolean;
   score: number;
   coachFeedback: string | null;
