@@ -41,6 +41,55 @@
 - Network: none wired into the runners.
 - Server execution: **none** (hard architectural invariant).
 
+## Precise trust model — CLIENT-EXECUTED, SERVER-VALIDATED (code evidence)
+
+The server does NOT execute learner code. Terminology: coding is **CLIENT-EXECUTED**
+(browser Pyodide/Sandpack) and **SERVER-VALIDATED** (the server re-checks reported
+output against a spec it loads independently). It is NOT server-executed.
+
+Answering the enumerated questions from the code
+(`coding-sandbox.service.ts` `getMission` + `submitResult`, `coding-test-model.ts`
+`gradeAgainstSpec`), verified by `coding-sandbox.adversarial.spec.ts` (11 tests):
+
+| Question | Answer (code evidence) |
+|---|---|
+| Are hidden tests sent to the browser? | YES — the client needs id/kind/functionName/args to RUN them. |
+| Are hidden tests' EXPECTED outputs sent? | **NO (fixed).** `getMission` now strips `expectedOutput`/`expectedReturn` from `hidden` tests before responding. Visible tests keep their expected (shown as worked examples). |
+| Can the client fabricate `actual`? | YES — this is the honest FORMATIVE limitation. The server trusts the reported `actual` output (it can't re-run the code). |
+| Can the client fabricate `testsPassed`/`testsTotal`? | NO — server recomputes from `gradeAgainstSpec`; any payload values are ignored (adversarial #2). |
+| Can the client claim another `runner`? | NO — `runner` comes from the DB spec; persisted `executedBy = spec.runner` (adversarial #5). |
+| Can the client modify activity/test-model version? | NO — `testModelVersion` + expected values come from the DB Activity, not the request (adversarial #3, #5). |
+| Does the backend load the canonical spec independently? | YES — `parseExerciseSpec(activity.content)` loaded by `activityId` from the DB. |
+| What does the backend recompute? | `passed`, `score`, `testsPassed`, `testsTotal`, and each per-test `passed` — from reported `actual` vs the DB spec's expected. |
+| Which client fields are TRUSTED? | `code`, `stdout`, `stderr`, `result`, and each test's `actual`. (Stored for feedback/audit; `actual` is re-checked.) |
+| Which are IGNORED/recomputed? | client `passed`, `testsPassed`/`testsTotal`, any client-sent `tests`/expected, `runner`, `testModelVersion`. |
+
+### Adversarial results (all covered by tests)
+1. passed=true + wrong actual → **FAIL** (server recomputes). ✅
+2. forged testsPassed/testsTotal → **ignored**, recomputed. ✅
+3. forged expected in request → **ignored**, DB spec used → fail. ✅
+4. forged hidden-test result (wrong actual) → hidden **fails** on DB expected. ✅
+5. forged activity/test-model version + runner → **ignored**, DB values used. ✅
+6. correct output + unrelated source → **PASSES** — documented FORMATIVE limit
+   (server can't prove the code produced the output; only CREDENTIAL tier can). ⚠️ honest
+7. source changed after execution → code+outcomes graded as one unit; wrong
+   `actual` still fails. No separate exec record exists to diverge from. ⚠️ honest
+8. replay against another activity (not in run's mission) → **REJECT** (new
+   MissionActivity membership check). ✅ (was a gap; fixed this pass)
+9. replay against another learner's run → **REJECT** (ownership check). ✅
+10. oversized submission → **REJECT** before DB (SANDBOX_LIMITS). ✅
+
+### Honest statement of the boundary
+For **FORMATIVE practice** this is sufficient and appropriate: a child gets real
+execution + real per-test grading, and casual tampering (flipping `passed`, forging
+counts, redefining tests, replaying across activities/runs) is defeated server-side.
+It is **NOT tamper-PROOF**: a determined client can fabricate an `actual` that
+matches the real expected output (cases #6/#7), because the server cannot re-run the
+code. Defeating that requires the **CREDENTIAL tier** — isolated SERVER execution
+against hidden tests — which is NOT built. Evidence from this path carries
+`executionPolicy: FORMATIVE` so credential logic can distinguish it later. Do not
+describe FORMATIVE coding evidence as credential-grade or tamper-proof.
+
 ## Follow-up hardening (tracked, not blocking)
 1. CSP on the worker/runner origin to defense-in-depth block network from Pyodide.
 2. Optional per-run memory hint / smaller Pyodide bundle.

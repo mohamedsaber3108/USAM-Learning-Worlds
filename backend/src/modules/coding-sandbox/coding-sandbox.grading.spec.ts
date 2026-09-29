@@ -32,7 +32,8 @@ describe('CodingSandboxService — server-side grading', () => {
     const recordEvidence = jest.fn().mockResolvedValue(undefined);
     const created: any[] = [];
     const prisma: any = {
-      missionRun: { findUnique: jest.fn().mockResolvedValue({ id: 'run-1', learnerId: 'ME' }) },
+      missionRun: { findUnique: jest.fn().mockResolvedValue({ id: 'run-1', learnerId: 'ME', missionId: 'mission-1' }) },
+      missionActivity: { findFirst: jest.fn().mockResolvedValue({ id: 'ma-1' }) },
       activity: { findUnique: jest.fn().mockResolvedValue(ACTIVITY) },
       activityAttempt: {
         create: jest.fn().mockImplementation(({ data }: any) => {

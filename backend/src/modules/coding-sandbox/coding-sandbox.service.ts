@@ -136,6 +136,18 @@ export class CodingSandboxService {
       throw new BadRequestException(`Coding activity has an invalid exercise spec: ${e?.message ?? e}`);
     }
 
+    // TRUST: strip HIDDEN tests' expected values before sending to the browser
+    // so "hidden" is honest — the client can still RUN a hidden test (it has
+    // id/kind/functionName/args) and report the produced `actual`, but it never
+    // learns the expected output, and the server holds the authoritative
+    // expected value to re-validate against. Visible tests keep their expected
+    // value (they are shown to the learner as worked examples).
+    const clientTests = spec.tests.map((t) =>
+      t.hidden
+        ? { id: t.id, description: t.description, hidden: true, kind: t.kind, functionName: t.functionName, args: t.args, stdin: t.stdin }
+        : t,
+    );
+
     return {
       activityId: activity.id,
       title: activity.title,
@@ -146,7 +158,7 @@ export class CodingSandboxService {
       timeoutMs: spec.timeoutMs,
       executionPolicy: spec.executionPolicy,
       testModelVersion: spec.testModelVersion,
-      tests: spec.tests,
+      tests: clientTests,
     };
   }
 
@@ -213,6 +225,19 @@ export class CodingSandboxService {
     });
     if (!activity) {
       throw new NotFoundException('Coding activity not found');
+    }
+
+    // INTEGRITY: the activity must actually belong to THIS run's mission.
+    // Without this, a result could be replayed against an unrelated mission
+    // run (adversarial case #9) or an activity from a different mission
+    // submitted under this run. The MissionActivity join is the source of
+    // truth for "this activity is part of this mission".
+    const belongsToMission = await this.prisma.missionActivity.findFirst({
+      where: { missionId: run.missionId, activityId: submission.activityId },
+      select: { id: true },
+    });
+    if (!belongsToMission) {
+      throw new BadRequestException('Activity does not belong to this mission run');
     }
 
     // Parse the authoritative spec from the Activity (never trust the client's
