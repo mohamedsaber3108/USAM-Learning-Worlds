@@ -54,9 +54,14 @@ export function CodingPage() {
               </div>
               <p className="text-white/85 text-sm">{t('coding.subtitle')}</p>
             </div>
-            <Link to="/missions" className="chip-glass hover:bg-white/25 transition-colors shrink-0">
-              <Target className="w-4 h-4" strokeWidth={2} /> {t('coding.missions')}
-            </Link>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link to="/learning/domains/coding/path" className="chip-glass hover:bg-white/25 transition-colors">
+                <Target className="w-4 h-4" strokeWidth={2} /> {t('coding.myPath', 'My coding path')}
+              </Link>
+              <Link to="/missions" className="chip-glass hover:bg-white/25 transition-colors">
+                <Target className="w-4 h-4" strokeWidth={2} /> {t('coding.missions')}
+              </Link>
+            </div>
           </div>
         </div>
       </header>

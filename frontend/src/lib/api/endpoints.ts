@@ -285,6 +285,14 @@ export const learningApi = {
   getConceptsForDomain: (domainId: string) =>
     apiClient.get(`/learning/domains/${domainId}/concepts`),
 
+  // Generic canonical-spine domain path (skills → competencies → first mission
+  // + learner mastery), by domain SLUG. Backed by DomainPathService.getPath —
+  // the same engine behind GET /english/path. Works for english/coding/
+  // ai-literacy/creativity (any seeded Domain slug). Preferred over the
+  // per-domain shims for building a shared domain-experience page.
+  getDomainPath: (slug: string) =>
+    apiClient.get<DomainPath>(`/learning/domains/${slug}/path`),
+
   // Learning Paths
   getPaths: (params?: { domainId?: string; ageBand?: string }) =>
     apiClient.get('/learning/paths', { params }),
@@ -306,6 +314,33 @@ export const learningApi = {
 
   getMyPaths: () =>
     apiClient.get('/learning/my-paths'),
+}
+
+// Shared shape for the generic domain path (GET /learning/domains/:slug/path,
+// DomainPathService.getPath). masteryState is the raw backend MasteryState
+// string — callers MUST translate it via lib/mastery/masteryLabels before
+// showing it to a learner (never render the raw enum or the confidence
+// decimal). cefrLevel/strandType are English-only decorations (null elsewhere).
+export interface DomainPathCompetency {
+  id: string
+  name: string
+  description: string | null
+  cefrLevel: string | null
+  strandType: string | null
+  missionId: string | null
+  missionTitle: string | null
+  masteryState: string
+  confidence: number
+}
+export interface DomainPathSkill {
+  id: string
+  name: string
+  slug: string
+  competencies: DomainPathCompetency[]
+}
+export interface DomainPath {
+  domain: { id: string; name: string; slug: string } | null
+  skills: DomainPathSkill[]
 }
 
 // ==================== Learning Events (Analytics pipeline) ====================
@@ -398,26 +433,12 @@ export const englishApi = {
   getLearningPath: () => apiClient.get<EnglishPath>('/english/path'),
 }
 
-export interface EnglishPathCompetency {
-  id: string
-  name: string
-  description: string | null
-  cefrLevel: string | null
-  missionId: string | null
-  missionTitle: string | null
-  masteryState: 'NOT_STARTED' | 'NOVICE' | 'DEVELOPING' | 'PROFICIENT' | 'MASTERED' | string
-  confidence: number
-}
-export interface EnglishPathSkill {
-  id: string
-  name: string
-  slug: string
-  competencies: EnglishPathCompetency[]
-}
-export interface EnglishPath {
-  domain: { id: string; name: string; slug: string } | null
-  skills: EnglishPathSkill[]
-}
+// English path is the same canonical-spine projection as any other domain
+// (GET /english/path is a back-compat shim over DomainPathService.getPath).
+// Kept as aliases so there is ONE source of truth for the shape.
+export type EnglishPathCompetency = DomainPathCompetency
+export type EnglishPathSkill = DomainPathSkill
+export type EnglishPath = DomainPath
 
 /**
  * Real Bedrock-backed coaching routes

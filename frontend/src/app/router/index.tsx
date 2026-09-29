@@ -46,6 +46,7 @@ import { StoriesListPage } from '@/features/stories/pages/StoriesListPage'
 import { StoryReaderPage } from '@/features/stories/pages/StoryReaderPage'
 import { CreativityGalleryPage } from '@/features/creativity/pages/CreativityGalleryPage'
 import { PracticePage } from '@/features/practice/pages/PracticePage'
+import { DomainPathPage } from '@/features/learning/pages/DomainPathPage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AdminRoute } from '@/components/common/AdminRoute'
 import { AppShell } from '@/components/layout/AppShell'
@@ -213,6 +214,11 @@ export function AppRouter() {
         <Route path="/learn/paths/:id" element={<LearningPathDetailPage />} />
         <Route path="/learn/flashcards" element={<FlashcardsStudyPage />} />
         <Route path="/learn/visual-language" element={<VisualLanguageStudyPage />} />
+        {/* Generic domain learning path — ONE page shared by every domain
+            (english/coding/ai-literacy/creativity), driven by slug. Composes
+            the canonical-spine path (GET /learning/domains/:slug/path) with a
+            companion intro, the ONE next action, review-due, and the domain tool. */}
+        <Route path="/learning/domains/:slug/path" element={<DomainPathPage />} />
 
         {/* Projects */}
         <Route path="/projects" element={<ProjectsPage />} />
