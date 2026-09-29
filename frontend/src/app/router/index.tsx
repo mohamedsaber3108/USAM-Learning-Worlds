@@ -45,6 +45,7 @@ import { ThinkingSkillConceptDetailPage } from '@/features/thinking-skills/pages
 import { StoriesListPage } from '@/features/stories/pages/StoriesListPage'
 import { StoryReaderPage } from '@/features/stories/pages/StoryReaderPage'
 import { CreativityGalleryPage } from '@/features/creativity/pages/CreativityGalleryPage'
+import { PracticePage } from '@/features/practice/pages/PracticePage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AdminRoute } from '@/components/common/AdminRoute'
 import { AppShell } from '@/components/layout/AppShell'
@@ -179,6 +180,11 @@ export function AppRouter() {
         }
       >
         <Route path="/dashboard" element={<DashboardPage />} />
+
+        {/* Practice / Review center — surfaces the spaced-review (FSRS) engine
+            and adaptive recommendations in child-friendly "keep it strong"
+            language. Previously masteryApi.getReviewDue had zero consumers. */}
+        <Route path="/practice" element={<PracticePage />} />
 
         {/* Missions */}
         <Route path="/missions" element={<MissionsBrowsePage />} />

@@ -31,6 +31,7 @@ import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { RecommendationsSection } from '../components/RecommendationsSection'
+import { ReviewDueCard } from '../components/ReviewDueCard'
 import { InterestChips } from '../components/InterestChips'
 import { WorldJourneyStrip } from '../components/WorldJourneyStrip'
 import { LivingWorldHero } from '../components/LivingWorldHero'
@@ -249,6 +250,10 @@ export function DashboardPage() {
         {/* Your interests — surfaces onboarding interests as actionable chips
             (closes the loop: captured -> shown -> navigable). Self-hides when none. */}
         <InterestChips />
+
+        {/* Review due — surfaces the spaced-review/FSRS engine (previously had
+            NO frontend). Self-hides when nothing is due; links to /practice. */}
+        <ReviewDueCard />
 
         {/* Recommended for you — surfaces the backend Adaptive/Recommendation
             engine (previously had NO frontend). Age-adaptive item count; the

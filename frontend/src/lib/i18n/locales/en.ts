@@ -259,6 +259,11 @@ export const en = {
     pickUp: 'Pick up where you left off',
     nextStep: "Today's next step",
     start: 'Start',
+    reviewDueAria: 'Practice items due for review',
+    reviewDueTitle_one: 'Time to keep {{count}} skill strong',
+    reviewDueTitle_other: 'Time to keep {{count}} skills strong',
+    reviewDueSubtitle: 'A quick practice so you don’t forget',
+    reviewDueCta: 'Practice',
   },
   portfolio: {
     title: 'My Portfolio',
@@ -782,6 +787,30 @@ export const en = {
     encourageAlmost: 'Almost perfect! Keep up the excellent work!',
     encourageGood: "You're making great progress!",
     encourageKeep: "Don't give up! Every attempt makes you stronger!",
+  },
+  // Child-friendly mastery vocabulary (never expose backend states/decimals).
+  mastery: {
+    band: {
+      new: 'Not started',
+      learning: 'Learning',
+      practicing: 'Practicing',
+      strong: 'Getting strong',
+      mastered: 'Mastered',
+    },
+  },
+  // Practice / Review center (spaced review + adaptive recommendations).
+  practice: {
+    title: 'Practice',
+    subtitle: 'A little practice keeps what you learned strong. Here is what is ready for you today.',
+    loading: 'Finding what to practice…',
+    errorTitle: "Couldn't load your practice",
+    errorMessage: "Let's try that again.",
+    dueToday: 'Ready to keep strong',
+    noneTitle: 'Nothing to review right now',
+    noneMessage: "You're all caught up! Learn something new and it'll show up here later to keep strong.",
+    browseMissions: 'Learn something new',
+    aSkill: 'A skill',
+    recommended: 'Recommended for you',
   },
 };
 
