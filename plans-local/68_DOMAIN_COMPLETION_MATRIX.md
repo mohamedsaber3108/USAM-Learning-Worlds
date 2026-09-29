@@ -98,7 +98,26 @@ parent/recommendation surfaces. (✅ generic path `/learning/domains/:slug/path`
 
 ---
 
-## CODING — status: 🟢 VERTICAL-SLICE PROVEN (live 2026-09-28)
+## CODING — status: 🟢 CORE EXECUTION ARCHITECTURE COMPLETE (live 2026-09-29)
+> Real code execution proven live (plans 74/75). Keyword grading is GONE.
+> `/coding-sandbox/missions/:id` serves the versioned test model
+> (executionPolicy FORMATIVE, runner pyodide, visible+hidden tests). Live proof
+> on prod (learner 48c5b342, run 7d26808d, activity coding-act-loops-print-1-to-3):
+> - CORRECT submit → passed:true, testsPassed 2/2, score 1, executedBy pyodide.
+> - TAMPER submit (client passed:true, wrong actual "999") → server RE-VALIDATED
+>   and returned passed:false, testsPassed 0/2, score 0. Server is authoritative.
+> - Evidence rows: CREATION success=t (2/2) and success=f (0/2), both
+>   executionPolicy=FORMATIVE runner=pyodide with rich context; Mastery updated.
+> Real Pyodide/WASM execution in a Web Worker (8s kill); server never executes
+> code (trust boundary intact). Security threat-model + limits documented (75).
+>
+> CAVEAT (honest): "CORE EXECUTION ARCHITECTURE COMPLETE" ≠ curriculum complete.
+> Breadth is ONE competency (Loops intro). FORMATIVE tier grades browser-reported
+> output server-side (tamper-resistant but not tamper-PROOF); a CREDENTIAL tier
+> (isolated server execution) is a documented future phase. Real sandboxed
+> multi-language breadth + more competencies remain the product work.
+
+## CODING (prior) — was: 🟢 VERTICAL-SLICE PROVEN (live 2026-09-28)
 > CORRECTION (2026-09-29): earlier rows here were WRONG. A full code trace
 > (context-gatherer) found NO `CodeMissionRunner`, NO Pyodide/Sandpack/Blockly
 > executor, and NO `/coding-sandbox/submissions` route anywhere in the repo —
