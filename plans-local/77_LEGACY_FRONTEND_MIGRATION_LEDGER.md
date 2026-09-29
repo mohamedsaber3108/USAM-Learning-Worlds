@@ -50,7 +50,8 @@ physical removal is a separate, owner-approved, separately-committed step.
 
 ## Salvage checklist (before any deletion)
 
-- [ ] Harvest Arabic CLDR plural forms from `src/locales/ar/*.json` into canonical `frontend/src/lib/i18n/locales/ar.ts` (concrete, verified-missing gap).
+- [x] **Arabic CLDR plural forms** located in `src/locales/ar/common.json` (time units second/minute/hour/day/week/month/year with `_zero/_one/_two/_few/_many/_other`). DECISION: **defer the actual copy** — the canonical app has **no duration-formatting consumer today** (grep for minutes/learningTime/timeSpent in `frontend/src` returns nothing), so importing ~42 keys now would add dead keys (and the `TranslationKeys = typeof en` constraint forces matching English `_one/_other`). Harvest these into `ar.ts` **when** a duration consumer is built (likely the parent learning-time display, task #13). Source preserved here so it is not lost when `src/` is deleted:
+  - `second/minute/hour/day/week/month/year` × `{zero: لا …, one: … واحد/واحدة, two: …ان/…تان, few: {{count}} …, many: {{count}} …, other: {{count}} …}`. See `src/locales/ar/common.json` lines ~44–83 before deletion.
 - [ ] Content review of `src/data/*` — decide which authored copy (careers/robotics/venture/research/digital-citizenship, coding concept spine, mentor library) is worth harvesting into backend seeds or canonical content.
 - [ ] Product decision on the 3-mode age-presentation design system (`src/design/age-presentation.ts`) as input to the canonical age-model work (task #14). It uses the Bible-target bands 8-9/10-11/12-14 already.
 - [ ] Design-reference capture of MentorPanel (7-kind pedagogy), PathwayMap, and Workbench UX for future coding-UX enhancement (backends are mock; not code-portable as-is).
@@ -65,3 +66,24 @@ physical removal is a separate, owner-approved, separately-committed step.
    app) root `package.json`/lockfile/`public/` — only after confirming they are
    not referenced by backend, `scripts/`, deployment, or docs tooling.
 4. Commit separately: `chore(frontend): remove legacy Lovable scaffold (root src/)`.
+
+## Preserved: Arabic time-unit plural forms (harvest when a duration consumer exists)
+
+Verbatim from `src/locales/ar/common.json` (so they survive `src/` deletion).
+When adding to canonical, use i18next nested keys with `count`, e.g.
+`t('time.minute', { count })` and matching English `_one`/`_other`.
+
+```json
+{
+  "second": { "zero": "لا ثواني", "one": "ثانية واحدة", "two": "ثانيتان", "few": "{{count}} ثوانٍ", "many": "{{count}} ثانية", "other": "{{count}} ثانية" },
+  "minute": { "zero": "لا دقائق", "one": "دقيقة واحدة", "two": "دقيقتان", "few": "{{count}} دقائق", "many": "{{count}} دقيقة", "other": "{{count}} دقيقة" },
+  "hour":   { "zero": "لا ساعات", "one": "ساعة واحدة", "two": "ساعتان", "few": "{{count}} ساعات", "many": "{{count}} ساعة", "other": "{{count}} ساعة" },
+  "day":    { "zero": "لا أيام", "one": "يوم واحد", "two": "يومان", "few": "{{count}} أيام", "many": "{{count}} يومًا", "other": "{{count}} يوم" },
+  "week":   { "zero": "لا أسابيع", "one": "أسبوع واحد", "two": "أسبوعان", "few": "{{count}} أسابيع", "many": "{{count}} أسبوعًا", "other": "{{count}} أسبوع" },
+  "month":  { "zero": "لا شهور", "one": "شهر واحد", "two": "شهران", "few": "{{count}} شهور", "many": "{{count}} شهرًا", "other": "{{count}} شهر" },
+  "year":   { "zero": "لا سنوات", "one": "سنة واحدة", "two": "سنتان", "few": "{{count}} سنوات", "many": "{{count}} سنة", "other": "{{count}} سنة" }
+}
+```
+
+English equivalents to add alongside (i18next auto-selects `_one`/`_other`):
+second/minute/hour/day/week/month/year → one: "1 second" … other: "{{count}} seconds", etc.
