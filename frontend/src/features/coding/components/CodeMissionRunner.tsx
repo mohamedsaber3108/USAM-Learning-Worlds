@@ -7,15 +7,47 @@
  *
  * Backend contract: POST /coding-sandbox/submissions with
  * { runId, activityId, code, language, stdout, stderr, result, durationMs,
- *   timedOut } — see backend/src/modules/coding-sandbox/.
+ *   timedOut, testOutcomes[] } — the browser runs the mission's tests and
+ * reports each test's produced `actual`; the SERVER re-validates `actual`
+ * against the authoritative spec (client pass/fail is not trusted). See
+ * backend/src/modules/coding-sandbox/ and plans-local/75 (trust model).
  */
 import { useRef, useState } from 'react'
 import { Play, Loader2, CheckCircle2, XCircle } from 'lucide-react'
-import { runPython } from './PyodideRunner'
+import { runPython, runPythonTests, type PyTest } from './PyodideRunner'
 import { SandpackMission } from './SandpackMission'
 import { BlocklyWorkspace, type BlocklyWorkspaceHandle } from './BlocklyWorkspace'
 import { CodingCoachPanel } from './CodingCoachPanel'
-import { codingSandboxApi, type CodingSandboxMission } from '@/lib/api/endpoints'
+import {
+  codingSandboxApi,
+  type CodingSandboxMission,
+  type CodingTestOutcome,
+} from '@/lib/api/endpoints'
+
+/** Build the client-runnable test list + a local expected map for immediate UI. */
+function toPyTests(mission: CodingSandboxMission): {
+  pyTests: PyTest[]
+  expectedByTest: Record<string, { kind: PyTest['kind']; expectedOutput?: string; expectedReturn?: unknown }>
+} {
+  const tests = mission.tests ?? []
+  const pyTests: PyTest[] = tests.map((t) => {
+    const pt: PyTest = { id: t.id, kind: t.kind }
+    if (t.description !== undefined) pt.description = t.description
+    if (t.hidden !== undefined) pt.hidden = t.hidden
+    if (t.functionName !== undefined) pt.functionName = t.functionName
+    if (t.args !== undefined) pt.args = t.args
+    if (t.stdin !== undefined) pt.stdin = t.stdin
+    return pt
+  })
+  const expectedByTest: Record<string, { kind: PyTest['kind']; expectedOutput?: string; expectedReturn?: unknown }> = {}
+  for (const t of tests) {
+    const e: { kind: PyTest['kind']; expectedOutput?: string; expectedReturn?: unknown } = { kind: t.kind }
+    if (t.expectedOutput !== undefined) e.expectedOutput = t.expectedOutput
+    if (t.expectedReturn !== undefined) e.expectedReturn = t.expectedReturn
+    expectedByTest[t.id] = e
+  }
+  return { pyTests, expectedByTest }
+}
 
 export interface CodeMissionRunnerProps {
   mission: CodingSandboxMission
@@ -26,7 +58,9 @@ export interface CodeMissionRunnerProps {
 interface GradeResult {
   passed: boolean
   score: number
-  outcomes: Array<{ id: string; description: string; passed: boolean }>
+  testsPassed?: number
+  testsTotal?: number
+  outcomes: Array<{ id: string; description: string; passed: boolean; hidden?: boolean }>
   coachFeedback: string | null
 }
 
@@ -38,6 +72,8 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
   const [error, setError] = useState<string | null>(null)
   const blocklyRef = useRef<BlocklyWorkspaceHandle>(null)
 
+  const [attempt, setAttempt] = useState(1)
+
   async function submit(
     stdout: string,
     stderr: string,
@@ -45,10 +81,11 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
     durationMs: number,
     timedOut: boolean,
     submittedCode: string = code,
+    testOutcomes?: CodingTestOutcome[],
   ) {
     setOutput({ stdout, stderr })
     try {
-      const { data } = await codingSandboxApi.submitResult({
+      const payload: import('@/lib/api/endpoints').CodingSandboxSubmission = {
         runId,
         activityId: mission.activityId,
         code: submittedCode,
@@ -58,19 +95,35 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
         result,
         durationMs,
         timedOut,
-      })
+        attemptNumber: attempt,
+      }
+      if (testOutcomes) payload.testOutcomes = testOutcomes
+      const { data } = await codingSandboxApi.submitResult(payload)
       setGradeResult(data)
       setError(null)
+      setAttempt((n) => n + 1)
     } catch (e: any) {
       setError(e?.response?.data?.message ?? e?.message ?? 'Could not submit results for grading.')
+    }
+  }
+
+  /** Run Python `src`, running the mission's tests when defined, then submit. */
+  async function runPythonAndSubmit(src: string, submittedCode: string = src) {
+    const tests = mission.tests ?? []
+    if (tests.length > 0) {
+      const { pyTests, expectedByTest } = toPyTests(mission)
+      const { stdout, stderr, outcomes, durationMs, timedOut } = await runPythonTests(src, pyTests, expectedByTest)
+      await submit(stdout, stderr, undefined, durationMs, timedOut, submittedCode, outcomes)
+    } else {
+      const { stdout, stderr, result, durationMs, timedOut } = await runPython(src)
+      await submit(stdout, stderr, result, durationMs, timedOut, submittedCode)
     }
   }
 
   async function runPyodide() {
     setRunning(true)
     setGradeResult(null)
-    const { stdout, stderr, result, durationMs, timedOut } = await runPython(code)
-    await submit(stdout, stderr, result, durationMs, timedOut)
+    await runPythonAndSubmit(code)
     setRunning(false)
   }
 
@@ -80,8 +133,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
     const python = blocklyRef.current?.getPython() ?? ''
     setRunning(true)
     setGradeResult(null)
-    const { stdout, stderr, result, durationMs, timedOut } = await runPython(python)
-    await submit(stdout, stderr, result, durationMs, timedOut, python)
+    await runPythonAndSubmit(python, python)
     setRunning(false)
   }
 
@@ -169,7 +221,23 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
         <SandpackMission
           starterCode={code}
           onResult={(r) => {
-            void submit(r.stdout, r.stderr, r.result, 0, false)
+            // JS runs in the Sandpack sandbox; grade its console output against
+            // the mission's stdout-* tests. function-call/result-equals tests
+            // aren't supported on the JS path (those use Python). Server
+            // re-validates the reported `actual`.
+            const outcomes: CodingTestOutcome[] = (mission.tests ?? [])
+              .filter((t) => t.kind === 'stdout-equals' || t.kind === 'stdout-contains')
+              .map((t) => ({
+                id: t.id,
+                description: t.description,
+                hidden: Boolean(t.hidden),
+                passed:
+                  t.kind === 'stdout-equals'
+                    ? r.stdout.trim() === String(t.expectedOutput ?? '').trim()
+                    : r.stdout.includes(String(t.expectedOutput ?? '')),
+                actual: r.stdout,
+              }))
+            void submit(r.stdout, r.stderr, r.result, 0, false, code, outcomes.length ? outcomes : undefined)
           }}
         />
       )}
