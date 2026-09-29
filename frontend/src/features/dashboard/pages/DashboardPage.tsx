@@ -38,6 +38,7 @@ import { LivingWorldHero } from '../components/LivingWorldHero'
 import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DashboardSkeleton } from '@/components/common/Skeleton'
+import { masteryLabel } from '@/lib/mastery/masteryLabels'
 
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
 // `labelKey` resolves against dashboard.quickActions.* in both locales.
@@ -143,11 +144,21 @@ export function DashboardPage() {
   const streakCount = useCountUp(streak?.currentStreak || 0, 700)
   const levelProgress = progression?.progress || 0
 
-  const masteredCount = Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0
-  const learningCount = Array.isArray(mastery)
-    ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length
-    : 0
-  const toExploreCount = Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'NOT_STARTED').length : 0
+  // Count by child-facing band via the single masteryLabels source of truth,
+  // NOT ad-hoc state-name lists. The backend MasteryState enum is
+  // NOT_STARTED|INTRODUCED|EXPLORING|PRACTICING|DEVELOPING|PROFICIENT|MASTERED
+  // (there is no NOVICE), so the old ['NOVICE','DEVELOPING','PROFICIENT']
+  // filter both invented a non-existent state and dropped INTRODUCED/
+  // EXPLORING/PRACTICING — undercounting "learning". "Mastered" = the
+  // mastered band; "learning" = everything actively in progress (learning +
+  // practicing + strong); "to explore" = the new band.
+  const masteryArr: any[] = Array.isArray(mastery) ? mastery : []
+  const masteredCount = masteryArr.filter((m: any) => masteryLabel(m.state).band === 'mastered').length
+  const learningCount = masteryArr.filter((m: any) => {
+    const b = masteryLabel(m.state).band
+    return b === 'learning' || b === 'practicing' || b === 'strong'
+  }).length
+  const toExploreCount = masteryArr.filter((m: any) => masteryLabel(m.state).band === 'new').length
 
   // --- Real card-count branching -------------------------------------
   // Card 1 (Level) and Card 2 (Total XP) always render — every band needs
