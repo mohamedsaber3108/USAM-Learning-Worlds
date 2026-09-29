@@ -97,3 +97,52 @@ BACKEND_ONLY · FRONTEND_ONLY · MISSING · LEGACY · BLOCKED
   (uses older concepts endpoint).
 - Mock-only surfaces: **0** found in the deployed tree.
 - Legacy to delete: the entire root `src/` frontend.
+
+---
+
+## Route inventory + mock sweep (task #15)
+
+Extracted directly from `frontend/src/app/router/index.tsx` (the canonical
+react-router-dom v6 router). 44 `<Route>` entries. Classification:
+
+### Public (no shell)
+- `/login`, `/register` — FINAL.
+- `/` — RootRoute (signed-in → /dashboard, else LandingPage). FINAL.
+- `*` — catch-all → /dashboard. FINAL.
+
+### Onboarding (ProtectedRoute, no tab-bar shell)
+- `/onboarding/{language,welcome,age,interests,character,complete}` — FINAL (guided wizard).
+
+### Child-facing app (AppShell + ProtectedRoute)
+- `/dashboard` (Home), `/practice`, `/evidence` — FINAL.
+- `/missions`, `/missions/:id`, `/missions/play/:runId` (lazy), `/missions/complete` — FINAL.
+- `/worlds`, `/worlds/:id`, `/simulations`, `/simulations/:slug` — FINAL.
+- `/learn`, `/learn/concepts/:id`, `/learn/paths`, `/learn/paths/:id`, `/learn/flashcards`, `/learn/visual-language` — FINAL.
+- `/learning/domains/:slug/path` — FINAL (generic domain path, task #5).
+- `/projects`, `/projects/:id`, `/portfolio` — FINAL.
+- `/plans` — FINAL. `/community` — FINAL.
+- `/achievements`, `/leaderboard`, `/progress`, `/balanced` — FINAL (gamification).
+- `/english`, `/english/coach`, `/coding` — FINAL (domain landings).
+- `/stories`, `/stories/:id`, `/creativity` — FINAL.
+- `/characters` (lazy gallery), `/characters/:id/chat` — FINAL.
+- `/shop` (lazy cosmetics) — FINAL. `/insights` — FINAL.
+- `/cross-curricular/:category`, `/cross-curricular/:category/:slug` — FINAL.
+- `/thinking/:engine`, `/thinking/:engine/:slug` — FINAL.
+- `/voice-chat` (lazy) — FINAL (provider-gated runtime).
+
+### Parent-only (guardian endpoints)
+- `/parents` (lazy dashboard), `/parents/children/:learnerId/time-limits`, `/parents/children/:learnerId/privacy` — FINAL.
+
+### Admin-only (AdminRoute-gated, both client + server RolesGuard)
+- `/admin/{missions,feature-flags,question-templates,analytics,audit-log,safety-escalations,interventions,misconceptions,ai-eval,assessment-quality,content-qa,memory-governance,experiments,safety-policies,prompt-templates,content-items}` — FINAL (staff CMS/governance).
+
+### Verdicts
+- **DELETE routes: none.** No `Old*/New*/V2*/Legacy*/Temp*/Prototype*/Copy*/Backup*`
+  route or page files exist in `frontend/src` (the two "Template" filename hits —
+  AdminPromptTemplatePage, AdminQuestionTemplatesPage — are real admin pages).
+- **MERGE: none identified** — no duplicate routes.
+- **Mock sweep: ZERO** mock/fake/placeholder/dummy/Lorem occurrences in
+  `frontend/src` (grep clean). Empty states are honest CharacterState components.
+
+The ONLY legacy frontend is the repo-root `src/` (Lovable scaffold) — its removal
+is tracked separately (task #20, owner-gated) in `plans-local/77`.
