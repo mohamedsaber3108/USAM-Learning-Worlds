@@ -146,3 +146,43 @@ react-router-dom v6 router). 44 `<Route>` entries. Classification:
 
 The ONLY legacy frontend is the repo-root `src/` (Lovable scaffold) — its removal
 is tracked separately (task #20, owner-gated) in `plans-local/77`.
+
+---
+
+## Completion-bar rigor (task #6 — do NOT treat "API consumed" as done)
+
+Every engine row is scored against an 8-stage bar. "A component imports the API"
+is only stage 2 — NOT production-ready.
+
+| Stage | Meaning |
+| --- | --- |
+| 1 API EXISTS | backend endpoint present |
+| 2 API CONSUMED | a frontend surface calls it |
+| 3 UX EXISTS | a real page/section renders it |
+| 4 UX COMPLETE | child-friendly, i18n EN+AR, loading/empty/error, no jargon |
+| 5 VISUAL QA | reviewed in a browser (EN+AR, ages, devices) |
+| 6 E2E | automated end-to-end journey |
+| 7 DEPLOYED | shipped to prod via deploy.sh |
+| 8 LIVE VERIFIED | exercised against prod with real data |
+
+### Honest current standing (this reconciliation phase)
+
+- **Stages 1–4 reached** for every engine surface touched this phase (Home,
+  domain path, English, Coding, AI-Literacy, Creativity, Practice/Review,
+  Evidence, Projects/Portfolio, Characters, Voice, Parent, Mastery, Age labels):
+  real endpoints, real UX, EN+AR, honest states, no jargon. Verified by tsc +
+  40 vitest + the home-bundle perf gate.
+- **Stage 5 (visual QA):** PARTIAL — Playwright harness scaffolded (opt-in,
+  `frontend/e2e`), one automated Home journey written (renders + no-coding-runtime
+  + Arabic RTL). Full human QA across 7-9/10-12/13-15 × phone/tablet/desktop ×
+  EN/AR is PENDING a real environment.
+- **Stage 6 (E2E):** PARTIAL — harness + first spec exist; not yet a broad suite,
+  and not a deploy gate (needs browser binaries; would change the npm ci lockfile).
+- **Stage 7 (deployed):** PENDING — owner runs `scripts/deploy.sh` (now includes
+  the enum/migration/test/home-bundle gates).
+- **Stage 8 (live verified):** PENDING — needs server access + (for voice) Bedrock
+  creds. The 4 domains were proven live end-to-end in a PRIOR phase on prod DB;
+  the surfaces added this phase need a fresh live pass after deploy.
+
+No row is marked PRODUCTION_READY on code inspection alone. Stages 5–8 are the
+owner-run remainder tracked in `plans-local/78_FRONTEND_ACCEPTANCE_REPORT.md`.

@@ -123,3 +123,45 @@ engine is orphaned (cross-check `plans-local/66_FINAL_ENGINE_INVENTORY.md`).
 4. English → activity → (voice) → assessment → mastery → review.
 5. Parent → link child → dashboard → progress/evidence → consent/controls.
 6. Gate hit → `/plans` → subscribe → entitlement → access.
+
+---
+
+## Router reconciliation (post-reconciliation phase, HEAD `1ea9ff0`)
+
+Reconciled against the REAL router `frontend/src/app/router/index.tsx` (44 routes).
+See `plans-local/76_FRONTEND_ENGINE_COVERAGE.md` for the full per-route
+classification. This section resolves "phantom documented pages" vs
+"undocumented production routes".
+
+### Routes that exist and are FINAL (present in router)
+All KEEP/REWORK rows above are routed and shipped, plus these routes added during
+the reconciliation phase (were NOT in the original rebuild-target tables — now
+documented here):
+
+| Route | Surface | Notes |
+| --- | --- | --- |
+| `/practice` | Practice / Review center | Consumes `masteryApi.getReviewDue` (previously zero consumers) + adaptive recs. |
+| `/evidence` | "What I have proved" | Child accomplishments from `masteryApi.getOverview` (demonstrated competencies). |
+| `/learning/domains/:slug/path` | Generic domain path | Shared canonical-spine path for english/coding/ai-literacy/creativity. |
+
+### Documented-but-NOT-routed (deliberately future, NOT phantom bugs)
+These appear in the tables above as **NEW** (future scope), and correctly have no
+route yet. They are tracked here so nobody mistakes them for regressions:
+
+- Public: **How-it-works**, **Safety/parents** marketing pages.
+- Child: **Challenges** (dedicated route — CHALLENGE missions are reachable via
+  `/missions` today), **Search/discovery**, **Notifications**, **Profile/settings**.
+- Parent: **Parent onboarding/account**, **Weekly reports**.
+
+None are required for the current engine-coverage bar; they are net-new product
+surfaces. When built they must go in `frontend/src/features/*/pages` + the
+canonical router and be added to the FINAL table above.
+
+### Undocumented production routes
+**None.** Every route in the router maps to a table row above or to the three
+reconciliation-phase additions listed here. No orphan/phantom routes.
+
+### Verdict
+- No phantom documented **routes** (the unbuilt items are explicitly NEW/future).
+- No undocumented production routes.
+- Inventory ↔ router are reconciled.

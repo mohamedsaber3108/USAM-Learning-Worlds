@@ -144,6 +144,31 @@ jobs:
       - name: Home-bundle perf gate
         run: npm run check:home-bundle
 
+  # Guard: there must be exactly ONE deployable frontend, and it must be
+  # `frontend/`. The repo-root `src/` (tanstack_start_ts) is the Lovable
+  # scaffold and must never become a deploy target. This fails loudly if the
+  # deploy pipeline is ever pointed at the root tree, or if the legacy marker
+  # is removed before the tree itself is deleted. See
+  # docs/architecture/FRONTEND_CANONICAL.md.
+  frontend-canonical-guard:
+    name: Frontend canonical guard (one deployable frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: deploy.sh builds frontend/ (not root src/)
+        run: |
+          grep -q 'cd "\$REPO/frontend"' scripts/deploy.sh \
+            || { echo "deploy.sh no longer cd's into frontend/ — canonical frontend changed?"; exit 1; }
+          if grep -Eq 'cd "\$REPO/src"|cd "\$REPO"/src|npm --prefix \.? run build' scripts/deploy.sh; then
+            echo "deploy.sh appears to build the repo-root src/ (legacy Lovable scaffold) — forbidden."; exit 1;
+          fi
+      - name: legacy scaffold stays marked until removed
+        run: |
+          if [ -d src ] && [ ! -f src/LEGACY_DO_NOT_EDIT.md ]; then
+            echo "root src/ exists but its LEGACY_DO_NOT_EDIT.md marker is missing."; exit 1;
+          fi
+          echo "OK: frontend/ is the sole deploy target; legacy scaffold marked."
+
   secret-scan:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
