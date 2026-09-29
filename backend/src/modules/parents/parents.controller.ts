@@ -101,6 +101,24 @@ export class ParentsController {
     return this.parentsService.getChildReflections(guardianId, learnerId, limitNum);
   }
 
+  /**
+   * Parent-safe SAFETY summary for a child. Returns escalation counts/status/
+   * dates + whether any was referred to the guardian — never the raw
+   * trigger/resolution text. Guardian-authorized via verifyRelationship.
+   */
+  @Get('children/:learnerId/safety')
+  async getChildSafety(
+    @CurrentUser() user: any,
+    @Param('learnerId') learnerId: string,
+  ) {
+    const guardianId = user.guardian?.id;
+    if (!guardianId) {
+      throw new ForbiddenException('Only guardians can view child safety');
+    }
+
+    return this.parentsService.getChildSafety(guardianId, learnerId);
+  }
+
   @Post('children/:learnerId/time-limits')
   async setTimeLimits(
     @CurrentUser() user: any,

@@ -350,6 +350,58 @@ export class ParentsService {
   }
 
   /**
+   * Parent-safe SAFETY projection (Teacher/Mentor human-escalation layer,
+   * guardian view). Surfaces whether the child has had any safety escalations
+   * and their status — WITHOUT ever exposing the raw internal content that
+   * triggered them. Deliberately does NOT return `triggerReason` or
+   * `resolutionNote` (both free-text `@db.Text` that can contain sensitive
+   * child input / moderator notes); a guardian sees counts, status, dates, and
+   * whether an item was referred to them, not the raw material.
+   *
+   * "all clear" is the honest normal state — most children have zero
+   * escalations, and the frontend shows a reassuring safe state, not an empty
+   * table.
+   */
+  async getChildSafety(parentId: string, learnerId: string) {
+    await this.verifyRelationship(parentId, learnerId);
+
+    const escalations = await this.prisma.safetyEscalation.findMany({
+      where: { learnerId },
+      // SAFE fields only — never triggerReason / resolutionNote.
+      select: {
+        id: true,
+        status: true,
+        resolutionType: true,
+        resolvedAt: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    const open = escalations.filter((e) => e.status !== 'RESOLVED').length;
+    const resolved = escalations.filter((e) => e.status === 'RESOLVED').length;
+    const referredToGuardian = escalations.filter(
+      (e) => e.resolutionType === 'REFERRED_TO_GUARDIAN',
+    ).length;
+
+    return {
+      learnerId,
+      // The reassuring headline the parent UI leads with.
+      allClear: escalations.length === 0,
+      counts: { total: escalations.length, open, resolved, referredToGuardian },
+      // Per-item: status + dates only, no raw content.
+      items: escalations.map((e) => ({
+        id: e.id,
+        status: e.status,
+        referredToGuardian: e.resolutionType === 'REFERRED_TO_GUARDIAN',
+        resolvedAt: e.resolvedAt,
+        createdAt: e.createdAt,
+      })),
+    };
+  }
+
+  /**
    * Verify guardian-learner relationship
    */
   private async verifyRelationship(guardianId: string, learnerId: string) {

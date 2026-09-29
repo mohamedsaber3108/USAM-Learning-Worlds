@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ShieldCheck, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle, ArrowLeft, CreditCard } from 'lucide-react'
+import { ShieldCheck, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle, ArrowLeft, CreditCard, ShieldAlert } from 'lucide-react'
 import { parentsApi, entitlementsApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 import { ageRange } from '@/lib/age/ageLabels'
@@ -63,6 +63,15 @@ export function ParentDashboardPage() {
   const { data: entitlements } = useQuery({
     queryKey: ['entitlements-me'],
     queryFn: () => entitlementsApi.getMine().then((res) => res.data),
+    retry: false,
+  })
+
+  // Real endpoint: GET /parents/children/:id/safety — "is my child safe".
+  // Returns escalation counts/status only (no raw content). Per selected child.
+  const { data: safety } = useQuery({
+    queryKey: ['parent-child-safety', learnerId],
+    queryFn: () => parentsApi.getChildSafety(learnerId as string).then((res) => res.data),
+    enabled: !!learnerId,
     retry: false,
   })
 
@@ -362,6 +371,51 @@ export function ParentDashboardPage() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* Safety — real parent-safe escalation summary ("is my child
+                safe"). Never shows raw trigger content. Leads with a reassuring
+                all-clear when there are no escalations. */}
+            {safety && (
+              <div className="parent-panel mb-5">
+                <div className="parent-panel-header">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+                    {safety.allClear ? (
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" strokeWidth={2} />
+                    ) : (
+                      <ShieldAlert className="w-4 h-4 text-amber-500" strokeWidth={2} />
+                    )}
+                    {t('parentDashboard.safety', 'Safety')}
+                  </span>
+                </div>
+                <div className="px-4 py-3">
+                  {safety.allClear ? (
+                    <p className="text-sm text-emerald-700">
+                      {t('parentDashboard.safetyAllClear', 'All clear — no safety concerns flagged for your child.')}
+                    </p>
+                  ) : (
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">{t('parentDashboard.safetyOpen', 'Open reviews')}</span>
+                        <span className="font-semibold text-amber-600 tabular-nums">{safety.counts?.open ?? 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">{t('parentDashboard.safetyResolved', 'Resolved')}</span>
+                        <span className="font-semibold text-emerald-600 tabular-nums">{safety.counts?.resolved ?? 0}</span>
+                      </div>
+                      {(safety.counts?.referredToGuardian ?? 0) > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">{t('parentDashboard.safetyReferred', 'Referred to you')}</span>
+                          <span className="font-semibold text-slate-800 tabular-nums">{safety.counts.referredToGuardian}</span>
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-400 pt-1">
+                        {t('parentDashboard.safetyNote', 'We show status only — never the private details that triggered a review.')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* Your plan — real subscription/entitlements ("what am I paying
