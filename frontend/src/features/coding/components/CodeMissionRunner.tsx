@@ -13,12 +13,25 @@
  * backend/src/modules/coding-sandbox/ and plans-local/75 (trust model).
  */
 import { useRef, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Play, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { runPython, runPythonTests, type PyTest } from './PyodideRunner'
-import { SandpackMission } from './SandpackMission'
-import { BlocklyWorkspace, type BlocklyWorkspaceHandle } from './BlocklyWorkspace'
+import type { BlocklyWorkspaceHandle } from './BlocklyWorkspace'
 import { CodingCoachPanel } from './CodingCoachPanel'
+
+// Sandpack (@codesandbox/sandpack-react) and Blockly/CodeMirror are large
+// (~950kB raw combined). They're only needed once a learner is actually inside
+// a coding mission, so load them lazily here. This keeps the coding runtime OUT
+// of the initial/Home load graph (Vite was emitting an entry-level
+// modulepreload for vendor-sandpack/vendor-codemirror otherwise — see
+// scripts/check-home-bundle.mjs). Type-only imports above stay static (erased).
+const SandpackMission = lazy(() =>
+  import('./SandpackMission').then((m) => ({ default: m.SandpackMission }))
+)
+const BlocklyWorkspace = lazy(() =>
+  import('./BlocklyWorkspace').then((m) => ({ default: m.BlocklyWorkspace }))
+)
 import {
   codingSandboxApi,
   type CodingSandboxMission,
@@ -150,7 +163,9 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
 
       {mission.runner === 'blockly' ? (
         <>
-          <BlocklyWorkspace ref={blocklyRef} initialXml={mission.starterCode} />
+          <Suspense fallback={<div className="rounded-lg border border-surface-200 p-6 text-center text-sm text-slate-400">{t('coding.runner.loadingEditor', 'Loading the workspace…')}</div>}>
+            <BlocklyWorkspace ref={blocklyRef} initialXml={mission.starterCode} />
+          </Suspense>
 
           <button
             type="button"
@@ -220,6 +235,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
           </div>
         </>
       ) : (
+        <Suspense fallback={<div className="rounded-lg border border-surface-200 p-6 text-center text-sm text-slate-400">{t('coding.runner.loadingEditor', 'Loading the editor…')}</div>}>
         <SandpackMission
           starterCode={code}
           onResult={(r) => {
@@ -242,6 +258,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
             void submit(r.stdout, r.stderr, r.result, 0, false, code, outcomes.length ? outcomes : undefined)
           }}
         />
+        </Suspense>
       )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}

@@ -214,6 +214,7 @@ export const en = {
       allPassed: 'All checks passed!',
       somePassing: '{{percent}}% passing',
       submitError: "Couldn't check your work just now. Try running it again.",
+      loadingEditor: 'Loading the editor…',
     },
     loading: 'Codey is loading the coding path...',
     errorTitle: "Couldn't load the coding path",

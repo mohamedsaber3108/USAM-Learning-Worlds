@@ -26,3 +26,8 @@ dist-ssr
 # Environment variables
 .env.local
 .env.production
+
+# Playwright (opt-in E2E)
+/test-results/
+/playwright-report/
+/playwright/.cache/

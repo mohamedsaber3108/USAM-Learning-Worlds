@@ -106,6 +106,9 @@ log "[6/7] Production build"
 rm -rf dist node_modules/.vite
 npm run build || die "build failed"
 [ -f dist/index.html ] || die "build produced no dist/index.html"
+# Perf gate: Home must not eagerly load the coding runtime (sandpack/codemirror/
+# pyodide). Cheap + deterministic — reads dist/index.html (see task #16).
+npm run check:home-bundle || die "home-bundle perf gate failed — coding runtime leaked into the Home load"
 # Record deploy metadata for drift detection (read by verify-deployment.sh).
 LOCK_HASH="$( (sha256sum package-lock.json 2>/dev/null || shasum -a 256 package-lock.json) | cut -d' ' -f1 | cut -c1-12 )"
 cat > dist/deploy-meta.json <<EOF

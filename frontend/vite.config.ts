@@ -19,6 +19,22 @@ export default defineConfig({
     },
   },
   build: {
+    // Keep the heavy coding-runtime vendor chunks OUT of the eager
+    // <link rel="modulepreload"> set Vite hoists onto index.html. They are
+    // reachable only through the lazy mission/coding routes, so preloading them
+    // on the initial (Home) load fetched ~950kB (sandpack + codemirror) the
+    // learner doesn't need until they open a coding mission. They still load
+    // on demand via their dynamic import — this only drops the eager hint.
+    // Verified by scripts/check-home-bundle.mjs.
+    modulePreload: {
+      resolveDependencies: (_filename, deps) =>
+        deps.filter(
+          (dep) =>
+            !dep.includes('vendor-sandpack') &&
+            !dep.includes('vendor-codemirror') &&
+            !dep.includes('vendor-pyodide'),
+        ),
+    },
     rollupOptions: {
       output: {
         // Heavy, shared vendor libraries are pulled into many lazy-loaded

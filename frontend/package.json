@@ -8,7 +8,9 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:home-bundle": "node scripts/check-home-bundle.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@codesandbox/sandpack-react": "^2.20.0",

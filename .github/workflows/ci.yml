@@ -139,6 +139,11 @@ jobs:
       - name: Typecheck + build
         run: npm run build
 
+      # Perf gate: Home must not eagerly load the coding runtime
+      # (sandpack/codemirror/pyodide). Reads dist/index.html from the build above.
+      - name: Home-bundle perf gate
+        run: npm run check:home-bundle
+
   secret-scan:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest

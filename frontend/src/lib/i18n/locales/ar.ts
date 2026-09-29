@@ -216,6 +216,7 @@ export const ar: TranslationKeys = {
       allPassed: 'كل الاختبارات نجحت!',
       somePassing: '{{percent}}% ناجحة',
       submitError: 'مقدرناش نراجع شغلك دلوقتي. جرّب تشغّله تاني.',
+      loadingEditor: 'بنحمّل المحرّر…',
     },
     loading: 'كودي بيحمّل مسار البرمجة...',
     errorTitle: 'مقدرناش نحمّل مسار البرمجة',
