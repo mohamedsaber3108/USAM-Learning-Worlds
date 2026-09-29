@@ -3,13 +3,14 @@
  * Record -> upload -> ASR -> AI response -> TTS -> play round trip.
  */
 import { useState } from 'react'
-
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mic2, Info, Sparkles, Keyboard } from 'lucide-react'
 import { VoiceRecorder } from '../components/VoiceRecorder'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { voiceApi, VoiceTurnResult, isVoiceSidecarUnavailable } from '../api/voiceApi'
 import { EmptyState } from '@/components/common/CharacterState'
+import { CharacterFace, type CharacterState } from '@/features/characters/components/CharacterFace'
 
 interface Turn extends VoiceTurnResult {
   id: string
@@ -17,6 +18,7 @@ interface Turn extends VoiceTurnResult {
 }
 
 export function VoiceChatPage() {
+  const { t } = useTranslation()
   const [conversationId, setConversationId] = useState('')
   const [turns, setTurns] = useState<Turn[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
@@ -30,7 +32,7 @@ export function VoiceChatPage() {
 
   const handleRecordingComplete = async (blob: Blob) => {
     if (!conversationId.trim()) {
-      setError('Enter a conversationId first (from an existing AI conversation).')
+      setError(t('voice.needConversationId', 'Enter a conversation ID first (from an existing AI conversation).'))
       return
     }
     setError(null)
@@ -89,6 +91,22 @@ export function VoiceChatPage() {
 
   const orderedTurns = turns.slice().reverse()
 
+  // Companion (Tala, the voice guide) reflects the real voice state machine:
+  // error > thinking (processing) > idle. (Recording/listening + speaking are
+  // owned by the VoiceRecorder/VoicePlayer sub-components.)
+  const companionState: CharacterState = error
+    ? 'error'
+    : isProcessing
+    ? 'thinking'
+    : 'idle'
+  const companionCaption = error
+    ? t('voice.stateError', 'Hmm, that didn’t work — let’s try again.')
+    : isProcessing
+    ? t('voice.stateThinking', 'Thinking about what you said…')
+    : textFallbackActive
+    ? t('voice.stateTyping', "Let's type instead.")
+    : t('voice.stateIdle', 'Tap the mic and say something!')
+
   return (
     <div className="min-h-screen bg-surface-50">
       {/* Header — one solid brand color, no rainbow gradient, matches Community/Dashboard chrome */}
@@ -98,8 +116,8 @@ export function VoiceChatPage() {
           <div className="flex items-center gap-3">
             <div className="icon-chip bg-white/15 text-white"><Mic2 className="w-6 h-6" strokeWidth={2} /></div>
             <div>
-              <h1 className="text-2xl font-display font-extrabold text-white">Voice Chat</h1>
-              <p className="text-white/80 text-sm mt-0.5">Talk with your guide — practice speaking and listening.</p>
+              <h1 className="text-2xl font-display font-extrabold text-white">{t('voice.title', 'Voice Chat')}</h1>
+              <p className="text-white/80 text-sm mt-0.5">{t('voice.subtitle', 'Talk with your guide — practice speaking and listening.')}</p>
             </div>
           </div>
         </div>
@@ -109,20 +127,19 @@ export function VoiceChatPage() {
         {/* Conversation setup */}
         <div className="card mb-6">
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-            Conversation ID
+            {t('voice.conversationId', 'Conversation ID')}
           </label>
           <input
             type="text"
             value={conversationId}
             onChange={(e) => setConversationId(e.target.value)}
-            placeholder="Existing conversation ID (create one via the text chat first)"
+            placeholder={t('voice.conversationIdPlaceholder', 'Existing conversation ID (create one via the text chat first)')}
             className="input"
           />
           <div className="flex items-start gap-2 mt-3 bg-primary-50 border border-primary-100 rounded-control p-3">
             <Info className="w-4 h-4 text-primary-600 flex-shrink-0 mt-0.5" strokeWidth={2} />
             <p className="text-xs text-primary-800">
-              Voice turns are routed through the same conversation/AI pipeline as typed
-              messages — no separate voice conversation logic.
+              {t('voice.pipelineNote', 'Voice turns are routed through the same conversation/AI pipeline as typed messages — no separate voice conversation logic.')}
             </p>
           </div>
         </div>
@@ -132,11 +149,14 @@ export function VoiceChatPage() {
             for a plain text input so the child is never stuck staring at a
             mic/spinner they can't recover from. */}
         <div className="stat-card-hero flex flex-col items-center py-10 mb-8">
+          {/* Companion (Tala) reflecting the voice state machine + a caption. */}
+          <CharacterFace characterId="Tala" size={96} state={companionState} />
+          <p className="mt-2 mb-4 text-sm font-medium text-slate-600" aria-live="polite">{companionCaption}</p>
           {textFallbackActive ? (
             <div className="w-full max-w-md flex flex-col items-center gap-4">
               <div className="flex items-center gap-2 text-primary-700">
                 <Keyboard className="w-5 h-5" strokeWidth={2} />
-                <p className="text-sm font-semibold">Voice is taking a break — let's type!</p>
+                <p className="text-sm font-semibold">{t('voice.fallbackTitle', "Voice is taking a break — let's type!")}</p>
               </div>
               {textFallbackMessage && (
                 <p className="text-sm text-slate-600 text-center">{textFallbackMessage}</p>
@@ -147,7 +167,7 @@ export function VoiceChatPage() {
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleTextFallbackSend()}
-                  placeholder="Type what you wanted to say..."
+                  placeholder={t('voice.fallbackPlaceholder', 'Type what you wanted to say…')}
                   className="input flex-1"
                   disabled={isProcessing}
                   autoFocus
@@ -158,7 +178,7 @@ export function VoiceChatPage() {
                   disabled={isProcessing || !textInput.trim()}
                   className="px-4 py-2 rounded-control bg-primary-500 text-white font-semibold hover:bg-primary-600 disabled:opacity-50"
                 >
-                  Send
+                  {t('voice.send', 'Send')}
                 </button>
               </div>
               <button
@@ -169,7 +189,7 @@ export function VoiceChatPage() {
                 }}
                 className="text-xs font-medium text-slate-400 hover:text-slate-600 underline"
               >
-                Try the microphone again
+                {t('voice.tryMicAgain', 'Try the microphone again')}
               </button>
             </div>
           ) : (
@@ -187,7 +207,7 @@ export function VoiceChatPage() {
                 className="mt-5 text-sm font-medium text-primary-700 flex items-center gap-1.5"
               >
                 <Sparkles className="w-4 h-4" strokeWidth={2} />
-                {textFallbackActive ? 'Sending your message…' : 'Transcribing, thinking, and synthesizing speech…'}
+                {textFallbackActive ? t('voice.sending', 'Sending your message…') : t('voice.processing', 'Transcribing, thinking, and synthesizing speech…')}
               </motion.p>
             )}
           </AnimatePresence>
@@ -199,13 +219,13 @@ export function VoiceChatPage() {
         </div>
 
         {/* Turn history */}
-        <h2 className="text-lg font-display font-bold text-slate-900 mb-4">Conversation</h2>
+        <h2 className="text-lg font-display font-bold text-slate-900 mb-4">{t('voice.conversation', 'Conversation')}</h2>
 
         {orderedTurns.length === 0 ? (
           <EmptyState
-            character="Codey"
-            title="No turns yet"
-            message="Tap the microphone above and say something to start a voice round trip."
+            character="Tala"
+            title={t('voice.noTurnsTitle', 'No turns yet')}
+            message={t('voice.noTurnsMessage', 'Tap the microphone above and say something to start a voice round trip.')}
           />
         ) : (
           <div className="space-y-5">
@@ -220,11 +240,11 @@ export function VoiceChatPage() {
                 <div className="space-y-3">
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-secondary-100 text-secondary-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      You
+                      {t('voice.you', 'You')}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-0.5">
-                        You said
+                        {t('voice.youSaid', 'You said')}
                       </p>
                       <p className="text-slate-800 font-medium">{turn.transcript}</p>
                     </div>
@@ -236,7 +256,7 @@ export function VoiceChatPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-0.5">
-                        AI response
+                        {t('voice.aiResponse', 'AI response')}
                       </p>
                       <p className="text-slate-800 font-medium">{turn.aiResponseText}</p>
                       {turn.resolvedAudioUrl ? (
@@ -244,7 +264,7 @@ export function VoiceChatPage() {
                       ) : (
                         turn.audioUnavailable && (
                           <p className="mt-1 text-xs text-slate-400 italic">
-                            (voice playback wasn't available for this reply — text only)
+                            {t('voice.noPlayback', "(voice playback wasn't available for this reply — text only)")}
                           </p>
                         )
                       )}

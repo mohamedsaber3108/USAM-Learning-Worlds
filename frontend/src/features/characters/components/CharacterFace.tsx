@@ -33,8 +33,30 @@ export interface CharacterFaceProps {
    * relationship-driven rendering change, not a new subsystem.
    */
   evolutionStage?: 1 | 2 | 3 | 4 | 5
+  /**
+   * Companion emotional/interaction state (task #12). Layers a state-specific
+   * motion + accent on top of the per-character idle rendering WITHOUT touching
+   * any per-character SVG art, so every character gets all states for free:
+   *   idle        — gentle bob/breathe/blink (default)
+   *   listening   — attentive forward lean + soft pulse ring
+   *   thinking    — slow tilt sway + animated thought dots
+   *   speaking    — rhythmic scale pulse (talking cadence)
+   *   encouraging — a warm double-bounce
+   *   celebrating — a joyful hop + sparkle burst
+   *   error       — a small, gentle side-to-side shake (never alarming)
+   */
+  state?: CharacterState
   className?: string
 }
+
+export type CharacterState =
+  | 'idle'
+  | 'listening'
+  | 'thinking'
+  | 'speaking'
+  | 'encouraging'
+  | 'celebrating'
+  | 'error'
 
 /* ---------------------------------------------------------------------- */
 /* Shared primitives                                                       */
@@ -601,12 +623,122 @@ function EvolutionGlow({ uid, stage, animate }: { uid: string; stage: number; an
   )
 }
 
+/**
+ * State-driven wrapper motion applied to the whole SVG (on top of the
+ * per-character idle bob inside). Returns framer-motion props for the outer
+ * <motion.svg>. Kept subtle and non-alarming (error is a soft shake, not red).
+ */
+function stateMotion(state: CharacterState, animate: boolean) {
+  if (!animate || state === 'idle') return {}
+  switch (state) {
+    case 'listening':
+      return {
+        animate: { scale: [1, 1.03, 1] },
+        transition: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' as const },
+      }
+    case 'thinking':
+      return {
+        animate: { rotate: [0, -4, 4, 0] },
+        transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' as const },
+      }
+    case 'speaking':
+      return {
+        animate: { scale: [1, 1.04, 0.99, 1.03, 1] },
+        transition: { duration: 0.7, repeat: Infinity, ease: 'easeInOut' as const },
+      }
+    case 'encouraging':
+      return {
+        animate: { y: [0, -6, 0, -3, 0] },
+        transition: { duration: 1.2, repeat: Infinity, repeatDelay: 0.6, ease: 'easeOut' as const },
+      }
+    case 'celebrating':
+      return {
+        animate: { y: [0, -10, 0], rotate: [0, -6, 6, 0] },
+        transition: { duration: 0.9, repeat: Infinity, repeatDelay: 0.3, ease: 'easeOut' as const },
+      }
+    case 'error':
+      return {
+        animate: { x: [0, -3, 3, -2, 2, 0] },
+        transition: { duration: 0.6, repeat: Infinity, repeatDelay: 1.4, ease: 'easeInOut' as const },
+      }
+    default:
+      return {}
+  }
+}
+
+/** Optional per-state accent drawn behind the character (pulse ring / dots / sparkles). */
+function StateAccent({ state, animate }: { state: CharacterState; animate: boolean }) {
+  if (state === 'listening') {
+    return (
+      <motion.circle
+        cx="60"
+        cy="64"
+        r="50"
+        fill="none"
+        stroke="#38BDF8"
+        strokeWidth={3}
+        style={{ transformOrigin: '60px 64px' }}
+        {...(animate
+          ? { animate: { scale: [0.85, 1.1], opacity: [0.5, 0] }, transition: { duration: 1.6, repeat: Infinity, ease: 'easeOut' as const } }
+          : { opacity: 0.3 })}
+      />
+    )
+  }
+  if (state === 'thinking') {
+    return (
+      <g>
+        {[0, 1, 2].map((i) => (
+          <motion.circle
+            key={i}
+            cx={90 + i * 8}
+            cy={26}
+            r={3.2}
+            fill="#94A3B8"
+            {...(animate
+              ? { animate: { opacity: [0.2, 1, 0.2] }, transition: { duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' as const } }
+              : {})}
+          />
+        ))}
+      </g>
+    )
+  }
+  if (state === 'celebrating') {
+    return (
+      <g>
+        {[[26, 30], [96, 34], [30, 96], [92, 92]].map(([cx, cy], i) => (
+          <motion.path
+            key={i}
+            d={`M${cx} ${cy! - 6}l2 5 5 2-5 2-2 5-2-5-5-2 5-2z`}
+            fill="#FDE047"
+            style={{ transformOrigin: `${cx}px ${cy}px` }}
+            {...(animate
+              ? { animate: { opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }, transition: { duration: 1.1, repeat: Infinity, delay: i * 0.15, ease: 'easeOut' as const } }
+              : {})}
+          />
+        ))}
+      </g>
+    )
+  }
+  return null
+}
+
+const STATE_ARIA: Record<CharacterState, string> = {
+  idle: '',
+  listening: 'listening',
+  thinking: 'thinking',
+  speaking: 'speaking',
+  encouraging: 'cheering you on',
+  celebrating: 'celebrating',
+  error: 'having a little trouble',
+}
+
 export function CharacterFace({
   characterId,
   size = 64,
   locked = false,
   animate = true,
   evolutionStage = 1,
+  state = 'idle',
   className = '',
 }: CharacterFaceProps) {
   const key = characterId.toLowerCase()
@@ -619,6 +751,12 @@ export function CharacterFace({
     ? { filter: 'grayscale(1) brightness(0.8) contrast(0.9)', opacity: 0.85 }
     : {}
 
+  const stateLabel = STATE_ARIA[state]
+  // State motion is applied to an inner <motion.g> (not the root <svg>) so we
+  // avoid the CSSProperties-vs-MotionStyle `x` collision, and keep the outer
+  // element a plain accessible <svg>.
+  const wrapperMotion = locked ? {} : stateMotion(state, animate)
+
   return (
     <svg
       viewBox="0 0 120 120"
@@ -627,10 +765,13 @@ export function CharacterFace({
       className={className}
       style={style}
       role="img"
-      aria-hidden="true"
+      {...(stateLabel ? { 'aria-label': `${characterId} ${stateLabel}` } : { 'aria-hidden': true })}
     >
       {!locked && <EvolutionGlow uid={uid} stage={evolutionStage} animate={animate} />}
-      {Renderer({ uid, animate: animate && !locked })}
+      {!locked && <StateAccent state={state} animate={animate} />}
+      <motion.g style={{ transformOrigin: '60px 64px' }} {...wrapperMotion}>
+        {Renderer({ uid, animate: animate && !locked })}
+      </motion.g>
     </svg>
   )
 }
