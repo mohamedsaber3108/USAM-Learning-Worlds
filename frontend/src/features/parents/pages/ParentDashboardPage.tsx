@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ShieldCheck, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react'
-import { parentsApi } from '@/lib/api/endpoints'
+import { ShieldCheck, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle, ArrowLeft, CreditCard } from 'lucide-react'
+import { parentsApi, entitlementsApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 
 interface ChildLink {
@@ -57,7 +57,30 @@ export function ParentDashboardPage() {
     enabled: !!learnerId,
   })
 
+  // Real endpoint: GET /entitlements/me — "what am I paying for". Parent-scoped
+  // (the plan is owned at the account level), so not gated on a child.
+  const { data: entitlements } = useQuery({
+    queryKey: ['entitlements-me'],
+    queryFn: () => entitlementsApi.getMine().then((res) => res.data),
+    retry: false,
+  })
+
   const isForbidden = (childrenError as any)?.response?.status === 403
+
+  // Format the plan price honestly from the real plan record (cents -> major).
+  const planPriceLabel = (() => {
+    const plan = entitlements?.plan
+    if (!plan) return null
+    const amount = (plan.priceCents ?? 0) / 100
+    const per =
+      plan.interval === 'MONTH'
+        ? t('parentDashboard.perMonth', '/mo')
+        : plan.interval === 'YEAR'
+        ? t('parentDashboard.perYear', '/yr')
+        : ''
+    if (amount === 0) return t('parentDashboard.freePlan', 'Free')
+    return `${plan.currency ?? 'USD'} ${amount.toFixed(2)}${per}`
+  })()
 
   return (
     <div className="parent-shell">
@@ -339,6 +362,41 @@ export function ParentDashboardPage() {
                 )}
               </>
             )}
+
+            {/* Your plan — real subscription/entitlements ("what am I paying
+                for"). Shown once per account (not per child). Self-hides only
+                if the entitlements call fails; otherwise shows the real plan or
+                an honest "no plan" state with a manage link. */}
+            <div className="parent-panel mb-6">
+              <div className="parent-panel-header">
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+                  <CreditCard className="w-4 h-4 text-indigo-500" strokeWidth={2} />
+                  {t('parentDashboard.yourPlan', 'Your plan')}
+                </span>
+                <Link to="/plans" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                  {t('parentDashboard.managePlan', 'Manage')}
+                </Link>
+              </div>
+              <div className="px-4 py-3">
+                {entitlements?.plan ? (
+                  <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{entitlements.plan.name}</p>
+                      {entitlements.plan.description && (
+                        <p className="text-xs text-slate-500 mt-0.5">{entitlements.plan.description}</p>
+                      )}
+                    </div>
+                    {planPriceLabel && (
+                      <span className="text-sm font-semibold text-slate-700 tabular-nums">{planPriceLabel}</span>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    {t('parentDashboard.noPlan', 'No paid plan yet — your family is on the free tier.')}
+                  </p>
+                )}
+              </div>
+            </div>
           </>
         )}
       </main>
