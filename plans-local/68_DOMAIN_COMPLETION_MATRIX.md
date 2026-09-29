@@ -21,9 +21,12 @@ Last updated: 2026-09-29 · HEAD `8340c8c`
   re-validated, not trusted). Security threat-model + limits documented; coding
   runtime lazy-loaded; Codey coach gets failing-test context. CODE-proven
   (16 coding tests); live re-proof pending the deploy below.
-- ✅ **AI Literacy + Creativity vertical slices** built (code-proven) via the SAME
-  spine — no new engines. AI: SELECT/MATCH (what-is-AI); Creativity: SELECT+CREATE
-  (brainstorming). Live proof pending deploy.
+- ✅ **AI Literacy + Creativity vertical slices PROVEN LIVE (2026-09-29)** via the
+  SAME spine — no new engines. AI: `ai-act-what-is-ai` SELECT → KNOWLEDGE evidence
+  + mastery DEVELOPING (ai-competency-what-is-ai). Creativity:
+  `creativity-act-brainstorm-uses` CREATE → CREATION evidence + mastery DEVELOPING
+  (creativity-competency-brainstorming). Both on prod DB via proof-learner.
+  **4 domains now run the full loop live: English, Coding, AI Literacy, Creativity.**
 - ✅ **Canonical-loop regression harness** now covers 5 domains (English×2, Coding,
   AI Literacy, Creativity).
 - ✅ **Deploy hardened**: check:enum-drift + check:migrations + backend tests are
@@ -135,11 +138,20 @@ check); more competencies/activities across the 18 concepts; wire the
 ---
 
 ## AI LEARNING · PRACTICE · CREATIVITY/CRITICAL THINKING · STORIES · SIMULATIONS
-To be traced before building (same method as English — do NOT assume).
-Preliminary from prior audits:
-- **AI Learning**: `AILiteracyConcept` catalog (via cross-curricular) — likely entry-only like English. ⛔ flow likely missing.
+- **AI Literacy**: 🟢 **VERTICAL-SLICE PROVEN LIVE (2026-09-29)**. Was an
+  `AILiteracyConcept` catalog island; now a real spine slice
+  (Domain ai-literacy → Skill → Competency ai-competency-what-is-ai → Objective →
+  Mission ai-mission-meet-ai → 2 SELECT + 1 MATCH). Live: submit → KNOWLEDGE
+  evidence + mastery DEVELOPING. Breadth = 1 competency (architecture proven, not
+  full curriculum). `AILiteracyConcept` catalog still separate (link later).
+- **Creativity**: 🟢 **VERTICAL-SLICE PROVEN LIVE (2026-09-29)**. Was a
+  `CreativityPrompt` catalog; now a real spine slice (Domain creativity → Skill →
+  Competency creativity-competency-brainstorming → Objective → Mission
+  creativity-mission-idea-spark → SELECT + CREATE). Live: CREATE submit → CREATION
+  evidence + mastery DEVELOPING. Breadth = 1 competency.
 - **Practice**: flashcards (FSRS) is real + runnable (`/learn/flashcards`). ✅ likely closest to complete.
-- **Creativity/Thinking**: concept catalogs (creativity, thinking-skills, cross-curricular) — entry-heavy.
+- **Critical Thinking**: `CriticalThinkingConcept` catalog — entry-only; vertical
+  slice not yet built (next candidate, same pattern).
 - **Stories**: `stories` engine has story/page content — may be genuinely runnable (read flow). To verify.
 - **Simulations**: `/simulations` browse + player already shipped, real branching scenarios. ✅ likely closest to complete.
 
