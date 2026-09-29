@@ -13,6 +13,7 @@
  * backend/src/modules/coding-sandbox/ and plans-local/75 (trust model).
  */
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Play, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { runPython, runPythonTests, type PyTest } from './PyodideRunner'
 import { SandpackMission } from './SandpackMission'
@@ -65,6 +66,7 @@ interface GradeResult {
 }
 
 export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
+  const { t } = useTranslation()
   const [code, setCode] = useState(mission.starterCode)
   const [running, setRunning] = useState(false)
   const [output, setOutput] = useState<{ stdout: string; stderr: string } | null>(null)
@@ -103,7 +105,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
       setError(null)
       setAttempt((n) => n + 1)
     } catch (e: any) {
-      setError(e?.response?.data?.message ?? e?.message ?? 'Could not submit results for grading.')
+      setError(e?.response?.data?.message ?? e?.message ?? t('coding.runner.submitError', 'Could not submit results for grading.'))
     }
   }
 
@@ -157,12 +159,12 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
             className="btn btn-primary inline-flex items-center gap-2 disabled:opacity-50"
           >
             {running ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
-            {running ? 'Running…' : 'Run'}
+            {running ? t('coding.runner.running', 'Running…') : t('coding.runner.run', 'Run')}
           </button>
 
-          <div className="rounded-lg border border-surface-200 overflow-hidden" aria-label="Output">
+          <div className="rounded-lg border border-surface-200 overflow-hidden" aria-label={t('coding.runner.output', 'Output')}>
             <div className="border-b border-surface-200 px-4 py-2 text-xs text-slate-500 bg-surface-100">
-              Output
+              {t('coding.runner.output', 'Output')}
             </div>
             <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words px-4 py-3 font-mono text-xs leading-6">
               {output ? (
@@ -171,7 +173,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
                   {output.stderr && <div className="text-red-600">{output.stderr}</div>}
                 </>
               ) : (
-                <div className="text-slate-400">Drag some blocks, then press Run.</div>
+                <div className="text-slate-400">{t('coding.runner.emptyBlockly', 'Drag some blocks, then press Run.')}</div>
               )}
             </pre>
           </div>
@@ -186,7 +188,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               spellCheck={false}
-              aria-label="Python code editor"
+              aria-label={t('coding.runner.editorLabel', 'Code editor')}
               className="input min-h-[220px] w-full resize-y font-mono text-sm leading-6"
             />
           </div>
@@ -198,12 +200,12 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
             className="btn btn-primary inline-flex items-center gap-2 disabled:opacity-50"
           >
             {running ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
-            {running ? 'Running…' : 'Run'}
+            {running ? t('coding.runner.running', 'Running…') : t('coding.runner.run', 'Run')}
           </button>
 
-          <div className="rounded-lg border border-surface-200 overflow-hidden" aria-label="Output">
+          <div className="rounded-lg border border-surface-200 overflow-hidden" aria-label={t('coding.runner.output', 'Output')}>
             <div className="border-b border-surface-200 px-4 py-2 text-xs text-slate-500 bg-surface-100">
-              Output
+              {t('coding.runner.output', 'Output')}
             </div>
             <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words px-4 py-3 font-mono text-xs leading-6">
               {output ? (
@@ -212,7 +214,7 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
                   {output.stderr && <div className="text-red-600">{output.stderr}</div>}
                 </>
               ) : (
-                <div className="text-slate-400">Nothing yet. Press Run.</div>
+                <div className="text-slate-400">{t('coding.runner.emptyPython', 'Nothing yet. Press Run.')}</div>
               )}
             </pre>
           </div>
@@ -245,9 +247,13 @@ export function CodeMissionRunner({ mission, runId }: CodeMissionRunnerProps) {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {gradeResult && (
-        <div className="rounded-lg border border-surface-200 p-4 space-y-2" aria-label="Grading">
+        <div className="rounded-lg border border-surface-200 p-4 space-y-2" aria-label={t('coding.runner.results', 'Results')}>
           <p className="text-sm font-semibold">
-            {gradeResult.passed ? 'All checks passed!' : `${Math.round(gradeResult.score * 100)}% passing`}
+            {gradeResult.passed
+              ? t('coding.runner.allPassed', 'All checks passed!')
+              : t('coding.runner.somePassing', '{{percent}}% passing', {
+                  percent: Math.round(gradeResult.score * 100),
+                })}
           </p>
           <ul className="space-y-1 text-sm">
             {gradeResult.outcomes.map((o) => (
