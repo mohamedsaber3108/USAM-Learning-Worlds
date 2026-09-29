@@ -1,21 +1,28 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Palette } from 'lucide-react'
-import { creativityApi, type CreativityPromptRecord } from '@/lib/api/endpoints'
-import { LoadingState } from '@/components/common/CharacterState'
+import { useTranslation } from 'react-i18next'
+import { Palette, Lightbulb, PencilLine, Eye, Send, FolderHeart, Globe, Lock } from 'lucide-react'
+import { creativityApi, type CreativityPromptRecord, type CreativitySubmissionRecord } from '@/lib/api/endpoints'
+import { LoadingState, EmptyState } from '@/components/common/CharacterState'
 import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 
 /**
- * Creativity Engine — guided creative-project-prompt gallery.
+ * Creativity Studio — the CREATE → CREATION loop (task #9).
  *
- * Distinct from generic Projects: a curated prompt library
- * (CreativityPrompt: story/art/music/invention across ageBand + domain)
- * with an opt-in public submission gallery, backed by real
- * backend/src/modules/creativity/creativity.controller.ts endpoints
- * (`/creativity/prompts`, `/creativity/submissions`, `/creativity/gallery`).
- * No frontend previously existed for this engine — this page is the v1
- * closing that gap: browse prompts, respond to one, see the public gallery
- * of other learners' PUBLIC submissions for that prompt.
+ * Makes the real make-something loop visible, not just a prompt gallery:
+ *   Brief (prompt) → Create (write) → Improve (preview before sending) →
+ *   Submit → My Creations (the learner's portfolio of submissions, with a
+ *   Share/Keep-private toggle) → public Gallery.
+ *
+ * Backed by the real creativity engine
+ * (backend/src/modules/creativity/creativity.controller.ts):
+ * `/creativity/prompts`, `/creativity/submissions`, `/creativity/submissions/mine`,
+ * `/creativity/gallery`, `/creativity/submissions/:id/visibility`.
+ *
+ * HONESTY NOTE: the creativity engine is a prompt + submission + gallery
+ * engine. It does NOT (yet) record Evidence or Mastery, so this page makes no
+ * "counts toward mastery" claim — the accomplishment framing is the learner's
+ * growing collection of creations, which is real.
  */
 
 const AGE_BAND_LABELS: Record<string, string> = {
@@ -32,17 +39,26 @@ function ageBandLabel(band: string) {
 }
 
 export function CreativityGalleryPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [selectedPrompt, setSelectedPrompt] = useState<CreativityPromptRecord | null>(null)
   const [draft, setDraft] = useState('')
   const [draftTitle, setDraftTitle] = useState('')
   const [makePublic, setMakePublic] = useState(false)
+  const [preview, setPreview] = useState(false)
   const [ageFilter, setAgeFilter] = useState<string>('')
 
   const { data: prompts, isLoading: promptsLoading } = useQuery({
     queryKey: ['creativity-prompts', ageFilter],
     queryFn: () =>
       creativityApi.listPrompts(ageFilter ? { ageBand: ageFilter } : undefined).then((r) => r.data),
+  })
+
+  // The learner's own portfolio of creations (was previously never consumed).
+  const { data: mine } = useQuery({
+    queryKey: ['creativity-mine'],
+    queryFn: () => creativityApi.mySubmissions().then((r) => r.data),
+    retry: false,
   })
 
   const { data: gallery, isLoading: galleryLoading } = useQuery({
@@ -63,12 +79,23 @@ export function CreativityGalleryPage() {
       setDraft('')
       setDraftTitle('')
       setMakePublic(false)
+      setPreview(false)
+      queryClient.invalidateQueries({ queryKey: ['creativity-gallery', selectedPrompt?.id] })
+      queryClient.invalidateQueries({ queryKey: ['creativity-mine'] })
+    },
+  })
+
+  const visibilityMutation = useMutation({
+    mutationFn: ({ id, visibility }: { id: string; visibility: 'PRIVATE' | 'PUBLIC' }) =>
+      creativityApi.setVisibility(id, visibility),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['creativity-mine'] })
       queryClient.invalidateQueries({ queryKey: ['creativity-gallery', selectedPrompt?.id] })
     },
   })
 
   const submitErrorMessage = submitMutation.isError
-    ? getFriendlyErrorMessage(submitMutation.error, 'We could not save your creation. Please try again.')
+    ? getFriendlyErrorMessage(submitMutation.error, t('creativity.saveError', 'We could not save your creation. Please try again.'))
     : null
 
   const ageBands = useMemo(() => {
@@ -77,8 +104,10 @@ export function CreativityGalleryPage() {
     return Array.from(set)
   }, [prompts])
 
+  const myCreations: CreativitySubmissionRecord[] = Array.isArray(mine) ? mine : []
+
   if (promptsLoading) {
-    return <LoadingState character="Luma" message="Luma is gathering creative prompts..." />
+    return <LoadingState character="Mira" message={t('creativity.loading', 'Mira is gathering creative ideas…')} />
   }
 
   return (
@@ -89,29 +118,75 @@ export function CreativityGalleryPage() {
         <div className="relative flex items-center gap-3">
           <div className="icon-chip bg-white/15 text-white"><Palette className="w-6 h-6" strokeWidth={2} /></div>
           <div>
-            <h1 className="text-2xl font-display font-extrabold">Creativity Studio</h1>
+            <h1 className="text-2xl font-display font-extrabold">{t('creativity.title', 'Creativity Studio')}</h1>
             <p className="text-white/80 text-sm mt-0.5">
-              Guided story, art, music, and invention prompts — pick one, create your response, and share it.
+              {t('creativity.subtitle', 'Pick a brief, make something, make it better, then share it.')}
             </p>
           </div>
         </div>
       </header>
 
+      {/* My creations — the learner's real portfolio of submissions. */}
+      {myCreations.length > 0 && (
+        <section className="mb-8" aria-labelledby="my-creations-heading">
+          <h2 id="my-creations-heading" className="font-display text-lg font-bold text-slate-900 mb-3 inline-flex items-center gap-2">
+            <FolderHeart className="w-5 h-5 text-primary-600" strokeWidth={2} />
+            {t('creativity.myCreations', 'My creations')}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {myCreations.slice(0, 6).map((sub) => {
+              const isPublic = sub.visibility === 'PUBLIC'
+              return (
+                <div key={sub.id} className="rounded-card border border-surface-200 p-3">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-sm font-semibold text-slate-800 truncate">
+                      {sub.title || t('creativity.untitled', 'Untitled')}
+                    </span>
+                    {sub.prompt?.title && (
+                      <span className="text-xs text-slate-400 truncate">{sub.prompt.title}</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-600 line-clamp-3">{sub.content}</p>
+                  <button
+                    type="button"
+                    disabled={visibilityMutation.isPending}
+                    onClick={() =>
+                      visibilityMutation.mutate({ id: sub.id, visibility: isPublic ? 'PRIVATE' : 'PUBLIC' })
+                    }
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700 disabled:opacity-50"
+                  >
+                    {isPublic ? <Globe className="w-3.5 h-3.5" strokeWidth={2} /> : <Lock className="w-3.5 h-3.5" strokeWidth={2} />}
+                    {isPublic ? t('creativity.shared', 'Shared — make private') : t('creativity.private', 'Private — share it')}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Step 1 — Brief: pick something to make. */}
+      <h2 className="font-display text-lg font-bold text-slate-900 mb-1 inline-flex items-center gap-2">
+        <Lightbulb className="w-5 h-5 text-accent-500" strokeWidth={2} />
+        {t('creativity.pickBrief', 'Pick a brief')}
+      </h2>
+      <p className="text-sm text-slate-500 mb-4">{t('creativity.pickBriefHint', 'Choose something that sounds fun to make.')}</p>
+
       {ageBands.length > 1 && (
         <div className="flex gap-2 mb-4 flex-wrap">
           <button
             className={`px-3 py-1 min-h-11 rounded-full text-sm border ${
-              ageFilter === '' ? 'bg-purple-600 text-white border-purple-600' : 'border-surface-300'
+              ageFilter === '' ? 'bg-primary-600 text-white border-primary-600' : 'border-surface-300'
             }`}
             onClick={() => setAgeFilter('')}
           >
-            All ages
+            {t('creativity.allAges', 'All ages')}
           </button>
           {ageBands.map((band) => (
             <button
               key={band}
               className={`px-3 py-1 min-h-11 rounded-full text-sm border ${
-                ageFilter === band ? 'bg-purple-600 text-white border-purple-600' : 'border-surface-300'
+                ageFilter === band ? 'bg-primary-600 text-white border-primary-600' : 'border-surface-300'
               }`}
               onClick={() => setAgeFilter(band)}
             >
@@ -125,90 +200,133 @@ export function CreativityGalleryPage() {
         {prompts?.map((p) => (
           <button
             key={p.id}
-            onClick={() => setSelectedPrompt(p)}
-            className={`text-start rounded-xl border p-4 hover:shadow-md transition ${
-              selectedPrompt?.id === p.id ? 'border-purple-500 ring-2 ring-purple-200' : 'border-surface-200'
+            onClick={() => { setSelectedPrompt(p); setPreview(false) }}
+            className={`text-start rounded-card border p-4 hover:shadow-md transition ${
+              selectedPrompt?.id === p.id ? 'border-primary-500 ring-2 ring-primary-200' : 'border-surface-200'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-purple-600">{ageBandLabel(p.ageBand)}</span>
+              <span className="text-xs font-medium text-primary-600">{ageBandLabel(p.ageBand)}</span>
               {p.domain && <span className="text-xs text-slate-400">{p.domain.name}</span>}
             </div>
-            <h3 className="font-semibold">{p.title}</h3>
+            <h3 className="font-semibold text-slate-900">{p.title}</h3>
             <p className="text-sm text-slate-600 mt-1 line-clamp-3">{p.prompt}</p>
           </button>
         ))}
       </div>
 
       {selectedPrompt && (
-        <section className="mt-8 border-t pt-6">
-          <h2 className="text-lg font-bold">{selectedPrompt.title}</h2>
-          <p className="text-sm text-slate-700 mt-2 mb-4">{selectedPrompt.prompt}</p>
+        <section className="mt-8 border-t border-surface-200 pt-6">
+          {/* The brief, restated as "what you're making". */}
+          <div className="rounded-card bg-accent-50 border border-accent-100 p-4 mb-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-accent-600 mb-1">
+              {t('creativity.yourBrief', 'Your brief')}
+            </p>
+            <h2 className="font-display text-lg font-bold text-slate-900">{selectedPrompt.title}</h2>
+            <p className="text-sm text-slate-700 mt-1">{selectedPrompt.prompt}</p>
+          </div>
 
+          {/* Step 2 — Create. */}
+          <h3 className="font-display font-semibold text-slate-800 mb-2 inline-flex items-center gap-2">
+            <PencilLine className="w-4 h-4 text-primary-500" strokeWidth={2} />
+            {t('creativity.makeIt', 'Make it')}
+          </h3>
           <div className="space-y-3">
             <input
               type="text"
-              placeholder="Give your creation a title (optional)"
+              placeholder={t('creativity.titlePlaceholder', 'Give your creation a title (optional)')}
               value={draftTitle}
               onChange={(e) => setDraftTitle(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-surface-300 rounded-lg px-3 py-2 text-sm"
             />
             <textarea
-              placeholder="Write, describe, or paste your creation here..."
+              placeholder={t('creativity.contentPlaceholder', 'Write, describe, or paste your creation here…')}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              rows={5}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
+              rows={6}
+              className="w-full border border-surface-300 rounded-lg px-3 py-2 text-sm"
               aria-invalid={draft.trim().length === 0}
             />
-            {draft.length === 0 && (
+            {draft.trim().length === 0 && (
               <p className="text-xs text-slate-400">
-                Write a little something before you submit — even a sentence is a great start!
+                {t('creativity.startHint', 'Write a little something before you share — even a sentence is a great start!')}
               </p>
             )}
+
+            {/* Step 3 — Improve: preview before sending. */}
+            {draft.trim().length > 0 && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setPreview((v) => !v)}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700"
+                >
+                  <Eye className="w-4 h-4" strokeWidth={2} />
+                  {preview ? t('creativity.hidePreview', 'Hide preview') : t('creativity.improve', 'Preview & improve')}
+                </button>
+                {preview && (
+                  <div className="mt-2 rounded-card border border-surface-200 bg-surface-50 p-4">
+                    <p className="text-xs text-slate-400 mb-1">{t('creativity.previewLabel', 'This is how it will look:')}</p>
+                    {draftTitle && <p className="font-semibold text-slate-800">{draftTitle}</p>}
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{draft}</p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {t('creativity.improveHint', 'Happy with it? Or tweak it above to make it even better.')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <label className="flex items-center gap-2 text-sm text-slate-600">
-              <input
-                type="checkbox"
-                checked={makePublic}
-                onChange={(e) => setMakePublic(e.target.checked)}
-              />
-              Share this in the public gallery for this prompt
+              <input type="checkbox" checked={makePublic} onChange={(e) => setMakePublic(e.target.checked)} />
+              {t('creativity.shareToggle', 'Share this in the public gallery for this brief')}
             </label>
             {submitErrorMessage && (
               <p className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
                 {submitErrorMessage}
               </p>
             )}
+            {/* Step 4 — Submit. */}
             <button
               disabled={!draft.trim() || submitMutation.isPending}
               onClick={() => submitMutation.mutate()}
-              className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium disabled:opacity-50"
+              className="btn btn-primary inline-flex items-center gap-2 disabled:opacity-50"
             >
-              {submitMutation.isPending ? 'Saving...' : 'Submit my creation'}
+              <Send className="w-4 h-4" strokeWidth={2} />
+              {submitMutation.isPending ? t('creativity.saving', 'Saving…') : t('creativity.submit', 'Save my creation')}
             </button>
           </div>
 
+          {/* Public gallery for this brief. */}
           <div className="mt-8">
-            <h3 className="text-sm font-semibold text-slate-500 mb-3">Public gallery for this prompt</h3>
+            <h3 className="text-sm font-semibold text-slate-500 mb-3">{t('creativity.galleryTitle', 'What others made for this brief')}</h3>
             {galleryLoading ? (
-              <p className="text-sm text-slate-400">Loading gallery...</p>
+              <p className="text-sm text-slate-400">{t('creativity.galleryLoading', 'Loading gallery…')}</p>
             ) : gallery && gallery.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {gallery.map((sub) => (
                   <div key={sub.id} className="rounded-lg border border-surface-200 p-3">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">{sub.title || 'Untitled'}</span>
-                      <span className="text-xs text-slate-400">{sub.learner?.displayName ?? 'Learner'}</span>
+                      <span className="text-sm font-medium">{sub.title || t('creativity.untitled', 'Untitled')}</span>
+                      <span className="text-xs text-slate-400">{sub.learner?.displayName ?? t('creativity.aLearner', 'Learner')}</span>
                     </div>
                     <p className="text-sm text-slate-700 line-clamp-4">{sub.content}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">No public creations yet — be the first to share!</p>
+              <p className="text-sm text-slate-400">{t('creativity.galleryEmpty', 'No public creations yet — be the first to share!')}</p>
             )}
           </div>
         </section>
+      )}
+
+      {!selectedPrompt && (prompts?.length ?? 0) === 0 && (
+        <EmptyState
+          character="Mira"
+          title={t('creativity.emptyTitle', 'No briefs right now')}
+          message={t('creativity.emptyMessage', 'Check back soon — Mira is dreaming up new things to make.')}
+        />
       )}
     </div>
   )
