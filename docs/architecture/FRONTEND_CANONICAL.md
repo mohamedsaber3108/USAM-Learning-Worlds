@@ -1,41 +1,55 @@
-# Canonical Frontend (audit T-P2-4)
+# Canonical Frontend
 
-This repository contains **two** directories with frontend code. This document
-is the authoritative statement of which one is production.
+> **The production frontend is `frontend/`.** All product UI work — routes,
+> components, tests, API integrations, design-system work — targets
+> `frontend/src/`. Do **not** implement new product work in the repository-root
+> `src/` tree.
 
-## The production frontend is `frontend/`
+## Why this document exists
 
-- **Path**: `frontend/`
-- **Stack**: React 18 + Vite + react-router-dom + TanStack Query
-- **Evidence it is production**: ~247 backend-API integration points across its
-  source, the complete USAM for Kids feature set (missions, coding, english,
-  characters, voice, parents, admin, gamification, ...), and it is the ONLY
-  frontend built and linted in CI (`.github/workflows/ci.yml`, `frontend` job).
-- All frontend work — features, UI/UX, fixes — happens here.
+The repository contains **two** frontend source trees. This has caused real
+lost work (coding test-model logic was implemented in the non-deployed tree and
+had to be re-ported). This document is the single source of truth for which is
+which, so it does not happen again.
 
-## The root `src/` (`tanstack_start_ts`) is the Lovable scaffold — do NOT treat as production
+## The two trees
 
-- **Path**: repository root `src/` + root `package.json`/`vite.config.ts`.
-- **Stack**: TanStack Start + React 19 (`@lovable.dev/vite-tanstack-config`).
-- **What it is**: the scaffold generated and maintained by the connected
-  **Lovable** project (`.lovable/project.json` → `template: tanstack_start_ts_current`).
-- **Why it still exists**: per the repo's `AGENTS.md`, this project is connected
-  to Lovable and commits sync back to it. The root scaffold is part of that
-  Lovable integration. **Deleting it would break the Lovable editor sync and
-  the user's project history**, so it is intentionally retained.
-- It has minimal backend wiring (~9 API references, 2 pages) and must **not** be
-  developed as, deployed as, or confused with the production app.
+| | Canonical (production) | Legacy (Lovable scaffold) |
+|---|---|---|
+| Path | `frontend/src/` | `src/` (repo root) |
+| Package | `usam-learning-worlds-frontend` | `tanstack_start_ts` |
+| Framework | React 18 + `react-router-dom` v6 | React 19 + TanStack Start/Router |
+| API layer | `frontend/src/lib/api/endpoints.ts` (axios, ~50 groups) | `src/services/*` (mostly **mock** over `src/data/*`) |
+| Router | `frontend/src/app/router/index.tsx` | `src/routes/*` (file-based) + `routeTree.gen.ts` |
+| Tests | `vitest` (`npm test` in `frontend/`) | none |
+| Built + deployed? | **YES** | **NO** |
 
-## Enforcement
+### Evidence that `frontend/` is canonical
 
-- CI builds/tests **only** `frontend/` and `backend/`. The root scaffold is not
-  part of the production build or deploy pipeline.
-- Deployment (see `docs/backend/DEPLOYMENT_GUIDE.md`) serves the `frontend/`
-  build output. The root app is never deployed to production.
+- `scripts/deploy.sh` runs its dependency install, `tsc --noEmit`, test, and
+  `vite build` steps in **`$REPO/frontend`**, and verifies `dist/index.html`
+  there. It never touches the root tree.
+- `.github/workflows/ci.yml` has a `frontend` job whose `working-directory` is
+  **`frontend`**, and its own comment states the root `src/` (tanstack_start_ts)
+  is the Lovable scaffold and is intentionally not built or deployed.
 
-## If you are asked to "remove the root src/"
+### Why the legacy tree still exists (and is NOT deleted yet)
 
-Do **not** delete it while the project remains connected to Lovable. The safe
-equivalent — already in place — is: keep it as the Lovable scaffold, and ensure
-the production pipeline (CI + deploy) references only `frontend/`. Revisit
-physical removal only if/when the project is disconnected from Lovable.
+`.lovable/project.json` pins `"template": "tanstack_start_ts_current"`. The
+root `src/` (plus root `package.json`, `vite.config.ts`) is the **Lovable-managed
+scaffold**. Deleting it, or the root package/config, may break Lovable editor
+sync and rewrite/lose the project's Lovable history (see the Lovable note in
+`AGENTS.md`). Removal is therefore a deliberate, separately-reviewed step, not a
+casual cleanup — see `plans-local/77_LEGACY_FRONTEND_MIGRATION_LEDGER.md` for the
+salvage-before-delete plan.
+
+## Rules
+
+1. New product UI work goes in `frontend/src/` only.
+2. Before deleting anything from the legacy `src/` tree, consult the migration
+   ledger (`plans-local/77_LEGACY_FRONTEND_MIGRATION_LEDGER.md`) — some UX
+   patterns, authored content, and Arabic pluralization rules are worth
+   harvesting first.
+3. Deletion of the Lovable scaffold must be confirmed against Lovable-sync
+   impact and committed separately with a clear "legacy frontend removal"
+   message.
