@@ -72,7 +72,8 @@ project→competency link, parent plan panel.
 - **Mocks in `frontend/src`:** **0** (grep clean). Empty states are honest CharacterState components.
 - **i18n:** every new/changed surface localized EN + AR (RTL); `ar` is type-checked against `en`'s shape.
 - **Tests:** backend 120 / 21 suites; frontend 40 / 11 files; frontend tsc clean; home-bundle perf gate passing.
-- **Perf evidence:** ✅ Home no longer eagerly loads sandpack/codemirror/pyodide (verified in `dist/index.html`; gated in deploy.sh + CI).
+- **Perf evidence:** ✅ **Browser-verified** — Home fetches NO coding runtime (sandpack/codemirror/pyodide). A real Playwright network trace (`e2e/home.spec.ts`) caught that the static index.html check alone MISSED a leak (Vite hoisted its preload helper into the sandpack chunk, which the entry statically imported); fixed by not manual-chunking the coding runtime. Gated in deploy.sh + CI via the upgraded `check-home-bundle.mjs` (now asserts the entry chunk, not just index.html).
+- **E2E (browser-verified this workspace):** ✅ 16 Playwright tests pass in chromium against the production build — `home.spec.ts` (2: Home render + no-coding-runtime + Arabic RTL) and `routes.spec.ts` (14: every canonical child route mounts with no uncaught errors, unknown-route fallback, Arabic RTL). API boundary mocked (no live USAM backend in dev workspace); real-data round-trips are the owner's live pass.
 
 ## Architecture resolution (dual frontend)
 
