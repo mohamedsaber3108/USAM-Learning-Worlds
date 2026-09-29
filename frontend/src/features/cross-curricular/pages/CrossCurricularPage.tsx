@@ -8,6 +8,7 @@ import {
   type CrossCurricularCategory,
   type CrossCurricularConcept,
 } from '@/lib/api/endpoints'
+import { ageRange } from '@/lib/age/ageLabels'
 
 /**
  * Shared page for the three cross-curricular concept models
@@ -84,11 +85,13 @@ const DOMAIN_PATH_SLUG: Partial<Record<CrossCurricularCategory, string>> = {
   'ai-literacy': 'ai-literacy',
 }
 
+// Product-facing labels via the shared age-label source of truth (never the
+// raw enum numbers — see lib/age/ageLabels.ts + North Star).
 const AGE_BANDS = [
   { value: '', label: 'All Ages' },
-  { value: 'AGE_8_9', label: 'Age 8-9' },
-  { value: 'AGE_10_11', label: 'Age 10-11' },
-  { value: 'AGE_12_14', label: 'Age 12-14' },
+  { value: 'AGE_8_9', label: `Age ${ageRange('AGE_8_9')}` },
+  { value: 'AGE_10_11', label: `Age ${ageRange('AGE_10_11')}` },
+  { value: 'AGE_12_14', label: `Age ${ageRange('AGE_12_14')}` },
 ] as const
 
 const AGE_BAND_COLORS: Record<string, string> = {
@@ -280,7 +283,7 @@ export function CrossCurricularPage() {
                                   AGE_BAND_COLORS[concept.ageAppropriate] || 'bg-surface-200 text-ink'
                                 }`}
                               >
-                                {concept.ageAppropriate.replace('AGE_', '').replace('_', '-')}
+                                {ageRange(concept.ageAppropriate)}
                               </span>
                             ) : concept.difficulty != null ? (
                               <span className="ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold bg-indigo-100 text-indigo-800">

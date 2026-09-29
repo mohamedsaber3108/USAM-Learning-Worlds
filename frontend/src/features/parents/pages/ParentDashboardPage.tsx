@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ShieldCheck, Timer, BarChart3, BookOpenCheck, CalendarRange, CheckCircle2, XCircle, ArrowLeft, CreditCard } from 'lucide-react'
 import { parentsApi, entitlementsApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
+import { ageRange } from '@/lib/age/ageLabels'
 
 interface ChildLink {
   relationshipId: string
@@ -160,7 +161,7 @@ export function ParentDashboardPage() {
                 </h2>
                 <p className="text-slate-500 text-xs mt-0.5">
                   {t('parentDashboard.ageBandStatus', {
-                    ageBand: activeChild?.learner.ageBand,
+                    ageBand: ageRange(activeChild?.learner.ageBand),
                     status: activeChild?.learner.status,
                   })}
                 </p>

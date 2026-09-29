@@ -545,9 +545,9 @@ export const en = {
       title: 'How old are you?',
       subtitle: "This helps us pick missions and lessons that fit you.",
       bands: {
-        AGE_8_9: { label: 'Age 8-9', blurb: "I'm just starting my learning journey" },
-        AGE_10_11: { label: 'Age 10-11', blurb: 'Ready for bigger challenges' },
-        AGE_12_14: { label: 'Age 12-14', blurb: 'I want to level up fast' },
+        AGE_8_9: { label: 'Age 7-9', blurb: "I'm just starting my learning journey" },
+        AGE_10_11: { label: 'Age 10-12', blurb: 'Ready for bigger challenges' },
+        AGE_12_14: { label: 'Age 13-15', blurb: 'I want to level up fast' },
       },
       saving: 'Saving...',
       continue: 'Continue',

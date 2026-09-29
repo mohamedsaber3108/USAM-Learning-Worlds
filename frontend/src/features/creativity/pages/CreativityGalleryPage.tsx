@@ -25,13 +25,15 @@ import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
  * growing collection of creations, which is real.
  */
 
+// Product-facing age labels. The backend AgeBand enum values (AGE_8_9 /
+// AGE_10_11 / AGE_12_14) are stable internal identifiers that MAP to the
+// Bible's product-facing 7-9 / 10-12 / 13-15 bands (see
+// plans-local/01_PRODUCT_NORTH_STAR.md). Never show the raw enum's numbers to
+// a child — show the product-facing range.
 const AGE_BAND_LABELS: Record<string, string> = {
-  AGE_6_7: 'Ages 6-7',
-  AGE_8_9: 'Ages 8-9',
-  AGE_10_11: 'Ages 10-11',
-  AGE_12_13: 'Ages 12-13',
-  AGE_14_15: 'Ages 14-15',
-  AGE_16_18: 'Ages 16-18',
+  AGE_8_9: 'Ages 7-9',
+  AGE_10_11: 'Ages 10-12',
+  AGE_12_14: 'Ages 13-15',
 }
 
 function ageBandLabel(band: string) {
