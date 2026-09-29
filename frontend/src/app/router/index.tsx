@@ -47,6 +47,7 @@ import { StoryReaderPage } from '@/features/stories/pages/StoryReaderPage'
 import { CreativityGalleryPage } from '@/features/creativity/pages/CreativityGalleryPage'
 import { PracticePage } from '@/features/practice/pages/PracticePage'
 import { DomainPathPage } from '@/features/learning/pages/DomainPathPage'
+import { EvidencePage } from '@/features/evidence/pages/EvidencePage'
 import { ProtectedRoute } from '@/components/common/ProtectedRoute'
 import { AdminRoute } from '@/components/common/AdminRoute'
 import { AppShell } from '@/components/layout/AppShell'
@@ -186,6 +187,11 @@ export function AppRouter() {
             and adaptive recommendations in child-friendly "keep it strong"
             language. Previously masteryApi.getReviewDue had zero consumers. */}
         <Route path="/practice" element={<PracticePage />} />
+
+        {/* Evidence / accomplishments — "what I've proved", the child-facing
+            surface for the Evidence engine (built from the real mastery
+            overview). */}
+        <Route path="/evidence" element={<EvidencePage />} />
 
         {/* Missions */}
         <Route path="/missions" element={<MissionsBrowsePage />} />

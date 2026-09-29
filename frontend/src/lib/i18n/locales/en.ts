@@ -150,6 +150,8 @@ export const en = {
       voiceChat: 'Voice Chat',
       english: 'English',
       coding: 'Coding',
+      practice: 'Practice',
+      evidence: 'My proof',
     },
   },
   achievements: {
@@ -876,6 +878,28 @@ export const en = {
     aLearner: 'Learner',
     emptyTitle: 'No briefs right now',
     emptyMessage: 'Check back soon — Mira is dreaming up new things to make.',
+  },
+  // Evidence / accomplishments — "what I've proved".
+  evidence: {
+    title: 'What I have proved',
+    subtitle: 'Every skill here is one you have actually shown you can do.',
+    loading: 'Gathering what you have proved…',
+    errorTitle: "Couldn't load your accomplishments",
+    errorMessage: "Let's try that again.",
+    emptyTitle: 'Your proof starts soon',
+    emptyMessage: 'Finish a mission and the skills you show will appear here as proof.',
+    browseMissions: 'Start a mission',
+    otherDomain: 'Other',
+    aSkill: 'A skill',
+    // English resolves only _one/_other at runtime; the extra CLDR categories
+    // exist so the Arabic locale (which uses zero/one/two/few/many/other) can
+    // supply its forms under the shared TranslationKeys shape.
+    shownTimes_zero: 'You have not shown this yet',
+    shownTimes_one: 'You have shown this {{count}} time',
+    shownTimes_two: 'You have shown this {{count}} times',
+    shownTimes_few: 'You have shown this {{count}} times',
+    shownTimes_many: 'You have shown this {{count}} times',
+    shownTimes_other: 'You have shown this {{count}} times',
   },
   // Practice / Review center (spaced review + adaptive recommendations).
   practice: {

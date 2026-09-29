@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   Clock,
   Award,
+  RotateCcw,
 } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, cosmeticsApi, dailyGoalsApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
@@ -54,6 +55,8 @@ const quickActions = [
   { to: '/voice-chat', labelKey: 'voiceChat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
   { to: '/english', labelKey: 'english', icon: Languages, tint: 'bg-accent-50 text-accent-600' },
   { to: '/coding', labelKey: 'coding', icon: Code2, tint: 'bg-success-50 text-success-600' },
+  { to: '/practice', labelKey: 'practice', icon: RotateCcw, tint: 'bg-accent-50 text-accent-600' },
+  { to: '/evidence', labelKey: 'evidence', icon: Award, tint: 'bg-success-50 text-success-600' },
 ]
 
 // Age-adaptive copy now lives in frontend/src/lib/i18n/locales/{en,ar}.ts
