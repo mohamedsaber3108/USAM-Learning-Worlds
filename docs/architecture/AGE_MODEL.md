@@ -1,10 +1,32 @@
-# Age Model — canonical resolution
+# Age Model — COMPATIBILITY MODE / MIGRATION PENDING
 
-## Decision (migration-safe)
+> **Status: COMPATIBILITY MODE / MIGRATION PENDING.** NOT fully resolved. The
+> canonical product age model is **7–9 / 10–12 / 13–15**. The persisted backend
+> `AgeBand` enum (`AGE_8_9`/`AGE_10_11`/`AGE_12_14`) does NOT cleanly represent
+> age 7 or 15 and has different numeric boundaries. Today a **presentation
+> compatibility layer** (`frontend/src/lib/age/ageLabels.ts`) maps the legacy
+> enum to the canonical product bands for display. The persistence model has
+> **not** been migrated. Do not classify the age model as done until the
+> canonical backend learner model is actually migrated (a deliberate,
+> owner-approved, non-destructive migration — see plan below).
 
-The apparent "age-band mismatch" between the code and the Product Bible is a
-**display-label** concern, not a data-model defect. **No enum migration is
-performed.**
+## Current state (compatibility layer, NOT a migration)
+
+The apparent "age-band mismatch" is handled at the **display layer only**. **No
+enum migration has been performed.**
+
+| Persisted legacy band (DB/Prisma `AgeBand`) | Canonical product band (Bible) | Compatibility mapping (display) |
+| --- | --- | --- |
+| `AGE_8_9` | 7–9 | shown as "7-9" |
+| `AGE_10_11` | 10–12 | shown as "10-12" |
+| `AGE_12_14` | 13–15 | shown as "13-15" |
+
+**Known imperfection:** the legacy enum's numeric boundaries (8-9/10-11/12-14) do
+not equal the canonical boundaries (7-9/10-12/13-15). Age 7 and age 15 are not
+distinctly representable in the persisted model; the mapping is a pragmatic
+alignment, not an exact equivalence. This is acceptable for launch (labels read
+correctly to users; adaptation still keys on a stable enum) but is tracked as
+migration-pending debt.
 
 - Backend `AgeBand` enum (Prisma + Postgres): `AGE_8_9`, `AGE_10_11`, `AGE_12_14`.
   These are **stable internal identifiers**.
@@ -50,10 +72,27 @@ only ever used as an internal key (adaptation table, API payloads, storage).
 `useAgeAdaptation` continues to key its adaptation table on the enum value
 (correct — it needs a stable key, not a display string).
 
-## Compatibility / backfill
+## Migration plan (pending, owner-approved, non-destructive)
 
-None required. Existing learner records keep their `AGE_8_9`/`AGE_10_11`/
-`AGE_12_14` values; only the presentation changed. If a future product decision
-demands real enum values of `AGE_7_9` etc., that is a separate, explicitly
-owner-approved migration (Prisma migration + `UPDATE learners SET age_band = ...`
-backfill + code/seed sweep) — out of scope here.
+The launch is NOT blocked on this. When the canonical persistence model is
+migrated, do it additively and safely:
+
+1. Add new enum values `AGE_7_9`, `AGE_10_12`, `AGE_13_15` to the Postgres
+   `AgeBand` type (additive — Postgres allows `ALTER TYPE ... ADD VALUE`; does
+   not break existing rows).
+2. Dual-read period: `ageLabels.ts` + `useAgeAdaptation` accept BOTH old and new
+   values; onboarding writes the new values.
+3. Backfill: `UPDATE learners SET age_band = <new> WHERE age_band = <old>` under
+   the documented mapping, in a reviewed migration with a rollback.
+4. Sweep the ~400 `AGE_*` references in seeds/DTOs/eligibility/recommendations to
+   the new values; re-seed age-targeted content.
+5. Retire the old enum values only after all rows are backfilled and no code
+   references them.
+
+Until step 5 completes, the age model stays **COMPATIBILITY MODE / MIGRATION
+PENDING**. Do not run a destructive rename; do not block the frontend launch on it.
+
+## Compatibility / backfill (current)
+
+None performed yet. Existing learner records keep their `AGE_8_9`/`AGE_10_11`/
+`AGE_12_14` values; only the presentation changed via the compatibility layer.

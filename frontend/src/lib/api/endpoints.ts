@@ -251,6 +251,11 @@ export const parentsApi = {
   getChildActivity: (learnerId: string, params?: { days?: number }) =>
     apiClient.get(`/parents/children/${learnerId}/activity`, { params }),
 
+  // Parent-safe safety summary: escalation counts/status/dates + referred-to-
+  // guardian flag. Never returns raw trigger/resolution text (backend
+  // ParentsService.getChildSafety).
+  getChildSafety: (learnerId: string) =>
+    apiClient.get(`/parents/children/${learnerId}/safety`),
   setTimeLimits: (learnerId: string, data: SetTimeLimitsPayload) =>
     apiClient.post(`/parents/children/${learnerId}/time-limits`, data),
 }

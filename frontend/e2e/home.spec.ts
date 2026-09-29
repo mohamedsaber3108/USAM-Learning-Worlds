@@ -41,8 +41,10 @@ test('Home renders and does NOT download the coding runtime', async ({ page }) =
 
   await page.goto('/dashboard')
 
-  // Home mounted (the app shell / main content is present).
-  await expect(page.locator('main')).toBeVisible()
+  // Home mounted (the app shell's main content region is present). Use the
+  // stable #main-content id — there can be a transient loading-skeleton <main>
+  // too, so a bare `main` locator is ambiguous.
+  await expect(page.locator('#main-content')).toBeVisible()
 
   // The core performance guarantee: no coding-runtime chunk fetched on Home.
   expect(

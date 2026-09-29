@@ -76,13 +76,41 @@ project→competency link, parent plan panel.
 
 ## Architecture resolution (dual frontend)
 
-- `frontend/` declared **canonical** with evidence (deploy.sh + CI build it); documented in `docs/architecture/FRONTEND_CANONICAL.md` + AGENTS.md.
-- Root `src/` is the **Lovable scaffold** (`.lovable` template) — frozen for product work, migration-ledgered in `77`. Its only unique code-value (verified) is design-reference UX + Arabic time-unit plural strings (preserved in 77). It has NO unique backend wiring.
+- `frontend/` declared **canonical** with evidence (deploy.sh + CI build it); documented in `docs/architecture/FRONTEND_CANONICAL.md` + AGENTS.md; enforced by CI job `frontend-canonical-guard` + `src/LEGACY_DO_NOT_EDIT.md` marker.
+- Root `src/` (Lovable scaffold, `.lovable` template): **PRESERVE / QUARANTINE — NON-PRODUCTION** (owner decision — NOT to be deleted; Lovable-managed, kept unless the project later migrates away from Lovable). Frozen for product work, marked + CI-guarded. It has NO unique backend wiring; its only unique code-value (design-reference UX + Arabic plural strings) is preserved in `77`.
+
+## Age model status — COMPATIBILITY MODE / MIGRATION PENDING
+
+**NOT fully resolved.** Canonical product bands are 7–9 / 10–12 / 13–15; the
+persisted `AgeBand` enum is `AGE_8_9`/`AGE_10_11`/`AGE_12_14` and does not cleanly
+represent age 7 or 15. A **display compatibility layer** (`lib/age/ageLabels.ts`)
+maps enum→product band; the persistence model is unmigrated. Non-destructive
+migration plan documented in `docs/architecture/AGE_MODEL.md`. Launch is not
+blocked on it, but it stays MIGRATION PENDING until the backend model is migrated.
+
+## Deploy-gate rehearsal (LOCAL, real runs — not the prod deploy)
+
+Every deploy gate that does NOT require the live prod DB/server was executed
+locally and passed (real evidence, this workspace):
+
+| Gate | Result |
+| --- | --- |
+| backend build (`nest build`) | ✅ exit 0 |
+| backend tests (`jest --runInBand`) | ✅ 120 passed / 21 suites |
+| frontend typecheck (`tsc --noEmit`) | ✅ clean |
+| frontend build (`vite build`) | ✅ built in ~8s |
+| frontend tests (`vitest run`) | ✅ 40 passed / 11 files |
+| home-bundle perf guard | ✅ no coding runtime on Home (8 eager JS refs checked) |
+| `check:enum-drift`, `check:migrations` | ⏳ server-only (need live `DATABASE_URL`) |
+| critical smoke (real DB over HTTP) | ⏳ server-only (CI `smoke` job / prod) |
+
+So the deploy is expected to pass its code gates; the two DB-drift gates + smoke
+run on the server where the prod `DATABASE_URL` exists.
 
 ## Blockers / pending (honest)
 
-- ⛔ **Legacy `src/` deletion (task #20):** the root tree is Lovable-managed; deleting it may break Lovable sync + project history (per AGENTS.md). **Needs owner confirmation** before removal. Salvage is captured in `77`.
-- 🟡 **Live deploy + verification (task #17 remainder):** needs server access (owner runs `DEPLOY_BACKEND=1 RUN_TESTS=1 bash scripts/deploy.sh`).
+- ✅ **Legacy `src/`: PRESERVE / QUARANTINE — NON-PRODUCTION** (owner decision; NOT deleted, NOT a blocker). Marked + CI-guarded.
+- ⛔ **Live deploy + verification (task #17 remainder):** THIS WORKSPACE HAS NO NETWORK PATH TO THE PROD SERVER — DNS resolution to `kids.usamif.com`/github fails intermittently, there is no SSH host config for `~/USAM-Learning-Worlds`, and `scripts/deploy.sh` requires the server's pm2/nginx/`DATABASE_URL`. The deploy + live browser verification MUST be run by the owner on the server. I did not fabricate deploy/live output.
 - 🟡 **Multi-device / age / language human browser QA (tasks #14/#16 remainder):** Playwright harness is scaffolded (opt-in); full human visual pass across 7-9/10-12/13-15 × phone/tablet/desktop × EN/AR needs a real environment.
 - 🟡 **Voice runtime:** ASR/TTS/Bedrock sidecar is provider-gated; text-fallback path is code-verified, live voice round-trip needs creds.
 - ⛔ **Backend gaps (noted, not faked):** no `GET /mastery/evidence` per-evidence timeline; no parent-facing safety endpoint. Current surfaces are honest without them.

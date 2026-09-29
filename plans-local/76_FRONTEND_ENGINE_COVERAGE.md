@@ -186,3 +186,30 @@ is only stage 2 — NOT production-ready.
 
 No row is marked PRODUCTION_READY on code inspection alone. Stages 5–8 are the
 owner-run remainder tracked in `plans-local/78_FRONTEND_ACCEPTANCE_REPORT.md`.
+
+### Per-engine 8-stage standing (honest, this phase)
+
+Legend: ✅ done · ⏳ pending (needs live env) · ▲ partial. Columns:
+API=api exists · CON=api consumed · UX=ux exists · CMP=ux complete (i18n/states/
+no-jargon) · TST=unit/component tested · VQA=visual QA · DEP=deployed · LIVE=live-verified.
+
+| Engine / surface | API | CON | UX | CMP | TST | VQA | DEP | LIVE |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Home (living world) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Domain path (generic) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| English | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Coding (execution + coach) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| AI Literacy | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Creativity (CREATE loop) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Practice / Review (FSRS) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Evidence (child) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Mastery (child bands) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Projects / Portfolio | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Characters (states) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Voice (state machine) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ (Bedrock-gated) |
+| Parent (dashboard + plan) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Entitlements / plan | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Safety (parent-facing) | ⏳ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ (no parent-safe backend projection yet) |
+
+VQA/DEP/LIVE are the owner-run remainder (no network path to prod from the dev
+workspace). Nothing is PRODUCTION_READY until its LIVE column is ✅.

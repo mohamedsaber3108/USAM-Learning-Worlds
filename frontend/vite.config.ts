@@ -19,22 +19,6 @@ export default defineConfig({
     },
   },
   build: {
-    // Keep the heavy coding-runtime vendor chunks OUT of the eager
-    // <link rel="modulepreload"> set Vite hoists onto index.html. They are
-    // reachable only through the lazy mission/coding routes, so preloading them
-    // on the initial (Home) load fetched ~950kB (sandpack + codemirror) the
-    // learner doesn't need until they open a coding mission. They still load
-    // on demand via their dynamic import — this only drops the eager hint.
-    // Verified by scripts/check-home-bundle.mjs.
-    modulePreload: {
-      resolveDependencies: (_filename, deps) =>
-        deps.filter(
-          (dep) =>
-            !dep.includes('vendor-sandpack') &&
-            !dep.includes('vendor-codemirror') &&
-            !dep.includes('vendor-pyodide'),
-        ),
-    },
     rollupOptions: {
       output: {
         // Heavy, shared vendor libraries are pulled into many lazy-loaded
@@ -47,37 +31,19 @@ export default defineConfig({
 
           if (id.includes('framer-motion')) return 'vendor-motion'
 
-          if (
-            id.includes('@codemirror') ||
-            id.includes('@lezer') ||
-            id.includes('codemirror')
-          ) {
-            return 'vendor-codemirror'
-          }
-          if (
-            id.includes('@codesandbox/sandpack-react') ||
-            id.includes('@codesandbox/sandpack-client') ||
-            // Transitive deps pulled in solely by sandpack-client's embedded
-            // dev server + terminal/logging stack. These were previously
-            // falling through the substring checks above into the
-            // catch-all 'vendor' chunk (verified via rollup-plugin-
-            // visualizer: mime-db's bundled db.json alone is ~165kB,
-            // static-browser-server ~220kB) even though nothing outside
-            // the sandpack tree imports them, so grouping them here fixes
-            // cache-invalidation correctness rather than just moving bytes.
-            id.includes('/node_modules/mime-db/') ||
-            id.includes('/node_modules/static-browser-server/') ||
-            id.includes('@codesandbox/nodebox') ||
-            id.includes('/node_modules/outvariant/') ||
-            id.includes('/node_modules/dequal/') ||
-            id.includes('@stitches/core') ||
-            id.includes('/node_modules/anser/') ||
-            id.includes('/node_modules/lz-string/') ||
-            id.includes('intersection-observer')
-          ) {
-            return 'vendor-sandpack'
-          }
-          if (id.includes('pyodide')) return 'vendor-pyodide'
+          // NOTE: the coding runtime (CodeMirror, Sandpack, Pyodide) is
+          // deliberately NOT manual-chunked. Forcing it into named vendor
+          // chunks made Rollup hoist Vite's shared __vitePreload helper into
+          // the sandpack chunk, which the ENTRY then statically imported —
+          // dragging ~950kB of coding runtime into the Home load graph (proven
+          // in a real browser by e2e/home.spec.ts, invisible to the static
+          // index.html check). Leaving them unnamed lets Rollup co-locate them
+          // with the lazy MissionPlayer/coding chunks that dynamically import
+          // them (CodeMissionRunner lazy-imports SandpackMission/Blockly), so
+          // they load ONLY when a coding mission mounts. Verified: Home fetches
+          // no vendor-sandpack/codemirror/pyodide. Do not re-add these groups
+          // without re-running the E2E network assertion.
+          if (id.includes('pyodide')) return undefined
 
           if (id.includes('date-fns')) return 'vendor-date'
           if (id.includes('recharts')) return 'vendor-recharts'
