@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
+import { Route, ArrowRight } from 'lucide-react'
 import {
   crossCurricularApi,
   type CrossCurricularCategory,
@@ -72,6 +74,16 @@ const HAS_AGE_BAND: Record<CrossCurricularCategory, boolean> = {
   'coding-concepts': false,
 }
 
+/** Categories that are also a real canonical-spine domain get a prominent
+ * "follow the learning path" CTA (mission-based progression), so the page is
+ * not just a concept catalog. Maps category -> Domain slug used by
+ * /learning/domains/:slug/path (DomainPathPage). Categories without a seeded
+ * domain (entrepreneurship, financial-literacy, etc.) stay catalog-only.
+ * coding-concepts has its own /coding landing, so it's intentionally omitted. */
+const DOMAIN_PATH_SLUG: Partial<Record<CrossCurricularCategory, string>> = {
+  'ai-literacy': 'ai-literacy',
+}
+
 const AGE_BANDS = [
   { value: '', label: 'All Ages' },
   { value: 'AGE_8_9', label: 'Age 8-9' },
@@ -93,12 +105,14 @@ function humanizeCategory(raw: string): string {
 }
 
 export function CrossCurricularPage() {
+  const { t } = useTranslation()
   const { category } = useParams<{ category: CrossCurricularCategory }>()
   const [ageBandFilter, setAgeBandFilter] = useState('')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   const meta = category ? CATEGORY_META[category] : undefined
   const showAgeBand = category ? HAS_AGE_BAND[category] : true
+  const pathSlug = category ? DOMAIN_PATH_SLUG[category] : undefined
 
   const { data: concepts, isLoading, isError } = useQuery({
     queryKey: ['cross-curricular', category, ageBandFilter],
@@ -150,6 +164,31 @@ export function CrossCurricularPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Learning-path CTA (primary) — for categories backed by a real
+            canonical-spine domain, lead with the mission-based path, not the
+            concept catalog. The catalog below becomes "explore the ideas". */}
+        {pathSlug && (
+          <Link
+            to={`/learning/domains/${pathSlug}/path`}
+            className="card flex items-center justify-between gap-3 mb-6 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="icon-chip bg-primary-50 text-primary-600 w-11 h-11 shrink-0">
+                <Route className="w-5 h-5" strokeWidth={2} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-display font-semibold text-slate-900">
+                  {t('crossCurricular.pathTitle', 'Follow your learning path')}
+                </p>
+                <p className="text-sm text-slate-500">
+                  {t('crossCurricular.pathSubtitle', 'Step-by-step missions that build real understanding.')}
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-primary-500 rtl:scale-x-[-1] shrink-0" strokeWidth={2} />
+          </Link>
+        )}
+
         {/* Age band filter */}
         {showAgeBand && (
         <div className="card mb-6">

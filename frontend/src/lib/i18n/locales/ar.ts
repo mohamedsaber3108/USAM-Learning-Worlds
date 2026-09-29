@@ -839,6 +839,10 @@ export const ar: TranslationKeys = {
       default: 'استكشف المهمات',
     },
   },
+  crossCurricular: {
+    pathTitle: 'اتبع مسار تعلّمك',
+    pathSubtitle: 'مهمات خطوة بخطوة بتبني فهم حقيقي.',
+  },
   practice: {
     title: 'تمرين',
     subtitle: 'شويّة تمرين بتخلّي اللي اتعلمته يفضل قوي. دي حاجات جاهزة ليك النهارده.',

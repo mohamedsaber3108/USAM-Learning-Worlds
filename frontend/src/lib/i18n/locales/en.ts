@@ -840,6 +840,11 @@ export const en = {
       default: 'Explore missions',
     },
   },
+  // Cross-curricular concept pages (AI Literacy etc.) path CTA.
+  crossCurricular: {
+    pathTitle: 'Follow your learning path',
+    pathSubtitle: 'Step-by-step missions that build real understanding.',
+  },
   // Practice / Review center (spaced review + adaptive recommendations).
   practice: {
     title: 'Practice',
