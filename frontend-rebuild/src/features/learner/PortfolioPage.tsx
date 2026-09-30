@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { projectsApi } from '@/lib/api/endpoints'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
+import { Card, PageHeader } from '@/components/ui'
 
 interface PortfolioItem {
   id: string
@@ -11,7 +11,7 @@ interface PortfolioItem {
   description?: string
 }
 
-/** Portfolio — showcased work, real GET /api/projects/portfolio/:learnerId. */
+/** Portfolio — showcased work. Real GET /api/projects/portfolio/:learnerId. DS. */
 export function PortfolioPage() {
   const { t } = useTranslation()
   const learnerId = useAuthStore((s) => s.user?.learner?.id)

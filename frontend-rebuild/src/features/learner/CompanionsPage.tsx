@@ -2,8 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
+import { Card, PageHeader, Avatar, StatusPill, LockedBadge } from '@/components/ui'
 
 interface Character {
   id: string
@@ -13,8 +12,8 @@ interface Character {
   relationshipState?: string
 }
 
-/** Companions gallery — real GET /api/characters, with unlock + relationship
- * state shown in child language. */
+/** Companions gallery — real GET /api/characters; unlock + relationship state
+ * in child language. DS + Avatar. */
 export function CompanionsPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({
@@ -33,12 +32,19 @@ export function CompanionsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((c) => (
-            <Card key={c.id}>
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="font-display font-bold text-ink-900">{c.name}</h2>
-                {c.unlocked === false ? <Badge tone="neutral">🔒</Badge> : c.relationshipState ? <Badge tone="brand">{c.relationshipState}</Badge> : null}
+            <Card key={c.id} className={c.unlocked === false ? 'opacity-70' : ''}>
+              <div className="flex items-center gap-3">
+                <Avatar name={c.name} size={44} />
+                <div className="min-w-0">
+                  <h2 className="truncate font-display font-bold text-ink-900">{c.name}</h2>
+                  {c.unlocked === false ? (
+                    <LockedBadge label="Locked" />
+                  ) : c.relationshipState ? (
+                    <StatusPill tone="brand">{c.relationshipState}</StatusPill>
+                  ) : null}
+                </div>
               </div>
-              {c.description && <p className="mt-2 text-sm text-ink-500">{c.description}</p>}
+              {c.description && <p className="mt-3 text-sm text-ink-500">{c.description}</p>}
             </Card>
           ))}
         </div>

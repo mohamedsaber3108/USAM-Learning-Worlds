@@ -2,8 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { notificationsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, PageHeader, Button } from '@/components/ui'
 import { cn } from '@/lib/utils/cn'
 
 interface Notification {
@@ -14,7 +13,7 @@ interface Notification {
   createdAt?: string
 }
 
-/** Notification center — real endpoints; unread/read + mark-all-read. */
+/** Notification center — real endpoints; unread/read + mark-all-read. DS. */
 export function NotificationsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
@@ -26,10 +25,12 @@ export function NotificationsPage() {
   async function markAll() {
     await notificationsApi.markAllRead()
     await qc.invalidateQueries({ queryKey: ['notifications'] })
+    await qc.invalidateQueries({ queryKey: ['unread-count'] })
   }
   async function markOne(id: string) {
     await notificationsApi.markRead(id)
     await qc.invalidateQueries({ queryKey: ['notifications'] })
+    await qc.invalidateQueries({ queryKey: ['unread-count'] })
   }
 
   if (isLoading) return <LoadingState />

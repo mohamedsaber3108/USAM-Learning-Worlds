@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Search as SearchIcon } from 'lucide-react'
 import { searchApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
+import { Card, PageHeader, Input } from '@/components/ui'
 
 interface SearchResult {
   id: string
@@ -11,8 +12,7 @@ interface SearchResult {
   title: string
 }
 
-/** Global search — real GET /api/search. query/loading/no-results/results with
- * keyboard-submittable input. */
+/** Global search — real GET /api/search. query/loading/no-results/results. DS. */
 export function SearchPage() {
   const { t } = useTranslation()
   const [term, setTerm] = useState('')
@@ -33,13 +33,12 @@ export function SearchPage() {
           setSubmitted(term.trim())
         }}
       >
-        <input
+        <Input
           type="search"
           value={term}
           onChange={(e) => setTerm(e.target.value)}
           placeholder={t('learner.searchHint')}
           aria-label={t('learner.search')}
-          className="w-full rounded-control border border-line px-4 py-3 focus-visible:border-brand-400"
         />
       </form>
 
@@ -49,9 +48,12 @@ export function SearchPage() {
       {data && data.length > 0 && (
         <div className="space-y-2">
           {data.map((r) => (
-            <Card key={r.id}>
-              <p className="font-medium text-ink-900">{r.title}</p>
-              {r.type && <p className="text-xs text-ink-400">{r.type}</p>}
+            <Card key={r.id} className="flex items-center gap-3">
+              <SearchIcon className="h-4 w-4 shrink-0 text-ink-400" aria-hidden />
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-ink-900">{r.title}</span>
+                {r.type && <span className="block text-xs text-ink-400">{r.type}</span>}
+              </span>
             </Card>
           ))}
         </div>

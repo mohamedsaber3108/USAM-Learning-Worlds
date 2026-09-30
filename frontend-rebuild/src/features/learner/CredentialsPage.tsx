@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Award, ExternalLink } from 'lucide-react'
 import { credentialsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
+import { Card, PageHeader } from '@/components/ui'
 
 interface Credential {
   id: string
@@ -11,8 +13,7 @@ interface Credential {
   issuedAt?: string
 }
 
-/** Credentials wallet — real GET /api/credentials/me. Each credential can be
- * shared via its public verify URL (/verify/:uid). */
+/** Credentials wallet — real GET /api/credentials/me + public verify link. DS. */
 export function CredentialsPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({
@@ -32,11 +33,15 @@ export function CredentialsPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((c) => (
             <Card key={c.id}>
-              <h2 className="font-display font-bold text-ink-900">{c.title}</h2>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+                <Award className="h-5 w-5" aria-hidden />
+              </span>
+              <h2 className="mt-3 font-display font-bold text-ink-900">{c.title}</h2>
+              {c.issuedAt && <p className="mt-1 text-xs text-ink-400">{new Date(c.issuedAt).toLocaleDateString()}</p>}
               {c.uid && (
-                <a href={`/verify/${c.uid}`} className="mt-2 inline-block text-sm text-brand-600 hover:underline">
-                  {t('common.search')} →
-                </a>
+                <Link to={`/verify/${c.uid}`} className="mt-2 inline-flex items-center gap-1 text-sm text-brand-600 hover:underline">
+                  <ExternalLink className="h-4 w-4" aria-hidden /> Verify
+                </Link>
               )}
             </Card>
           ))}

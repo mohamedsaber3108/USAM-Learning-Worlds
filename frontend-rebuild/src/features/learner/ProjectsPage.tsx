@@ -1,20 +1,20 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { FolderKanban } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
+import { Card, PageHeader, StatusPill } from '@/components/ui'
 
 interface Project {
   id: string
   title: string
+  state?: string
   status?: string
   description?: string
 }
 
-/** Learner projects — real GET /api/projects/my. Discover→build→submit stages
- * live in the project detail; this is the list + entry. */
+/** Learner projects — real GET /api/projects/my. Design system. */
 export function ProjectsPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({
@@ -34,12 +34,15 @@ export function ProjectsPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {data.map((p) => (
             <Link key={p.id} to={`/app/projects/${p.id}`}>
-              <Card className="h-full transition-colors hover:bg-canvas-off">
+              <Card className="h-full transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-display text-lg font-bold text-ink-900">{p.title}</h2>
-                  {p.status && <Badge tone="brand">{p.status}</Badge>}
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+                    <FolderKanban className="h-5 w-5" aria-hidden />
+                  </span>
+                  {(p.state || p.status) && <StatusPill tone="brand">{p.state || p.status}</StatusPill>}
                 </div>
-                {p.description && <p className="mt-2 text-sm text-ink-500">{p.description}</p>}
+                <h2 className="mt-3 font-display text-lg font-bold text-ink-900">{p.title}</h2>
+                {p.description && <p className="mt-1 text-sm text-ink-500">{p.description}</p>}
               </Card>
             </Link>
           ))}
