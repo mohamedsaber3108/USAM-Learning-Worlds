@@ -71,6 +71,27 @@ export const en = {
     restricted: 'You do not have access to this page.',
     notFound: 'We could not find that page.',
   },
+  learner: {
+    homeGreeting: 'Hi, {{name}}!',
+    nextStep: 'Your next step',
+    startHere: 'Start here',
+    continue: 'Pick up where you left off',
+    keepStrong: 'Keep it strong',
+    reviewNudge: 'Time to review {{count}} skill(s)',
+    chooseWorld: 'Choose what to learn',
+    yourPath: 'What you are learning',
+    pathHint: 'Work through these one step at a time.',
+    pathBeingBuilt: 'This path is being built.',
+    startMission: 'Start',
+    progressTitle: 'Your progress',
+    masteryBy: 'What you can do',
+    noProgress: 'Start a mission to see your progress grow.',
+    submit: 'Submit',
+    correct: 'Correct!',
+    tryAgain: 'Not quite — try again.',
+    missionComplete: 'Mission complete!',
+    nothingDue: 'All caught up — nothing to review right now.',
+  },
 }
 
 /** Schema = the key structure with string leaves. `ar.ts` is typed against

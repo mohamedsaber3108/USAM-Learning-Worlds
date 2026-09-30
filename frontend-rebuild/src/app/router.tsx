@@ -11,6 +11,13 @@ import { PricingPage } from '@/features/public/PricingPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
+import { HomePage } from '@/features/learner/HomePage'
+import { LearnPage } from '@/features/learner/LearnPage'
+import { DomainPathPage } from '@/features/learner/DomainPathPage'
+import { MissionDetailPage } from '@/features/learner/MissionDetailPage'
+import { MissionPlayerPage } from '@/features/learner/MissionPlayerPage'
+import { PracticePage } from '@/features/learner/PracticePage'
+import { ProgressPage } from '@/features/learner/ProgressPage'
 
 /** `/` — public landing for signed-out visitors; role home for signed-in. */
 function RootRoute() {
@@ -71,13 +78,13 @@ export function AppRouter() {
           </RequireRole>
         }
       >
-        <Route path="/app" element={<Placeholder title="Home" backend="adaptive/recommendations, gamification, daily-goals" />} />
-        <Route path="/app/learn" element={<Placeholder title="Learn" backend="GET /api/worlds, /learning/domains/:slug/path" />} />
-        <Route path="/app/learn/:slug" element={<Placeholder title="Domain path" backend="GET /api/learning/domains/:slug/path" />} />
-        <Route path="/app/missions/:id" element={<Placeholder title="Mission" backend="GET /api/missions/:id" />} />
-        <Route path="/app/runs/:runId" element={<Placeholder title="Mission player" backend="POST /api/missions/runs/:runId/submit" />} />
-        <Route path="/app/practice" element={<Placeholder title="Practice" backend="GET /api/mastery/review-due, /flashcards/due" />} />
-        <Route path="/app/progress" element={<Placeholder title="Progress" backend="GET /api/mastery/overview, /by-domain" />} />
+        <Route path="/app" element={<HomePage />} />
+        <Route path="/app/learn" element={<LearnPage />} />
+        <Route path="/app/learn/:slug" element={<DomainPathPage />} />
+        <Route path="/app/missions/:id" element={<MissionDetailPage />} />
+        <Route path="/app/runs/:runId" element={<MissionPlayerPage />} />
+        <Route path="/app/practice" element={<PracticePage />} />
+        <Route path="/app/progress" element={<ProgressPage />} />
         <Route path="/app/projects" element={<Placeholder title="Projects" backend="GET /api/projects/my" />} />
         <Route path="/app/portfolio" element={<Placeholder title="Portfolio" backend="GET /api/projects/portfolio/:learnerId" />} />
         <Route path="/app/create" element={<Placeholder title="Creativity studio" backend="GET /api/creativity/prompts" />} />
