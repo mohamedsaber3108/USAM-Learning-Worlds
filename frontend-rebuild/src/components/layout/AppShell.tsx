@@ -19,9 +19,25 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { to: '/app/projects', key: 'nav.projects' },
     { to: '/app/progress', key: 'nav.progress' },
   ],
-  GUARDIAN: [{ to: '/parent', key: 'nav.home' }],
-  MODERATOR: [{ to: '/mod', key: 'nav.home' }],
-  ADMIN: [{ to: '/admin', key: 'nav.home' }],
+  GUARDIAN: [
+    { to: '/parent', key: 'parent.children' },
+    { to: '/parent/plan', key: 'parent.plan' },
+    { to: '/parent/privacy', key: 'parent.privacy' },
+  ],
+  MODERATOR: [
+    { to: '/mod', key: 'mod.console' },
+    { to: '/mod/escalations', key: 'mod.escalations' },
+    { to: '/mod/community', key: 'mod.communityQueue' },
+    { to: '/mod/interventions', key: 'mod.interventions' },
+  ],
+  ADMIN: [
+    { to: '/admin', key: 'admin.overview' },
+    { to: '/admin/content', key: 'admin.content' },
+    { to: '/admin/curriculum', key: 'admin.curriculum' },
+    { to: '/admin/ai', key: 'admin.aiSafety' },
+    { to: '/admin/analytics', key: 'admin.analytics' },
+    { to: '/admin/platform', key: 'admin.platform' },
+  ],
 }
 
 export function AppShell() {

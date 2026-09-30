@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { RequireAuth, RequireRole, roleHome } from './guards'
 import { AppShell } from '@/components/layout/AppShell'
-import { Placeholder } from '@/components/common/Placeholder'
 import { LoadingState } from '@/components/common/States'
 import { LandingPage } from '@/features/public/LandingPage'
 import { PricingPage } from '@/features/public/PricingPage'
@@ -31,6 +30,22 @@ import { SearchPage } from '@/features/learner/SearchPage'
 import { NotificationsPage } from '@/features/learner/NotificationsPage'
 import { StoriesPage, StoryReaderPage } from '@/features/learner/StoriesPage'
 import { SimulationsPage } from '@/features/learner/SimulationsPage'
+import { VoicePage } from '@/features/learner/VoicePage'
+import { VerifyCredentialPage } from '@/features/public/VerifyCredentialPage'
+import { ParentHomePage } from '@/features/parent/ParentHomePage'
+import { ChildDetailPage } from '@/features/parent/ChildDetailPage'
+import { ParentPrivacyPage } from '@/features/parent/ParentPrivacyPage'
+import { ParentPlanPage } from '@/features/parent/ParentPlanPage'
+import { ModerationHomePage } from '@/features/moderator/ModerationHomePage'
+import { EscalationsPage } from '@/features/moderator/EscalationsPage'
+import { CommunityModerationPage } from '@/features/moderator/CommunityModerationPage'
+import { InterventionsPage } from '@/features/moderator/InterventionsPage'
+import { AdminOverviewPage } from '@/features/admin/AdminOverviewPage'
+import { AdminContentPage } from '@/features/admin/AdminContentPage'
+import { AdminCurriculumPage } from '@/features/admin/AdminCurriculumPage'
+import { AdminAiSafetyPage } from '@/features/admin/AdminAiSafetyPage'
+import { AdminAnalyticsPage } from '@/features/admin/AdminAnalyticsPage'
+import { AdminPlatformPage } from '@/features/admin/AdminPlatformPage'
 
 /** `/` — public landing for signed-out visitors; role home for signed-in. */
 function RootRoute() {
@@ -73,7 +88,7 @@ export function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/verify/:uid" element={<Placeholder title="Verify credential" backend="GET /api/credentials/:uid" />} />
+      <Route path="/verify/:uid" element={<VerifyCredentialPage />} />
       <Route
         path="/onboarding"
         element={
@@ -112,6 +127,7 @@ export function AppRouter() {
         <Route path="/app/stories" element={<StoriesPage />} />
         <Route path="/app/stories/:id" element={<StoryReaderPage />} />
         <Route path="/app/simulations" element={<SimulationsPage />} />
+        <Route path="/app/voice" element={<VoicePage />} />
       </Route>
 
       {/* Guardian shell */}
@@ -122,10 +138,10 @@ export function AppRouter() {
           </RequireRole>
         }
       >
-        <Route path="/parent" element={<Placeholder title="Children" backend="GET /api/parents/children, /family-summary" />} />
-        <Route path="/parent/child/:id" element={<Placeholder title="Child detail" backend="GET /api/parents/children/:id/*" />} />
-        <Route path="/parent/privacy" element={<Placeholder title="Privacy" backend="legal consent/export/delete" />} />
-        <Route path="/parent/plan" element={<Placeholder title="Plan" backend="GET /api/entitlements/me" />} />
+        <Route path="/parent" element={<ParentHomePage />} />
+        <Route path="/parent/child/:id" element={<ChildDetailPage />} />
+        <Route path="/parent/privacy" element={<ParentPrivacyPage />} />
+        <Route path="/parent/plan" element={<ParentPlanPage />} />
       </Route>
 
       {/* Moderator shell */}
@@ -136,10 +152,10 @@ export function AppRouter() {
           </RequireRole>
         }
       >
-        <Route path="/mod" element={<Placeholder title="Moderation" backend="GET /api/safety-escalations/stats/summary" />} />
-        <Route path="/mod/escalations" element={<Placeholder title="Escalations" backend="GET /api/safety-escalations" />} />
-        <Route path="/mod/community" element={<Placeholder title="Community moderation" backend="GET /api/community/moderation/quarantined" />} />
-        <Route path="/mod/interventions" element={<Placeholder title="Interventions" backend="GET /api/admin/interventions" />} />
+        <Route path="/mod" element={<ModerationHomePage />} />
+        <Route path="/mod/escalations" element={<EscalationsPage />} />
+        <Route path="/mod/community" element={<CommunityModerationPage />} />
+        <Route path="/mod/interventions" element={<InterventionsPage />} />
       </Route>
 
       {/* Admin shell */}
@@ -150,13 +166,12 @@ export function AppRouter() {
           </RequireRole>
         }
       >
-        <Route path="/admin" element={<Placeholder title="Admin" backend="GET /api/admin/analytics/overview" />} />
-        <Route path="/admin/content" element={<Placeholder title="Content" backend="/api/admin/content-items" />} />
-        <Route path="/admin/missions" element={<Placeholder title="Missions admin" backend="/api/admin/missions" />} />
-        <Route path="/admin/curriculum" element={<Placeholder title="Curriculum & QA" backend="/api/admin/*" />} />
-        <Route path="/admin/ai" element={<Placeholder title="AI & Safety" backend="/api/admin/prompt-templates, safety-policies" />} />
-        <Route path="/admin/analytics" element={<Placeholder title="Analytics" backend="/api/admin/analytics/*" />} />
-        <Route path="/admin/platform" element={<Placeholder title="Platform" backend="/api/feature-flags, /experiments, /audit/logs" />} />
+        <Route path="/admin" element={<AdminOverviewPage />} />
+        <Route path="/admin/content" element={<AdminContentPage />} />
+        <Route path="/admin/curriculum" element={<AdminCurriculumPage />} />
+        <Route path="/admin/ai" element={<AdminAiSafetyPage />} />
+        <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+        <Route path="/admin/platform" element={<AdminPlatformPage />} />
       </Route>
 
       {/* Fallback — honest 404 wrapped so unauth still works */}

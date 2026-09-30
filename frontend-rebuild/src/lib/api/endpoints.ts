@@ -184,3 +184,64 @@ export const reflectionApi = {
 export const voiceApi = {
   turn: (body: Record<string, unknown>) => apiClient.post('/voice/turn', body),
 }
+
+// ==================== Guardian (parent) ====================
+export const parentsApi = {
+  children: () => apiClient.get('/parents/children'),
+  familySummary: () => apiClient.get('/parents/family-summary'),
+  dashboard: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/dashboard`),
+  progress: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/progress`),
+  activity: (learnerId: string, days = 7) =>
+    apiClient.get(`/parents/children/${learnerId}/activity`, { params: { days } }),
+  reflections: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/reflections`),
+  safety: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/safety`),
+  setTimeLimits: (learnerId: string, body: { dailyMinutes?: number; weeklyMinutes?: number; bedtimeHour?: number }) =>
+    apiClient.post(`/parents/children/${learnerId}/time-limits`, body),
+}
+
+export const legalApi = {
+  consent: (body: Record<string, unknown>) => apiClient.post('/legal/consent', body),
+  getConsent: (learnerId: string) => apiClient.get(`/legal/consent/${learnerId}`),
+  exportData: (learnerId: string) => apiClient.get(`/legal/export/${learnerId}`),
+  requestDelete: (learnerId: string) => apiClient.post(`/legal/delete/${learnerId}`),
+}
+
+export const entitlementsMgmtApi = {
+  subscribe: (planCode: string) => apiClient.post('/entitlements/subscribe', { planCode }),
+  cancel: (subscriptionId: string) => apiClient.post(`/entitlements/cancel/${subscriptionId}`),
+}
+
+// ==================== Moderator ====================
+export const moderationApi = {
+  escalations: () => apiClient.get('/safety-escalations'),
+  escalation: (id: string) => apiClient.get(`/safety-escalations/${id}`),
+  assign: (id: string) => apiClient.patch(`/safety-escalations/${id}/assign`),
+  resolve: (id: string, body: Record<string, unknown>) => apiClient.patch(`/safety-escalations/${id}/resolve`, body),
+  stats: () => apiClient.get('/safety-escalations/stats/summary'),
+  quarantined: () => apiClient.get('/community/moderation/quarantined'),
+  review: (id: string, body: Record<string, unknown>) => apiClient.post(`/community/moderation/review/${id}`, body),
+  interventions: () => apiClient.get('/admin/interventions'),
+  ackIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/acknowledge`),
+  resolveIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/resolve`),
+}
+
+// ==================== Admin ====================
+export const adminApi = {
+  analyticsOverview: () => apiClient.get('/admin/analytics/overview'),
+  analyticsDaily: () => apiClient.get('/admin/analytics/daily-activity'),
+  contentItems: () => apiClient.get('/admin/content-items'),
+  createContentItem: (body: Record<string, unknown>) => apiClient.post('/admin/content-items', body),
+  setContentStatus: (id: string, status: string) => apiClient.patch(`/admin/content-items/${id}/status`, { status }),
+  missions: () => apiClient.get('/admin/missions'),
+  createMission: (body: Record<string, unknown>) => apiClient.post('/admin/missions', body),
+  deleteMission: (id: string) => apiClient.delete(`/admin/missions/${id}`),
+  promptTemplates: () => apiClient.get('/admin/prompt-templates'),
+  safetyPolicies: () => apiClient.get('/admin/safety-policies'),
+  aiEvalRuns: () => apiClient.get('/admin/ai-eval/runs'),
+  misconceptions: () => apiClient.get('/admin/misconceptions'),
+  contentQaFlags: () => apiClient.get('/admin/content-qa/flags'),
+  featureFlags: () => apiClient.get('/feature-flags'),
+  setFeatureFlag: (key: string, enabled: boolean) => apiClient.patch(`/feature-flags/${key}`, { enabled }),
+  experiments: () => apiClient.get('/experiments'),
+  auditLogs: () => apiClient.get('/audit/logs'),
+}
