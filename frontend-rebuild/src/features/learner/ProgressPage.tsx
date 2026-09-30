@@ -3,10 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { masteryApi } from '@/lib/api/endpoints'
 import type { MasteryRecord, DomainMastery } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { masteryLabel } from '@/lib/labels/masteryLabels'
+import { Card, PageHeader, SectionHeader, StatusPill, Progress } from '@/components/ui'
+import { masteryLabel, type MasteryState } from '@/lib/labels/masteryLabels'
 
-/** Progress = mastery overview + by-domain, in child language (no confidence
- * decimals, no MasteryState enum). Real mastery endpoints. */
+function tone(state: MasteryState): 'success' | 'brand' | 'neutral' {
+  if (state === 'MASTERED' || state === 'PROFICIENT') return 'success'
+  if (state === 'NOT_STARTED') return 'neutral'
+  return 'brand'
+}
+
+/** Progress — mastery overview + by-domain, child language (no enums/decimals).
+ * Real mastery endpoints. Design system. */
 export function ProgressPage() {
   const { t } = useTranslation()
 
@@ -28,40 +35,43 @@ export function ProgressPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-2xl font-extrabold text-ink-900">{t('learner.progressTitle')}</h1>
+      <PageHeader title={t('learner.progressTitle')} />
 
       {byDomain.data && byDomain.data.length > 0 && (
         <section>
-          <h2 className="mb-3 font-display text-lg font-bold text-ink-900">{t('learner.masteryBy')}</h2>
+          <SectionHeader title={t('learner.masteryBy')} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {byDomain.data.map((d) => (
-              <div key={d.domain} className="rounded-card border border-line bg-white p-5 shadow-soft">
-                <h3 className="font-display font-bold text-ink-900">{d.domain}</h3>
-                <p className="mt-2 text-sm text-ink-500">
-                  {d.masteredCount} / {d.totalCompetencies} mastered
-                </p>
-              </div>
-            ))}
+            {byDomain.data.map((d) => {
+              const pct = d.totalCompetencies > 0 ? (d.masteredCount / d.totalCompetencies) * 100 : 0
+              return (
+                <Card key={d.domain}>
+                  <h3 className="font-display font-bold text-ink-900">{d.domain}</h3>
+                  <p className="mt-1 text-sm text-ink-500">
+                    {d.masteredCount} / {d.totalCompetencies}
+                  </p>
+                  <div className="mt-3">
+                    <Progress value={pct} label={`${d.domain} mastery`} />
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </section>
       )}
 
       <section>
+        <SectionHeader title={t('learner.masteryBy')} />
         <div className="space-y-2">
           {records.map((r) => (
-            <div key={r.id} className="flex items-center justify-between rounded-control border border-line bg-white px-4 py-3">
+            <Card key={r.id} className="flex items-center justify-between">
               <span className="min-w-0">
-                <span className="block truncate font-medium text-ink-900">
-                  {r.competency?.name ?? r.competencyId}
-                </span>
+                <span className="block truncate font-medium text-ink-900">{r.competency?.name ?? r.competencyId}</span>
                 {r.competency?.skill?.domain?.name && (
                   <span className="block text-xs text-ink-400">{r.competency.skill.domain.name}</span>
                 )}
               </span>
-              <span className="rounded-pill bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
-                {masteryLabel(r.state)}
-              </span>
-            </div>
+              <StatusPill tone={tone(r.state)}>{masteryLabel(r.state)}</StatusPill>
+            </Card>
           ))}
         </div>
       </section>

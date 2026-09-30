@@ -2,27 +2,27 @@ import { lazy, Suspense, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { missionsApi } from '@/lib/api/endpoints'
 import type { MissionRun, ActivitySummary, SubmitActivityResult } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Button } from '@/components/ui/Button'
+import { Card, Button } from '@/components/ui'
+import { cn } from '@/lib/utils/cn'
 import { ActivityView } from './activities/ActivityView'
 
-// Coding runtime is dynamically imported ONLY when a CODE activity mounts, so
-// the heavy sandbox never loads on non-coding missions (perf gate).
+// Coding runtime loads only when a CODE activity mounts (perf gate).
 const CodingActivityPanel = lazy(() =>
   import('./activities/CodingActivityPanel').then((m) => ({ default: m.CodingActivityPanel })),
 )
 
-// Normalized grade for the UI (works for both the evaluator submit result and
-// the coding-sandbox result).
 interface GradeView {
   correct: boolean
   feedback?: string | null
 }
 
-/** Mission player: walks activities, submits each, then completes. Real
- * missions run/submit/complete + coding-sandbox for CODE. */
+/** Mission player — walks activities, submits, completes. Design system + real
+ * backend shapes (run.mission.activities; submit → evaluation.correct/feedback;
+ * coding via lazy sandbox panel). */
 export function MissionPlayerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -43,7 +43,6 @@ export function MissionPlayerPage() {
   if (isError) return <ErrorState onRetry={() => void refetch()} />
   if (!run) return <EmptyState />
 
-  // Activities live under run.mission.activities (real backend shape).
   const activities = run.mission?.activities ?? []
   const activity: ActivitySummary | undefined = activities[index]
   const isLast = index >= activities.length - 1
@@ -52,7 +51,6 @@ export function MissionPlayerPage() {
     if (!activity) return
     setSubmitting(true)
     try {
-      // Grade is in `evaluation` (correct/score/feedback), not top-level.
       const res = (await missionsApi.submit(runId, { activityId: activity.id, response })).data as SubmitActivityResult
       setResult({ correct: res.evaluation?.correct ?? false, feedback: res.evaluation?.feedback })
     } catch {
@@ -79,11 +77,12 @@ export function MissionPlayerPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <div className="flex items-center gap-2" aria-hidden>
+      {/* Progress dots */}
+      <div className="flex items-center gap-1.5" aria-hidden>
         {activities.map((a, i) => (
           <span
             key={a.id}
-            className={`h-1.5 flex-1 rounded-pill ${i < index ? 'bg-brand-500' : i === index ? 'bg-brand-300' : 'bg-line'}`}
+            className={cn('h-1.5 flex-1 rounded-pill', i < index ? 'bg-brand-500' : i === index ? 'bg-brand-300' : 'bg-line')}
           />
         ))}
       </div>
@@ -106,18 +105,25 @@ export function MissionPlayerPage() {
       )}
 
       {result && (
-        <div
-          role="status"
-          className={`rounded-card border p-4 ${result.correct ? 'border-success-500 bg-success-100' : 'border-warning-500 bg-warning-100'}`}
+        <Card
+          className={cn(
+            'border-2',
+            result.correct ? 'border-success-500 bg-success-100' : 'border-warning-500 bg-warning-100',
+          )}
         >
-          <p className="font-medium text-ink-900">
+          <p className="inline-flex items-center gap-2 font-display font-bold text-ink-900">
+            {result.correct ? (
+              <CheckCircle2 className="h-5 w-5 text-success-700" aria-hidden />
+            ) : (
+              <XCircle className="h-5 w-5 text-warning-700" aria-hidden />
+            )}
             {result.correct ? t('learner.correct') : t('learner.tryAgain')}
           </p>
           {result.feedback && <p className="mt-1 text-sm text-ink-600">{result.feedback}</p>}
           <Button className="mt-3" onClick={next} loading={completing}>
             {isLast ? t('learner.missionComplete') : t('common.next')}
           </Button>
-        </div>
+        </Card>
       )}
     </div>
   )
