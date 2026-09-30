@@ -18,6 +18,19 @@ import { MissionDetailPage } from '@/features/learner/MissionDetailPage'
 import { MissionPlayerPage } from '@/features/learner/MissionPlayerPage'
 import { PracticePage } from '@/features/learner/PracticePage'
 import { ProgressPage } from '@/features/learner/ProgressPage'
+import { ProjectsPage } from '@/features/learner/ProjectsPage'
+import { ProjectDetailPage } from '@/features/learner/ProjectDetailPage'
+import { PortfolioPage } from '@/features/learner/PortfolioPage'
+import { CreativityPage } from '@/features/learner/CreativityPage'
+import { CompanionsPage } from '@/features/learner/CompanionsPage'
+import { CommunityPage } from '@/features/learner/CommunityPage'
+import { CredentialsPage } from '@/features/learner/CredentialsPage'
+import { RewardsPage } from '@/features/learner/RewardsPage'
+import { SettingsPage } from '@/features/learner/SettingsPage'
+import { SearchPage } from '@/features/learner/SearchPage'
+import { NotificationsPage } from '@/features/learner/NotificationsPage'
+import { StoriesPage, StoryReaderPage } from '@/features/learner/StoriesPage'
+import { SimulationsPage } from '@/features/learner/SimulationsPage'
 
 /** `/` — public landing for signed-out visitors; role home for signed-in. */
 function RootRoute() {
@@ -85,14 +98,20 @@ export function AppRouter() {
         <Route path="/app/runs/:runId" element={<MissionPlayerPage />} />
         <Route path="/app/practice" element={<PracticePage />} />
         <Route path="/app/progress" element={<ProgressPage />} />
-        <Route path="/app/projects" element={<Placeholder title="Projects" backend="GET /api/projects/my" />} />
-        <Route path="/app/portfolio" element={<Placeholder title="Portfolio" backend="GET /api/projects/portfolio/:learnerId" />} />
-        <Route path="/app/create" element={<Placeholder title="Creativity studio" backend="GET /api/creativity/prompts" />} />
-        <Route path="/app/companions" element={<Placeholder title="Companions" backend="GET /api/characters" />} />
-        <Route path="/app/community" element={<Placeholder title="Community" backend="GET /api/community/feed" />} />
-        <Route path="/app/credentials" element={<Placeholder title="Credentials" backend="GET /api/credentials/me" />} />
-        <Route path="/app/rewards" element={<Placeholder title="Rewards" backend="GET /api/gamification/*" />} />
-        <Route path="/app/settings" element={<Placeholder title="Settings" backend="GET /api/auth/me" />} />
+        <Route path="/app/projects" element={<ProjectsPage />} />
+        <Route path="/app/projects/:id" element={<ProjectDetailPage />} />
+        <Route path="/app/portfolio" element={<PortfolioPage />} />
+        <Route path="/app/create" element={<CreativityPage />} />
+        <Route path="/app/companions" element={<CompanionsPage />} />
+        <Route path="/app/community" element={<CommunityPage />} />
+        <Route path="/app/credentials" element={<CredentialsPage />} />
+        <Route path="/app/rewards" element={<RewardsPage />} />
+        <Route path="/app/settings" element={<SettingsPage />} />
+        <Route path="/app/search" element={<SearchPage />} />
+        <Route path="/app/notifications" element={<NotificationsPage />} />
+        <Route path="/app/stories" element={<StoriesPage />} />
+        <Route path="/app/stories/:id" element={<StoryReaderPage />} />
+        <Route path="/app/simulations" element={<SimulationsPage />} />
       </Route>
 
       {/* Guardian shell */}

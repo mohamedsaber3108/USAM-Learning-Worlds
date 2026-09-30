@@ -106,4 +106,81 @@ export const charactersApi = {
 // ==================== Creativity ====================
 export const creativityApi = {
   getPrompts: () => apiClient.get('/creativity/prompts'),
+  getPrompt: (slug: string) => apiClient.get(`/creativity/prompts/${slug}`),
+  submit: (body: { promptId?: string; title?: string; content: string }) =>
+    apiClient.post('/creativity/submissions', body),
+  mySubmissions: () => apiClient.get('/creativity/submissions/mine'),
+  gallery: () => apiClient.get('/creativity/gallery'),
+}
+
+// ==================== Content libraries (consumed inside Learn) ============
+export const storiesApi = {
+  list: () => apiClient.get('/stories'),
+  getById: (id: string) => apiClient.get(`/stories/${id}`),
+}
+export const simulationsApi = {
+  list: () => apiClient.get('/simulations'),
+  getBySlug: (slug: string) => apiClient.get(`/simulations/${slug}`),
+}
+export const visualLanguageApi = {
+  list: () => apiClient.get('/visual-language'),
+  getBySlug: (slug: string) => apiClient.get(`/visual-language/${slug}`),
+}
+export const crossCurricularApi = {
+  byCategory: (category: string) => apiClient.get(`/cross-curricular/${category}`),
+  getConcept: (category: string, slug: string) => apiClient.get(`/cross-curricular/${category}/${slug}`),
+}
+export const thinkingApi = {
+  problemSolving: () => apiClient.get('/problem-solving'),
+  computational: () => apiClient.get('/computational-thinking'),
+  critical: () => apiClient.get('/critical-thinking'),
+}
+
+// ==================== Credentials ====================
+export const credentialsApi = {
+  mine: () => apiClient.get('/credentials/me'),
+  verify: (uid: string) => apiClient.get(`/credentials/${uid}`),
+}
+
+// ==================== Notifications ====================
+export const notificationsApi = {
+  list: () => apiClient.get('/notifications'),
+  unreadCount: () => apiClient.get('/notifications/unread-count'),
+  markRead: (id: string) => apiClient.post(`/notifications/${id}/read`),
+  markAllRead: () => apiClient.post('/notifications/read-all'),
+}
+
+// ==================== Search ====================
+export const searchApi = {
+  query: (q: string) => apiClient.get('/search', { params: { q } }),
+}
+
+// ==================== Gamification (rewards) ====================
+export const rewardsApi = {
+  progression: () => apiClient.get('/gamification/progression'),
+  achievements: () => apiClient.get('/gamification/achievements'),
+  leaderboard: () => apiClient.get('/gamification/leaderboard'),
+  streak: () => apiClient.get('/gamification/streak'),
+  cosmetics: () => apiClient.get('/gamification/cosmetics'),
+  equipCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/equip`),
+  unlockCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/unlock`),
+}
+
+// ==================== Community ====================
+export const communityApi = {
+  feed: () => apiClient.get('/community/feed'),
+  trending: () => apiClient.get('/community/trending'),
+  report: (body: { targetType: string; targetId: string; reason: string }) =>
+    apiClient.post('/community/report', body),
+}
+
+// ==================== Reflection ====================
+export const reflectionApi = {
+  prompts: () => apiClient.get('/reflection/prompts'),
+  respond: (body: Record<string, unknown>) => apiClient.post('/reflection/responses', body),
+}
+
+// ==================== Voice (PROVIDER-GATED) ====================
+export const voiceApi = {
+  turn: (body: Record<string, unknown>) => apiClient.post('/voice/turn', body),
 }
