@@ -7,6 +7,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { LoadingState } from '@/components/common/States'
 import { LandingPage } from '@/features/public/LandingPage'
 import { PricingPage } from '@/features/public/PricingPage'
+import { HowItWorksPage, ForFamiliesPage, SafetyPage, LegalPage } from '@/features/public/ContentPages'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
@@ -88,6 +89,10 @@ export function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/how-it-works" element={<HowItWorksPage />} />
+      <Route path="/for-families" element={<ForFamiliesPage />} />
+      <Route path="/safety" element={<SafetyPage />} />
+      <Route path="/legal" element={<LegalPage />} />
       <Route path="/verify/:uid" element={<VerifyCredentialPage />} />
       <Route
         path="/onboarding"

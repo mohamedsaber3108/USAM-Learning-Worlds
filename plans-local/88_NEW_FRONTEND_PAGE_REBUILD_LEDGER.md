@@ -29,18 +29,18 @@ Columns: Route · Role · Backend · Provisional file · Rebuilt-from-blank · R
 | Route | Provisional file | Rebuilt-from-blank | Real API | Status |
 | --- | --- | --- | --- | --- |
 | `/` Landing | public/LandingPage.tsx | **YES — rebuilt from blank** | static | REBUILT (preview-verify pending owner) |
-| `/pricing` | public/PricingPage.tsx | NO | plans (verified) | AUDITING |
-| `/login` | auth/LoginPage.tsx | NO | auth/login (verified) | AUDITING |
-| `/signup` | auth/SignupPage.tsx | NO | auth/register (verified) | AUDITING |
+| `/pricing` | public/PricingPage.tsx | YES — rebuilt on DS + public shell | plans (verified) | REBUILT |
+| `/login` | auth/LoginPage.tsx | YES — rebuilt on Field/Card/AuthShell | auth/login (verified) | REBUILT |
+| `/signup` | auth/SignupPage.tsx | YES — rebuilt on Field/Card/AuthShell | auth/register (verified) | REBUILT |
 | `/verify/:uid` | public/VerifyCredentialPage.tsx | NO | credentials/:uid | AUDITING |
-| `/how-it-works` | (none) | required — BUILD | static | NOT_STARTED |
-| `/for-families` | (none) | required — BUILD | static | NOT_STARTED |
-| `/safety` | (none) | required — BUILD | static | NOT_STARTED |
-| `/legal` privacy center | (none) | required — BUILD | legal | NOT_STARTED |
+| `/how-it-works` | public/ContentPages.tsx | YES — built | static | REBUILT |
+| `/for-families` | public/ContentPages.tsx | YES — built | static | REBUILT |
+| `/safety` | public/ContentPages.tsx | YES — built | static | REBUILT |
+| `/legal` privacy center | public/ContentPages.tsx | YES — built | legal (static copy) | REBUILT |
 | `*` 404 | router NotFound | NO | — | AUDITING |
 
 ### Onboarding
-| `/onboarding` | onboarding/OnboardingPage.tsx | NO | age-band/preferences/consent (verified) | AUDITING |
+| `/onboarding` | onboarding/OnboardingPage.tsx | YES — rebuilt on Stepper/Card/AuthShell | age-band/preferences (verified) | REBUILT |
 
 ### Learner (shell + families)
 | Route | Provisional file | Status |

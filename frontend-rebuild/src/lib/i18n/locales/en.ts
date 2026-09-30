@@ -86,6 +86,31 @@ export const en = {
     footerPrivacy: 'Privacy',
     footerTerms: 'Terms',
     footerSafety: 'Safety',
+    // How it works page
+    howTitle: 'How USAM works',
+    howSubtitle: 'A clear path from first spark to proven mastery.',
+    // For families page
+    familiesTitle: 'For families',
+    familiesSubtitle: 'Understand your child’s real learning — and keep them safe.',
+    // Safety page
+    safetyTitle: 'Safety & privacy, by design',
+    safetySubtitle: 'A learning space built for children first.',
+    safetyConsent: 'Guardian consent',
+    safetyConsentDesc: 'Parents approve accounts and control data — COPPA/GDPR-K aligned.',
+    safetyPrivacy: 'Privacy first',
+    safetyPrivacyDesc: 'We collect only what learning needs, and never sell data.',
+    safetyOversight: 'Human oversight of AI',
+    safetyOversightDesc: 'AI guidance is reviewed; important decisions stay with people.',
+    safetyModeration: 'Safe community',
+    safetyModerationDesc: 'Shared work is moderated; reporting is one tap away.',
+    // Legal center
+    legalTitle: 'Privacy & legal',
+    legalSubtitle: 'How we protect your family’s data.',
+    legalPrivacyHeading: 'Privacy policy',
+    legalPrivacyBody: 'We collect the minimum needed to run learning, store it securely, and give guardians control to export or delete their child’s data at any time.',
+    legalTermsHeading: 'Terms of use',
+    legalTermsBody: 'USAM is a learning platform for children used under guardian supervision. Accounts are personal and must not be shared.',
+    legalContact: 'Questions about privacy? Contact your account guardian settings or support.',
   },
   auth: {
     loginTitle: 'Welcome back',
