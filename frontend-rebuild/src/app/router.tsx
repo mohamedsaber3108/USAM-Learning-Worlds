@@ -7,7 +7,10 @@ import { AppShell } from '@/components/layout/AppShell'
 import { Placeholder } from '@/components/common/Placeholder'
 import { LoadingState } from '@/components/common/States'
 import { LandingPage } from '@/features/public/LandingPage'
+import { PricingPage } from '@/features/public/PricingPage'
 import { LoginPage } from '@/features/auth/LoginPage'
+import { SignupPage } from '@/features/auth/SignupPage'
+import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 
 /** `/` — public landing for signed-out visitors; role home for signed-in. */
 function RootRoute() {
@@ -48,10 +51,17 @@ export function AppRouter() {
       {/* Public */}
       <Route path="/" element={<RootRoute />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<Placeholder title="Sign up" backend="POST /api/auth/register" />} />
-      <Route path="/pricing" element={<Placeholder title="Pricing" backend="GET /api/entitlements/plans" />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
       <Route path="/verify/:uid" element={<Placeholder title="Verify credential" backend="GET /api/credentials/:uid" />} />
-      <Route path="/onboarding" element={<Placeholder title="Onboarding" backend="PATCH /api/auth/me/age-band" />} />
+      <Route
+        path="/onboarding"
+        element={
+          <RequireRole allow={['LEARNER']}>
+            <OnboardingPage />
+          </RequireRole>
+        }
+      />
 
       {/* Learner shell */}
       <Route

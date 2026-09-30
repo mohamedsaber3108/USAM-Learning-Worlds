@@ -160,7 +160,7 @@ Full per-endpoint inventory lives in
 | 6 | Legacy frontend audit + classification | AI | P1 | PRODUCTION_READY | plans-local/79_DEPLOYED_FRONTEND_LEGACY_AUDIT.md (~55 routes classified) |
 | 7 | FINAL IA + navigation + design system + motion | F/G | P1 | PRODUCTION_READY | docs/frontend/FINAL_INFORMATION_ARCHITECTURE.md + FINAL_USAM_DESIGN_SYSTEM.md |
 | 8 | Clean new frontend foundation (isolated tree) | E | P0 | TESTING | frontend-rebuild/ scaffolded; tsc clean + vite build 182 modules OK. Typed client+auth store+role router/shell+DS primitives+i18n EN/AR RTL. Real Landing/Login; rest honest placeholders |
-| 9 | Landing + auth + onboarding (new FE) | H/I/J | P1 | NOT_STARTED | |
+| 9 | Landing + auth + onboarding (new FE) | H/I/J | P1 | VISUAL_QA | Landing/Pricing/Login/Signup/Onboarding built on real APIs w/ states+EN/AR+responsive+a11y; tsc+build green (186 modules). Live browser QA + 1ae4dcd regression-compare = owner-run (tracked in 81) |
 | 10 | Learner experience + learning loop (new FE) | K/L/M/N/O | P1 | NOT_STARTED | |
 | 11 | Parent → moderator → admin surfaces (new FE) | Q/W/X | P1 | NOT_STARTED | |
 | 12 | Cross-cutting gates + coverage matrices (81–84) | Z/AA/AB/AC/AE/AF | P1 | NOT_STARTED | |
