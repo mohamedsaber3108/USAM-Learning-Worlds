@@ -28,6 +28,7 @@
     "seed:coding:vertical": "ts-node -r tsconfig-paths/register prisma/seeds/seed-coding-vertical-slice.ts",
     "seed:ai-literacy:vertical": "ts-node -r tsconfig-paths/register prisma/seeds/seed-ai-literacy-vertical-slice.ts",
     "seed:creativity:vertical": "ts-node -r tsconfig-paths/register prisma/seeds/seed-creativity-vertical-slice.ts",
+    "seed:creativity:prompts": "ts-node -r tsconfig-paths/register prisma/seeds/seed-creativity-prompts.ts",
     "check:migrations": "ts-node -r tsconfig-paths/register scripts/check-migrations-applied.ts",
     "check:enum-drift": "ts-node -r tsconfig-paths/register scripts/check-enum-drift.ts",
     "embeddings:backfill": "ts-node -r tsconfig-paths/register scripts/backfill-concept-embeddings.ts",
