@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { adminApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
+import { Card, PageHeader } from '@/components/ui'
 
-/** Admin operations overview — real /admin/analytics/overview. */
+/** Admin operations overview — real /admin/analytics/overview. DS. */
 export function AdminOverviewPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({

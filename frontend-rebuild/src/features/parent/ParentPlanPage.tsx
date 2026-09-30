@@ -2,18 +2,17 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { entitlementsApi, entitlementsMgmtApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState, EmptyState } from '@/components/common/States'
-import { Card, PageHeader, SectionHeader } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { Card, PageHeader, SectionHeader, Button, StatusPill, useToast } from '@/components/ui'
 
 interface Plan { id: string; code: string; name: string; priceCents: number; currency?: string }
 interface MyEntitlement { plan?: { code: string; name: string }; subscription?: { id: string; status: string } | null }
 
-/** Plan / subscription. Real entitlements. Honest: activation goes through the
- * manual provider (no live payment gateway) — no fake checkout UI. */
+/** Plan / subscription. Real entitlements. Honest: manual provider, no live
+ * payment gateway — no fake checkout. DS. */
 export function ParentPlanPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
+  const toast = useToast()
 
   const mine = useQuery({
     queryKey: ['entitlements-me'],
@@ -25,12 +24,22 @@ export function ParentPlanPage() {
   })
 
   async function activate(code: string) {
-    await entitlementsMgmtApi.subscribe(code)
-    await qc.invalidateQueries({ queryKey: ['entitlements-me'] })
+    try {
+      await entitlementsMgmtApi.subscribe(code)
+      toast.show(t('parent.activatePlan'), 'success')
+      await qc.invalidateQueries({ queryKey: ['entitlements-me'] })
+    } catch {
+      toast.show(t('states.error'), 'error')
+    }
   }
-  async function cancel(id: string) {
-    await entitlementsMgmtApi.cancel(id)
-    await qc.invalidateQueries({ queryKey: ['entitlements-me'] })
+  async function cancel(subId: string) {
+    try {
+      await entitlementsMgmtApi.cancel(subId)
+      toast.show(t('parent.cancelPlan'), 'success')
+      await qc.invalidateQueries({ queryKey: ['entitlements-me'] })
+    } catch {
+      toast.show(t('states.error'), 'error')
+    }
   }
 
   if (mine.isLoading || plans.isLoading) return <LoadingState />
@@ -47,7 +56,7 @@ export function ParentPlanPage() {
         <p className="text-xs uppercase tracking-wide text-ink-400">{t('parent.currentPlan')}</p>
         <div className="mt-1 flex items-center gap-3">
           <p className="font-display text-xl font-bold text-ink-900">{mine.data?.plan?.name ?? 'Free'}</p>
-          {sub?.status && <Badge tone="brand">{sub.status}</Badge>}
+          {sub?.status && <StatusPill tone="success">{sub.status}</StatusPill>}
         </div>
         {sub?.id && (
           <Button className="mt-3" size="sm" variant="ghost" onClick={() => cancel(sub.id)}>
@@ -71,12 +80,7 @@ export function ParentPlanPage() {
                     ? 'Free'
                     : new Intl.NumberFormat(undefined, { style: 'currency', currency: p.currency || 'USD' }).format(p.priceCents / 100)}
                 </p>
-                <Button
-                  className="mt-3 w-full"
-                  size="sm"
-                  disabled={p.code === currentCode}
-                  onClick={() => activate(p.code)}
-                >
+                <Button className="mt-3 w-full" size="sm" disabled={p.code === currentCode} onClick={() => activate(p.code)}>
                   {p.code === currentCode ? '✓' : t('parent.activatePlan')}
                 </Button>
               </Card>

@@ -2,11 +2,12 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { adminApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader, SectionHeader } from '@/components/ui/Card'
+import { Card, PageHeader, SectionHeader } from '@/components/ui'
 
 interface DailyPoint { date: string; count: number }
 
-/** Analytics — overview metrics + daily activity (real /admin/analytics/*). */
+/** Analytics — overview metrics + daily activity bar chart (real
+ * /admin/analytics/*). DS. */
 export function AdminAnalyticsPage() {
   const { t } = useTranslation()
   const overview = useQuery({

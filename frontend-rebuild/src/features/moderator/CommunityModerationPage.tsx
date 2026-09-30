@@ -2,8 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { moderationApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, PageHeader, Button, useToast } from '@/components/ui'
 
 interface Quarantined {
   id: string
@@ -12,10 +11,11 @@ interface Quarantined {
 }
 
 /** Community moderation queue — review quarantined content. Real
- * /community/moderation/quarantined + review/:id. */
+ * /community/moderation/quarantined + review/:id. DS. */
 export function CommunityModerationPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
+  const toast = useToast()
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['mod-quarantined'],
     queryFn: async () => (await moderationApi.quarantined()).data as Quarantined[],
@@ -23,6 +23,7 @@ export function CommunityModerationPage() {
 
   async function review(id: string, decision: 'approve' | 'remove') {
     await moderationApi.review(id, { decision })
+    toast.show(decision === 'approve' ? t('mod.approve') : t('mod.remove'), 'success')
     await qc.invalidateQueries({ queryKey: ['mod-quarantined'] })
   }
 
