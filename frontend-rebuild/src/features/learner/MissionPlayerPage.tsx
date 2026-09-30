@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { missionsApi } from '@/lib/api/endpoints'
-import type { MissionRun, ActivitySummary } from '@/lib/api/learning-types'
+import type { MissionRun, ActivitySummary, SubmitActivityResult } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Button } from '@/components/ui/Button'
 import { ActivityView } from './activities/ActivityView'
@@ -14,9 +14,10 @@ const CodingActivityPanel = lazy(() =>
   import('./activities/CodingActivityPanel').then((m) => ({ default: m.CodingActivityPanel })),
 )
 
-interface SubmitResult {
-  success: boolean | null
-  score: number | null
+// Normalized grade for the UI (works for both the evaluator submit result and
+// the coding-sandbox result).
+interface GradeView {
+  correct: boolean
   feedback?: string | null
 }
 
@@ -28,7 +29,7 @@ export function MissionPlayerPage() {
   const { runId = '' } = useParams<{ runId: string }>()
 
   const [index, setIndex] = useState(0)
-  const [result, setResult] = useState<SubmitResult | null>(null)
+  const [result, setResult] = useState<GradeView | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [completing, setCompleting] = useState(false)
 
@@ -42,7 +43,8 @@ export function MissionPlayerPage() {
   if (isError) return <ErrorState onRetry={() => void refetch()} />
   if (!run) return <EmptyState />
 
-  const activities = run.activities ?? []
+  // Activities live under run.mission.activities (real backend shape).
+  const activities = run.mission?.activities ?? []
   const activity: ActivitySummary | undefined = activities[index]
   const isLast = index >= activities.length - 1
 
@@ -50,10 +52,11 @@ export function MissionPlayerPage() {
     if (!activity) return
     setSubmitting(true)
     try {
-      const res = (await missionsApi.submit(runId, { activityId: activity.id, response })).data as SubmitResult
-      setResult(res)
+      // Grade is in `evaluation` (correct/score/feedback), not top-level.
+      const res = (await missionsApi.submit(runId, { activityId: activity.id, response })).data as SubmitActivityResult
+      setResult({ correct: res.evaluation?.correct ?? false, feedback: res.evaluation?.feedback })
     } catch {
-      setResult({ success: false, score: 0, feedback: t('states.error') })
+      setResult({ correct: false, feedback: t('states.error') })
     } finally {
       setSubmitting(false)
     }
@@ -92,7 +95,7 @@ export function MissionPlayerPage() {
             <CodingActivityPanel
               runId={runId}
               activityId={activity.id}
-              onGraded={(r) => setResult(r)}
+              onGraded={(r) => setResult({ correct: Boolean(r.success), feedback: r.feedback })}
             />
           </Suspense>
         ) : (
@@ -105,10 +108,10 @@ export function MissionPlayerPage() {
       {result && (
         <div
           role="status"
-          className={`rounded-card border p-4 ${result.success ? 'border-success-500 bg-success-100' : 'border-warning-500 bg-warning-100'}`}
+          className={`rounded-card border p-4 ${result.correct ? 'border-success-500 bg-success-100' : 'border-warning-500 bg-warning-100'}`}
         >
           <p className="font-medium text-ink-900">
-            {result.success ? t('learner.correct') : t('learner.tryAgain')}
+            {result.correct ? t('learner.correct') : t('learner.tryAgain')}
           </p>
           {result.feedback && <p className="mt-1 text-sm text-ink-600">{result.feedback}</p>}
           <Button className="mt-3" onClick={next} loading={completing}>

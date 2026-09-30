@@ -26,6 +26,8 @@ export interface ActivitySummary {
   content: Record<string, unknown>
 }
 
+// GET /missions/runs/:runId returns { ...run, mission: { ...mission, activities } }.
+// Activities live under run.mission.activities (NOT run.activities).
 export interface MissionRun {
   id: string
   missionId: string
@@ -34,8 +36,8 @@ export interface MissionRun {
     id: string
     title: string
     description?: string
+    activities: ActivitySummary[]
   }
-  activities: ActivitySummary[]
   attempts: Array<{
     id: string
     activityId: string
@@ -43,6 +45,15 @@ export interface MissionRun {
     score: number | null
     feedback?: string | null
   }>
+}
+
+// POST /missions/runs/:runId/submit returns { attempt, evaluation, activity, diagnosticOnly }.
+// The grade is in `evaluation` (correct/score/feedback), NOT top-level.
+export interface SubmitActivityResult {
+  attempt: { id: string; success: boolean | null; score: number | null; feedback?: string | null }
+  evaluation: { correct: boolean; score: number; feedback: string; partialCredit?: boolean }
+  activity: { id: string; title: string; type: string; assessmentPurpose: string }
+  diagnosticOnly: boolean
 }
 
 export interface MasteryRecord {
