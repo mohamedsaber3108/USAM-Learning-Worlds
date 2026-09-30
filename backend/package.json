@@ -26,6 +26,7 @@
     "seed:english:vocabulary": "ts-node -r tsconfig-paths/register prisma/seeds/seed-english-vocabulary-slice.ts",
     "seed:coding:concepts": "ts-node -r tsconfig-paths/register prisma/seeds/seed-coding-concepts.ts",
     "seed:coding:vertical": "ts-node -r tsconfig-paths/register prisma/seeds/seed-coding-vertical-slice.ts",
+    "seed:coding:breadth": "ts-node -r tsconfig-paths/register prisma/seeds/seed-coding-breadth-a1.ts",
     "seed:ai-literacy:vertical": "ts-node -r tsconfig-paths/register prisma/seeds/seed-ai-literacy-vertical-slice.ts",
     "seed:creativity:vertical": "ts-node -r tsconfig-paths/register prisma/seeds/seed-creativity-vertical-slice.ts",
     "seed:creativity:prompts": "ts-node -r tsconfig-paths/register prisma/seeds/seed-creativity-prompts.ts",
