@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/lib/auth/authStore'
-import { RequireAuth, RequireRole, roleHome } from './guards'
+import { RequireRole, roleHome } from './guards'
 import { AppShell } from '@/components/layout/AppShell'
 import { LoadingState } from '@/components/common/States'
 import { LandingPage } from '@/features/public/LandingPage'
@@ -179,15 +179,8 @@ export function AppRouter() {
         <Route path="/admin/platform" element={<AdminPlatformPage />} />
       </Route>
 
-      {/* Fallback — honest 404 wrapped so unauth still works */}
-      <Route
-        path="*"
-        element={
-          <RequireAuth>
-            <NotFound />
-          </RequireAuth>
-        }
-      />
+      {/* Fallback — honest 404 for everyone (auth and unauth); no silent bounce */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }

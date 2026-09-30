@@ -159,12 +159,15 @@ Full per-endpoint inventory lives in
 | 5 | PAGE_AND_FLOW_INVENTORY + ROUTE_REGISTRY + traceability | AJ/E | P1 | PRODUCTION_READY | docs/frontend/FINAL_PAGE_AND_FLOW_INVENTORY.md + FINAL_ROUTE_REGISTRY.md + BACKEND_FRONTEND_TRACEABILITY_MATRIX.md |
 | 6 | Legacy frontend audit + classification | AI | P1 | PRODUCTION_READY | plans-local/79_DEPLOYED_FRONTEND_LEGACY_AUDIT.md (~55 routes classified) |
 | 7 | FINAL IA + navigation + design system + motion | F/G | P1 | PRODUCTION_READY | docs/frontend/FINAL_INFORMATION_ARCHITECTURE.md + FINAL_USAM_DESIGN_SYSTEM.md |
-| 8 | Clean new frontend foundation (isolated tree) | E | P0 | TESTING | frontend-rebuild/ scaffolded; tsc clean + vite build 182 modules OK. Typed client+auth store+role router/shell+DS primitives+i18n EN/AR RTL. Real Landing/Login; rest honest placeholders |
-| 9 | Landing + auth + onboarding (new FE) | H/I/J | P1 | VISUAL_QA | Landing/Pricing/Login/Signup/Onboarding built on real APIs w/ states+EN/AR+responsive+a11y; tsc+build green (186 modules). Live browser QA + 1ae4dcd regression-compare = owner-run (tracked in 81) |
-| 10 | Learner experience + learning loop (new FE) | K/L/M/N/O | P1 | VISUAL_QA | FULL learner universe on real APIs: Home, Learn, DomainPath, Mission detail+player (all activity types + coding trust loop lazy chunk), Practice, Progress, Projects+detail, Portfolio, Creativity, Companions, Community, Credentials, Rewards, Settings, Search, Notifications, Stories+reader, Simulations, Voice(gated). tsc+build green. ZERO placeholders. Owner-run live QA pending |
-| 11 | Parent → moderator → admin surfaces (new FE) | Q/W/X | P1 | VISUAL_QA | Guardian: ParentHome, ChildDetail(progress/activity/reflections/safety/controls tabs), Privacy(export/delete), Plan(activate/cancel, honest no-payment). Moderator: console, escalations(assign/resolve), community moderation(approve/remove), interventions(ack/resolve). Admin 6 task areas: Overview, Content(CMS DRAFT→PUBLISHED→ARCHIVED via real status endpoint), Curriculum&QA, AI&Safety, Analytics(+daily chart), Platform(feature-flag toggle/experiments/audit). tsc+build green. Owner-run live QA pending |
-| 12 | Cross-cutting gates + coverage matrices (81–84) | Z/AA/AB/AC/AE/AF | P1 | TESTING | vitest harness (5 tests green: render/DS/i18n-RTL), home-bundle perf gate (coding runtime isolated), tsc+build green. Coverage matrices 83 (API→FE, MISSING_FRONTEND=0 for required) + 84 (module→FE, all 42 classified, none forgotten) + 82 (E2E journeys). a11y baseline in components (focus-visible, roles, reduced-motion); full browser a11y/RTL/responsive = owner-run (81) |
-| 13 | Switch to new FE, delete legacy, deploy, verify, final audit | AI/AG/AH | P0 | BLOCKED_EXTERNAL | 99 audit DONE (code-side switch-ready: 41 routes, 0 placeholders, tests+build+bundle-gate green, reconciliation clean). Remaining = OWNER-RUN: stage deploy + browser QA + E2E vs 1ae4dcd + traffic switch + delete legacy frontend/. No live backend in this workspace |
+| R1 | Rebuild task 1 — reference research + rebuild ledger (88) | E | P0 | PRODUCTION_READY | docs/research/FINAL_FRONTEND_REFERENCE_STUDY.md + ledger 88 (3eaf104) |
+| R2 | Rebuild task 2 — design-system primitives IN CODE | F/G | P0 | PRODUCTION_READY | WHITE/GREEN/BLACK tokens + primitives; no Radix/default-shadcn (1d86f0b) |
+| R3 | Rebuild task 3 — Landing from blank + public nav/footer | H | P0 | PRODUCTION_READY | ecosystem-comprehension Landing (rejected→rebuilt); 6a0b522 |
+| R4 | Rebuild task 4 — auth + onboarding + public pages | I/J | P0 | PRODUCTION_READY | login/signup/onboarding-stepper + how-it-works/for-families/safety/legal (e29f84f) |
+| R5 | Rebuild task 5 — learner shell + Home + Learn hub | K | P0 | PRODUCTION_READY | icon-nav role shell + living-world Home + Learn (84c6da7) |
+| R6 | Rebuild task 6 — all learner page families | L/M/N/O | P0 | PRODUCTION_READY | 22 learner surfaces rebuilt-from-blank on DS; real shape-verified APIs (825ad93, c229307) |
+| R7 | Rebuild task 7 — guardian → moderator → admin | Q/W/X | P0 | PRODUCTION_READY | 4 guardian + 4 moderator + 6 admin pages rebuilt-from-blank (51d2f2f) |
+| R8 | Rebuild task 8 — reconcile + cleanup + final audit | AI/Z | P0 | PRODUCTION_READY | 47/47 pages rebuilt-from-blank; 0 placeholders; 0 dead files; honest-404 fix (unauth no longer bounced); ledgers 88/99/85 reconciled; tsc+build+5 tests+home-bundle green |
+| 13 | Switch to new FE, delete legacy, deploy, verify | AI/AG/AH | P0 | BLOCKED_EXTERNAL | 99 audit DONE (code-side switch-ready: 46 routes, 0 placeholders, 0 dead files, tests+build+bundle-gate green, reconciliation clean, legacy→final route map in 85 Appendix A). Remaining = OWNER-RUN: stage deploy + preview harness + browser QA + E2E vs 1ae4dcd + traffic switch + delete legacy frontend/. No live backend in this workspace |
 | 14 | AI Literacy breadth verify (curriculum, non-blocking) | L | P2 | LIVE_VERIFYING | committed `7b3d818`; owner seed+verify pending |
 
 ## SWITCH READINESS (task 13)
@@ -197,3 +200,21 @@ until the owner flips.
   verify/delete-legacy) + task 14 (owner-run AI-literacy seed verify) — both
   genuine external dependencies. Commits: 9cb0c8f, 0d41367, aa77cd2, c1c6814,
   96783f8, eb96407, 3c7d57f, 310ce7d, f7dfece, 4c9def2.
+
+- **2026-09-30 — REBUILD-FROM-BLANK phase superseded the above.** Per the owner
+  escalation ("pages PROVISIONAL, Landing SPECIFICALLY REJECTED, rebuild every
+  page from zero on a finalized design system after real reference research"),
+  the earlier build (rows 8–12) was reset and every page was rebuilt from blank
+  on the WHITE/GREEN/BLACK design system through an 8-task plan (R1–R8). Result:
+  frontend-rebuild/ = 46 `<Route>` entries, 49 feature files, 78 source files,
+  108 typed endpoint calls, 47/47 required pages rebuilt-from-blank, 0
+  placeholders, 0 unreferenced/dead source files, 5 vitest tests, tsc + vite
+  build (coding runtime isolated to a lazy chunk) + home-bundle gate all green.
+  Task-8 pass also fixed a real UX defect: the catch-all 404 was wrapped in an
+  auth guard, so unauthenticated visitors hitting a bad URL were bounced to
+  /login instead of seeing the honest 404 — the wrapper was removed and the now
+  unused RequireAuth guard deleted. Ledgers 88 (page-by-page), 99 (final audit),
+  and 85 (cutover runbook + Appendix A legacy→final route map) reconciled to
+  reality. Rebuild commits: 3eaf104, 1d86f0b, 6a0b522, e29f84f, 84c6da7,
+  825ad93, c229307, 51d2f2f (+ task-8 commit below). Remaining: task 13
+  (owner-run cutover) + task 14 (owner-run AI-literacy seed) — external deps.

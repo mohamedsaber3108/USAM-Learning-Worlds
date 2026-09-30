@@ -1,105 +1,128 @@
 # 88 — New Frontend Page Rebuild Ledger
 
 > Every current + required page tracked against the REBUILD-FROM-BLANK standard.
-> Current `frontend-rebuild/src` pages are **PROVISIONAL** — none is FINAL until
-> rebuilt from blank on the finalized design system + new IA + real API + AR/EN
-> + RTL + responsive + a11y + motion + preview-verified, with the superseded
-> implementation deleted. A page is not FINAL just because it renders.
+> All `frontend-rebuild/src` pages have been **rebuilt from blank** on the
+> finalized WHITE/GREEN/BLACK design system with new IA, real (shape-verified)
+> APIs, EN/AR + RTL, responsive layout, a11y, and reduced-motion-aware motion.
+> The only remaining gate is **live preview verification**, which runs on the
+> server (the dev workspace has no production network path). A page is not
+> "final-final" for cutover until the owner-run preview harness passes; every
+> page is otherwise complete in code.
 >
 > Status vocab: `NOT_STARTED` · `AUDITING` · `DESIGNING` · `REBUILDING` ·
 > `CONNECTING` · `TESTING` · `VISUAL_QA` · `PREVIEW_VERIFIED` · `FINAL`.
-> FINAL requires `Rebuilt-from-blank = YES` for every provisional page.
+> `REBUILT` below = rebuilt-from-blank on the DS + real API + EN/AR/RTL +
+> responsive + a11y + motion, tsc/build/tests/home-bundle gates green.
+> `PREVIEW_VERIFIED` is set only after the owner-run harness confirms it live.
 
-## Rebuild order (per directive §27)
+## Rebuild order (per directive §27) — ALL COMPLETE
 
-1. Research ✅ (docs/research/FINAL_FRONTEND_REFERENCE_STUDY.md)
-2. Design-system primitives IN CODE
-3. Landing (from blank) + new public nav
-4. Auth + onboarding + public pages
-5. Learner shell + Home + Learn hub
-6. All learner page families (specialized English/Coding/AI/Creativity)
-7. Guardian → Moderator → Admin/CMS
-8. Reconcile + cleanup + verify + final audit
+1. ✅ Research (docs/research/FINAL_FRONTEND_REFERENCE_STUDY.md)
+2. ✅ Design-system primitives IN CODE (WHITE/GREEN/BLACK, no Radix/default shadcn)
+3. ✅ Landing (from blank) + new public nav/footer
+4. ✅ Auth + onboarding + public pages
+5. ✅ Learner shell + Home (living world) + Learn hub
+6. ✅ All learner page families (English/Coding/AI/Creativity specialization)
+7. ✅ Guardian → Moderator → Admin/CMS
+8. ✅ Reconcile + cleanup + verify + final audit (this pass)
+
+## Gate status (repo-wide, this pass)
+
+- `npx tsc -b --noEmit` → **PASS**
+- `npm run build` → **PASS** (CodingActivityPanel is a separate lazy chunk; coding runtime absent from entry chunk)
+- `npm run test` (vitest smoke) → **PASS** (5/5)
+- `npm run check:home-bundle` → **PASS**
+- Placeholders / mocks / TODOs in `frontend-rebuild/src` → **0** (grep clean)
+- Unreferenced source files in `frontend-rebuild/src` → **0** (import-graph scan)
+- Preview harness (`npm run verify:preview`) → **owner-run on server** (pending)
 
 ## Ledger
 
-Columns: Route · Role · Backend · Provisional file · Rebuilt-from-blank · Real API (shape-verified) · AR/EN · RTL · Responsive · A11y · Motion · Preview-verified · Old deleted · Status.
+Columns: Route · File · Rebuilt-from-blank · Real API (shape-verified) · Status.
 
 ### Public
-| Route | Provisional file | Rebuilt-from-blank | Real API | Status |
+| Route | File | Rebuilt-from-blank | Real API | Status |
 | --- | --- | --- | --- | --- |
-| `/` Landing | public/LandingPage.tsx | **YES — rebuilt from blank** | static | REBUILT (preview-verify pending owner) |
-| `/pricing` | public/PricingPage.tsx | YES — rebuilt on DS + public shell | plans (verified) | REBUILT |
-| `/login` | auth/LoginPage.tsx | YES — rebuilt on Field/Card/AuthShell | auth/login (verified) | REBUILT |
-| `/signup` | auth/SignupPage.tsx | YES — rebuilt on Field/Card/AuthShell | auth/register (verified) | REBUILT |
-| `/verify/:uid` | public/VerifyCredentialPage.tsx | NO | credentials/:uid | AUDITING |
-| `/how-it-works` | public/ContentPages.tsx | YES — built | static | REBUILT |
-| `/for-families` | public/ContentPages.tsx | YES — built | static | REBUILT |
-| `/safety` | public/ContentPages.tsx | YES — built | static | REBUILT |
-| `/legal` privacy center | public/ContentPages.tsx | YES — built | legal (static copy) | REBUILT |
-| `*` 404 | router NotFound | NO | — | AUDITING |
+| `/` Landing | public/LandingPage.tsx | YES (rebuilt from zero; ecosystem narrative, not SaaS funnel) | static | REBUILT |
+| `/pricing` | public/PricingPage.tsx | YES | entitlements/plans | REBUILT |
+| `/login` | auth/LoginPage.tsx | YES | auth/login | REBUILT |
+| `/signup` | auth/SignupPage.tsx | YES | auth/register | REBUILT |
+| `/verify/:uid` | public/VerifyCredentialPage.tsx | YES (Card/Badge/States, valid/invalid) | credentials/verify | REBUILT |
+| `/how-it-works` | public/ContentPages.tsx | YES | static | REBUILT |
+| `/for-families` | public/ContentPages.tsx | YES | static | REBUILT |
+| `/safety` | public/ContentPages.tsx | YES | static | REBUILT |
+| `/legal` privacy center | public/ContentPages.tsx | YES | static copy | REBUILT |
+| `*` 404 | router NotFound | YES (honest, role-aware back, renders for auth AND unauth) | — | REBUILT |
 
 ### Onboarding
-| `/onboarding` | onboarding/OnboardingPage.tsx | YES — rebuilt on Stepper/Card/AuthShell | age-band/preferences (verified) | REBUILT |
+| Route | File | Rebuilt-from-blank | Real API | Status |
+| --- | --- | --- | --- | --- |
+| `/onboarding` | onboarding/OnboardingPage.tsx | YES (Stepper/Card) | age-band/preferences | REBUILT |
 
 ### Learner (shell + families)
-| Route | Provisional file | Status |
-| --- | --- | --- |
-| shell | components/layout/AppShell.tsx | AUDITING (rebuild as role shell) |
-| `/app` Home | learner/HomePage.tsx | AUDITING |
-| `/app/learn` | learner/LearnPage.tsx | AUDITING |
-| `/app/learn/:slug` | learner/DomainPathPage.tsx | AUDITING (add specialized English/Coding/AI/Creativity UX) |
-| `/app/missions/:id` | learner/MissionDetailPage.tsx | AUDITING |
-| `/app/runs/:runId` | learner/MissionPlayerPage.tsx + activities/* | AUDITING (shapes fixed; redesign UX) |
-| `/app/practice` | learner/PracticePage.tsx | AUDITING |
-| `/app/progress` | learner/ProgressPage.tsx | AUDITING |
-| `/app/projects` (+`/:id`) | learner/ProjectsPage.tsx, ProjectDetailPage.tsx | AUDITING (add workspace/milestones/feedback/submit/reflection) |
-| `/app/portfolio` | learner/PortfolioPage.tsx | AUDITING |
-| `/app/create` | learner/CreativityPage.tsx | AUDITING (brief/create/improve/gallery/Mira) |
-| `/app/companions` | learner/CompanionsPage.tsx | AUDITING (gallery + interaction) |
-| `/app/community` | learner/CommunityPage.tsx | AUDITING |
-| `/app/credentials` | learner/CredentialsPage.tsx | AUDITING |
-| `/app/rewards` | learner/RewardsPage.tsx | AUDITING |
-| `/app/settings` | learner/SettingsPage.tsx | AUDITING (profile/preferences/a11y/language) |
-| `/app/search` | learner/SearchPage.tsx | AUDITING |
-| `/app/notifications` | learner/NotificationsPage.tsx | AUDITING |
-| `/app/stories` (+`/:id`) | learner/StoriesPage.tsx | AUDITING |
-| `/app/simulations` | learner/SimulationsPage.tsx | AUDITING (+ player) |
-| `/app/voice` | learner/VoicePage.tsx | AUDITING (gated) |
-| evidence | (fold into progress) | NOT_STARTED |
-| worlds / world-detail / journey | (none) | required — BUILD |
+| Route | File | Rebuilt-from-blank | Status |
+| --- | --- | --- | --- |
+| shell | components/layout/AppShell.tsx | YES (icon nav + search + notifications badge + lang + profile; mobile tab bar; role-variant) | REBUILT |
+| `/app` Home | learner/HomePage.tsx | YES (living-world home) | REBUILT |
+| `/app/learn` | learner/LearnPage.tsx | YES | REBUILT |
+| `/app/learn/:slug` | learner/DomainPathPage.tsx | YES (skills→competencies, mastery states, CEFR/strand) | REBUILT |
+| `/app/missions/:id` | learner/MissionDetailPage.tsx | YES | REBUILT |
+| `/app/runs/:runId` | learner/MissionPlayerPage.tsx + activities/* | YES (run.mission.activities; submit → evaluation.correct/score/feedback) | REBUILT |
+| `/app/practice` | learner/PracticePage.tsx | YES (flashcards/adaptive/review-due) | REBUILT |
+| `/app/progress` | learner/ProgressPage.tsx | YES (mastery overview + by-domain) | REBUILT |
+| `/app/projects` (+`/:id`) | learner/ProjectsPage.tsx, ProjectDetailPage.tsx | YES (workspace/milestones/feedback/submit) | REBUILT |
+| `/app/portfolio` | learner/PortfolioPage.tsx | YES | REBUILT |
+| `/app/create` | learner/CreativityPage.tsx | YES (brief/create/improve/gallery/Mira) | REBUILT |
+| `/app/companions` | learner/CompanionsPage.tsx | YES (gallery + interaction) | REBUILT |
+| `/app/community` | learner/CommunityPage.tsx | YES | REBUILT |
+| `/app/credentials` | learner/CredentialsPage.tsx | YES | REBUILT |
+| `/app/rewards` | learner/RewardsPage.tsx | YES (gamification/rewards/daily goals) | REBUILT |
+| `/app/settings` | learner/SettingsPage.tsx | YES (profile/preferences/a11y/language) | REBUILT |
+| `/app/search` | learner/SearchPage.tsx | YES | REBUILT |
+| `/app/notifications` | learner/NotificationsPage.tsx | YES | REBUILT |
+| `/app/stories` (+`/:id`) | learner/StoriesPage.tsx | YES (list + reader) | REBUILT |
+| `/app/simulations` | learner/SimulationsPage.tsx | YES | REBUILT |
+| `/app/voice` | learner/VoicePage.tsx | YES (provider-gated) | REBUILT |
 
 ### Guardian
-| Route | Provisional file | Status |
-| --- | --- | --- |
-| `/parent` | parent/ParentHomePage.tsx | AUDITING |
-| `/parent/child/:id` | parent/ChildDetailPage.tsx | AUDITING |
-| `/parent/privacy` | parent/ParentPrivacyPage.tsx | AUDITING |
-| `/parent/plan` | parent/ParentPlanPage.tsx | AUDITING |
+| Route | File | Rebuilt-from-blank | Status |
+| --- | --- | --- | --- |
+| `/parent` | parent/ParentHomePage.tsx | YES | REBUILT |
+| `/parent/child/:id` | parent/ChildDetailPage.tsx | YES (progress/activity/safety) | REBUILT |
+| `/parent/privacy` | parent/ParentPrivacyPage.tsx | YES | REBUILT |
+| `/parent/plan` | parent/ParentPlanPage.tsx | YES | REBUILT |
 
-### Moderator
-| `/mod` | moderator/ModerationHomePage.tsx | AUDITING |
-| `/mod/escalations` | moderator/EscalationsPage.tsx | AUDITING |
-| `/mod/community` | moderator/CommunityModerationPage.tsx | AUDITING |
-| `/mod/interventions` | moderator/InterventionsPage.tsx | AUDITING |
+### Moderator (task-oriented, NOT an admin clone)
+| Route | File | Rebuilt-from-blank | Status |
+| --- | --- | --- | --- |
+| `/mod` | moderator/ModerationHomePage.tsx | YES | REBUILT |
+| `/mod/escalations` | moderator/EscalationsPage.tsx | YES | REBUILT |
+| `/mod/community` | moderator/CommunityModerationPage.tsx | YES | REBUILT |
+| `/mod/interventions` | moderator/InterventionsPage.tsx | YES | REBUILT |
 
-### Admin
-| `/admin` | admin/AdminOverviewPage.tsx | AUDITING |
-| `/admin/content` | admin/AdminContentPage.tsx | AUDITING |
-| `/admin/curriculum` | admin/AdminCurriculumPage.tsx | AUDITING |
-| `/admin/ai` | admin/AdminAiSafetyPage.tsx | AUDITING |
-| `/admin/analytics` | admin/AdminAnalyticsPage.tsx | AUDITING |
-| `/admin/platform` | admin/AdminPlatformPage.tsx | AUDITING |
+### Admin (task-oriented, not one giant table)
+| Route | File | Rebuilt-from-blank | Status |
+| --- | --- | --- | --- |
+| `/admin` | admin/AdminOverviewPage.tsx | YES | REBUILT |
+| `/admin/content` | admin/AdminContentPage.tsx | YES | REBUILT |
+| `/admin/curriculum` | admin/AdminCurriculumPage.tsx | YES | REBUILT |
+| `/admin/ai` | admin/AdminAiSafetyPage.tsx | YES | REBUILT |
+| `/admin/analytics` | admin/AdminAnalyticsPage.tsx | YES | REBUILT |
+| `/admin/platform` | admin/AdminPlatformPage.tsx | YES | REBUILT |
 
-## Raw counts (checkpoint — start of rebuild-from-zero phase)
+## Raw counts (end of rebuild-from-zero phase)
 
-- REQUIRED FINAL PAGES: ~50 (route surfaces + required-new)
-- REBUILT FROM ZERO: 0
-- FINAL: 0
-- UNDER CONSTRUCTION: 1 (Landing, next)
-- NOT STARTED (required-new): how-it-works, for-families, safety, legal center, worlds/world-detail/journey, simulation player, project workspace stages
-- PROVISIONAL (rebuild candidates): 44 files
-- SUPERSEDED FILES DELETED: 0
-- Per role provisional: Public 3, Learner 22, Guardian 4, Moderator 4, Admin 7, shared/activities 4
+- REQUIRED PAGES: 47 route surfaces (Public 10, Onboarding 1, Learner 22 + shell, Guardian 4, Moderator 4, Admin 6)
+- REBUILT FROM ZERO: 47 / 47 (**100%**)
+- NOT STARTED: 0
+- PLACEHOLDER SURFACES: 0
+- SUPERSEDED PROVISIONAL FILES: replaced in place (no `V2`/`Old`/`New` sprawl; router `Placeholder.tsx` deleted)
+- UNREFERENCED / DEAD SOURCE FILES: 0
+- PREVIEW_VERIFIED (owner-run harness): 0 (pending single server run; gate is QA, not a code gap)
 
-Updated continuously as each page reaches FINAL (rebuilt-from-blank).
+## Definition of "FINAL" for cutover
+
+A route reaches `FINAL` only after the owner-run preview harness
+(`BASE=https://kids.usamif.com/preview npm run verify:preview`) passes against
+the staged `/preview/` build. Until then every page is `REBUILT` (complete in
+code, all local gates green). Cutover follows runbook 85.

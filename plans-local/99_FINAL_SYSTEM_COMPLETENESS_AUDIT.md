@@ -11,10 +11,13 @@
 | Backend modules | 42 | code-traced (context-gatherer + app.module) |
 | Backend controllers | ~59 | code-traced |
 | Real roles | 4 | Prisma `enum Role` (LEARNER/GUARDIAN/MODERATOR/ADMIN) |
-| Required routes (route registry) | 41 implemented `<Route>` entries | frontend-rebuild/src/app/router.tsx |
-| Feature page/component files | 44 | frontend-rebuild/src/features |
-| Typed endpoint calls wired | 102 | endpoints.ts `apiClient.*` |
+| Implemented `<Route>` entries | 46 | frontend-rebuild/src/app/router.tsx |
+| Feature page/component files | 49 | frontend-rebuild/src/features |
+| Total rebuild source files (.ts/.tsx) | 78 | frontend-rebuild/src |
+| Typed endpoint calls wired | 108 | endpoints.ts `apiClient.*` |
 | Placeholders remaining | 0 | grep-clean (Placeholder deleted) |
+| Unreferenced / dead source files | 0 | import-graph scan (this pass) |
+| Pages rebuilt-from-blank on the DS | 47 / 47 | ledger 88 |
 | Modules with required FE surface | all mapped (33 DONE, 7 PARTIAL-depth, 1 BLOCKED, 4 INTERNAL) | ledger 84 |
 | Required endpoints missing a FE consumer | 0 | ledger 83 |
 | Fabricated (non-backed) capabilities | 0 | career/jobs/org/teacher excluded |
@@ -23,8 +26,10 @@
 
 ## Per-role coverage
 
-- **PUBLIC**: Landing, Pricing (live plans), Login, Signup, Onboarding entry,
-  Verify credential, honest 404. **Complete.**
+- **PUBLIC**: Landing (rebuilt from zero — ecosystem narrative), Pricing (live
+  plans), Login, Signup, How it works, For families, Safety, Legal center,
+  Onboarding entry, Verify credential, honest 404 (now renders for auth AND
+  unauth — the catch-all is no longer wrapped in an auth guard). **Complete.**
 - **LEARNER**: Home, Learn, DomainPath, Mission detail, Mission player (all 7
   activity types + coding trust loop), Practice, Progress, Projects, Project
   detail, Portfolio, Creativity, Companions, Community, Credentials, Rewards,

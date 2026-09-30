@@ -121,3 +121,91 @@ is solid.
 This dev workspace has no network path to the server (DNS to host/github flaky,
 no SSH/pm2/nginx/DATABASE_URL). The staging + cutover + deploy + live verify all
 require the server. The runbook makes each step explicit, gated, and reversible.
+
+## Appendix A — Legacy → Final route mapping (URL-change audit)
+
+The rebuild intentionally restructured the URL space: learner surfaces now live
+under `/app/*`, and guardian/moderator/admin have dedicated `/parent`, `/mod`,
+`/admin` shells. That means **many legacy URLs change** at cutover. Anyone with
+a bookmark or deep link to a legacy path will hit the honest 404 unless
+redirects are added. Decide per row below whether a redirect is warranted; the
+learner set is the one that matters most for real users.
+
+Source of truth: legacy `frontend/src/app/router/index.tsx` (`1ae4dcd`) →
+rebuilt `frontend-rebuild/src/app/router.tsx`.
+
+### Public / auth / onboarding
+| Legacy path | Final path | Change |
+| --- | --- | --- |
+| `/` | `/` | same (role-aware landing/redirect) |
+| `/login` | `/login` | same |
+| `/register` | `/signup` | RENAMED |
+| `/onboarding/language|welcome|age|interests|character|complete` (6 pages) | `/onboarding` (single stepper) | CONSOLIDATED |
+| (none) | `/pricing`, `/how-it-works`, `/for-families`, `/safety`, `/legal`, `/verify/:uid` | NEW public surfaces |
+
+### Learner (legacy top-level → `/app/*`)
+| Legacy path | Final path | Change |
+| --- | --- | --- |
+| `/dashboard` | `/app` | MOVED |
+| `/missions` | `/app/learn` (+ mission detail) | MOVED/reframed |
+| `/missions/:id` | `/app/missions/:id` | MOVED |
+| `/missions/play/:runId` | `/app/runs/:runId` | MOVED/renamed |
+| `/missions/complete` | (folded into player result state) | REMOVED as route |
+| `/practice` | `/app/practice` | MOVED |
+| `/evidence` | (folded into `/app/progress`) | MERGED |
+| `/worlds`, `/worlds/:id` | `/app/learn` + `/app/learn/:slug` | MERGED into domain path |
+| `/simulations`, `/simulations/:slug` | `/app/simulations` | MOVED (player = follow-on depth) |
+| `/learn`, `/learn/concepts/:id`, `/learn/paths`, `/learn/paths/:id` | `/app/learn`, `/app/learn/:slug` | CONSOLIDATED into domain path |
+| `/learn/flashcards`, `/learn/visual-language` | `/app/practice` | MERGED |
+| `/learning/domains/:slug/path` | `/app/learn/:slug` | MOVED/renamed |
+| `/projects`, `/projects/:id`, `/portfolio` | `/app/projects`, `/app/projects/:id`, `/app/portfolio` | MOVED |
+| `/plans` | `/pricing` (public) + `/parent/plan` (manage) | SPLIT by role |
+| `/community` | `/app/community` | MOVED |
+| `/achievements`, `/leaderboard`, `/balanced`, `/shop` | `/app/rewards` | MERGED |
+| `/progress` | `/app/progress` | MOVED |
+| `/insights` | (folded into `/app/progress`) | MERGED |
+| `/voice-chat` | `/app/voice` | MOVED/renamed |
+| `/english`, `/english/coach`, `/coding` | `/app/learn/:slug` (domain path) | MERGED |
+| `/characters`, `/characters/:id/chat` | `/app/companions` | MERGED |
+| `/stories`, `/stories/:id` | `/app/stories`, `/app/stories/:id` | MOVED |
+| `/creativity` | `/app/create` | MOVED/renamed |
+| `/cross-curricular/:category(/:slug)`, `/thinking/:engine(/:slug)` | `/app/learn/:slug` (domain path) | MERGED |
+| (none) | `/app/search`, `/app/notifications`, `/app/credentials`, `/app/settings` | NEW learner surfaces |
+
+### Guardian (legacy mixed into learner tree → dedicated `/parent`)
+| Legacy path | Final path | Change |
+| --- | --- | --- |
+| `/parents` | `/parent` | RENAMED (+ role shell) |
+| `/parents/children/:id/time-limits` | `/parent/child/:id` (controls tab) | MERGED into child detail |
+| `/parents/children/:id/privacy` | `/parent/privacy` + child detail | RESTRUCTURED |
+| (none) | `/parent/plan` | NEW (plan activate/cancel) |
+
+### Moderator (legacy had NONE — folded under admin)
+| Legacy path | Final path | Change |
+| --- | --- | --- |
+| `/admin/safety-escalations` | `/mod/escalations` (+ admin still sees) | NEW moderator role split |
+| `/admin/interventions` | `/mod/interventions` | NEW moderator role split |
+| (none) | `/mod`, `/mod/community` | NEW moderator surfaces |
+
+### Admin (many granular pages → 6 task-oriented areas)
+| Legacy path | Final area | Change |
+| --- | --- | --- |
+| `/admin/missions`, `/admin/content-items`, `/admin/question-templates`, `/admin/prompt-templates` | `/admin/content` | CONSOLIDATED |
+| `/admin/content-qa`, `/admin/assessment-quality`, `/admin/misconceptions` | `/admin/curriculum` | CONSOLIDATED |
+| `/admin/ai-eval`, `/admin/safety-policies` | `/admin/ai` | CONSOLIDATED |
+| `/admin/analytics` | `/admin/analytics` | same area |
+| `/admin/feature-flags`, `/admin/experiments`, `/admin/audit-log` | `/admin/platform` | CONSOLIDATED |
+| `/admin/memory-governance` | (WITHHELD — backend authz gap) | NOT EXPOSED |
+| (none) | `/admin` overview | NEW |
+
+### Cutover redirect decision
+
+- **Catch-all** now renders an honest 404 (no silent bounce to `/dashboard`).
+  Legacy deep links therefore 404 rather than misdirect — safer, but visible.
+- **Recommended minimum redirects** (add in the router as `<Route ... element={<Navigate .../>}>`
+  in the cutover commit if the owner wants zero broken bookmarks): `/dashboard`→`/app`,
+  `/parents`→`/parent`, `/register`→`/signup`, `/voice-chat`→`/app/voice`,
+  `/plans`→`/pricing`. All other legacy paths are internal-navigation targets
+  (reached via in-app links, not typically bookmarked) and can fall through to 404.
+- This is an OWNER decision (redirect vs. clean break); the rebuild ships with a
+  clean break (honest 404) by default per the "no silent bounce" directive.
