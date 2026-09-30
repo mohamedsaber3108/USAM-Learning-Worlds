@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:home-bundle": "node scripts/check-home-bundle.mjs",
-    "verify:preview": "node scripts/preview-verify.mjs"
+    "verify:preview": "node scripts/preview-verify.mjs",
+    "qa:screenshots": "node scripts/preview-screenshots.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.56.2",
