@@ -1,5 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ToastProvider } from '@/components/ui'
 import { AppRouter } from './router'
 
 const queryClient = new QueryClient({
@@ -21,9 +22,11 @@ const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename={BASENAME}>
-        <AppRouter />
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter basename={BASENAME}>
+          <AppRouter />
+        </BrowserRouter>
+      </ToastProvider>
     </QueryClientProvider>
   )
 }
