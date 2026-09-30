@@ -167,6 +167,16 @@ Full per-endpoint inventory lives in
 | 13 | Switch to new FE, delete legacy, deploy, verify, final audit | AI/AG/AH | P0 | BLOCKED_EXTERNAL | 99 audit DONE (code-side switch-ready: 41 routes, 0 placeholders, tests+build+bundle-gate green, reconciliation clean). Remaining = OWNER-RUN: stage deploy + browser QA + E2E vs 1ae4dcd + traffic switch + delete legacy frontend/. No live backend in this workspace |
 | 14 | AI Literacy breadth verify (curriculum, non-blocking) | L | P2 | LIVE_VERIFYING | committed `7b3d818`; owner seed+verify pending |
 
+## SWITCH READINESS (task 13)
+
+Code-side switch gate is MET (see 99). Deploy tooling shipped: `scripts/
+stage-rebuild.sh` (gated build of the rebuild without cutover), `scripts/85`
+runbook (5-phase reversible cutover), `frontend-rebuild/.env.production`
+(same-origin), and `deploy.sh` step-3 dep check made cutover-safe. The remaining
+work is OWNER-RUN on the server (no workspace network path): stage → browser QA
+→ git-mv cutover → deploy+verify → delete legacy. Production stays on `1ae4dcd`
+until the owner flips.
+
 ## PHASE CHECKPOINT LOG
 
 - **2026-09-30 — Decision A recorded.** Rebuild phase opened. Backend inventoried
@@ -174,3 +184,16 @@ Full per-endpoint inventory lives in
   registries being stood up. Curriculum breadth (English waves 1-2, Coding wave 1)
   remains PRODUCTION VERIFIED as historical spine evidence; AI-literacy wave 1
   committed and pending live verify (tracked as item 14, non-blocking).
+
+- **2026-09-30 — Full rebuild code-complete.** Decision A executed end to end in
+  code: planning/governance (1–7), foundation (8), public/auth/onboarding (9),
+  full learner universe (10), guardian+moderator+admin (11), gates + full
+  backend/API reconciliation + final completeness audit (12). Result:
+  frontend-rebuild/ = 41 routes, 44 feature files, 102 typed endpoint calls, 0
+  placeholders, 5 vitest tests, tsc+build+home-bundle-gate all green; every one
+  of the 42 backend modules classified and represented or justified; required
+  MISSING_FRONTEND = 0; no fabricated capabilities. Switch tooling (task 13
+  prep) shipped and cutover-safe. Remaining: task 13 (owner-run cutover/deploy/
+  verify/delete-legacy) + task 14 (owner-run AI-literacy seed verify) — both
+  genuine external dependencies. Commits: 9cb0c8f, 0d41367, aa77cd2, c1c6814,
+  96783f8, eb96407, 3c7d57f, 310ce7d, f7dfece, 4c9def2.
