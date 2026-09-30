@@ -78,8 +78,8 @@ P3 effort while P0/P1 remain.
 | B | Backend | PROVEN (baseline) | 42 modules, ~59 controllers inventoried (code-traced). No rewrite unless a real gap |
 | C | Database / migrations | PROVEN (baseline) | Prisma/Postgres; enum-drift + migration gates green live |
 | D | API contracts | PROVEN (baseline) | `/api` prefix, unversioned; Bearer JWT; documented in registries below |
-| E | Frontend architecture | BUILDING | Clean new foundation being stood up in isolated tree (task 8) |
-| F | Design system | DESIGNING | WHITE/GREEN/BLACK + approved tokens; EN+AR typography (spec done, tokens to implement) |
+| E | Frontend architecture | BUILDING | frontend-rebuild/ foundation live: typed client, auth store, role router/shell, query layer, i18n EN/AR RTL. tsc+build green |
+| F | Design system | BUILDING | WHITE/GREEN/BLACK tokens implemented in tailwind.config + primitives (Button, states); typography EN+AR |
 | G | Navigation / IA | DESIGNING | Derived from zero (IA + nav model spec done) |
 | H | Public ecosystem / landing | NOT_STARTED | Ecosystem presentation, not generic SaaS |
 | I | Authentication | NOT_STARTED | Real `/api/auth`; login/register/refresh/me |
@@ -159,7 +159,7 @@ Full per-endpoint inventory lives in
 | 5 | PAGE_AND_FLOW_INVENTORY + ROUTE_REGISTRY + traceability | AJ/E | P1 | PRODUCTION_READY | docs/frontend/FINAL_PAGE_AND_FLOW_INVENTORY.md + FINAL_ROUTE_REGISTRY.md + BACKEND_FRONTEND_TRACEABILITY_MATRIX.md |
 | 6 | Legacy frontend audit + classification | AI | P1 | PRODUCTION_READY | plans-local/79_DEPLOYED_FRONTEND_LEGACY_AUDIT.md (~55 routes classified) |
 | 7 | FINAL IA + navigation + design system + motion | F/G | P1 | PRODUCTION_READY | docs/frontend/FINAL_INFORMATION_ARCHITECTURE.md + FINAL_USAM_DESIGN_SYSTEM.md |
-| 8 | Clean new frontend foundation (isolated tree) | E | P0 | BUILDING | Vite+React+TS, typed `/api` client |
+| 8 | Clean new frontend foundation (isolated tree) | E | P0 | TESTING | frontend-rebuild/ scaffolded; tsc clean + vite build 182 modules OK. Typed client+auth store+role router/shell+DS primitives+i18n EN/AR RTL. Real Landing/Login; rest honest placeholders |
 | 9 | Landing + auth + onboarding (new FE) | H/I/J | P1 | NOT_STARTED | |
 | 10 | Learner experience + learning loop (new FE) | K/L/M/N/O | P1 | NOT_STARTED | |
 | 11 | Parent → moderator → admin surfaces (new FE) | Q/W/X | P1 | NOT_STARTED | |
