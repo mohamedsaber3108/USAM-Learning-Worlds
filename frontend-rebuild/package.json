@@ -11,7 +11,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:home-bundle": "node scripts/check-home-bundle.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.56.2",

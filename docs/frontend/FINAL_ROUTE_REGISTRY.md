@@ -49,6 +49,19 @@
 | `/admin/platform` | ADMIN | Flags/experiments/audit | feature-flags/experiments/audit | (new) | yes | no |
 | `*` | All | 404 fallback | — | 404 | yes | no |
 
+## Implementation status (2026-09-30, new frontend)
+
+Every route in the table above is **IMPLEMENTED** as a real surface on real
+backend APIs in `frontend-rebuild/` (tsc + vite build + vitest green; zero
+placeholders — grep-clean). `Live? = no` for all because production still runs
+the legacy `1ae4dcd` frontend until the controlled switch (task 13). Two
+intentional deviations: `/app/voice` renders an honest PROVIDER-GATED state
+(BLOCKED_EXTERNAL); `/admin/memory-governance` is NOT exposed (backend authz gap
+documented in the capability registry). `/verify/:uid` is implemented (public
+credential verification). Additional learner routes added during build:
+`/app/search`, `/app/notifications`, `/app/stories(/:id)`, `/app/simulations`,
+`/app/voice`, `/app/projects/:id`.
+
 ## Notes
 
 - Voice is a feature within learner surfaces, not a route; PROVIDER-GATED.
