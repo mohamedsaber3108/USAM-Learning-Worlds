@@ -129,12 +129,18 @@ async function shoot(page, lang, vp, name, route, manifest) {
 }
 
 async function loginAs(page, email, password, landing) {
-  await page.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 45000 })
-  await page.fill('#email', email)
-  await page.fill('#password', password)
-  await page.click('button[type="submit"]')
-  await page.waitForURL(landing, { timeout: 30000 }).catch(() => {})
-  return landing.test(page.url())
+  try {
+    await page.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 45000 })
+    // DS Input uses a generated id (useId), so target by type, not #email.
+    await page.fill('input[type="email"]', email)
+    await page.fill('input[type="password"]', password)
+    await page.click('button[type="submit"]')
+    await page.waitForURL(landing, { timeout: 30000 }).catch(() => {})
+    return landing.test(page.url())
+  } catch (e) {
+    console.log(`  ⚠️  login threw: ${String(e).slice(0, 120)}`)
+    return false
+  }
 }
 
 async function main() {

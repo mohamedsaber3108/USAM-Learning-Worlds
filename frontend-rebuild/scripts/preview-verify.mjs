@@ -114,8 +114,9 @@ async function checkRoute(page, route) {
 
 async function login(page) {
   await page.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 30000 })
-  await page.fill('#email', EMAIL)
-  await page.fill('#password', PASSWORD)
+  // DS Input uses a generated id (useId), so target by type, not #email.
+  await page.fill('input[type="email"]', EMAIL)
+  await page.fill('input[type="password"]', PASSWORD)
   await page.click('button[type="submit"]')
   // Wait for redirect off /login into the app.
   await page.waitForURL(/\/preview\/app/, { timeout: 30000 }).catch(() => {})
