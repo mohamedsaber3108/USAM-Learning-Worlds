@@ -28,7 +28,7 @@ Columns: Route · Role · Backend · Provisional file · Rebuilt-from-blank · R
 ### Public
 | Route | Provisional file | Rebuilt-from-blank | Real API | Status |
 | --- | --- | --- | --- | --- |
-| `/` Landing | public/LandingPage.tsx | NO — **REJECTED, rebuild from blank** | static | REBUILDING (next) |
+| `/` Landing | public/LandingPage.tsx | **YES — rebuilt from blank** | static | REBUILT (preview-verify pending owner) |
 | `/pricing` | public/PricingPage.tsx | NO | plans (verified) | AUDITING |
 | `/login` | auth/LoginPage.tsx | NO | auth/login (verified) | AUDITING |
 | `/signup` | auth/SignupPage.tsx | NO | auth/register (verified) | AUDITING |
