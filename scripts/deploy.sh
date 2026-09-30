@@ -79,13 +79,15 @@ fi
 log "[3/7] Frontend: deterministic dependency install (npm ci)"
 cd "$REPO/frontend"
 npm ci --include=dev || die "npm ci failed — lockfile out of sync?"
-# Verify the Phase-B Radix deps actually resolved (the exact failure we hit).
-npm ls \
-  @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-label \
-  @radix-ui/react-popover @radix-ui/react-progress @radix-ui/react-tabs \
-  @radix-ui/react-toast @radix-ui/react-tooltip class-variance-authority \
-  >/dev/null 2>&1 || die "expected Radix/cva dependencies are missing after npm ci"
-ok "dependencies installed + Radix deps verified"
+# Verify the frontend's core runtime deps actually resolved after npm ci (this
+# guards the class of failure where package.json changed but node_modules was
+# stale). Uses `react` + the router + query layer, which BOTH the legacy and the
+# rebuilt frontend depend on, so this check survives the Decision A cutover.
+# (The old Radix/cva-specific check was removed with the rebuild — those are not
+# dependencies of the new frontend.)
+npm ls react react-dom react-router-dom @tanstack/react-query \
+  >/dev/null 2>&1 || die "expected core frontend dependencies are missing after npm ci"
+ok "dependencies installed + core deps verified"
 
 # --------------------------------------------------------------- 4. TYPECHECK
 log "[4/7] Typecheck (tsc --noEmit)"
