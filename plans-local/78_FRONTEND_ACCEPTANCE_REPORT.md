@@ -75,7 +75,43 @@ Writing PROJECT A2 (plan SEQUENCE + CREATE capstone). Live verified 2026-09-30:
 
 English priority strands now covered on the spine: Vocabulary, Grammar,
 Reading, Listening, Writing (A1+A2 project), Pronunciation, Speaking/
-Conversation, Dictation, Shadowing. Next: Coding breadth, then AI Literacy.
+Conversation, Dictation, Shadowing.
+
+## ✅ CURRICULUM BREADTH PHASE — Coding (2026-09-30, PRODUCTION VERIFIED)
+
+Scaled the CANONICAL `coding` domain (the one the mastery graph +
+`/coding/learner/progress` use) beyond the single proven "Loops (intro)"
+vertical slice — real gradeable content on the same shared spine + the proven
+coding-sandbox test-model v1 contract (browser Pyodide execution, SERVER
+re-validation). NOT a new engine/slice.
+
+### Coding breadth WAVE 1 — commit `2318ef8` (`seed-coding-breadth-a1.ts`)
+6 competencies / 17 activities across 3 skills:
+- Computational Thinking (reasoning, no syntax): Think in steps — SEQUENCE + SELECT
+- Programming Fundamentals: Variables & output, Making decisions (if/else),
+  Functions — CODE (Python/Pyodide)
+- Problem Solving & Debugging: Debugging (fix broken code), Mini project
+  (sum-to-n capstone) — CODE (Python/Pyodide)
+
+CODE activities carry coding-test-model v1 (`testModelVersion:1`, stdout-equals
+/ function-call / stdout-contains, visible + hidden tests). FORMATIVE trust
+tier recorded on evidence. Reasoning activities graded by the shared
+ActivityEvaluator. Live verified 2026-09-30:
+- Seed ran clean: `competencies=6, activities=17`.
+- Coding path: **3 skills / 7 competencies** (Loops intro + all 6 new).
+- `GET /coding-sandbox/missions/coding-act-debug-fix-sum` served the spec with
+  the hidden test `add-10-1` expected value STRIPPED (trust model intact live).
+- Live CODE submit on `coding-act-debug-fix-sum` (fixed `add(a,b)`):
+  `passed:true, score:1, testsPassed:2, testsTotal:2` — server re-validated the
+  client-reported `actual` (`"5"`, `"11"`) via gradeAgainstSpec; both a visible
+  AND a hidden test passed through the trust boundary.
+- Mastery landed: `coding-competency-debugging` DEVELOPING, confidence 0.725,
+  evidenceCount 1, reviewDue 2026-10-14 (CREATION evidence).
+
+Coding priority strands now on the canonical spine: computational thinking,
+variables/output, conditionals, functions, loops, debugging, mini-project.
+Next: AI Literacy breadth. (Blockly + JS-web/sandpack runners are supported by
+the test-model but not yet authored as content — a later coding wave.)
 
 ---
 
