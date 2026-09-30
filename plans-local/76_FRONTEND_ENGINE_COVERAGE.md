@@ -193,23 +193,28 @@ Legend: ✅ done · ⏳ pending (needs live env) · ▲ partial. Columns:
 API=api exists · CON=api consumed · UX=ux exists · CMP=ux complete (i18n/states/
 no-jargon) · TST=unit/component tested · VQA=visual QA · DEP=deployed · LIVE=live-verified.
 
+Updated after LIVE production verification from commit `1ae4dcd` (2026-09-30).
+▲ VQA = automated route-render + RTL proven via Playwright; human multi-device
+visual pass still recommended. LIVE ✅ where exercised against prod data.
+
 | Engine / surface | API | CON | UX | CMP | TST | VQA | DEP | LIVE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Home (living world) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Domain path (generic) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| English | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Coding (execution + coach) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| AI Literacy | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Creativity (CREATE loop) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Practice / Review (FSRS) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Evidence (child) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Mastery (child bands) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Projects / Portfolio | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Characters (states) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Voice (state machine) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ (Bedrock-gated) |
-| Parent (dashboard + plan) | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Entitlements / plan | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
-| Safety (parent-facing) | ⏳ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ (no parent-safe backend projection yet) |
+| Home (living world) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ |
+| Domain path (generic) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ (4 domains return real spine) |
+| English | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ |
+| Coding (execution + coach) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ (run 7d26808d: fail→pass, hidden test server-enforced) |
+| AI Literacy | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ (path live) |
+| Creativity (CREATE loop) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ▲ (path live; prompt library not seeded → honest empty state) |
+| Practice / Review (FSRS) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ (review-due live; 0 due today = correct, all future) |
+| Evidence (child) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ (10 evidence rows back the view) |
+| Mastery (child bands) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ (6 real records) |
+| Projects / Portfolio | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ |
+| Characters (states) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ |
+| Voice (state machine) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ⏳ (Bedrock-gated; text-fallback verified) |
+| Parent (dashboard + plan) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ |
+| Entitlements / plan | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ |
+| Safety (parent-facing) | ✅ | ✅ | ✅ | ✅ | ✅ | ▲ | ✅ | ✅ (live: learner→403 authz; 0 escalations = all-clear) |
 
-VQA/DEP/LIVE are the owner-run remainder (no network path to prod from the dev
-workspace). Nothing is PRODUCTION_READY until its LIVE column is ✅.
+**FRONTEND RECONCILIATION = PRODUCTION VERIFIED** at `1ae4dcd`. Residual: human
+multi-device visual QA (VQA ▲), Voice live (Bedrock-gated), Creativity prompt
+seed, age-model persistence migration (compatibility mode). See ledger 78.

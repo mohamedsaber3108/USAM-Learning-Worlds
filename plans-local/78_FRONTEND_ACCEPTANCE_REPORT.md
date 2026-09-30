@@ -1,5 +1,42 @@
 # 78 — Frontend Reconciliation: Final Acceptance Report
 
+## ✅ FRONTEND RECONCILIATION = PRODUCTION VERIFIED (2026-09-30)
+
+Deployed + live-verified from commit **`1ae4dcd`** on production
+(`https://kids.usamif.com`, server `~/USAM-Learning-Worlds`, Kids-server
+i-00b9e230cc89349a3). Evidence captured from the live server this date:
+
+| Gate | Live evidence |
+| --- | --- |
+| DEPLOYED ✅ | `deploy-meta` commit `1ae4dcd` == source; live bundle `index-D9OQiNSF.js` == built; deploy.sh all 7 stages green; DEPLOY_EXIT=0 |
+| Deploy gates ✅ | enum-drift (45/45), migrations (all tables/cols present), backend 120/120, frontend tsc clean, frontend 40/40, **home-bundle perf gate ✔ in the prod build** (coding runtime absent from index.html + entry), nginx reloaded |
+| PM2 / nginx ✅ | `usam-backend` online; `nginx -t` OK; backend health 200 |
+| LIVE API ✅ | login works; every learner endpoint 401 unauth; auth guards verified |
+| LIVE DATA ✅ | 12 learners, 10 evidence rows, 6 mastery records (DEVELOPING×4/PROFICIENT×1/PRACTICING×1); all 4 domains return real skill→competency→mission; 5 recommendations; 5 missions |
+| CODING JOURNEY ✅ | Live run `7d26808d` attempts prove the full CLIENT-EXECUTED/SERVER-VALIDATED loop: `print(999)`→server graded fail(0); `for i in range(1,4): print(i)`→server graded pass(1) **including the hidden `print123-contains-2` test the server re-applied**. Attempts persisted with `executedBy:"pyodide"`, real `actual` output → Evidence → Mastery (Loops PRACTICING, confidence 0.512, evidenceCount 4, reviewDue scheduled) |
+| Hidden-test strip ✅ | coding-sandbox API response omits hidden test `expectedOutput` while the DB spec retains `"2"` — the trust-model fix proven live |
+| Practice/Review ✅ | `/mastery/review-due` returns real data; 0 due today is **correct** (all 6 reviewDue dates are future: Oct 6–13) — honest empty state, not a fake count |
+| Parent Safety ✅ | endpoint live; learner→403 (authorization enforced); 0 escalations = healthy all-clear state the panel renders |
+| Age model | enum `AGE_8_9`/`AGE_10_11`/`AGE_12_14` confirmed live = COMPATIBILITY MODE / MIGRATION PENDING (as documented in AGE_MODEL.md) |
+| Architecture | ONE canonical frontend `frontend/`; root `src/` = PRESERVE/QUARANTINE (Lovable, CI-guarded) |
+
+### The 3 acceptance questions — final answers
+1. **One canonical production frontend?** YES — `frontend/`, deployed at `1ae4dcd`. Root `src/` quarantined. ✅
+2. **Child experiences every engine coherently, no backend jargon?** YES — routes browser-render-verified (16 Playwright tests), coding journey proven live, mastery/age/review shown in child language. ✅
+3. **Parent understands progress/mastery/evidence/projects/entitlements/safety?** YES — all from real endpoints incl. the new live Safety projection. ✅
+
+### Honest residual (non-blocking, tracked)
+- **Creativity prompts = 0 in prod** — the creativity domain has a path/mission, but the prompt library isn't seeded; the Studio correctly shows its empty state. Seed to populate.
+- **Human multi-device / RTL visual QA** across 7-9/10-12/13-15 × phone/tablet/desktop — automated route-render + RTL is proven (Playwright); a manual human visual pass remains recommended.
+- **Voice runtime** — Bedrock/ASR/TTS provider-gated; text-fallback path verified, live voice round-trip needs creds.
+- **Age model** — COMPATIBILITY MODE / MIGRATION PENDING (display layer; persistence unmigrated by design).
+
+Ledger 76 per-engine 8-stage table updated to reflect DEPLOYED + LIVE VERIFIED where proven.
+
+---
+
+## (Original report — pre-deploy code+browser verification)
+
 > Phase: full frontend reconciliation with the real backend platform. This
 > report answers the three acceptance questions, summarizes coverage, routes,
 > mocks, and blockers, and is honest about what is code-verified vs what needs a
