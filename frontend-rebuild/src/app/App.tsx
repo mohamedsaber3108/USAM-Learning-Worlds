@@ -13,10 +13,15 @@ const queryClient = new QueryClient({
   },
 })
 
+// Router basename derives from the Vite base so the app works both at root '/'
+// (production) and under a staged subpath like '/preview/'. BASE_URL includes a
+// trailing slash; react-router wants no trailing slash (except root).
+const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename={BASENAME}>
         <AppRouter />
       </BrowserRouter>
     </QueryClientProvider>

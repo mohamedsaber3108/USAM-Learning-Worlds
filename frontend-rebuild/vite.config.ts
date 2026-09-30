@@ -12,7 +12,12 @@ import path from 'path'
 // preload helper into them, dragging ~950kB of coding runtime into the Home
 // load graph. Leave them unnamed so they co-locate with the lazy coding chunks
 // and load only when a coding activity mounts. A perf gate re-asserts this.
+// Optional base path for staged verification under a subpath (e.g. /preview/).
+// Normal production build stays at root '/'. Set USAM_BASE=/preview/ to stage.
+const BASE = process.env.USAM_BASE || '/'
+
 export default defineConfig({
+  base: BASE,
   plugins: [react()],
   resolve: {
     alias: {
