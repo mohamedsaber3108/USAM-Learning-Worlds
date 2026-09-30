@@ -35,6 +35,50 @@ Ledger 76 per-engine 8-stage table updated to reflect DEPLOYED + LIVE VERIFIED w
 
 ---
 
+## ✅ CURRICULUM BREADTH PHASE — English (2026-09-30, PRODUCTION VERIFIED)
+
+Post-reconciliation product phase: authoring real gradeable content on the
+already-proven shared learning spine (NOT new engines/slices). Status guards
+unchanged: Voice = PROVIDER-GATED, Age = COMPATIBILITY MODE, frontend
+architecture phase remains PRODUCTION VERIFIED at `1ae4dcd` (docs closure
+`8841d91`) — NOT reopened.
+
+### Creativity prompt library — commit `f501f23`
+Seeded 10 CreativityPrompt rows live; Studio submission loop works (submission
+`7491c586` persisted, mySubmissions=1). No Evidence/Mastery write by design
+(standalone creativity submission engine does not write mastery — not
+fabricated). Prompts left `domain: None` (cross-domain; seed slugs don't map to
+prod's 5 domains — documented decision).
+
+### English breadth WAVE 1 — commit `3c13565` (`seed-english-breadth-a1.ts`)
+4 A1 competencies / 12 activities: Grammar / Reading / Listening / Writing.
+Self-sufficient idempotent strand upserts (fixes the strandType gap). Live
+verified: English path grew to 5 skills / 5 competencies; grammar SELECT graded
+live → "Basic sentences (A1)" DEVELOPING, confidence 0.725, evidenceCount 1,
+reviewDue 2026-10-14 (attempt `80eaf0c4`). Correct submit route confirmed:
+`POST /api/missions/runs/:runId/submit` body `{activityId, response}`.
+
+### English breadth WAVE 2 — commit `9584bfe` (`seed-english-breadth-a2.ts`)
+5 competencies / 14 activities: Pronunciation A1, Speaking & Conversation A1,
+Dictation A1, Shadowing A1 (all honest TEXT-PROXY — no faked microphone
+grading, real audio scoring stays with the PROVIDER-GATED Voice pipeline) +
+Writing PROJECT A2 (plan SEQUENCE + CREATE capstone). Live verified 2026-09-30:
+- Seed ran clean: `competencies=5, activities=14`.
+- English path grew to **9 skills / 10 competencies** (all wave-2 strands lit).
+- Live SOLVE dictation grade: `success:true, score:1, "Correct! Well done!"`
+  (attempt `29de5e16`) on `english-act-dict-write`.
+- Mastery landed: "Write words correctly (A1)" DEVELOPING, confidence 0.725,
+  evidenceCount 1, reviewDue 2026-10-14 (skill=English Dictation, strandId set).
+- `mastery/by-domain`: English now aggregates 3 competencies with records.
+- SUMMATIVE guard confirmed working (retake of a summative in the same run is
+  correctly rejected with 400).
+
+English priority strands now covered on the spine: Vocabulary, Grammar,
+Reading, Listening, Writing (A1+A2 project), Pronunciation, Speaking/
+Conversation, Dictation, Shadowing. Next: Coding breadth, then AI Literacy.
+
+---
+
 ## (Original report — pre-deploy code+browser verification)
 
 > Phase: full frontend reconciliation with the real backend platform. This
