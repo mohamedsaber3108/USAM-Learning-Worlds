@@ -55,6 +55,7 @@ Date: 2026-09-30 (pre-execution baseline)
 | i18n EN/AR + RTL | PRESENT | partial | PARTIAL | i18next + translations (human-approval); RTL pass needed |
 | Design system | PRESENT(FE) | PRESENT | PARTIAL | src/design mature; adopt; palette owner decision |
 | Memory-governance admin | PRESENT | — | BLOCKED | authz gap — WITHHELD until RolesGuard fix (35 §2) |
+| **Landing page** | static | REBUILT | PARTIAL→verify | REBUILT on locked 4 domains + AI/Entrepreneurship + journey/companions/parent/pricing/§17; tsc+build+home-bundle green; i18n keys use fallbacks (AR/EN keys = i18n pass); visual QA = owner-run (46) |
 
 ## Honest headline (pre-execution)
 
@@ -65,3 +66,27 @@ Date: 2026-09-30 (pre-execution baseline)
   EG-Arabic voice accuracy UNVERIFIED; legal copy.
 - NOTHING here is marked PRODUCTION_READY yet — that status is earned per feature
   during Gate-5 execution with build+test+observed-QA evidence.
+
+---
+
+## PHASE A UPDATE (2026-09-30) — canonical tree `frontend/` baseline VERIFIED
+
+> CORRECTION: the "frontend = root src/ mock" framing above applied to the LEGACY
+> tree. The CANONICAL tree is `frontend/` (deploy-chain verified). `frontend/` is
+> largely REAL (axios `endpoints.ts`, 61 groups), not mock. Baseline measured:
+
+- `frontend/`: `tsc --noEmit` **PASS**; `npm test` **40/40 pass (11 files)**;
+  `npm run build` **PASS**; `check:home-bundle` **PASS**. Healthy real app.
+- PERF FINDING (directive §19): one vendor chunk `vendor-D50g1LQf.js` = **1.9 MB**
+  (gzip 531 kB) — code-split in the hardening phase. Status: REFACTOR (perf).
+- SCOPE-VIOLATION FINDING (landing, directive §17): `landing/LandingPage.tsx`
+  presents the OLD 6 "worlds" = Math/Science/Language/Coding/Arts/World — the
+  REJECTED generic school-subject model, NOT the locked 4 domains. No AI or
+  Entrepreneurship domain presence; missing voice/projects/portfolio/packages/
+  pricing sections (§17). Status: REBUILD (scope-wrong). Hero already uses the
+  correct 4 new characters (Azouz/Zein/Luma/Codey) ✓.
+- Characters: `frontend/src/features/characters/components/CharacterFace.tsx` SVG
+  system exists + `characterPreference` lib. Reconcile to the 15 roster (23).
+
+Each `frontend/` feature dir will be audited against the product definition and
+marked here (verify/finish/rebuild) as Phase A proceeds. EXISTENCE != COMPLETE.

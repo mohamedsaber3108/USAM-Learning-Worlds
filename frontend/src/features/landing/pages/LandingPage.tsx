@@ -3,73 +3,73 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import {
-  Sparkles, Languages, Code2, ArrowRight, Calculator, FlaskConical,
-  Globe2, Palette, ShieldCheck, Trophy, Mic, Star, Brain, Rocket,
-  Compass, MessageCircle, PlayCircle, HeartHandshake, Users2,
+  Sparkles, Languages, Code2, ArrowRight, Bot, Rocket,
+  ShieldCheck, Trophy, Mic, Star, Brain, Compass, MessageCircle,
+  PlayCircle, HeartHandshake, Users2, FolderCheck, Hammer, Award,
+  TrendingUp, Lightbulb,
 } from 'lucide-react'
 import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { setPreferredCharacter, type PreferredCharacterName } from '../lib/characterPreference'
 
 /**
- * USAM Kids — Landing page (ground-up rebuild).
+ * USAM Kids — public LANDING (product-first reconstruction, directive §17).
  *
- * A real product-selling marketing page, not a feature dump: a bold animated
- * hero with an interactive character stage, a "how it works" journey, the six
- * learning worlds, the character universe, the balanced-development promise, a
- * safety/parent trust band, and a strong closing CTA. Fully i18n + RTL-safe,
- * built on the existing design tokens and the real CharacterFace SVG system.
+ * Rebuilt around the LOCKED 4 primary domains (English, Coding, AI,
+ * Entrepreneurship) — the previous version presented the REJECTED generic
+ * school-subject "worlds" (Math/Science/Arts), which is scope-wrong. This
+ * answers: what USAM is, who it's for, what the child learns + actually does,
+ * the four domains, the learning journey, companions, voice, projects/evidence/
+ * portfolio, parent value, safety, and a clear start. EN/AR + RTL, built on the
+ * real CharacterFace SVG system + design tokens. i18n via t(key, fallback) so it
+ * renders before locale keys are authored (AR/EN keys added in the i18n pass).
  */
 
 interface LandingCharacter {
   name: PreferredCharacterName
   roleKey: string
-  greetingKey: string
+  roleFallback: string
+  greetingFallback: string
   tint: string
 }
 
+// Hero companion picker — the 4 characters the pre-signup preference supports.
 const LANDING_CHARACTERS: LandingCharacter[] = [
-  { name: 'Azouz', roleKey: 'mainGuide', greetingKey: 'azouz', tint: '#f59e0b' },
-  { name: 'Zein', roleKey: 'explorer', greetingKey: 'zein', tint: '#3b90f6' },
-  { name: 'Luma', roleKey: 'englishCoach', greetingKey: 'luma', tint: '#8b5cf6' },
-  { name: 'Codey', roleKey: 'codingMentor', greetingKey: 'codey', tint: '#10b981' },
+  { name: 'Azouz', roleKey: 'mainGuide', roleFallback: 'Your guide', greetingFallback: "Hi! I'm Azouz. I'll help you find what to do next — I never do the work for you.", tint: '#f59e0b' },
+  { name: 'Zein', roleKey: 'explorer', roleFallback: 'Explorer', greetingFallback: "Let's explore! Every world has something new to discover.", tint: '#3b90f6' },
+  { name: 'Luma', roleKey: 'englishCoach', roleFallback: 'English coach', greetingFallback: 'Say it so a stranger could picture it. Words are powerful!', tint: '#8b5cf6' },
+  { name: 'Codey', roleKey: 'codingMentor', roleFallback: 'Coding mentor', greetingFallback: "Predict what the code does — then run it. Bugs are just clues.", tint: '#10b981' },
 ]
 
-// Six learning worlds — labelKey → landing.worldLabels.*
-const WORLDS = [
-  { key: 'math', icon: Calculator, grad: 'from-sky-400 to-sky-600' },
-  { key: 'science', icon: FlaskConical, grad: 'from-primary-400 to-primary-600' },
-  { key: 'language', icon: Languages, grad: 'from-grape-400 to-grape-600' },
-  { key: 'coding', icon: Code2, grad: 'from-success-400 to-success-600' },
-  { key: 'arts', icon: Palette, grad: 'from-bubble-400 to-bubble-600' },
-  { key: 'world', icon: Globe2, grad: 'from-accent-400 to-accent-600' },
+// THE 4 LOCKED PRIMARY DOMAINS (replaces the old 6 school-subject worlds).
+const DOMAINS = [
+  { key: 'english', icon: Languages, grad: 'from-grape-400 to-grape-600', mentor: 'Luma',
+    titleFallback: 'English', bodyFallback: 'Vocabulary, reading, writing, speaking and real conversation — CEFR-aligned, with Luma.' },
+  { key: 'coding', icon: Code2, grad: 'from-success-400 to-success-600', mentor: 'Codey',
+    titleFallback: 'Coding', bodyFallback: 'Think like a problem-solver: logic, loops, debugging and real programs you build and run.' },
+  { key: 'ai', icon: Bot, grad: 'from-secondary-400 to-secondary-600', mentor: 'Nova',
+    titleFallback: 'AI Literacy', bodyFallback: 'How AI really works, where it gets things wrong, and how to create with it responsibly — with Nova.' },
+  { key: 'entrepreneurship', icon: Rocket, grad: 'from-accent-400 to-accent-600', mentor: 'Adam',
+    titleFallback: 'Entrepreneurship', bodyFallback: 'Turn an idea into something real: find a problem, build a solution, test it, and pitch it — with Adam.' },
 ]
 
-// "How it works" — 4 steps → landing.how.*
-const HOW_STEPS = [
-  { key: 'pick', icon: Compass },
-  { key: 'learn', icon: PlayCircle },
-  { key: 'grow', icon: Sparkles },
-  { key: 'celebrate', icon: Trophy },
+// The learning journey (the visible loop) → landing.journey.*
+const JOURNEY = [
+  { key: 'discover', icon: Compass, titleFallback: 'Discover', bodyFallback: 'Meet Azouz and find your starting point with a quick, playful check-in.' },
+  { key: 'learn', icon: PlayCircle, titleFallback: 'Learn', bodyFallback: 'Short missions teach one idea at a time — then you try it yourself.' },
+  { key: 'practice', icon: Brain, titleFallback: 'Practice', bodyFallback: 'Smart review brings back what you are about to forget, right on time.' },
+  { key: 'build', icon: Hammer, titleFallback: 'Build', bodyFallback: 'Make real projects — a program, a story, an idea, a pitch.' },
+  { key: 'prove', icon: Award, titleFallback: 'Prove', bodyFallback: 'Earn evidence of real skill, not just points — saved to your portfolio.' },
+  { key: 'grow', icon: TrendingUp, titleFallback: 'Grow', bodyFallback: 'See exactly what you are getting better at, across every domain.' },
 ]
 
-// Feature cards → landing.features.*
+// Why USAM → landing.features.*
 const FEATURES = [
-  { icon: Sparkles, titleKey: 'mentorsTitle', bodyKey: 'mentorsBody' },
-  { icon: Brain, titleKey: 'adaptiveTitle', bodyKey: 'adaptiveBody' },
-  { icon: Languages, titleKey: 'bilingualTitle', bodyKey: 'bilingualBody' },
-  { icon: Mic, titleKey: 'voiceTitle', bodyKey: 'voiceBody' },
-  { icon: Code2, titleKey: 'codingTitle', bodyKey: 'codingBody' },
-  { icon: ShieldCheck, titleKey: 'safeTitle', bodyKey: 'safeBody' },
-]
-
-// Balanced-development dimensions → landing.balanced.dims.*
-const BALANCE_DIMS = [
-  { key: 'knowledge', color: 'bg-sky-500' },
-  { key: 'creativity', color: 'bg-bubble-500' },
-  { key: 'problemSolving', color: 'bg-primary-500' },
-  { key: 'communication', color: 'bg-grape-500' },
-  { key: 'coding', color: 'bg-success-500' },
-  { key: 'lifeSkills', color: 'bg-accent-500' },
+  { icon: Sparkles, titleFallback: 'Characters who guide', bodyFallback: 'Azouz and specialist mentors teach with hints and questions — never by handing over answers.' },
+  { icon: Brain, titleFallback: 'Adaptive to your child', bodyFallback: 'Difficulty, pacing and what-comes-next adapt to age, ability, interests and progress.' },
+  { icon: Mic, titleFallback: 'Voice built in', bodyFallback: 'Speak, listen and get pronunciation help — in English and Arabic.' },
+  { icon: Languages, titleFallback: 'Arabic & English', bodyFallback: 'A real bilingual experience, right-to-left done properly — not an afterthought.' },
+  { icon: FolderCheck, titleFallback: 'Real evidence', bodyFallback: 'A portfolio of real work and verifiable credentials parents can trust.' },
+  { icon: ShieldCheck, titleFallback: 'Safe by design', bodyFallback: 'Child-first privacy, moderation, and AI that never asks for secrecy or creates dependency.' },
 ]
 
 function Wordmark({ onDark = false }: { onDark?: boolean }) {
@@ -104,6 +104,12 @@ export function LandingPage() {
             <Wordmark />
             <span className="font-display font-bold text-sm text-slate-500 hidden sm:inline">{t('common.appName')}</span>
           </Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+            <a href="#domains" className="hover:text-primary-600 transition-colors">{t('landing.navDomains', 'What they learn')}</a>
+            <a href="#how" className="hover:text-primary-600 transition-colors">{t('landing.navHow', 'How it works')}</a>
+            <a href="#parents" className="hover:text-primary-600 transition-colors">{t('landing.navParents', 'For parents')}</a>
+            <a href="#pricing" className="hover:text-primary-600 transition-colors">{t('landing.navPricing', 'Plans')}</a>
+          </nav>
           <div className="flex items-center gap-2">
             <Link to="/login" className="btn btn-secondary">{t('landing.logIn')}</Link>
             <Link to="/register" className="btn btn-primary hidden sm:inline-flex">{t('landing.startLearning')}</Link>
@@ -125,21 +131,21 @@ export function LandingPage() {
               className="inline-flex items-center gap-2 rounded-pill bg-white border border-secondary-200 text-secondary-700 px-4 py-1.5 text-sm font-bold shadow-soft"
             >
               <Star className="w-4 h-4 fill-secondary-400 text-secondary-400" />
-              {t('landing.ageBadge')}
+              {t('landing.ageBadge', 'For curious kids, ages 8–14')}
             </motion.span>
 
             <motion.h1
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
               className="mt-5 font-display font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-ink"
             >
-              {t('landing.heroTitle')}
+              {t('landing.heroTitle', 'One world where kids master English, Coding, AI and Entrepreneurship')}
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
               className="mt-5 text-lg text-slate-600 max-w-xl mx-auto lg:mx-0"
             >
-              {t('landing.heroSubtitle')}
+              {t('landing.heroSubtitle', 'A guided, AI-native learning universe where your child learns alone — with characters, voice, real projects, and evidence of growth you can trust.')}
             </motion.p>
 
             <motion.div
@@ -147,22 +153,22 @@ export function LandingPage() {
               className="mt-8 flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start"
             >
               <Link to="/register" className="btn-hero-accent w-full sm:w-auto">
-                {t('landing.startLearning')}
+                {t('landing.startLearning', 'Start learning')}
                 <ArrowRight className="w-5 h-5 rtl:scale-x-[-1]" />
               </Link>
-              <a href="#how" className="btn btn-secondary px-6 py-4 text-base w-full sm:w-auto justify-center">
-                {t('landing.howCta', 'See how it works')}
+              <a href="#domains" className="btn btn-secondary px-6 py-4 text-base w-full sm:w-auto justify-center">
+                {t('landing.howCta', 'See what they learn')}
               </a>
             </motion.div>
 
             {/* Trust row */}
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.28 }}
-              className="mt-8 flex items-center gap-4 justify-center lg:justify-start text-xs font-semibold text-slate-500"
+              className="mt-8 flex flex-wrap items-center gap-4 justify-center lg:justify-start text-xs font-semibold text-slate-500"
             >
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-primary-500" />{t('landing.trustSafe', 'Safe for kids')}</span>
               <span className="inline-flex items-center gap-1.5"><Languages className="w-4 h-4 text-grape-500" />{t('landing.trustBilingual', 'Arabic & English')}</span>
-              <span className="inline-flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-accent-500" />{t('landing.trustParents', 'Parent-approved')}</span>
+              <span className="inline-flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-accent-500" />{t('landing.trustParents', 'Parent-trusted evidence')}</span>
             </motion.div>
           </div>
 
@@ -191,7 +197,7 @@ export function LandingPage() {
                       <CharacterFace characterId={c.name} size={88} animate={selected === c.name} />
                     </div>
                     <p className="mt-2 font-display font-extrabold text-sm text-ink">{c.name}</p>
-                    <p className="text-[11px] font-semibold text-slate-500">{t(`landing.charRoles.${c.roleKey}`)}</p>
+                    <p className="text-[11px] font-semibold text-slate-500">{t(`landing.charRoles.${c.roleKey}`, c.roleFallback)}</p>
                   </motion.button>
                 ))}
               </div>
@@ -204,7 +210,7 @@ export function LandingPage() {
                   className="relative mt-4 flex items-start gap-2.5 p-3.5 bg-primary-50 rounded-blob text-start"
                 >
                   <MessageCircle className="w-4 h-4 text-primary-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-700 leading-snug">"{t(`landing.charGreetings.${selectedCharacter.greetingKey}`)}"</p>
+                  <p className="text-sm text-slate-700 leading-snug">"{t(`landing.charGreetings.${selectedCharacter.name.toLowerCase()}`, selectedCharacter.greetingFallback)}"</p>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -212,78 +218,80 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ===================================================== HOW IT WORKS */}
-      <section id="how" className="section-x py-16 lg:py-20 scroll-mt-20">
-        <div className="text-center mb-12">
-          <p className="eyebrow justify-center">{t('landing.howEyebrow', 'How it works')}</p>
-          <h2 className="display-lg mt-1">{t('landing.howTitle', 'A learning adventure in four steps')}</h2>
+      {/* ===================================================== DOMAINS (the 4 locked pillars) */}
+      <section id="domains" className="section-x py-16 lg:py-20 scroll-mt-20">
+        <div className="text-center mb-10">
+          <p className="eyebrow justify-center">{t('landing.domainsEyebrow', 'What your child learns')}</p>
+          <h2 className="display-lg mt-1">{t('landing.domainsTitle', 'Four skills that shape the future')}</h2>
+          <p className="text-slate-500 mt-2 max-w-2xl mx-auto">{t('landing.domainsSubtitle', 'Not a pile of school subjects — four connected domains a child grows across, with a mentor for each.')}</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {HOW_STEPS.map(({ key, icon: Icon }, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {DOMAINS.map(({ key, icon: Icon, grad, mentor, titleFallback, bodyFallback }, i) => (
             <motion.div
               key={key}
               initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-              className="card text-center relative"
+              className="card relative overflow-hidden flex items-start gap-4"
             >
-              <span className="absolute top-4 end-4 font-display font-extrabold text-3xl text-surface-200">{i + 1}</span>
-              <div className="icon-chip bg-primary-50 text-primary-600 w-14 h-14 mx-auto mb-4"><Icon className="w-7 h-7" strokeWidth={2} /></div>
-              <h3 className="font-display font-bold text-ink">{t(`landing.how.${key}Title`)}</h3>
-              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{t(`landing.how.${key}Body`)}</p>
+              <div aria-hidden className={`absolute -right-10 -top-10 w-28 h-28 rounded-full bg-gradient-to-br ${grad} opacity-10`} />
+              <div className={`icon-chip bg-gradient-to-br ${grad} text-white w-14 h-14 shrink-0`}><Icon className="w-7 h-7" strokeWidth={2} /></div>
+              <div className="relative">
+                <h3 className="font-display font-bold text-lg text-ink">{t(`landing.domains.${key}Title`, titleFallback)}</h3>
+                <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{t(`landing.domains.${key}Body`, bodyFallback)}</p>
+                <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600">
+                  <CharacterFace characterId={mentor} size={22} /> {t('landing.ledBy', 'Led by')} {mentor}
+                </p>
+              </div>
             </motion.div>
           ))}
         </div>
+        <p className="text-center text-xs text-slate-400 mt-6 max-w-2xl mx-auto">
+          {t('landing.domainsNote', 'Science, maths and more show up inside real projects when they help — but USAM is built around these four, not a generic school curriculum.')}
+        </p>
       </section>
 
-      {/* ===================================================== WORLDS */}
-      <section className="bg-surface-50 border-y border-surface-200 py-16 lg:py-20">
+      {/* ===================================================== LEARNING JOURNEY */}
+      <section id="how" className="bg-surface-50 border-y border-surface-200 py-16 lg:py-20 scroll-mt-20">
         <div className="section-x">
-          <div className="text-center mb-10">
-            <p className="eyebrow justify-center">{t('landing.exploreEyebrow')}</p>
-            <h2 className="display-lg mt-1">{t('landing.worldsTitle')}</h2>
-            <p className="text-slate-500 mt-2 max-w-xl mx-auto">{t('landing.worldsSubtitle', 'Each world is a universe of missions, stories, and projects led by its own character guide.')}</p>
+          <div className="text-center mb-12">
+            <p className="eyebrow justify-center">{t('landing.howEyebrow', 'How it works')}</p>
+            <h2 className="display-lg mt-1">{t('landing.howTitle', 'A learning loop that actually sticks')}</h2>
+            <p className="text-slate-500 mt-2 max-w-xl mx-auto">{t('landing.howSubtitle', 'Every session: review, learn, practice, build, prove, grow — adapted to your child.')}</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
-            {WORLDS.map(({ key, icon: Icon, grad }, i) => (
-              <motion.div
+          <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {JOURNEY.map(({ key, icon: Icon, titleFallback, bodyFallback }, i) => (
+              <motion.li
                 key={key}
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
-                className={`world-tile bg-gradient-to-br ${grad} min-h-[9rem] flex flex-col justify-between`}
+                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+                className="card relative"
               >
-                <div aria-hidden className="dots-layer opacity-20" />
-                <Icon className="w-8 h-8 relative" strokeWidth={2} />
-                <span className="relative font-display font-bold text-lg">{t(`landing.worldLabels.${key}`)}</span>
-              </motion.div>
+                <span className="absolute top-4 end-4 font-display font-extrabold text-3xl text-surface-200">{i + 1}</span>
+                <div className="icon-chip bg-primary-50 text-primary-600 w-14 h-14 mb-4"><Icon className="w-7 h-7" strokeWidth={2} /></div>
+                <h3 className="font-display font-bold text-ink">{t(`landing.journey.${key}Title`, titleFallback)}</h3>
+                <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{t(`landing.journey.${key}Body`, bodyFallback)}</p>
+              </motion.li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      {/* ===================================================== BALANCED DEVELOPMENT */}
-      <section className="section-x py-16 lg:py-20">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <p className="eyebrow">{t('landing.balancedEyebrow', 'Balanced development')}</p>
-            <h2 className="display-lg mt-1">{t('landing.balancedTitle', 'More than grades — the whole child')}</h2>
-            <p className="text-slate-600 mt-3 leading-relaxed">{t('landing.balancedBody', 'USAM grows knowledge, creativity, communication, problem-solving and life skills together — and shows the journey in a way kids and parents actually understand.')}</p>
-          </div>
-          <div className="card-playful">
-            <div className="space-y-4">
-              {BALANCE_DIMS.map(({ key, color }, i) => (
-                <div key={key}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-semibold text-slate-700">{t(`landing.balanced.dims.${key}`)}</span>
-                  </div>
-                  <div className="progress-track">
-                    <motion.div
-                      className={`h-full rounded-full ${color}`}
-                      initial={{ width: 0 }} whileInView={{ width: `${55 + i * 7}%` }} viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: i * 0.08, ease: 'easeOut' }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* ===================================================== COMPANIONS */}
+      <section className="section-x py-16 lg:py-20 text-center">
+        <p className="eyebrow justify-center">{t('landing.companionsEyebrow', 'The USAM universe')}</p>
+        <h2 className="display-lg mt-1">{t('landing.companionsTitle', 'A cast of characters who teach')}</h2>
+        <p className="text-slate-500 mt-2 max-w-2xl mx-auto">{t('landing.companionsBody', 'Azouz is your main companion. Specialist mentors appear when they can help — and unlock as your child grows.')}</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-4 sm:gap-6">
+          {['Azouz', 'Luma', 'Codey', 'Nova', 'Adam', 'Mira', 'Zara', 'Rex'].map((name, i) => (
+            <motion.div
+              key={name}
+              initial={{ opacity: 0, scale: 0.7 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05, type: 'spring', stiffness: 160 }}
+              className="flex flex-col items-center"
+            >
+              <div className="rounded-full p-2.5 bg-surface-100 shadow-soft">
+                <CharacterFace characterId={name} size={64} />
+              </div>
+              <p className="mt-2 text-xs font-bold text-slate-600">{name}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
@@ -291,19 +299,19 @@ export function LandingPage() {
       <section className="bg-surface-50 border-y border-surface-200 py-16 lg:py-20">
         <div className="section-x">
           <div className="text-center mb-10">
-            <p className="eyebrow justify-center">{t('landing.whyEyebrow')}</p>
-            <h2 className="display-lg mt-1">{t('landing.whyTitle')}</h2>
+            <p className="eyebrow justify-center">{t('landing.whyEyebrow', 'Why USAM')}</p>
+            <h2 className="display-lg mt-1">{t('landing.whyTitle', 'Built for how children really learn')}</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map(({ icon: Icon, titleKey, bodyKey }, i) => (
+            {FEATURES.map(({ icon: Icon, titleFallback, bodyFallback }, i) => (
               <motion.div
-                key={titleKey}
+                key={titleFallback}
                 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}
                 className="card"
               >
                 <div className="icon-chip bg-primary-50 text-primary-600 mb-4"><Icon className="w-6 h-6" /></div>
-                <h3 className="font-display font-bold text-lg text-ink">{t(`landing.features.${titleKey}`)}</h3>
-                <p className="text-slate-500 mt-1.5 text-sm leading-relaxed">{t(`landing.features.${bodyKey}`)}</p>
+                <h3 className="font-display font-bold text-lg text-ink">{t(`landing.features.f${i}Title`, titleFallback)}</h3>
+                <p className="text-slate-500 mt-1.5 text-sm leading-relaxed">{t(`landing.features.f${i}Body`, bodyFallback)}</p>
               </motion.div>
             ))}
           </div>
@@ -311,47 +319,79 @@ export function LandingPage() {
       </section>
 
       {/* ===================================================== PARENTS / SAFETY */}
-      <section className="section-x py-16 lg:py-20">
+      <section id="parents" className="section-x py-16 lg:py-20 scroll-mt-20">
         <div className="card-playful bg-primary-50/40 grid lg:grid-cols-2 gap-8 items-center">
           <div>
             <div className="icon-chip bg-primary-600 text-white w-12 h-12 mb-4"><Users2 className="w-6 h-6" /></div>
             <p className="eyebrow">{t('landing.parentsEyebrow', 'For parents')}</p>
-            <h2 className="display-lg mt-1">{t('landing.parentsTitle', 'You stay in the loop, safely')}</h2>
-            <p className="text-slate-600 mt-3 leading-relaxed">{t('landing.parentsBody', 'A calm parent dashboard shows real progress and balanced development. Consent, privacy and screen-time controls are built in — child data is protected by design.')}</p>
+            <h2 className="display-lg mt-1">{t('landing.parentsTitle', 'See real growth — and stay in control')}</h2>
+            <p className="text-slate-600 mt-3 leading-relaxed">{t('landing.parentsBody', 'A calm dashboard shows mastery by domain, a portfolio of real work, and verifiable credentials. Consent, privacy and screen-time controls are built in — child data is protected by design.')}</p>
             <Link to="/register" className="btn btn-primary mt-5">
               {t('landing.parentsCta', 'Create a family account')}
               <ArrowRight className="w-4 h-4 rtl:scale-x-[-1]" />
             </Link>
           </div>
           <div className="grid grid-cols-1 gap-3">
-            {['consent', 'progress', 'privacy'].map((k, i) => (
+            {[
+              { k: 'progress', fallback: 'Mastery and evidence by domain — not just points' },
+              { k: 'portfolio', fallback: 'A portfolio of real projects your child built' },
+              { k: 'privacy', fallback: 'Consent, data export/delete, and screen-time controls' },
+            ].map(({ k, fallback }, i) => (
               <motion.div
                 key={k}
                 initial={{ opacity: 0, x: 12 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                 className="flex items-center gap-3 bg-white rounded-control p-4 border border-surface-200"
               >
                 <ShieldCheck className="w-5 h-5 text-primary-500 shrink-0" strokeWidth={2} />
-                <span className="text-sm font-medium text-slate-700">{t(`landing.parentsPoints.${k}`)}</span>
+                <span className="text-sm font-medium text-slate-700">{t(`landing.parentsPoints.${k}`, fallback)}</span>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* ===================================================== PRICING TEASER */}
+      <section id="pricing" className="section-x py-16 lg:py-20 scroll-mt-20 text-center">
+        <p className="eyebrow justify-center">{t('landing.pricingEyebrow', 'Simple family plans')}</p>
+        <h2 className="display-lg mt-1">{t('landing.pricingTitle', 'Start free. Upgrade when you are ready.')}</h2>
+        <p className="text-slate-500 mt-2 max-w-xl mx-auto">{t('landing.pricingSubtitle', 'A free tier to explore, a plan for one learner, and a family plan with voice for up to four children.')}</p>
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+          {[
+            { k: 'free', name: 'Free', fallback: 'Explore the world, a few missions a day.' },
+            { k: 'explorer', name: 'Explorer', fallback: 'One learner, the full learning product.', featured: false },
+            { k: 'family', name: 'Family', fallback: 'Up to 4 children, everything, plus voice.', featured: true },
+          ].map(({ k, name, fallback, featured }, i) => (
+            <motion.div
+              key={k}
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+              className={`card text-start ${featured ? 'ring-2 ring-primary-400 relative' : ''}`}
+            >
+              {featured && <span className="absolute -top-3 start-5 inline-flex items-center gap-1 rounded-pill bg-primary-600 text-white px-3 py-0.5 text-[11px] font-bold"><Lightbulb className="w-3 h-3" />{t('landing.pricingPopular', 'Most popular')}</span>}
+              <h3 className="font-display font-extrabold text-ink">{t(`landing.plans.${k}Name`, name)}</h3>
+              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{t(`landing.plans.${k}Body`, fallback)}</p>
+            </motion.div>
+          ))}
+        </div>
+        <Link to="/register" className="btn btn-primary mt-8 inline-flex">
+          {t('landing.pricingCta', 'See plans & start')}
+          <ArrowRight className="w-4 h-4 rtl:scale-x-[-1]" />
+        </Link>
+      </section>
+
       {/* ===================================================== FINAL CTA */}
       <section className="relative bg-aurora text-white overflow-hidden">
         <div aria-hidden className="absolute inset-0 dots-layer opacity-[0.15]" />
         <div className="relative section-x py-20 text-center">
-          <Rocket className="w-12 h-12 mx-auto mb-4 text-secondary-300" />
-          <h2 className="font-display font-extrabold text-3xl sm:text-4xl">{t('landing.finalCtaTitle')}</h2>
-          <p className="mt-3 text-white/80 max-w-xl mx-auto">{t('landing.finalCtaBody')}</p>
+          <Trophy className="w-12 h-12 mx-auto mb-4 text-secondary-300" />
+          <h2 className="font-display font-extrabold text-3xl sm:text-4xl">{t('landing.finalCtaTitle', 'Your child’s learning adventure starts here')}</h2>
+          <p className="mt-3 text-white/80 max-w-xl mx-auto">{t('landing.finalCtaBody', 'English, Coding, AI and Entrepreneurship — one world, one companion, real growth.')}</p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register" className="btn-hero-accent w-full sm:w-auto">
-              {t('landing.startLearning')}
+              {t('landing.startLearning', 'Start learning')}
               <ArrowRight className="w-5 h-5 rtl:scale-x-[-1]" />
             </Link>
             <Link to="/login" className="chip-glass px-6 py-4 text-base hover:bg-white/25 transition-colors w-full sm:w-auto justify-center">
-              {t('landing.logIn')}
+              {t('landing.logIn', 'Log in')}
             </Link>
           </div>
         </div>
@@ -364,7 +404,7 @@ export function LandingPage() {
             <Wordmark onDark />
             <span className="font-display font-bold text-white/80">{t('common.appName')}</span>
           </div>
-          <p>© {new Date().getFullYear()} USAM · {t('landing.footerTagline')}</p>
+          <p>© {new Date().getFullYear()} USAM · {t('landing.footerTagline', 'Learn. Build. Grow.')}</p>
         </div>
       </footer>
     </div>

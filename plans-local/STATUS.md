@@ -135,6 +135,19 @@ auth reset/verify/OAuth.
 - Remaining Phase B: wire cross-curricular concept tables into the graph; seed
   worlds per the 4 domains (verify `seed-worlds.ts` targets them).
 
+## Execution progress (frontend/ = canonical)
+
+- Phase A baseline VERIFIED: `frontend/` tsc clean, 40/40 tests, build + home-bundle
+  green. `frontend/` is a REAL app (61 axios API groups, 24 feature dirs), NOT
+  mock — the first audit's "mostly mock" applied to the LEGACY root `src/`.
+- Perf finding: 1.9MB vendor chunk (code-split in hardening — directive §19).
+- Landing REBUILT (directive §17): was scope-wrong (old 6 school-subject
+  "worlds" Math/Science/Arts); now the locked 4 domains (English/Coding/AI/
+  Entrepreneurship) + journey + 15-character companions + parent + pricing teaser
+  + §17 content. tsc+build+home-bundle green. All 15 CharacterFace SVGs exist.
+- CharacterFace already renders all 15 locked names; characterPreference supports
+  the 4 hero picks. Backend 4-domain seed already corrected (74768aa).
+
 ## Next (execution — 44)
 
 Phase A foundation wiring (one API client + AgePresentationProvider + real auth)
