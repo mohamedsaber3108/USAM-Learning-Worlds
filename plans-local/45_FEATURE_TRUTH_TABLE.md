@@ -26,7 +26,10 @@ Date: 2026-09-30 (pre-execution baseline)
 | English domain | PARTIAL | MOCK | PARTIAL | strands+slice+A1/A2 breadth; FE mock; speaking needs voice+types |
 | Coding domain | PARTIAL | MOCK | PARTIAL | concepts+slice+A1+sandbox; FE mock |
 | AI domain | PARTIAL | MOCK | PARTIAL | slice+A1; concepts flat (wire to graph); FE mock |
-| Entrepreneurship domain | THIN | MOCK | REBUILD | thinnest content (no breadth seed); priority build (28/13) |
+| Entrepreneurship domain | SLICE SEEDED | REAL(domain-path) | PARTIAL | Authored seed-entrepreneurship-slice.ts (Domain→Skill 'From Idea to Pitch'→Competency 'Find a real problem A1'→Objective→4 activities SELECT/SELECT/MATCH/EXPLAIN→Mission 'My First Big Idea', Adam mentor, Problem→Idea→User→Pitch, no real money). Follows proven English/Coding slice pattern; backend tsc clean; npm run seed:entrepreneurship:vertical. Surfaced via DomainPathPage(entrepreneurship) + /cross-curricular/entrepreneurship (both real). Breadth beyond A1 slice still to author. |
+| English domain surface | englishApi strands/path | REAL | LIVE(existing) | EnglishStrandsPage already reconstruction-quality: real 9 strand families + CEFR + shared DomainLearningPath spine (live mastery), Luma mentor, i18n, honest states. No change (§5). |
+| Coding domain surface | coding-sandbox/concepts | REAL | LIVE(existing) | CodingPage tested + real. No scope defect. (§5) |
+| AI domain surface | cross-curricular/domain-path | REAL | LIVE(existing) | Via DomainPathPage(ai-literacy) + cross-curricular (real useQuery). |
 | Missions + player | PRESENT | MOCK | MISWIRED | engine runs (coding proved it); FE mock |
 | Mastery + evidence | PRESENT | MOCK | PARTIAL | MasteryRecord/Evidence; FSRS review; FE mock |
 | Review scheduling (FSRS) | PRESENT | — | PARTIAL | ts-fsrs adopted (migration 20260910); verify runtime |

@@ -37,8 +37,11 @@ additionally gated on Voice (24).
 
 ## 4. Priority order for content work (feeds 44 implementation sequence)
 
-1. REPLACE default seeder → 4 domains + 15 characters + worlds (unblocks correct product shape).
-2. Entrepreneurship vertical slice + A1 breadth (it's the thinnest PRIMARY domain).
+1. ✅ DONE — default seeder → 4 domains (74768aa); worlds → 4 domains (b5b86d9).
+2. ✅ DONE (A1 slice) — Entrepreneurship vertical slice authored
+   (`seed-entrepreneurship-slice.ts`: Skill 'From Idea to Pitch' → Competency
+   'Find a real problem A1' → 4 activities → Mission 'My First Big Idea', Adam,
+   Problem→Idea→User→Pitch, no real money). A2+ breadth still to author.
 3. Wire cross-curricular concepts into the graph.
 4. English specialized activity types (text-first ones: CLOZE, READING_COMPREHENSION, WRITING_RESPONSE) — before voice-gated ones.
 5. Scale breadth per domain/band toward the v1 target; each item carries provenance + review status.
