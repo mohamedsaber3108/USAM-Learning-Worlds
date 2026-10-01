@@ -13,6 +13,7 @@ Last updated: 2026-09-30
 |---|---|---|
 | G1 | Forensic audit + product scope + current reality + gaps | ✅ done + committed; 1 blocking owner decision open (tree) |
 | G2 | Research + learning methodology + age/adaptation + OSS | ✅ done (04/05/06/07/36), research-cited |
+| G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ✅ done (08-21); merged prior 47/48/66/69 + Product Bible/North Star |
 | G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ⬜ not started |
 | G4 | Design system + domain products + engines + FE/BE/data/API contracts | ⬜ not started |
 | G5 | Migration + rebuild inside ONE app + test + deprecate legacy | ⬜ not started |
@@ -65,9 +66,25 @@ canonical. Recommendation: root `src/`. See 02 §A. This does NOT block Gates
 - Pricing: multi-domain premium, family-affordable (~$130/yr FAMILY anchor);
   Socratic + parent-inspectable AI = table stakes.
 
+## Gate 3 corrections to current-reality (verified this gate)
+
+- Backend content layer is MUCH richer than first seen: ~55 seed files + ~48
+  migrations. 15-character roster ALREADY seeded in `seed-character-universe.ts`
+  with the EXACT locked names (char mismatch is FRONTEND-only). ts-fsrs ALREADY
+  adopted (migration 20260910). Pricing plans seeded (20260924). Credentials/
+  Open-Badges, worlds, stories, simulations, flashcards, projects/rubrics,
+  age-variants, learning-paths all seeded. BUT default `prisma db seed`
+  (`seed.ts`) is STALE (12 school subjects + Azouz only) — real content is in
+  named `seed:*` scripts.
+- Dominant real gaps unchanged: mock-backed root `src/` frontend; stale default
+  seeder; Entrepreneurship thinnest domain content; adaptive wiring (confidence
+  only).
+
 ## Next
 
-- Gate 3: curriculum DAG (08), levels (09), packages/entitlements (10), pricing
-  (11), content inventory/gaps (12/13), journeys (14-16), IA/nav/page/feature/
-  engine maps (17-21). Merge prior 47/48/66/69 + Product Bible.
+- Gate 4: design system (22), characters (23), voice (24), domain products
+  (25-28), projects (29), assessment/mastery/evidence (30), adaptive (31),
+  gamification (32), portfolio (33), parent (34), safety/privacy (35), FE/BE/
+  data/API contracts (37-40). Then Gate 5 (migration/rebuild/test).
+- Still OPEN: owner tree decision (root src/ vs frontend/) — blocks G5 execution.
 - Do not stop after planning; proceed gate by gate.

@@ -210,8 +210,12 @@ missions, projects}` only. Much thinner than root `src/`. Real axios client.
    in scope.)
 3. **Seeded domains ≠ product domains** (12 school subjects vs locked 4). The
    SCHEMA supports the right graph; the SEED DATA is wrong.
-4. **Character roster mismatch** (10 frontend / 1 seeded / 15 locked). Schema
-   `Character` + 14-value `CharacterRole` supports it; seed + frontend disagree.
+4. **Character roster mismatch is FRONTEND-ONLY.** Backend
+   `seed-character-universe.ts` ALREADY seeds all 15 locked names exactly. The
+   10-name cast is only in frontend `src/data/characters.ts`. Fix = reconcile the
+   frontend to the seeded 15 + wire to backend. (NOTE: default `prisma db seed`
+   = `seed.ts` still seeds Azouz-only + 12 wrong domains; the real content comes
+   from the named `seed:*` scripts — the default seeder is stale.)
 5. **Monetization EXISTS** (Plan/Subscription/EntitlementsService + payment
    abstraction). Real payment gateway is the external dep. Explicit Package
    bundling entity is a Gate-3 product decision, not a missing capability.

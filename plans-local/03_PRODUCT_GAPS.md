@@ -17,7 +17,7 @@
 | PG-03 | AI Literacy as primary domain | `AILiteracyConcept` flat list, no controller, not in graph | Full domain vertical, wired to mastery | PARTIAL | G3 (08/27) |
 | PG-04 | English as standalone-premium product | 14 CEFR strands seeded; delivery depth unclear | Full skill set (speaking/pronunciation/writing/conversation/stories/placement) | PARTIAL | G3/G4 (25) |
 | PG-05 | Coding real execution | 18 concepts; Pyodide/Sandpack in frontend deps | Safe sandbox + project scaffolding wired to evidence | PARTIAL | G4 (26) |
-| PG-06 | 15-character roster | 1 seeded (Azouz) / 10 hardcoded frontend / names mismatch | 15 locked names, Azouz primary, progressive reveal | MISSING/WRONG | G4 (23) |
+| PG-06 | 15-character roster | **backend `seed-character-universe.ts` seeds ALL 15 locked names EXACTLY** (Azouz,Zein,Luma,Codey,Nova,Mira,Rami,Faris,Tala,Adam,Byte,Nour,Rex,Zara,Atlas); FRONTEND `src/data/characters.ts` has a DIFFERENT 10-name cast | reconcile FRONTEND to the seeded 15; wire frontend to backend | PARTIAL (frontend-only mismatch) | G4 (23) |
 | PG-07 | Azouz as orchestrating main companion | GUIDE character + conversation lifecycle exists | Owns onboarding/orientation/guidance/handoffs + guardrails | PARTIAL | G4 (23) |
 | PG-08 | Voice as core capability | `voice` module+controller EXIST | verify STT/TTS depth, provider-independence, EG-Arabic benchmark; wire to frontend | PARTIAL | G4 (24) |
 | PG-09 | Packages/Bundles | Plan + Subscription + EntitlementsService EXIST; packaging via `Plan.features` JSON | decide explicit `Package` entity vs features-JSON; map 4 domains into bundles | PARTIAL | G3 (10) |
