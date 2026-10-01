@@ -62,6 +62,9 @@ Date: 2026-09-30 (pre-execution baseline)
 | Cache/SW hygiene | nginx+verify | FIXED | LIVE | /sw.js+/service-worker.js→404; index.html no-cache; assets immutable. verify-deployment.sh [C] guards it. Confirmed live (verify GREEN). docs/ops/NGINX_CACHE.md. |
 | **Learn hub (/learn)** | curriculum/learning/worlds/mastery APIs | REAL+scope-fixed | LIVE(existing)/PARTIAL | Was framed as generic "Curriculum/every subject" + 7 school-subject worlds. Re-framed around the 4 LOCKED domains as the spine (prominent cards → domain-path); thinking/cross-curricular demoted to "supporting"; AI/Entrepreneurship promoted out of cross-curricular. Real world-path + concept browser kept. seed-worlds.ts rewritten to 4 domains (Wordhaven/CircuitCity/Mindspring/LaunchBay) — fixes would-be-empty world path. Not yet redeployed. |
 | World seed | seed-worlds.ts | FIXED | — | Was 7 school-subject worlds (mathematics/science/... slugs) → all would skip post-domain-fix. Now 4 worlds mapped to english/coding/ai-literacy/entrepreneurship slugs. |
+| **Missions browse** | missionsApi.browse | REAL+scope-fixed | PARTIAL | Removed broken filters (numeric domain ids 1-5 Math/Science/History + difficulty — both ignored by backend `/missions` which returns all unfiltered). Now real client-side search + mission-type filter (GUIDED/EXPLORATION/CHALLENGE/PROJECT_BASED enum). No fake params. Not yet redeployed. |
+| Missions detail | missionsApi.getById/start | REAL | LIVE(existing) | Already correct: real APIs, real ActivityType icons, honest states, /missions/play/:runId nav. i18n gap (hardcoded EN) = task-7. No scope defect. Kept per §5. |
+| Missions player + complete | missionsApi getRun/submit/complete | REAL | LIVE(existing) | Teach-step + complete flow tested (MissionPlayerPage.test, MissionCompletePage.test, teaching.test all pass). No scope defect found. |
 
 ## Honest headline (pre-execution)
 

@@ -8,24 +8,39 @@ import { missionsApi } from '@/lib/api/endpoints'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { CardGridSkeleton } from '@/components/common/Skeleton'
 
+// Mission types match the backend MissionType enum (GUIDED/EXPLORATION/
+// CHALLENGE/PROJECT_BASED). The learner `/missions` endpoint returns the full
+// list with NO server-side filtering, so filtering is done client-side on the
+// fetched list — every control here operates on real data (no params the
+// backend silently ignores). The old domain dropdown sent numeric ids 1-5 for
+// Math/Science/History/etc. — wrong domains AND a type the backend never
+// supported (real domain ids are UUIDs); removed.
+const MISSION_TYPES = ['GUIDED', 'EXPLORATION', 'CHALLENGE', 'PROJECT_BASED'] as const
+
 export function MissionsBrowsePage() {
   const { t } = useTranslation()
   const [filters, setFilters] = useState({
-    difficulty: '',
-    domainId: '',
+    type: '',
     search: '',
   })
 
-  const { data: missions, isLoading, isError, refetch } = useQuery({
-    queryKey: ['missions', filters],
-    queryFn: () => {
-      const params: { difficulty?: string; domainId?: number; search?: string } = {}
-      if (filters.difficulty) params.difficulty = filters.difficulty
-      if (filters.domainId) params.domainId = Number(filters.domainId)
-      if (filters.search) params.search = filters.search
-      return missionsApi.browse(params).then(res => res.data)
-    },
+  const { data: allMissions, isLoading, isError, refetch } = useQuery({
+    queryKey: ['missions'],
+    queryFn: () => missionsApi.browse().then(res => res.data as any[]),
   })
+
+  // Real client-side filtering over the fetched list.
+  const missions = Array.isArray(allMissions)
+    ? allMissions.filter((m: any) => {
+        if (filters.type && m.type !== filters.type) return false
+        if (filters.search) {
+          const q = filters.search.toLowerCase()
+          const hay = `${m.title ?? ''} ${m.description ?? ''}`.toLowerCase()
+          if (!hay.includes(q)) return false
+        }
+        return true
+      })
+    : allMissions
 
   const typeColors: Record<string, string> = {
     GUIDED: 'bg-success-100 text-success-800',
@@ -56,9 +71,10 @@ export function MissionsBrowsePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters */}
+        {/* Filters — search + mission type, both real (client-side over the
+            fetched list; the backend returns all missions unfiltered). */}
         <div className="card mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 {t('missionsBrowse.searchLabel')}
@@ -74,36 +90,19 @@ export function MissionsBrowsePage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('missionsBrowse.difficultyLabel')}
+                {t('missionsBrowse.typeLabel', 'Mission type')}
               </label>
               <select
                 className="input"
-                value={filters.difficulty}
-                onChange={e => setFilters({ ...filters, difficulty: e.target.value })}
+                value={filters.type}
+                onChange={e => setFilters({ ...filters, type: e.target.value })}
               >
-                <option value="">{t('missionsBrowse.allLevels')}</option>
-                <option value="beginner">{t('missionsBrowse.beginner')}</option>
-                <option value="intermediate">{t('missionsBrowse.intermediate')}</option>
-                <option value="advanced">{t('missionsBrowse.advanced')}</option>
-                <option value="expert">{t('missionsBrowse.expert')}</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('missionsBrowse.domainLabel')}
-              </label>
-              <select
-                className="input"
-                value={filters.domainId}
-                onChange={e => setFilters({ ...filters, domainId: e.target.value })}
-              >
-                <option value="">{t('missionsBrowse.allDomains')}</option>
-                <option value="1">{t('missionsBrowse.domainMath')}</option>
-                <option value="2">{t('missionsBrowse.domainScience')}</option>
-                <option value="3">{t('missionsBrowse.domainLanguageArts')}</option>
-                <option value="4">{t('missionsBrowse.domainHistory')}</option>
-                <option value="5">{t('missionsBrowse.domainProgramming')}</option>
+                <option value="">{t('missionsBrowse.allTypes', 'All types')}</option>
+                {MISSION_TYPES.map((tp) => (
+                  <option key={tp} value={tp}>
+                    {t(`missionsBrowse.type.${tp}`, tp.replace('_', ' '))}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -182,7 +181,7 @@ export function MissionsBrowsePage() {
             title={t('missionsBrowse.emptyTitle')}
             message={t('missionsBrowse.emptyMessage')}
             actionLabel={t('missionsBrowse.clearFilters')}
-            onAction={() => setFilters({ difficulty: '', domainId: '', search: '' })}
+            onAction={() => setFilters({ type: '', search: '' })}
           />
         )}
       </main>
