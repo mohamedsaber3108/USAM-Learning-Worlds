@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Bug, BookOpen, Loader2, CloudOff } from 'lucide-react'
 import { codingCoachApi } from '@/lib/api/endpoints'
-import { getCharacterVisual } from '@/features/characters/lib/characterVisuals'
 import { CharacterAvatar } from '@/features/characters/components/CharacterAvatar'
 
 /**
@@ -28,7 +27,6 @@ interface CodingCoachPanelProps {
 export function CodingCoachPanel({ code, language }: CodingCoachPanelProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
-  const visual = getCharacterVisual(COACH)
 
   const explain = useMutation({
     mutationFn: () => codingCoachApi.explain({ code, language }).then((r) => r.data),
@@ -51,7 +49,9 @@ export function CodingCoachPanel({ code, language }: CodingCoachPanelProps) {
         aria-expanded={open}
         className="w-full flex items-center gap-3 px-4 py-3 bg-surface-50 hover:bg-surface-100 transition-colors text-start"
       >
-        <span className={`icon-chip ${visual.color} w-9 h-9 shrink-0`}>
+        {/* Codey's world hue (green) — a real Tailwind tint, not the raw hex
+            from characterVisuals (which isn't a class and rendered no bg). */}
+        <span className="icon-chip bg-success-50 text-success-600 w-9 h-9 shrink-0">
           <Sparkles className="w-4 h-4" strokeWidth={2} />
         </span>
         <span className="flex-1">

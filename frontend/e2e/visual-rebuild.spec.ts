@@ -54,6 +54,14 @@ function jsonFor(url: string): unknown {
       percentComplete: { minutes: 60, activities: 66 },
       goalMet: false,
     }
+  if (url.includes('/cross-curricular/coding-concepts') || url.includes('coding-concepts'))
+    return [
+      { id: 'c1', name: 'Sequences & Steps', description: 'Put instructions in the right order to reach a goal.', difficulty: 1, order: 1 },
+      { id: 'c2', name: 'Loops', description: 'Repeat steps without writing them again and again.', difficulty: 2, order: 2 },
+      { id: 'c3', name: 'Conditionals', description: 'Make the program decide: if this, then that.', difficulty: 3, order: 3 },
+      { id: 'c4', name: 'Variables in Python', description: 'Store and reuse values as your programs grow.', difficulty: 4, order: 4 },
+      { id: 'c5', name: 'Functions', description: 'Package code you can call again — like your own mini-tools.', difficulty: 5, order: 5 },
+    ]
   if (url.includes('/missions'))
     return [
       { id: 'm1', title: 'Find a Problem Worth Solving', description: 'Spot a real problem around you and describe who it affects.', type: 'GUIDED', estimatedMinutes: 15 },
@@ -76,6 +84,7 @@ const AUTHED_ROUTES: { tag: string; path: string }[] = [
   { tag: 'missions', path: '/missions' },
   { tag: 'english', path: '/english' },
   { tag: 'english-coach', path: '/english/coach' },
+  { tag: 'coding', path: '/coding' },
 ]
 
 for (const lang of ['en', 'ar'] as const) {
