@@ -26,8 +26,10 @@ function useLiveArabicBlurb(entityId: string | undefined) {
 }
 
 /**
- * The full 15-character roster ordering + unlock hints for the fallback
- * (mock-shape) path used until the backend's /characters/unlocked lands.
+ * The full 15-character roster ordering + unlock hints, used as the graceful
+ * fallback when the learner is unauthenticated or the backend's
+ * /characters/unlocked call hasn't resolved yet (the endpoint exists; this is
+ * the no-signal fallback, not a stand-in for a missing API).
  * Azouz, Zein, Luma and Codey are the 4 core characters (unlocked from day
  * 1, per CharacterService.CORE_CHARACTER_NAMES on the backend); the rest
  * unlock progressively and these hints describe the same real trigger
@@ -210,9 +212,9 @@ export function CharacterGalleryPage() {
 
       {!unlockedData && !listData && (
         <p className="text-xs text-slate-400 mt-8">
-          Note: full roster + real per-learner unlock state will appear automatically once
-          the backend's <code>/characters</code> and <code>/characters/unlocked</code>{' '}
-          endpoints ship — this page already targets that shape.
+          Showing the full roster with suggested unlock hints. Your real
+          per-learner unlock progress loads from the backend when you’re signed
+          in — keep learning to light up your whole crew.
         </p>
       )}
     </div>

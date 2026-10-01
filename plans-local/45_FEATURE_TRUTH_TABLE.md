@@ -35,7 +35,8 @@ Date: 2026-09-30 (pre-execution baseline)
 | Review scheduling (FSRS) | PRESENT | — | PARTIAL | ts-fsrs adopted (migration 20260910); verify runtime |
 | Adaptive/session engine | PARTIAL | MOCK | REFACTOR | keys off confidence only; wire age+interests+load (31) |
 | Diagnostic/placement | PARTIAL | MISSING | PARTIAL | questions/difficulty infra; end-to-end flow unverified |
-| Characters (15 roster) | PRESENT | MISWIRED | PARTIAL | 15 seeded exact names; FE has old 10-name cast (23) |
+| Characters (15 roster) | PRESENT | REAL | LIVE(existing) | CORRECTED: CharacterGalleryPage already uses the locked 15 roster (Azouz..Atlas) via real charactersApi (unlocked→list→Azouz fallback chain), live AR blurbs, honest unlock hints. NO old 10-name cast anywhere in frontend/ (verified scan). Fixed 2 stale "endpoints will ship" notes (they exist). Azouz primary. (§5 kept) |
+| Voice | PRESENT | REAL | LIVE(existing) | VoiceChatPage = real round-trip (voiceApi.turn ASR→AI→TTS→VoicePlayer), real sidecar-unavailable→text fallback, honest states (Tala companion), captions, "playback unavailable" honesty. Not decorative (§14 satisfied). conversationId input is dev-ish UX (noted, not blocking). (§5 kept) |
 | Azouz orchestration | PRESENT | MOCK | PARTIAL | orchestrate/unlocked/conversation endpoints exist |
 | Voice (STT/TTS) | PRESENT | MOCK | PARTIAL | provider-independent (Whisper/Piper+WER); FE wire; EG-Arabic UNVERIFIED |
 | Projects + rubrics | PRESENT | MOCK | PARTIAL | models+cross-domain engine+seed; FE mock |
