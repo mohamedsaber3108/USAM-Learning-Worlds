@@ -880,6 +880,26 @@ export const en = {
   crossCurricular: {
     pathTitle: 'Follow your learning path',
     pathSubtitle: 'Step-by-step missions that build real understanding.',
+    back: 'Back to Learn',
+    ageBand: 'Age',
+    allAges: 'All ages',
+    allTopics: 'All topics',
+    loading: 'Loading…',
+    errorTitle: "Couldn't load this",
+    errorMessage: "No worries — let's try that again.",
+    emptyTitle: 'Nothing here yet',
+    emptyMessage: 'Try a different age or topic — more is on the way.',
+    unknownTitle: 'Unknown topic',
+    unknownMessage: "That topic doesn't exist — let's head back to Learn.",
+    category: {
+      aiLiteracy: 'AI Literacy',
+      entrepreneurship: 'Entrepreneurship',
+      financialLiteracy: 'Financial Literacy',
+      digitalLiteracy: 'Digital Literacy',
+      careerExploration: 'Career Exploration',
+      communicationSkills: 'Communication Skills',
+      codingConcepts: 'Coding Concepts',
+    },
   },
   // Project detail page (milestones, rubric, notes, collaborators, curriculum link).
   projectDetail: {

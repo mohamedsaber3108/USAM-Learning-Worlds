@@ -54,6 +54,18 @@ function jsonFor(url: string): unknown {
       percentComplete: { minutes: 60, activities: 66 },
       goalMet: false,
     }
+  if (url.includes('/cross-curricular/ai-literacy'))
+    return [
+      { id: 'a1', name: 'What is AI, really?', description: 'How machines learn from examples — and where they get things wrong.', category: 'foundations', ageAppropriate: 'AGE_10_11', order: 1 },
+      { id: 'a2', name: 'Spotting AI mistakes', description: "Why AI can sound sure and still be wrong — and how to check.", category: 'foundations', ageAppropriate: 'AGE_10_11', order: 2 },
+      { id: 'a3', name: 'Create with AI responsibly', description: 'Make something with AI while staying the author of your own ideas.', category: 'creating', ageAppropriate: 'AGE_12_14', order: 3 },
+    ]
+  if (url.includes('/cross-curricular/entrepreneurship'))
+    return [
+      { id: 'e1', name: 'Find a problem worth solving', description: 'Notice a real problem around you and who it affects.', category: 'ideas', ageAppropriate: 'AGE_10_11', order: 1 },
+      { id: 'e2', name: 'Build a tiny solution', description: 'Make the smallest version of your idea you can test.', category: 'building', ageAppropriate: 'AGE_12_14', order: 2 },
+      { id: 'e3', name: 'Pitch it clearly', description: 'Tell people what it does and why it matters, in 60 seconds.', category: 'pitching', ageAppropriate: 'AGE_12_14', order: 3 },
+    ]
   if (url.includes('/cross-curricular/coding-concepts') || url.includes('coding-concepts'))
     return [
       { id: 'c1', name: 'Sequences & Steps', description: 'Put instructions in the right order to reach a goal.', difficulty: 1, order: 1 },
@@ -85,6 +97,8 @@ const AUTHED_ROUTES: { tag: string; path: string }[] = [
   { tag: 'english', path: '/english' },
   { tag: 'english-coach', path: '/english/coach' },
   { tag: 'coding', path: '/coding' },
+  { tag: 'ai', path: '/cross-curricular/ai-literacy' },
+  { tag: 'entrepreneurship', path: '/cross-curricular/entrepreneurship' },
 ]
 
 for (const lang of ['en', 'ar'] as const) {

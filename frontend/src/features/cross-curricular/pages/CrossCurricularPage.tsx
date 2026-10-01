@@ -2,13 +2,18 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Route, ArrowRight } from 'lucide-react'
+import {
+  Route, ArrowRight, ArrowLeft, Bot, Rocket, PiggyBank, ShieldCheck,
+  Compass, Mic2, Code2, Star, type LucideIcon,
+} from 'lucide-react'
 import {
   crossCurricularApi,
   type CrossCurricularCategory,
   type CrossCurricularConcept,
 } from '@/lib/api/endpoints'
 import { ageRange } from '@/lib/age/ageLabels'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
+import { LoadingState, ErrorState, EmptyState, type CompanionName } from '@/components/common/CharacterState'
 
 /**
  * Shared page for the three cross-curricular concept models
@@ -22,45 +27,22 @@ import { ageRange } from '@/lib/age/ageLabels'
  * 'ai-literacy' | 'entrepreneurship' | 'financial-literacy'.
  */
 
+// Per-category presentation: a lucide icon (no emoji), a world-hue gradient,
+// and the CHARACTER who leads it (Nova for AI, Adam for entrepreneurship, Nour
+// for money, Byte for digital safety, etc.) — so each cross-curricular surface
+// has a mentor present, consistent with the domain pages + Home world journey.
+// `titleKey` resolves against crossCurricular.category.* (EN+AR).
 const CATEGORY_META: Record<
   CrossCurricularCategory,
-  { title: string; icon: string; gradient: string }
+  { titleKey: string; titleFallback: string; icon: LucideIcon; gradient: string; mentor: CompanionName }
 > = {
-  'ai-literacy': {
-    title: 'AI Literacy',
-    icon: '🤖',
-    gradient: 'from-primary-500 to-primary-700',
-  },
-  entrepreneurship: {
-    title: 'Entrepreneurship',
-    icon: '💡',
-    gradient: 'from-secondary-400 to-secondary-600',
-  },
-  'financial-literacy': {
-    title: 'Financial Literacy',
-    icon: '💰',
-    gradient: 'from-success-500 to-primary-600',
-  },
-  'digital-literacy': {
-    title: 'Digital Literacy',
-    icon: '🛡️',
-    gradient: 'from-primary-400 to-primary-600',
-  },
-  'career-exploration': {
-    title: 'Career Exploration',
-    icon: '🧭',
-    gradient: 'from-accent-400 to-accent-600',
-  },
-  'communication-skills': {
-    title: 'Communication Skills',
-    icon: '🗣️',
-    gradient: 'from-accent-500 to-secondary-500',
-  },
-  'coding-concepts': {
-    title: 'Coding Concepts',
-    icon: '💻',
-    gradient: 'from-ink-soft to-primary-700',
-  },
+  'ai-literacy': { titleKey: 'aiLiteracy', titleFallback: 'AI Literacy', icon: Bot, gradient: 'from-secondary-400 to-secondary-600', mentor: 'Nova' },
+  entrepreneurship: { titleKey: 'entrepreneurship', titleFallback: 'Entrepreneurship', icon: Rocket, gradient: 'from-accent-400 to-accent-600', mentor: 'Adam' },
+  'financial-literacy': { titleKey: 'financialLiteracy', titleFallback: 'Financial Literacy', icon: PiggyBank, gradient: 'from-success-400 to-success-600', mentor: 'Nour' },
+  'digital-literacy': { titleKey: 'digitalLiteracy', titleFallback: 'Digital Literacy', icon: ShieldCheck, gradient: 'from-sky-400 to-sky-600', mentor: 'Byte' },
+  'career-exploration': { titleKey: 'careerExploration', titleFallback: 'Career Exploration', icon: Compass, gradient: 'from-primary-400 to-primary-600', mentor: 'Atlas' },
+  'communication-skills': { titleKey: 'communicationSkills', titleFallback: 'Communication Skills', icon: Mic2, gradient: 'from-bubble-400 to-bubble-600', mentor: 'Tala' },
+  'coding-concepts': { titleKey: 'codingConcepts', titleFallback: 'Coding Concepts', icon: Code2, gradient: 'from-success-400 to-success-600', mentor: 'Codey' },
 }
 
 /** CodingConcept has no ageAppropriate column (uses difficulty:Int instead),
@@ -95,9 +77,9 @@ const AGE_BANDS = [
 ] as const
 
 const AGE_BAND_COLORS: Record<string, string> = {
-  AGE_8_9: 'bg-green-100 text-green-800',
-  AGE_10_11: 'bg-blue-100 text-blue-800',
-  AGE_12_14: 'bg-purple-100 text-purple-800',
+  AGE_8_9: 'bg-success-50 text-success-700',
+  AGE_10_11: 'bg-sky-50 text-sky-700',
+  AGE_12_14: 'bg-grape-50 text-grape-700',
 }
 
 function humanizeCategory(raw: string): string {
@@ -142,26 +124,40 @@ export function CrossCurricularPage() {
 
   if (!category || !meta) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-slate-600">Unknown cross-curricular category.</p>
+      <div className="min-h-screen bg-surface-50 flex items-center justify-center px-4">
+        <EmptyState
+          character="Azouz"
+          title={t('crossCurricular.unknownTitle', 'Unknown topic')}
+          message={t('crossCurricular.unknownMessage', "That topic doesn't exist — let's head back to Learn.")}
+          actionLabel={t('crossCurricular.back', 'Back to Learn')}
+          actionTo="/learn"
+        />
       </div>
     )
   }
 
+  const CategoryIcon = meta.icon
+  const title = t(`crossCurricular.category.${meta.titleKey}`, meta.titleFallback)
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className={`bg-gradient-to-r ${meta.gradient} shadow-pop`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/learn" className="text-white/90 hover:text-white transition-colors">
-                <span className="inline-block rtl:scale-x-[-1]">←</span> Back
-              </Link>
-              <h1 className="text-2xl font-heading font-bold text-white">
-                {meta.icon} {meta.title}
-              </h1>
+    <div className="min-h-screen bg-surface-50">
+      {/* World-hue brand header with the category's MENTOR present (no emoji). */}
+      <header className={`relative overflow-hidden bg-gradient-to-br ${meta.gradient} shadow-lift`}>
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div aria-hidden className="absolute -top-10 -end-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <Link to="/learn" className="inline-flex items-center gap-1 text-white/90 hover:text-white text-sm font-semibold mb-3 transition-colors">
+            <ArrowLeft className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
+            {t('crossCurricular.back', 'Back to Learn')}
+          </Link>
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-white/15 p-1.5 shrink-0">
+              <CharacterFace characterId={meta.mentor} size={56} state="encouraging" />
             </div>
+            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-white tracking-tight inline-flex items-center gap-2">
+              <CategoryIcon className="w-6 h-6" strokeWidth={2} />
+              {title}
+            </h1>
           </div>
         </div>
       </header>
@@ -195,19 +191,20 @@ export function CrossCurricularPage() {
         {/* Age band filter */}
         {showAgeBand && (
         <div className="card mb-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-slate-700">Age Band:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-slate-700 me-1">{t('crossCurricular.ageBand', 'Age')}</span>
             {AGE_BANDS.map((band) => (
               <button
                 key={band.value}
-                className={`px-3 py-1 min-h-11 rounded text-sm font-medium ${
+                aria-pressed={ageBandFilter === band.value}
+                className={`px-3 py-1.5 min-h-11 rounded-pill text-sm font-semibold transition-colors ${
                   ageBandFilter === band.value
                     ? 'bg-primary-600 text-white'
-                    : AGE_BAND_COLORS[band.value] || 'bg-surface-200 text-slate-700'
+                    : AGE_BAND_COLORS[band.value] || 'bg-surface-100 text-slate-700 hover:bg-surface-200'
                 }`}
                 onClick={() => setAgeBandFilter(band.value)}
               >
-                {band.label}
+                {band.value === '' ? t('crossCurricular.allAges', 'All ages') : band.label}
               </button>
             ))}
           </div>
@@ -219,18 +216,20 @@ export function CrossCurricularPage() {
           <div className="card mb-6">
             <div className="flex flex-wrap gap-2">
               <button
-                className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                  activeCategory === null ? 'bg-secondary-600 text-white' : 'bg-surface-200 text-slate-700'
+                aria-pressed={activeCategory === null}
+                className={`px-3 py-2 rounded-pill text-sm font-semibold transition-colors ${
+                  activeCategory === null ? 'bg-secondary-500 text-white' : 'bg-surface-100 text-slate-700 hover:bg-surface-200'
                 }`}
                 onClick={() => setActiveCategory(null)}
               >
-                All Topics
+                {t('crossCurricular.allTopics', 'All topics')}
               </button>
               {subCategories.map((cat) => (
                 <button
                   key={cat}
-                  className={`px-3 py-2 rounded-xl text-sm font-semibold ${
-                    activeCategory === cat ? 'bg-secondary-600 text-white' : 'bg-surface-200 text-slate-700'
+                  aria-pressed={activeCategory === cat}
+                  className={`px-3 py-2 rounded-pill text-sm font-semibold transition-colors ${
+                    activeCategory === cat ? 'bg-secondary-500 text-white' : 'bg-surface-100 text-slate-700 hover:bg-surface-200'
                   }`}
                   onClick={() => setActiveCategory(cat)}
                 >
@@ -242,16 +241,15 @@ export function CrossCurricularPage() {
         )}
 
         {isLoading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            <p className="mt-4 text-slate-600">Loading concepts...</p>
-          </div>
+          <LoadingState character={meta.mentor} message={t('crossCurricular.loading', 'Loading…')} />
         )}
 
         {isError && (
-          <div className="card text-center py-8">
-            <p className="text-slate-700">Could not load {meta.title} concepts right now.</p>
-          </div>
+          <ErrorState
+            character={meta.mentor}
+            title={t('crossCurricular.errorTitle', "Couldn't load this")}
+            message={t('crossCurricular.errorMessage', "No worries — let's try that again.")}
+          />
         )}
 
         {!isLoading && !isError && (
@@ -286,8 +284,10 @@ export function CrossCurricularPage() {
                                 {ageRange(concept.ageAppropriate)}
                               </span>
                             ) : concept.difficulty != null ? (
-                              <span className="ms-2 shrink-0 px-2 py-1 rounded text-xs font-bold bg-indigo-100 text-indigo-800">
-                                {'★'.repeat(concept.difficulty)}
+                              <span className="ms-2 shrink-0 inline-flex items-center gap-0.5 px-2 py-1 rounded-full text-xs font-bold bg-secondary-50 text-secondary-700">
+                                {Array.from({ length: concept.difficulty }).map((_, i) => (
+                                  <Star key={i} className="w-3 h-3 fill-current" />
+                                ))}
                               </span>
                             ) : null}
                           </div>
@@ -302,9 +302,11 @@ export function CrossCurricularPage() {
             })}
 
             {(concepts || []).length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-slate-600 text-lg">No concepts found for this filter</p>
-              </div>
+              <EmptyState
+                character={meta.mentor}
+                title={t('crossCurricular.emptyTitle', 'Nothing here yet')}
+                message={t('crossCurricular.emptyMessage', 'Try a different age or topic — more is on the way.')}
+              />
             )}
           </div>
         )}

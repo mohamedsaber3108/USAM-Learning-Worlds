@@ -6,6 +6,7 @@ import { ArrowRight, Compass, RotateCcw } from 'lucide-react'
 import { learningApi, masteryApi } from '@/lib/api/endpoints'
 import type { DomainPath } from '@/lib/api/endpoints'
 import { DomainLearningPath } from '../components/DomainLearningPath'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { LoadingState, EmptyState, ErrorState, type CompanionName } from '@/components/common/CharacterState'
 
 /**
@@ -151,8 +152,18 @@ export function DomainPathPage() {
       <header className="bg-brand-hero relative overflow-hidden shadow-lift">
         <div aria-hidden className="dots-layer opacity-[0.15]" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-white/80 text-sm">{t('domainPath.kicker', 'Your learning path')}</p>
-          <h1 className="text-3xl font-display font-extrabold text-white mt-1">{domainName}</h1>
+          {/* Companion present at scale — the domain mentor (Nova for AI, Adam
+              for entrepreneurship, etc.) leads the path, consistent with every
+              other domain surface and the Home world journey. */}
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-white/15 p-1.5 shrink-0">
+              <CharacterFace characterId={cfg.companion} size={60} state="encouraging" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-white/80 text-sm">{t('domainPath.kicker', 'Your learning path')}</p>
+              <h1 className="text-3xl font-display font-extrabold text-white mt-0.5">{domainName}</h1>
+            </div>
+          </div>
 
           {nextAction?.missionId && (
             <Link
