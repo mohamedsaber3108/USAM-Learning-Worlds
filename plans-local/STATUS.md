@@ -14,6 +14,7 @@ Last updated: 2026-09-30
 | G1 | Forensic audit + product scope + current reality + gaps | ✅ done + committed; 1 blocking owner decision open (tree) |
 | G2 | Research + learning methodology + age/adaptation + OSS | ✅ done (04/05/06/07/36), research-cited |
 | G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ✅ done (08-21); merged prior 47/48/66/69 + Product Bible/North Star |
+| G4 | Design system + characters + voice + domain products + engines + FE/BE/data/API contracts | ✅ done (22-40) |
 | G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ⬜ not started |
 | G4 | Design system + domain products + engines + FE/BE/data/API contracts | ⬜ not started |
 | G5 | Migration + rebuild inside ONE app + test + deprecate legacy | ⬜ not started |
@@ -80,11 +81,29 @@ canonical. Recommendation: root `src/`. See 02 §A. This does NOT block Gates
   seeder; Entrepreneurship thinnest domain content; adaptive wiring (confidence
   only).
 
+## Gate 4 verified realities (anchor for G5)
+
+- Design system is MATURE in `src/design/` (semantic tokens, 3-mode age
+  presentation Explorer/Creator/Pathfinder, motion presets). ADOPT it. Palette is
+  amber/teal/magenta (NOT the old rebuild's white/green/black) — owner palette
+  decision = token-value change only, no component rewrite.
+- Voice is ALREADY provider-independent (Whisper STT + Piper TTS sidecars +
+  WER scoring + `POST /voice/turn`). Gate-2 "POC voice" already implemented.
+- Characters/AI backend is very rich (orchestrate/unlocked/per-age/conversation
+  lifecycle/Socratic coach endpoints/moderation). 15 roster seeded.
+- Auth is minimal (register/login/refresh/me + age-band/preferences) — confirms
+  no reset/verify/OAuth (PG-21/22).
+- Clean mock→real seam EXISTS: `src/services/contracts.ts` ("mock today, real
+  tomorrow") — the central migration lever; swap service bodies, pages unchanged.
+
 ## Next
 
-- Gate 4: design system (22), characters (23), voice (24), domain products
-  (25-28), projects (29), assessment/mastery/evidence (30), adaptive (31),
-  gamification (32), portfolio (33), parent (34), safety/privacy (35), FE/BE/
-  data/API contracts (37-40). Then Gate 5 (migration/rebuild/test).
-- Still OPEN: owner tree decision (root src/ vs frontend/) — blocks G5 execution.
+- Gate 5: write 41_MIGRATION_AND_DELETION, 42_TESTING, 43_PRODUCTION,
+  44_IMPLEMENTATION_SEQUENCE, 45_FEATURE_TRUTH_TABLE, 46_FINAL_ACCEPTANCE; then
+  EXECUTE the rebuild inside root src/ (owner tree confirm needed to START
+  execution): replace seed → wire mock→real behind contracts, surface by surface,
+  verifying each API shape; deprecate frontend/ + any preview.
+- OPEN owner decisions: (1) rebuild target = root src/ (recommended); (2) palette
+  (keep amber/teal/magenta vs white/green/black); (3) final price + payment
+  gateway (before charging); (4) legal/privacy copy review.
 - Do not stop after planning; proceed gate by gate.
