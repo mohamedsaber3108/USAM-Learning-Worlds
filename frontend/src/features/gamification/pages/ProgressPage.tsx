@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { TrendingUp, Flame, Trophy, Target, CheckCircle2, Snowflake, Coins } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, streakFreezeApi } from '@/lib/api/endpoints'
 import { useCountUp } from '@/lib/hooks/useCountUp'
+import { masteryLabel } from '@/lib/mastery/masteryLabels'
 import { LoadingState, ErrorState } from '@/components/common/CharacterState'
 
 export function ProgressPage() {
@@ -56,10 +57,18 @@ export function ProgressPage() {
   })
 
   const unlockedAchievements = achievements?.filter((a: any) => a.unlockedAt) || []
-  const masteredCount = Array.isArray(mastery) ? mastery.filter((m: any) => m.state === 'MASTERED').length : 0
-  const learningCount = Array.isArray(mastery)
-    ? mastery.filter((m: any) => ['NOVICE', 'DEVELOPING', 'PROFICIENT'].includes(m.state)).length
-    : 0
+  // Count via the single masteryLabels source of truth (same as the Dashboard),
+  // NOT an ad-hoc state list. The old filter used 'NOVICE' — a state that does
+  // not exist in the backend MasteryState enum (NOT_STARTED|INTRODUCED|EXPLORING|
+  // PRACTICING|DEVELOPING|PROFICIENT|MASTERED) — and omitted INTRODUCED/EXPLORING/
+  // PRACTICING, undercounting "learning". "mastered" = mastered band; "learning"
+  // = everything actively in progress (learning/practicing/strong bands).
+  const masteryArr: any[] = Array.isArray(mastery) ? mastery : []
+  const masteredCount = masteryArr.filter((m: any) => masteryLabel(m.state).band === 'mastered').length
+  const learningCount = masteryArr.filter((m: any) => {
+    const b = masteryLabel(m.state).band
+    return b === 'learning' || b === 'practicing' || b === 'strong'
+  }).length
   const completedMissions = recentMissions?.filter((m: any) => m.status === 'COMPLETED').length || 0
 
   const totalXP = useCountUp(progression?.totalXP || 0, 1000)

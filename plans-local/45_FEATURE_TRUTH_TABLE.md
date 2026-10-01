@@ -65,6 +65,10 @@ Date: 2026-09-30 (pre-execution baseline)
 | **Missions browse** | missionsApi.browse | REAL+scope-fixed | PARTIAL | Removed broken filters (numeric domain ids 1-5 Math/Science/History + difficulty — both ignored by backend `/missions` which returns all unfiltered). Now real client-side search + mission-type filter (GUIDED/EXPLORATION/CHALLENGE/PROJECT_BASED enum). No fake params. Not yet redeployed. |
 | Missions detail | missionsApi.getById/start | REAL | LIVE(existing) | Already correct: real APIs, real ActivityType icons, honest states, /missions/play/:runId nav. i18n gap (hardcoded EN) = task-7. No scope defect. Kept per §5. |
 | Missions player + complete | missionsApi getRun/submit/complete | REAL | LIVE(existing) | Teach-step + complete flow tested (MissionPlayerPage.test, MissionCompletePage.test, teaching.test all pass). No scope defect found. |
+| Practice (FSRS review) | masteryApi.getReviewDue + adaptiveApi | REAL | LIVE(existing) | Already reconstruction-quality: real review-due + recommendations, child-friendly mastery labels, honest states, i18n. No change (§5). |
+| Evidence ("what I proved") | masteryApi.getOverview | REAL | LIVE(existing) | Already real + honest (explicit note: uses real mastery overview, no invented per-artifact evidence; flags follow-up endpoint). No change (§5). |
+| Portfolio + credentials | projectsApi/masteryApi/credentialsApi | REAL | LIVE(existing) | Already real: mastery + Open-Badges credentials + showcased projects, honest empties, "no fake data". No change (§5). |
+| Progress | gamification/mastery/missions/streak-freeze | REAL+bugfix | PARTIAL | Fixed real MasteryState bug: learningCount used 'NOVICE' (not in enum) + omitted INTRODUCED/EXPLORING/PRACTICING. Now uses shared masteryLabel band (matches Dashboard). Not yet redeployed. |
 
 ## Honest headline (pre-execution)
 
