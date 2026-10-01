@@ -25,8 +25,12 @@ Date: 2026-09-30
 - Data retention policy (`20260903_add_prompt_templates_and_retention_policy`);
   AI memory governance (`20260904_add_ai_memory_governance_fields`) — purge of
   expired AI memory (`purge-expired-ai-memory.ts`).
-- NOTE (carried from prior audit): a memory-governance admin endpoint had an
-  authz gap — WITHHELD until a RolesGuard fix is verified (45 truth table).
+- NOTE (CORRECTED 2026-10-01): the previously-flagged memory-governance
+  "authz gap" was a FALSE ALARM. The backend `admin/memory-governance` getStats
+  checks `user.role` is ADMIN/MODERATOR and throws ForbiddenException (same
+  in-method pattern as FeatureFlagController); the frontend route is wrapped in
+  `<AdminRoute>`. Secure on both layers — not withheld. (A later consistency
+  refactor to RolesGuard+@Roles is optional, not a security fix.)
 
 ## 3. Moderation operations (moderator role)
 
