@@ -1,189 +1,59 @@
-# STATUS — Reconstruction Program Tracker
+# STATUS — USAM product-first reconstruction
 
-> Live status per mandate §6. Updated every slice. Seeded from work already
-> shipped and verified against `https://kids.usamif.com`.
+> Living status. Updated after every phase. Honest: nothing marked done without
+> evidence. "Plans drive code; code updates plans."
 
-Branch `fix/p0-p1-remediation` · HEAD `8a84f03` · Last live-verified bundle `index-B5sC8ROB.js` (2026-09-23)
-> Note: commits after `8e00d09` (G-7 `61678d4`, G-9 `8a84f03`) are pushed but await a frontend redeploy to go live.
-
-> Deploy note (migrations): raw-SQL migrations must be run with the connection
-> string from `backend/.env` — `$DATABASE_URL` is NOT exported in the shell, so
-> bare `psql "$DATABASE_URL"` connects as OS user `ubuntu` and fails ("role
-> ubuntu does not exist"). Use:
-> `DB_URL="$(grep -E '^DATABASE_URL=' backend/.env | head -1 | cut -d= -f2- | tr -d '\"')" && psql "$DB_URL" -f <migration>`
->
-> Deploy runbook: **use `bash scripts/deploy.sh`** — the authoritative fail-fast
-> pipeline (git pull → `npm ci --include=dev` → Radix-dep verify → tsc → build →
-> nginx reload ONLY on success → verify-deployment). Flags: `DEPLOY_BACKEND=1`
-> (also build+restart backend), `RUN_TESTS=1` (also run frontend tests).
-> Root cause of the Phase-B deploy failure: the old command did `git pull &&
-> npm run build` with NO dependency sync, so the server built against a stale
-> node_modules and tsc failed "Cannot find module @radix-ui/*". `npm ci` fixes
-> this deterministically from the lockfile. deploy.sh writes
-> `dist/deploy-meta.json` (commit/lockHash/builtAt) so verify-deployment.sh can
-> detect commit drift.
->
-> PUSHED != DEPLOYED: a commit is only "live" after scripts/deploy.sh succeeds
-> AND verify-deployment.sh is all-green against the deployed artifact.
-
-Legend: ✅ done+verified live · 🟡 in progress · ⛔ blocked · 📋 planned
+Last updated: 2026-09-30
 
 ---
 
-## Foundational program docs
+## Current gate: GATE 1 (Audit + Scope) — IN PROGRESS → near complete
 
-| Doc | State |
-| --- | --- |
-| 00_MASTER_RECONSTRUCTION_PLAN.md | ✅ written |
-| 01_PRODUCT_NORTH_STAR.md | ✅ written |
-| 63_PRODUCT_GAP_ANALYSIS.md | 🟡 this batch |
-| 67_IMPLEMENTATION_SEQUENCE.md | 🟡 this batch |
-| Remaining numbered specs (02–62, 64–66, 99) | 📋 authored on-demand as their phase is executed (mandate §5: no empty docs) |
+| Gate | Scope | Status |
+|---|---|---|
+| G1 | Forensic audit + product scope + current reality + gaps | ✅ docs written (00/01/02/03/STATUS); 1 blocking owner decision open |
+| G2 | Research + learning methodology + age/adaptation + OSS | ⬜ not started |
+| G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ⬜ not started |
+| G4 | Design system + domain products + engines + FE/BE/data/API contracts | ⬜ not started |
+| G5 | Migration + rebuild inside ONE app + test + deprecate legacy | ⬜ not started |
 
----
+## Done this session (Gate 1)
 
-## Shipped + verified live (Approach C slices)
+- Forensic audit of `M:\USAM-main` (schema, main.ts, seed, routes, services,
+  package.json, docs) — evidence in 02.
+- Created `plans-local/00_MASTER_PRODUCT.md`, `01_PRODUCT_SCOPE.md` (locked
+  scope), `02_CURRENT_REALITY_AUDIT.md`, `03_PRODUCT_GAPS.md`, this STATUS.
+- Reconciled prior `USAM_KIDS_PRODUCT_BIBLE.md` divergences (ages 7–15→8–14;
+  Entrepreneurship→primary; 15-char roster).
 
-| Slice | Commit | Backend? | State |
-| --- | --- | --- | --- |
-| Design system (warm canvas, tactile, Nunito, teal) | — | no | ✅ |
-| Landing page ground-up rebuild | 5c3ea08 | no | ✅ |
-| Floating pill nav; bell/search contrast fix | — | no | ✅ |
-| Home adaptive recommendations section | — | no | ✅ |
-| Credentials / Open Badges on Achievements | — | no | ✅ |
-| Worlds map `/worlds` | — | no | ✅ |
-| Simulations browse + player | — | no | ✅ |
-| Privacy/Consent (COPPA/GDPR) parent page | — | no | ✅ |
-| Balanced Development `/balanced` | 843878e | no | ✅ |
-| Onboarding Interests step + `PATCH /auth/me/preferences` | 2532c78 | **yes** | ✅ |
-| Home interest chips | c2c4d3e | no | ✅ |
-| Recommendation engine interest-weighting | 979a0f7 | **yes** | ✅ |
-| Home companion character (Azouz) | a19a09c | no | ✅ |
-| Deployment verification script | 47c71f8 | no | ✅ |
-| **Mission reward loop fix + player/complete i18n** | 48b3bde | no | ✅ |
-| plans-local master reconstruction program | f9aa4c8 | no | ✅ |
-| **Mission Learn teaching step (G-1) + unit tests** | 46c0cc1 | no | ✅ live (bundle index-CM4B5Wy5.js, verified 2026-09-23) |
+## Blocking owner decision (1)
 
-| **G-2 integration tests: reward loop + Learn step** | 7b7fd7e | no | ✅ pushed (14 tests) |
-| **G-2b integration tests: login + language/RTL** | 783bf6b | no | ✅ pushed (20 tests) |
-| **G-3 living-world Home: World Journey strip** | 7c7c2ee | no | ✅ live |
-| **G-5 evidence portfolio (mastery+credentials+projects)** | 2b9e92e | no | ✅ live |
+**Which tree is "the original project" to rebuild inside?** Code evidence →
+root `src/` (Lovable TanStack app, what `.output` builds, Lovable-connected to
+`kids.usamif.com`). A stale `src/LEGACY_DO_NOT_EDIT.md` claims `frontend/` is
+canonical. Recommendation: root `src/`. See 02 §A. This does NOT block Gates
+2–4 (all tree-independent); it blocks Gate 5 execution.
 
-| **G-4 packaging/pricing spec (47 + 48)** | 5c4a8fe | no | ✅ pushed |
-| **G-4 7a+7b: seed 4 plans + 3 gates (missions/voice/aiTutor)** | 04c4aa9/6353e03 | **YES** | ✅ live — 4 plans seeded, FREE aiTutor=false verified |
+## Key verified facts (anchor for later gates) — CORRECTED
 
-| **G-4 7c: /plans page + upgrade flow (frontend)** | dfc294c | no | ✅ live (/plans 200) |
+- Backend global prefix `/api` IS set (main.ts). 4 roles. **96 Prisma models,
+  ~56 controllers, ~47 modules** (verified by direct enumeration).
+- Monetization EXISTS: `Plan` + `Subscription` + `EntitlementsService` + payment
+  abstraction (real gateway external). Explicit Package entity = G3 decision.
+- Voice, Notifications, Credentials, Flashcards, Stories, Simulations, Cosmetics,
+  FeatureFlags, Experiments, Audit, DailyGoals, Worlds, Reflection, Consent/
+  SafetyEscalation — all EXIST as models+modules (depth to verify in G3/G4).
+- Dominant REAL gaps: (1) frontend is mock-backed (only `api.ts` real); (2) seed
+  data = 12 school subjects, WRONG vs locked 4 domains; (3) character roster
+  mismatch (1 seeded / 10 frontend / 15 locked); (4) tree decision.
+- English 14 CEFR strands + Coding 18 concepts seeded; only Math has a full slice.
 
-## In progress
+> AUDIT CORRECTION: the first-pass audit under-counted the backend badly (read a
+> stale 11-module app.module + grep that doesn't index backend/). 02/03 corrected
+> against ground truth. Prior `47_PRICING_PACKAGING.md` was right about Plan/Sub.
 
-| Item | State |
-| --- | --- |
-| **/plans discoverable via More menu (nav)** | 8e00d09 | no | ✅ live |
-| **G-8 orphan-engine sweep (66_FINAL_ENGINE_INVENTORY)** | 4f42efb | no | ✅ |
-| **G-7 accessibility: skip link + axe gate (3 tests)** | 61678d4 | no | ✅ |
-| **G-9 Ask-the-Coach panel (coding-coach engine surfaced)** | 8a84f03 | no | ✅ built (⛔ AI runtime unverified — Bedrock) |
-| **docs/platform-audit index (recovery-mandate reconciliation)** | aa2cd67 | no | ✅ |
-| **Frontend Reconstruction Phase A: §38 research+architecture docs** | pending | no | 🟡 this batch (10 Bible artifacts) |
+## Next
 
-## Frontend Reconstruction Program (Reference Bible §39)
-Strategy: incremental shell-first route replacement (see `docs/frontend/FRONTEND_REBUILD_ARCHITECTURE.md`), deployable each phase, zero engine loss.
-| Phase | State |
-| --- | --- |
-| A research + architecture (§38 docs) | ✅ cf4399a |
-| **B design-system layer (Radix + owned components)** | ✅ 2d570cb — **DEPLOYED** (bundle index-Bq9NvNTl.js live 2026-09-28) |
-| **C app shell: age-adaptive navigation + distinct parent shell** | ✅ b56bcbf — **DEPLOYED** (same build; navModel young/mid/older/parent; legacy nav DELETED) |
-| **Deploy pipeline: scripts/deploy.sh (fail-fast, npm ci, drift detection)** | ✅ 8590fde — DEPLOYED + verified (drift detection live) |
-| **D living-world Home (hero)** | ✅ 115f3d4 — DEPLOYED (bundle index-Bvtwe1DH.js) |
-| **D World Detail + enriched GET /worlds/:id (real mission status)** | fc44974 | **YES** | ✅ **DEPLOYED + VERIFIED** (bundle index-CxZemZJ2.js; /api/worlds/:id 401 live) |
-| **PHASE D COMPLETE** — Home→Map→Detail→Mission spine coherent, real state, 37 tests, deployed | — | — | ✅ |
-| **E domain surfaces** (English → Coding → AI → Practice → Creativity/Thinking → Stories → Simulations) | — | — | 🟡 in progress |
-| **E1 English strands reworked to standard** | 312bcf2 | no | ✅ DEPLOYED (bundle index-aBTHjwOD.js) |
-| **E2 Coding landing page (/coding)** | 312be65 | no | ✅ deployed |
-| **Coding VERTICAL SLICE — full loop LIVE PROVEN** | 80f4818 | **YES** | ✅ prod: run 7d26808d, CODE submit correct 0.9 → Evidence CREATION + Mastery DEVELOPING for coding-competency-loops-intro |
-| **Generic domain path** `/learning/domains/:slug/path` | 8340c8c | **YES** | ✅ live for coding + english (english shows cefrLevel A1) |
-| **Platform hardening** (displayName not-unique · enum-drift audit+guard · dep audit · maintenance runbook) | 47e3346→b93fc0e | **YES** | ✅ displayName live-verified; check:enum-drift guard found 5 more real drifts (fix migration 20260930_fix_drift_intervention_escalation_fsrs.sql pending apply) |
-| **Domain Completion Matrix (68) — tightened Phase-E audit** | 80b853d | no | ✅ English+Coding both VERTICAL-SLICE PROVEN live |
-
-> ⛔ **Phase E owner decision required.** Full code trace (2026-09-28) shows most
-> "domains" (English, AI-literacy, creativity, thinking) are **catalog metadata +
-> Bedrock-gated coach**, not runnable learn→practice→assess→master→evidence flows.
-> Only Missions/Coding, Simulations, and Flashcards have a real runnable+evidence
-> flow. Completing catalog domains is BACKEND architecture + content work. See
-> `68_DOMAIN_COMPLETION_MATRIX.md`. Awaiting choice: (A) route catalogs through the
-> Mission engine · (B) build a domain-specific English engine · (C) honestly reframe
-> domain pages as explore+coach+jump-to-missions (buildable now). Recommendation: C now, A long-term.
-| F projects/portfolio/progress · G parent · H QA gate · I production gate | — | — | 📋 |
-
-## DECISION: OPTION A (canonical shared spine). English vertical slice
-| Item | State |
-| --- | --- |
-| Taxonomy validated (strand = family×CEFR; CEFR stays on strand; Competency.strandId = primary FK only, NO cefrLevel dup) — plan 69 amended | ✅ |
-| Schema migration `20260929_competency_english_strand.sql` (strandId FK+index, idempotent) | ✅ **APPLIED to live DB** (4cd3037) — verified: `competencies.strandId` col + FK→english_strands + index all present |
-| TS seed `seed-english-vocabulary-slice.ts` (real A1 content: domain→skill→competency(strand-tagged)→objective→3 activities→mission) | 🟡 built + **runnable script added** (`npm run seed:english:vocabulary`), **NOT yet run on server** — verification queries returned 0 rows because deploy does not run one-off seeds |
-| `GET /english/path` (projection over the shared spine + learner mastery) | 🟡 built (BE build clean) |
-| English Path UI (real mission links, live mastery, CEFR from API, no hardcoded id) | 🟡 built (FE build clean) |
-| Integration test: English SELECT/MATCH → Evidence(competencyId)+mastery via REAL evaluator (3 tests) | ✅ 56 BE tests pass |
-| **LIVE DB — content spine** (Competency/Mission/MissionActivity persisted) | ✅ **VERIFIED** on server after `npm run seed:english:strands` + `seed:english:vocabulary`: competency has strandId (vocabulary-building), missionActivities=3, full slice 7/7 (domain/skill/competency/objective/activities=3/mission/missionAct=3) |
-| **LIVE DB — learning loop** (real submit → Evidence + MasteryRecord) | ✅ **VERIFIED on prod DB 2026-09-28** — submit `correct:true,score:1` → `evidence` KNOWLEDGE (attemptId `347929f4…`, competencyId `english-competency-everyday-words-a1`) + `mastery_records` DEVELOPING/0.725/reviewDue 2026-10-12. Required fixing the enum-drift bug below (commit `b1b44cd`, backend redeployed). |
-| **English domain status** | 🟢 **VERTICAL-SLICE PROVEN** — Vocabulary/A1 slice runs the full loop live via the shared engine; breadth (more content, specialized types, voice, parent surface) still to scale per plan 69. |
-
-> **🔴 Live schema-drift bug found while proving the loop (blocks ALL mission
-> starts, every domain).** `POST /api/missions/:id/start` 500s:
-> `type "public.SubscriptionStatus" does not exist`. Chain:
-> `startMission → EntitlementsService.assertCanStartMission → getActivePlan →
-> prisma.subscription.findFirst({ where:{ status:{ in:['ACTIVE','TRIALING'] }}})`.
-> Root cause: `Subscription.status` (and `Plan.interval`) were modelled as Prisma
-> **enums** (`SubscriptionStatus`, `BillingInterval`), but `20260916_add_entitlements.sql`
-> created those columns as plain **TEXT** — the Postgres enum types were never
-> created. The generated client casts to the nonexistent enum type → query error.
-> Fix: schema `status`/`interval` → `String` (match the TEXT the migration made);
-> removed the two unused enum decls. `prisma generate` + `nest build` + 56 tests ✅.
-> Requires a **backend redeploy** (regenerated client) — no DB change needed
-> (columns already TEXT). After redeploy, re-run the loop proof below.
->
-> Loop proof (after backend redeploy), using a real learner (`learner@test.com`
-> is NOT seeded on prod — register one via `POST /api/auth/register` or use an
-> existing learner). API base is `http://localhost:3000/api` (global prefix
-> `/api`, port 3000). Login → `POST /api/missions/english-mission-everyday-words/start`
-> → `POST /api/missions/runs/:runId/submit` `{activityId:"english-act-everyday-fruit",
-> response:{selectedAnswers:["apple"]}}` → expect `correct:true`, then an
-> `evidence` row (KNOWLEDGE, competencyId `english-competency-everyday-words-a1`)
-> + a `mastery_records` row (state/confidence update via the Bull recalc worker).
-
-> **English seed is a one-off content op — deploy does NOT run it.** `seed.ts`
-> uses non-idempotent `.create()` (fresh-DB only) and never wired English in.
-> The strands + vocabulary slice run as standalone scripts. On the server, in
-> `~/USAM-Learning-Worlds/backend`, after pulling the branch + `npm ci`:
-> ```
-> npm run seed:english:strands      # idempotent upserts — safe to re-run
-> npm run seed:english:vocabulary   # requires strands first; fails loudly if VOCABULARY strand missing
-> ```
-> Then re-run the verification queries (below). The vocabulary seed prints a
-> one-line summary: `competency=… strand=… mission=… activities=3/3`.
-| **English domain status** | 🟢 **VERTICAL-SLICE PROVEN (live 2026-09-28)** — first slice loop verified on prod DB; breadth still to scale (plan 69) |
-
-Deferred (documented in 69/70): specialized English activity types (PRONUNCIATION/
-DICTATION/SHADOWING/SPEAKING/CLOZE/READING_COMP/WRITING/ROLEPLAY) + voice contracts;
-CompetencyStrand join for cross-strand competencies (additive when needed); content
-scale-out; generalize `/english/path` → `/domains/:slug/path` after the slice is proven live (§11).
-
-## In progress
-
-| Item | State |
-| --- | --- |
-| G-4 7d: real payment gateway behind provider interface | 📋 ⛔ needs processor + keys |
-| G-2c render smoke tests (onboarding/recommendations) | 📋 |
-| G-6 per-age-band curriculum content scaffolding | 📋 |
-
-## Blocked
-
-| Item | Reason |
-| --- | --- |
-| AI tutor / voice realtime verification | ⛔ Bedrock creds not available to agent; user-side only |
-
-## Next (from gap register)
-
-1. 📋 E2E tests for the critical journeys (G-2).
-2. 📋 Deeper "living world" Home visual (G-3).
-3. 📋 Portfolio/evidence child surface (G-5).
-4. 📋 Packaging/pricing product model spec first (G-4, Phase 3) → then entitlement UI.
+- Gate 2: competitor + learning-science research (cited) → product rules;
+  age/adaptation spec; OSS discovery for voice, sandbox, FSRS, content.
+- Do not stop after planning; proceed gate by gate.
