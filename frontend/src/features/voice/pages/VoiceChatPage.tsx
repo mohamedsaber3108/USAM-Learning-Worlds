@@ -2,14 +2,16 @@
  * VoiceChatPage — standalone voice-chat surface for Voice Pipeline v1.
  * Record -> upload -> ASR -> AI response -> TTS -> play round trip.
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic2, Info, Sparkles, Keyboard } from 'lucide-react'
+import { Mic2, Sparkles, Keyboard, Loader2 } from 'lucide-react'
 import { VoiceRecorder } from '../components/VoiceRecorder'
 import { VoicePlayer } from '../components/VoicePlayer'
 import { voiceApi, VoiceTurnResult, isVoiceSidecarUnavailable } from '../api/voiceApi'
-import { EmptyState } from '@/components/common/CharacterState'
+import { charactersApi } from '@/lib/api/endpoints'
+import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { CharacterFace, type CharacterState } from '@/features/characters/components/CharacterFace'
 
 interface Turn extends VoiceTurnResult {
@@ -23,6 +25,35 @@ export function VoiceChatPage() {
   const [turns, setTurns] = useState<Turn[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Auto-start: a child should never have to paste a conversation id. We pick
+  // the voice guide (Tala, else the first unlocked character) and create a
+  // conversation for them on mount, then drive the mic off that id.
+  const [startError, setStartError] = useState(false)
+
+  const { data: unlocked } = useQuery({
+    queryKey: ['characters-unlocked'],
+    queryFn: () => charactersApi.getUnlocked().then((r) => r.data),
+    staleTime: 5 * 60_000,
+  })
+
+  useEffect(() => {
+    if (conversationId || !Array.isArray(unlocked)) return
+    // Prefer Tala (the communication/voice guide); otherwise the first unlocked.
+    const guide = unlocked.find((c) => c.name === 'Tala') ?? unlocked[0]
+    if (!guide) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await charactersApi.createConversation(guide.id, { type: 'ENGLISH_PRACTICE' })
+        if (!cancelled) setConversationId(res.data.conversation.id)
+      } catch {
+        if (!cancelled) setStartError(true)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [unlocked, conversationId])
+
+  const isStarting = !conversationId && !startError
   // When the ASR/TTS sidecar is unreachable/timed out, we stop asking the
   // child to keep recording and drop them into a plain text input instead —
   // no stuck spinner they can't debug.
@@ -32,7 +63,9 @@ export function VoiceChatPage() {
 
   const handleRecordingComplete = async (blob: Blob) => {
     if (!conversationId.trim()) {
-      setError(t('voice.needConversationId', 'Enter a conversation ID first (from an existing AI conversation).'))
+      // Conversation is created automatically on mount — if it isn't ready yet
+      // (or failed), surface a friendly retry rather than asking for an id.
+      setError(t('voice.notReady', "Just getting ready — give it a second and try again."))
       return
     }
     setError(null)
@@ -124,25 +157,17 @@ export function VoiceChatPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Conversation setup */}
-        <div className="card mb-6">
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-            {t('voice.conversationId', 'Conversation ID')}
-          </label>
-          <input
-            type="text"
-            value={conversationId}
-            onChange={(e) => setConversationId(e.target.value)}
-            placeholder={t('voice.conversationIdPlaceholder', 'Existing conversation ID (create one via the text chat first)')}
-            className="input"
-          />
-          <div className="flex items-start gap-2 mt-3 bg-primary-50 border border-primary-100 rounded-control p-3">
-            <Info className="w-4 h-4 text-primary-600 flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <p className="text-xs text-primary-800">
-              {t('voice.pipelineNote', 'Voice turns are routed through the same conversation/AI pipeline as typed messages — no separate voice conversation logic.')}
-            </p>
+        {/* Auto-start failed — offer a friendly retry (no id to paste). */}
+        {startError && (
+          <div className="mb-6">
+            <ErrorState
+              character="Tala"
+              title={t('voice.startErrorTitle', "Couldn't start the chat")}
+              message={t('voice.startErrorMessage', "Let's try that again in a moment.")}
+              onRetry={() => { setStartError(false) }}
+            />
           </div>
-        </div>
+        )}
 
         {/* Recorder surface — the hero interaction, given real visual weight.
             When a sidecar is unreachable/timed out we swap this whole block
@@ -152,7 +177,12 @@ export function VoiceChatPage() {
           {/* Companion (Tala) reflecting the voice state machine + a caption. */}
           <CharacterFace characterId="Tala" size={96} state={companionState} />
           <p className="mt-2 mb-4 text-sm font-medium text-slate-600" aria-live="polite">{companionCaption}</p>
-          {textFallbackActive ? (
+          {isStarting ? (
+            <div className="flex items-center gap-2 text-slate-500 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin" strokeWidth={2} />
+              {t('voice.starting', 'Getting your voice chat ready…')}
+            </div>
+          ) : textFallbackActive ? (
             <div className="w-full max-w-md flex flex-col items-center gap-4">
               <div className="flex items-center gap-2 text-primary-700">
                 <Keyboard className="w-5 h-5" strokeWidth={2} />

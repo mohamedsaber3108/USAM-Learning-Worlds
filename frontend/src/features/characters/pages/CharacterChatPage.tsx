@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
+import { ArrowLeft, Send } from 'lucide-react'
 import { charactersApi } from '@/lib/api/endpoints'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { getCharacterVisual } from '../lib/characterVisuals'
@@ -26,6 +28,7 @@ interface ChatMessage {
  * that gracefully instead of crashing the page.
  */
 export function CharacterChatPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -62,11 +65,15 @@ export function CharacterChatPage() {
     onError: (err: any) => {
       const status = err?.response?.status
       const serverMsg = err?.response?.data?.message
+      const name = character?.name ?? t('characterChat.thisCharacter', 'This character')
       const text = status
-        ? `${character?.name ?? 'This character'} can't reply right now (HTTP ${status}${
-            serverMsg ? `: ${serverMsg}` : ''
-          }). This usually means the AI provider (AWS Bedrock) credentials aren't configured on the backend yet — the character data and chat endpoint itself are working.`
-        : 'Could not reach the character (network error). Please try again.'
+        ? t('characterChat.errorHttp', {
+            name,
+            status,
+            detail: serverMsg ? `: ${serverMsg}` : '',
+            defaultValue: "{{name}} can't reply right now (HTTP {{status}}{{detail}}). The AI coach may be resting — character data and the chat still work.",
+          })
+        : t('characterChat.errorNetwork', 'Could not reach the character (network error). Please try again.')
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), role: 'character', text, isError: true },
@@ -89,20 +96,21 @@ export function CharacterChatPage() {
       {/* Header */}
       <header className="shadow-pop" style={{ backgroundColor: visual?.color ?? '#64748B' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
-          <Link to="/characters" className="text-white/90 hover:text-white transition-colors">
-            <span className="inline-block rtl:scale-x-[-1]">←</span> Characters
+          <Link to="/characters" className="inline-flex items-center gap-1 text-white/90 hover:text-white text-sm font-semibold transition-colors">
+            <ArrowLeft className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
+            {t('characterChat.back', 'Characters')}
           </Link>
           {character && <CharacterAvatar name={character.name} size="sm" evolutionStage={evolutionStage} />}
           <div>
             <h1 className="text-xl font-heading font-bold text-white leading-tight">
-              {characterLoading ? 'Loading...' : character?.name ?? 'Character'}
+              {characterLoading ? t('characterChat.loading', 'Loading…') : character?.name ?? t('characterChat.character', 'Character')}
             </h1>
             {character?.role && (
               <p className="text-xs text-white/80 leading-tight">{character.role}</p>
             )}
             {stateData?.state && evolutionStage >= 2 && (
               <p className="text-[11px] text-white/70 leading-tight mt-0.5">
-                Relationship level {evolutionStage}/5
+                {t('characterChat.relationshipLevel', { level: evolutionStage, defaultValue: 'Relationship level {{level}}/5' })}
               </p>
             )}
           </div>
@@ -115,8 +123,8 @@ export function CharacterChatPage() {
           {messages.length === 0 && (
             <p className="text-slate-500 text-sm text-center my-auto">
               {character
-                ? `Say hi to ${character.name} to start chatting.`
-                : 'Loading character...'}
+                ? t('characterChat.sayHi', { name: character.name, defaultValue: 'Say hi to {{name}} to start chatting.' })
+                : t('characterChat.loadingCharacter', 'Loading character…')}
             </p>
           )}
           {messages.map((msg) => (
@@ -126,8 +134,8 @@ export function CharacterChatPage() {
                 msg.role === 'user'
                   ? 'self-end bg-primary-600 text-white'
                   : msg.isError
-                  ? 'self-start bg-red-50 text-red-800 border border-red-200'
-                  : 'self-start bg-surface-200 text-ink'
+                  ? 'self-start bg-error-50 text-error-800 border border-error-200'
+                  : 'self-start bg-surface-100 text-ink'
               }`}
             >
               {msg.role === 'character' && character && (
@@ -137,8 +145,8 @@ export function CharacterChatPage() {
             </div>
           ))}
           {mutation.isPending && (
-            <div className="self-start bg-surface-200 text-slate-500 px-4 py-2 rounded-2xl text-sm">
-              {character?.name ?? 'Character'} is thinking...
+            <div className="self-start bg-surface-100 text-slate-500 px-4 py-2 rounded-2xl text-sm">
+              {t('characterChat.thinking', { name: character?.name ?? t('characterChat.character', 'Character'), defaultValue: '{{name}} is thinking…' })}
             </div>
           )}
           <div ref={bottomRef} />
@@ -149,7 +157,7 @@ export function CharacterChatPage() {
           <input
             type="text"
             className="input flex-1"
-            placeholder={character ? `Message ${character.name}...` : 'Loading...'}
+            placeholder={character ? t('characterChat.messagePlaceholder', { name: character.name, defaultValue: 'Message {{name}}…' }) : t('characterChat.loading', 'Loading…')}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={!character}
@@ -158,11 +166,12 @@ export function CharacterChatPage() {
             }}
           />
           <button
-            className="btn"
+            className="btn btn-primary"
             onClick={handleSend}
             disabled={mutation.isPending || !input.trim() || !character}
           >
-            Send
+            <Send className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
+            {t('characterChat.send', 'Send')}
           </button>
         </div>
       </main>

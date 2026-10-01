@@ -547,6 +547,26 @@ export const charactersApi = {
       `/characters/${id}/chat`,
       { message, context },
     ),
+
+  /**
+   * Create a conversation with a character (POST /characters/:id/conversations).
+   * Used to auto-start a voice/text session so a child never has to paste a
+   * conversation id by hand. `type` is a ConversationType enum value.
+   */
+  createConversation: (
+    characterId: string,
+    body: { type: string; sessionId?: string; initialMessage?: string },
+  ) =>
+    apiClient.post<{ conversation: { id: string } }>(
+      `/characters/${characterId}/conversations`,
+      body,
+    ),
+
+  /** List the learner's conversations (GET /characters/conversations). */
+  listConversations: () =>
+    apiClient.get<{ conversations: Array<{ id: string; characterId: string; status: string }> }>(
+      '/characters/conversations',
+    ),
 }
 
 // ==================== Flashcard Engine (spaced-repetition study cards) ====================

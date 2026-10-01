@@ -41,6 +41,12 @@ const progression = { level: 4, totalXP: 1280, xpInCurrentLevel: 80, xpForNextLe
 const streak = { currentStreak: 5, longestStreak: 9 }
 
 function jsonFor(url: string): unknown {
+  if (url.includes('/characters/unlocked'))
+    return [
+      { id: 'char-tala', name: 'Tala', role: 'MENTOR', isActive: true },
+      { id: 'char-azouz', name: 'Azouz', role: 'GUIDE', isActive: true },
+    ]
+  if (url.includes('/conversations')) return { conversation: { id: 'conv-1' } }
   if (url.includes('/worlds')) return worlds
   if (url.includes('/mastery/by-domain')) return masteryByDomain
   if (url.includes('/gamification/progression')) return progression
@@ -110,6 +116,7 @@ const AUTHED_ROUTES: { tag: string; path: string }[] = [
   { tag: 'ai', path: '/cross-curricular/ai-literacy' },
   { tag: 'entrepreneurship', path: '/cross-curricular/entrepreneurship' },
   { tag: 'projects', path: '/projects' },
+  { tag: 'voice', path: '/voice-chat' },
 ]
 
 for (const lang of ['en', 'ar'] as const) {
