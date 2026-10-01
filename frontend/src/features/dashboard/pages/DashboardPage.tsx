@@ -2,96 +2,52 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
-import 'react-circular-progressbar/dist/styles.css'
-import {
-  Target,
-  Zap,
-  Flame,
-  BarChart3,
-  BookOpen,
-  Palette,
-  Sparkles,
-  Rocket,
-  Mic,
-  Languages,
-  Code2,
-  Users2,
-  TrendingUp,
-  CheckCircle2,
-  Clock,
-  Award,
-  RotateCcw,
-} from 'lucide-react'
+import { BookOpen, CheckCircle2, Clock, TrendingUp } from 'lucide-react'
 import { gamificationApi, masteryApi, missionsApi, cosmeticsApi, dailyGoalsApi } from '@/lib/api/endpoints'
-import { useCountUp } from '@/lib/hooks/useCountUp'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
+import { masteryLabel } from '@/lib/mastery/masteryLabels'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
 import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
 import { RecommendationsSection } from '../components/RecommendationsSection'
 import { ReviewDueCard } from '../components/ReviewDueCard'
 import { InterestChips } from '../components/InterestChips'
-import { WorldJourneyStrip } from '../components/WorldJourneyStrip'
+import { WorldJourneyMap } from '../components/WorldJourneyMap'
 import { LivingWorldHero } from '../components/LivingWorldHero'
-import { THEME_HEX, COSMETIC_THEME_HEX } from '@/lib/theme/colors'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DashboardSkeleton } from '@/components/common/Skeleton'
-import { masteryLabel } from '@/lib/mastery/masteryLabels'
 
-// Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
-// `labelKey` resolves against dashboard.quickActions.* in both locales.
-// LEAD with the 4 LOCKED primary domains (English/Coding/AI/Entrepreneurship),
-// then the cross-domain actions. The old grid led with generic "worlds" + a
-// leaderboard; the product is organized around the 4 domains, not school
-// subjects. AI/Entrepreneurship route through the generic domain-path page by
-// slug (routes verified: /learning/domains/:slug/path). Younger bands see the
-// first 4 (the domains); older bands see the full set.
-const quickActions = [
-  { to: '/english', labelKey: 'english', icon: Languages, tint: 'bg-grape-50 text-grape-600' },
-  { to: '/coding', labelKey: 'coding', icon: Code2, tint: 'bg-success-50 text-success-600' },
-  { to: '/learning/domains/ai-literacy/path', labelKey: 'ai', icon: Sparkles, tint: 'bg-secondary-50 text-secondary-600' },
-  { to: '/learning/domains/entrepreneurship/path', labelKey: 'entrepreneurship', icon: Rocket, tint: 'bg-accent-50 text-accent-600' },
-  { to: '/practice', labelKey: 'practice', icon: RotateCcw, tint: 'bg-accent-50 text-accent-600' },
-  { to: '/projects', labelKey: 'projects', icon: Palette, tint: 'bg-secondary-50 text-secondary-600' },
-  { to: '/voice-chat', labelKey: 'voiceChat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
-  { to: '/balanced', labelKey: 'balanced', icon: Sparkles, tint: 'bg-grape-50 text-grape-600' },
-  { to: '/evidence', labelKey: 'evidence', icon: Award, tint: 'bg-success-50 text-success-600' },
-  { to: '/community', labelKey: 'community', icon: Users2, tint: 'bg-primary-50 text-primary-600' },
-]
-
-// Age-adaptive copy now lives in frontend/src/lib/i18n/locales/{en,ar}.ts
-// under dashboard.*.{copyTone} — see t() calls below keyed on adapt.copyTone.
-// (Previously these were English-only Record<CopyTone,string> maps defined
-// here; kept as i18next resource keys instead so Arabic gets real per-band
-// copy too, not just a translated shared string.)
-
-// Real per-equipped-cosmetic rendering — not a settings toggle. These maps
-// translate the AvatarCosmetic.iconOrStyleKey seeded in the backend into
-// actual Tailwind classes / hex values applied on this page.
-const THEME_ACCENT_HEX: Record<string, string> = COSMETIC_THEME_HEX
-
-const THEME_ACCENT_CHIP_CLASS: Record<string, string> = {
-  'theme-indigo': 'bg-primary-50 text-primary-600',
-  'theme-orange': 'bg-orange-50 text-orange-600',
-  'theme-pink': 'bg-pink-50 text-pink-600',
-}
-
+/**
+ * Child HOME — the living-world home (experience reconstruction, Phase 2).
+ *
+ * Rebuilt from the "dashboard with child colours" negative baseline (a hero
+ * followed by a stat-card grid, a level ring, a mastery-count panel, a 10-tile
+ * quick-action grid and a mission log) into a WORLD the child enters
+ * (directive §2/§6/§7/§17/§18/§19). Order of surfaces:
+ *
+ *   1. LivingWorldHero  — Azouz at scale + the ONE next action + a COMPACT
+ *                         progress ribbon (XP is secondary — §18).
+ *   2. WorldJourneyMap  — the 4 domains as PLACES on a journey, mastery shown
+ *                         as each place's band colour (distinct from XP — §19).
+ *   3. Keep exploring   — real engines: recommendations, review-due, interests,
+ *                         daily goal.
+ *   4. Quiet secondary  — recent activity + a single link to full /progress.
+ *
+ * The analytics surfaces that used to dominate Home (level ring, XP hero card,
+ * mastery counts, rank) are NOT deleted — they live on /progress, where an
+ * analytics view is appropriate. Zero data loss: every real query that fed the
+ * old page is still wired. useAgeAdaptation still drives genuine density
+ * branching (how much "keep exploring" to show for the youngest band).
+ */
 export function DashboardPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const userStr = localStorage.getItem('user')
   const user = userStr ? JSON.parse(userStr) : null
 
-  // Real age-adaptation config, read from the current learner's stored
-  // ageBand. Every branch below reads from `adapt`, not from ad-hoc
-  // duplicated conditionals — this is the single point of truth.
   const adapt = useAgeAdaptation(user?.learner?.ageBand)
 
-  // First-time learners who somehow land here without completing
-  // onboarding (e.g. a pre-existing account, or a direct URL visit)
-  // get routed into the onboarding flow instead of seeing the dashboard.
+  // First-time learners without a completed onboarding get routed into it.
   useEffect(() => {
     if (user?.role === 'LEARNER' && user.learner && !user.learner.ageBand) {
       navigate('/onboarding/language', { replace: true })
@@ -113,16 +69,6 @@ export function DashboardPage() {
     queryFn: () => gamificationApi.getStreak().then(res => res.data),
   })
 
-  const { data: rank } = useQuery({
-    queryKey: ['rank'],
-    queryFn: () => gamificationApi.getRank().then(res => res.data),
-  })
-
-  const { data: mastery } = useQuery({
-    queryKey: ['mastery-overview'],
-    queryFn: () => masteryApi.getOverview().then(res => res.data),
-  })
-
   const { data: recentMissions } = useQuery({
     queryKey: ['recent-missions'],
     queryFn: () => missionsApi.getHistory().then(res => res.data),
@@ -138,50 +84,25 @@ export function DashboardPage() {
     queryFn: () => dailyGoalsApi.getProgress().then(res => res.data),
   })
 
+  // Mastery overview is NOT rendered as a panel on Home anymore (that analytics
+  // view moved to /progress — §19). We still read it, cheaply and cached, only
+  // to feed the mastered-count into milestone detection so the "new mastery"
+  // celebration keeps working exactly as before.
+  const { data: mastery } = useQuery({
+    queryKey: ['mastery-overview'],
+    queryFn: () => masteryApi.getOverview().then(res => res.data),
+  })
+
   const equippedTitleName: string | null = equippedCosmetics?.TITLE?.name ?? null
-  const equippedThemeKey: string | null = equippedCosmetics?.COLOR_THEME?.iconOrStyleKey ?? null
-  const themeAccentHex = equippedThemeKey ? THEME_ACCENT_HEX[equippedThemeKey] : undefined
-  const themeChipClass = equippedThemeKey
-    ? THEME_ACCENT_CHIP_CLASS[equippedThemeKey] || 'bg-primary-50 text-primary-600'
-    : 'bg-primary-50 text-primary-600'
 
-  const totalXP = useCountUp(progression?.totalXP || 0, 1000)
-  const streakCount = useCountUp(streak?.currentStreak || 0, 700)
-  const levelProgress = progression?.progress || 0
-
-  // Count by child-facing band via the single masteryLabels source of truth,
-  // NOT ad-hoc state-name lists. The backend MasteryState enum is
-  // NOT_STARTED|INTRODUCED|EXPLORING|PRACTICING|DEVELOPING|PROFICIENT|MASTERED
-  // (there is no NOVICE), so the old ['NOVICE','DEVELOPING','PROFICIENT']
-  // filter both invented a non-existent state and dropped INTRODUCED/
-  // EXPLORING/PRACTICING — undercounting "learning". "Mastered" = the
-  // mastered band; "learning" = everything actively in progress (learning +
-  // practicing + strong); "to explore" = the new band.
+  // Real event-driven celebration — unchanged logic, fires only on genuinely
+  // new milestones, never on a plain refresh.
   const masteryArr: any[] = Array.isArray(mastery) ? mastery : []
   const masteredCount = masteryArr.filter((m: any) => masteryLabel(m.state).band === 'mastered').length
-  const learningCount = masteryArr.filter((m: any) => {
-    const b = masteryLabel(m.state).band
-    return b === 'learning' || b === 'practicing' || b === 'strong'
-  }).length
-  const toExploreCount = masteryArr.filter((m: any) => masteryLabel(m.state).band === 'new').length
-
-  // --- Real card-count branching -------------------------------------
-  // Card 1 (Level) and Card 2 (Total XP) always render — every band needs
-  // the core loop visible. Everything past that is gated on maxVisibleCards
-  // so AGE_8_9 genuinely renders fewer DOM nodes, not just smaller ones.
-  const showStreakCard = adapt.maxVisibleCards >= 3
-  const showRankCard = adapt.showAllStats || adapt.maxVisibleCards >= 4
-  const showMasteryBreakdown = adapt.showAllStats && adapt.maxVisibleCards >= 5
-  const showBestStreakDetail = adapt.density !== 'simple'
-
-  // Real event-driven celebration: diff current progression against the
-  // last-seen localStorage snapshot, only fires on genuinely NEW milestones
-  // (level-up, streak day 7/14/30/100, first mission ever, mastery gained) —
-  // never on a plain page load/refresh with unchanged numbers.
-  const progressionReady = !!progression && !!streak && Array.isArray(mastery) && !!recentMissions
   const completedMissionCount = Array.isArray(recentMissions)
     ? recentMissions.filter((run: any) => run.status === 'COMPLETED').length
     : 0
+  const progressionReady = !!progression && !!streak && Array.isArray(mastery) && !!recentMissions
   const milestone = useMilestoneDetection(
     {
       level: progression?.level,
@@ -194,26 +115,16 @@ export function DashboardPage() {
   )
   const [celebrationDismissed, setCelebrationDismissed] = useState(false)
 
-  // First paint before the core progression numbers arrive — render a
-  // content-shaped skeleton (hero/secondary stat cards, goal ring, recent
-  // list) instead of a centered LoadingState blob. The old centered blob
-  // occupied a fraction of the real content's height, so swapping it for
-  // the actual dashboard caused a big, visible page jump/blank-flash on
-  // every load of the single highest-traffic page in the app.
   if (progressionLoading) {
     return <DashboardSkeleton />
   }
 
-  // The dashboard's core stat is the progression query — if that fails we
-  // have nothing meaningful to show (level/XP hero card would be blank
-  // zeros), so replace the whole page with a real retry state instead of
-  // silently rendering a dashboard full of "0"s and "---"s.
   if (progressionIsError) {
     return (
       <div className="min-h-screen bg-surface-50 flex items-center justify-center px-4">
         <ErrorState
           character="Azouz"
-          title="Hmm, your dashboard didn't load"
+          title="Hmm, your world didn't load"
           message="No worries — this happens sometimes. Let's give it another try."
           onRetry={() => refetchProgression()}
         />
@@ -221,261 +132,65 @@ export function DashboardPage() {
     )
   }
 
+  // The ONE next action — resume an in-progress mission, else head to missions.
+  const inProgress = Array.isArray(recentMissions)
+    ? recentMissions.find((r: any) => r.status === 'IN_PROGRESS')
+    : null
+  const nextTo = inProgress ? `/missions/play/${inProgress.id}` : '/missions'
+  const nextTitle = inProgress
+    ? inProgress.mission?.title || t('home.continueMission', 'Continue your mission')
+    : t('dashboard.quickActions.missions')
+  const nextKicker = inProgress
+    ? t('home.pickUp', 'Pick up where you left off')
+    : t('home.nextStep', "Today's next step")
+  const nextLabel = inProgress ? t('missionPlayer.continue') : t('home.start', 'Start')
+
   return (
     <div className="min-h-screen bg-surface-50">
-      {/* Main Content — header + bottom nav now come from AppShell */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Living-world hero (Phase D) — companion greeting + the ONE next
-            action + a real progress ribbon (level/XP/streak), all from the
-            existing gamification/mission queries. Replaces the old welcome
-            banner + separate continue-learning card. */}
-        {(() => {
-          const inProgress = Array.isArray(recentMissions)
-            ? recentMissions.find((r: any) => r.status === 'IN_PROGRESS')
-            : null
-          const nextTo = inProgress ? `/missions/play/${inProgress.id}` : '/missions'
-          const nextTitle = inProgress
-            ? inProgress.mission?.title || t('home.continueMission', 'Continue your mission')
-            : t('dashboard.quickActions.missions')
-          const nextKicker = inProgress
-            ? t('home.pickUp', 'Pick up where you left off')
-            : t('home.nextStep', "Today's next step")
-          const nextLabel = inProgress ? t('missionPlayer.continue') : t('home.start', 'Start')
-          return (
-            <LivingWorldHero
-              displayName={user?.displayName || t('dashboard.defaultLearnerName')}
-              companion="Azouz"
-              adapt={adapt}
-              greeting={t(`dashboard.greetingSubtext.${adapt.copyTone}`)}
-              nextTo={nextTo}
-              nextTitle={nextTitle}
-              nextKicker={nextKicker}
-              nextLabel={nextLabel}
-              level={progression?.level || 1}
-              totalXp={progression?.totalXP || 0}
-              streak={streak?.currentStreak || 0}
-              equippedTitle={equippedTitleName}
-            />
-          )
-        })()}
+        {/* 1. Living-world hero — companion at scale + ONE next action + ribbon. */}
+        <LivingWorldHero
+          displayName={user?.displayName || t('dashboard.defaultLearnerName')}
+          companion="Azouz"
+          adapt={adapt}
+          greeting={t(`dashboard.greetingSubtext.${adapt.copyTone}`)}
+          nextTo={nextTo}
+          nextTitle={nextTitle}
+          nextKicker={nextKicker}
+          nextLabel={nextLabel}
+          level={progression?.level || 1}
+          totalXp={progression?.totalXP || 0}
+          streak={streak?.currentStreak || 0}
+          equippedTitle={equippedTitleName}
+        />
 
-        {/* Living-world journey — the learner's worlds as a path/map right
-            after the hero. Real unlock state + mission counts; self-hides. */}
-        <WorldJourneyStrip />
+        {/* 2. The world journey — 4 domains as places; mastery as place-state. */}
+        <WorldJourneyMap />
 
-        {/* Your interests — surfaces onboarding interests as actionable chips
-            (closes the loop: captured -> shown -> navigable). Self-hides when none. */}
+        {/* 3. Keep exploring — real engines. Younger band sees fewer items. */}
         <InterestChips />
-
-        {/* Review due — surfaces the spaced-review/FSRS engine (previously had
-            NO frontend). Self-hides when nothing is due; links to /practice. */}
         <ReviewDueCard />
-
-        {/* Recommended for you — surfaces the backend Adaptive/Recommendation
-            engine (previously had NO frontend). Age-adaptive item count; the
-            section self-hides when the engine has no signal yet. */}
         <RecommendationsSection maxItems={adapt.density === 'simple' ? 2 : 4} />
 
-        {/* Stats — the core loop (Level + XP) is ONE hero card with real
-            visual weight (tinted surface, big ring, big numbers), not just
-            another white box in a uniform 4-up grid. Streak/Rank are
-            genuinely secondary: smaller, stacked in the side column.
-            Card count and copy still branch on `adapt` exactly as before —
-            AGE_8_9 sees Level+XP hero + Streak only; AGE_10_11 adds Rank;
-            AGE_12_14 also gets the Mastery breakdown further down. */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10 items-stretch">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.05 }}
-            className="lg:col-span-2 stat-card-hero"
-          >
-            <div className="flex items-center gap-6">
-              <div className={adapt.density === 'simple' ? 'w-24 h-24 flex-shrink-0' : 'w-20 h-20 flex-shrink-0'}>
-                <CircularProgressbar
-                  value={levelProgress}
-                  text={String(progression?.level || 1)}
-                  strokeWidth={9}
-                  styles={buildStyles({
-                    pathColor: themeAccentHex || THEME_HEX.primary600,
-                    trailColor: THEME_HEX.primary100,
-                    textColor: THEME_HEX.slate950,
-                    textSize: '30px',
-                  })}
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary-600 mb-1">
-                  {t('dashboard.levelLabel')}
-                </p>
-                <p className="text-xs text-slate-600 mb-3">
-                  {t(`dashboard.levelHelptext.${adapt.copyTone}`, {
-                    xp: progression?.xpInCurrentLevel || 0,
-                    next: progression?.xpForNextLevel || 100,
-                  })}
-                </p>
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <p
-                    className={`font-display font-extrabold text-slate-900 tabular-nums leading-none ${
-                      adapt.density === 'simple' ? 'text-5xl' : 'text-4xl'
-                    }`}
-                  >
-                    {totalXP.toLocaleString()}
-                  </p>
-                  <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${themeChipClass}`}>
-                    <Zap className="w-3.5 h-3.5" strokeWidth={2.5} />
-                    {t('dashboard.totalXpLabel')}
-                  </span>
-                </div>
-                {!showRankCard ? (
-                  <p className="text-xs text-slate-500 mt-1.5">{t(`dashboard.xpCelebration.${adapt.copyTone}`)}</p>
-                ) : (
-                  <p className="text-xs text-slate-500 mt-1.5">{t('dashboard.rankLabel', { rank: rank?.rank || '---' })}</p>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          <div className="flex flex-col gap-5">
-            {showStreakCard && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.15 }}
-                className="stat-card-secondary flex-1"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.streakLabel')}</p>
-                    <p className="font-display font-extrabold text-slate-900 text-2xl tabular-nums">
-                      {streakCount}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {showBestStreakDetail
-                        ? t('dashboard.bestStreak', { days: streak?.longestStreak || 0 })
-                        : t(`dashboard.streakCelebration.${adapt.copyTone}`)}
-                    </p>
-                  </div>
-                  <div className="icon-chip bg-accent-50 text-accent-600 w-10 h-10">
-                    <Flame className="w-4.5 h-4.5" strokeWidth={2} />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Rank gets its own card once density allows a 4th+ card
-                (AGE_10_11 and AGE_12_14) — for AGE_8_9 it's folded into the hero. */}
-            {showRankCard && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.2 }}
-                className="stat-card-secondary flex-1"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">{t('dashboard.rank')}</p>
-                    <p className="text-2xl font-display font-extrabold text-slate-900 tabular-nums">
-                      #{rank?.rank || '---'}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {adapt.density === 'detailed' ? t('dashboard.rankAmongAll') : t('dashboard.rankKeepClimbing')}
-                    </p>
-                  </div>
-                  <div className="icon-chip bg-primary-50 text-primary-600 w-10 h-10">
-                    <Award className="w-4.5 h-4.5" strokeWidth={2} />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </div>
-
-        {/* Today's Goal — real server-computed daily-goal progress ring.
-            Sits right after the stats grid, before the mastery/quick-actions
-            panels, so it's visible at-a-glance without scrolling on most
-            viewports. */}
+        {/* Today's goal — quiet, real server-computed ring. */}
         <div className="mb-10 max-w-sm">
           <DailyGoalCard data={dailyGoal} isLoading={dailyGoalLoading} />
         </div>
 
-        {/* Mastery Overview — full breakdown only for the highest-density
-            band (AGE_12_14, showAllStats=true). AGE_8_9/AGE_10_11 get a
-            single simplified "Quick Actions" panel instead of a two-column
-            layout, which is a genuine content difference, not styling. */}
-        {mastery && (
-          <div
-            className={`grid grid-cols-1 gap-5 mb-10 ${showMasteryBreakdown ? 'md:grid-cols-2' : ''}`}
-          >
-            {showMasteryBreakdown && (
-              <div className="card">
-                <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-5 h-5 text-primary-600" strokeWidth={2} />
-                  <h3>{t(`dashboard.masteryHeading.${adapt.copyTone}`)}</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">{t('dashboard.mastered')}</span>
-                    <span className="font-semibold text-success-600">{masteredCount}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">{t('dashboard.learning')}</span>
-                    <span className="font-semibold text-primary-600">{learningCount}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">{t('dashboard.toExplore')}</span>
-                    <span className="font-semibold text-slate-500">{toExploreCount}</span>
-                  </div>
-                </div>
+        {/* 4. Quiet secondary — recent activity + a single link to full progress.
+            The old stat-grid / level-ring / mastery-count / 10-tile quick-action
+            analytics now live on /progress, not on Home. */}
+        {recentMissions && recentMissions.length > 0 ? (
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary-600" strokeWidth={2} />
+                <h3>{t('dashboard.recentMissions')}</h3>
               </div>
-            )}
-
-            <div className="card">
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-primary-600" strokeWidth={2} />
-                <h3>{t(`dashboard.quickActionsHeading.${adapt.copyTone}`)}</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {/* Younger learners see fewer quick-action tiles at once —
-                    the full 8 is genuinely overwhelming icon-soup for an
-                    8-9 year old versus a curated top set. */}
-                {(adapt.density === 'simple' ? quickActions.slice(0, 4) : quickActions).map(
-                  ({ to, labelKey, icon: Icon, tint }) => (
-                    <Link key={to} to={to} className="quick-action">
-                      <div className={`icon-chip ${tint}`}>
-                        <Icon className="w-5 h-5" strokeWidth={2} />
-                      </div>
-                      <p className="font-medium text-slate-700 text-sm">{t(`dashboard.quickActions.${labelKey}`)}</p>
-                    </Link>
-                  )
-                )}
-                {user?.role === 'GUARDIAN' && (
-                  <Link to="/parents" className="quick-action">
-                    <div className="icon-chip bg-primary-50 text-primary-600">
-                      <Users2 className="w-5 h-5" strokeWidth={2} />
-                    </div>
-                    <p className="font-medium text-slate-700 text-sm">{t('dashboard.parentDashboard')}</p>
-                  </Link>
-                )}
-              </div>
-              <Link to="/progress" className="btn btn-primary w-full mt-3">
+              <Link to="/progress" className="text-sm font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center gap-1">
                 <TrendingUp className="w-4 h-4" strokeWidth={2} />
                 {t(`dashboard.viewProgress.${adapt.copyTone}`)}
               </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Recent Activity — AGE_8_9 sees fewer rows (3) to keep the page
-            from feeling like a dense log; older bands get up to 5. When a
-            learner hasn't completed a mission yet, this is their very
-            first look at the platform's "no data" moment — greet them with
-            a companion and a clear next step instead of an empty gap. */}
-        {recentMissions && recentMissions.length > 0 ? (
-          <div className="card">
-            <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-primary-600" strokeWidth={2} />
-              <h3>{t('dashboard.recentMissions')}</h3>
             </div>
             <div className="space-y-2">
               {recentMissions.slice(0, adapt.density === 'simple' ? 3 : 5).map((run: any) => (
@@ -511,8 +226,8 @@ export function DashboardPage() {
         ) : (
           <EmptyState
             character="Azouz"
-            title="No missions completed yet"
-            message="Every learning adventure starts with a first step — pick a mission and Azouz will cheer you on!"
+            title="No missions yet"
+            message="Every adventure starts with a first step — pick a world above and Azouz will cheer you on!"
             actionLabel="Browse missions"
             actionTo="/missions"
           />

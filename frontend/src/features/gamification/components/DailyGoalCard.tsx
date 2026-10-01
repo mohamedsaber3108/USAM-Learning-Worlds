@@ -31,7 +31,16 @@ export interface DailyGoalCardProps {
  */
 export function DailyGoalCard({ data, isLoading }: DailyGoalCardProps) {
   const { t } = useTranslation()
-  if (isLoading || !data) {
+  // Guard not just missing data but a malformed/unexpected payload — a
+  // child-facing surface must never hard-crash on a bad shape. We require the
+  // nested fields this card reads to actually be present before rendering.
+  const valid =
+    !!data &&
+    typeof data === 'object' &&
+    !!data.goal &&
+    !!data.progress &&
+    !!data.percentComplete
+  if (isLoading || !valid) {
     return (
       <div className="card animate-pulse">
         <div className="h-4 w-24 bg-surface-100 rounded mb-4" />
