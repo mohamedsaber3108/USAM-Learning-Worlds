@@ -163,6 +163,28 @@ deployed, build-green EXISTING app — good, but only landing + dashboard-quick-
 actions have been reconstructed against the new 4-domain product so far. Inner-
 surface reconstruction continues; owner re-runs deploy.sh per batch.
 
+## Service-worker / cache investigation (2026-10-01) — RESOLVED (no SW exists)
+
+Investigated "new build deployed but old UI shows". AUTHORITATIVE finding:
+- NO service worker anywhere — not in frontend/, root src/, backend/, OR git
+  history (git log for *sw.js/*service-worker.js/serviceWorker across --all = 0).
+- Current build output = only index.html + usam-logo.png (no sw/manifest/workbox).
+- So `200 /sw.js` on prod = nginx SPA `try_files .../index.html` fallback (HTML
+  shell under a 200), NOT a real worker. Owner's hypothesis confirmed; my earlier
+  SW suspicion was wrong — corrected before shipping any kill-switch.
+- Root cause of "old UI": browser (or nginx) caching index.html, so returning
+  visitors keep the old shell referencing old hashed JS.
+
+PERMANENT FIX (committed, not a one-off):
+- docs/ops/NGINX_CACHE.md: index.html = no-cache/revalidate; /assets/* immutable;
+  /sw.js + /service-worker.js = explicit 404 (never SPA-fallback). + apply steps.
+- scripts/verify-deployment.sh: new [C] section fails verification if /sw.js or
+  /service-worker.js is served as JS or 200-SPA-fallback, or if index.html is
+  long-cached. Future regression caught automatically.
+- deploy.sh already rebuilds a clean dist/ each deploy (rm -rf dist before build),
+  so no stale-file accumulation in the web root.
+NO Clear-Site-Data (would log users out), NO SW kill-switch (no SW to kill).
+
 ## Reconstruction progress (post-cutover, batch 2)
 
 - Dashboard quick-actions → 4 locked domains (English/Coding/AI/Entrepreneurship),

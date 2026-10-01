@@ -117,6 +117,50 @@ for r in /login /register /dashboard /worlds /simulations /balanced; do
   check_status "route $r" "$BASE$r" 200
 done
 
+# ---------------------------------------------------------------- COMMAND C
+# Service-worker + cache hygiene (added after the "new build deployed but old
+# UI persists" investigation). USAM has NO service worker (verified: none in
+# any tree or git history). These URLs must therefore NOT fall through to the
+# SPA index.html with a 200 — an HTML body served as /sw.js is ambiguous and
+# could be mistaken for a worker. They must 404. And index.html must be
+# revalidated (no-cache) so returning visitors always get the newest shell,
+# while hashed /assets/* may cache immutably.
+echo ""
+echo "[C] SERVICE-WORKER + CACHE HYGIENE"
+
+# /sw.js and /service-worker.js must NOT be served as a cached JS worker.
+# Accept 404 (preferred) or 410. A 200 with text/html is the SPA-fallback
+# ambiguity we are eliminating; a 200 with javascript would be a real rogue SW.
+for sw in /sw.js /service-worker.js; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$sw")
+  ctype=$(curl -s -o /dev/null -w "%{content_type}" "$BASE$sw")
+  if [ "$code" = "404" ] || [ "$code" = "410" ]; then
+    pass "$sw retired ($code)"
+  elif printf '%s' "$ctype" | grep -qi 'javascript'; then
+    fail "$sw is served as JAVASCRIPT ($code $ctype) — a real/rogue service worker is live"
+  else
+    fail "$sw returns $code ($ctype) — must be 404/410, not an SPA fallback (ambiguous)"
+  fi
+done
+
+# index.html must be revalidated so a new deploy is picked up without manual
+# cache clearing. Fail if it is served immutable/long-max-age.
+CC_HDR=$(curl -sI "$BASE/" | grep -i '^cache-control:' | tr -d '\r')
+info "index.html ${CC_HDR:-<no cache-control header>}"
+if printf '%s' "$CC_HDR" | grep -qiE 'no-cache|no-store|max-age=0'; then
+  pass "index.html is revalidated (no-cache)"
+elif printf '%s' "$CC_HDR" | grep -qiE 'immutable|max-age=([1-9][0-9]{3,})'; then
+  fail "index.html is long-cached ($CC_HDR) — returning visitors can be stuck on an old shell"
+else
+  info "index.html cache-control not explicitly no-cache — recommend adding it (see docs/ops/NGINX_CACHE.md)"
+fi
+
+# Hashed assets SHOULD be immutable-cacheable (perf). Informational only.
+if [ -n "$LIVE" ]; then
+  AC=$(curl -sI "$BASE/assets/$LIVE" | grep -i '^cache-control:' | tr -d '\r')
+  info "assets ${AC:-<no cache-control header>}"
+fi
+
 echo ""
 echo "==============================================================="
 if [ "$FAIL" -eq 0 ]; then
