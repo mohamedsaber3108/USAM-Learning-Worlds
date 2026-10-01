@@ -7,12 +7,12 @@ Last updated: 2026-09-30
 
 ---
 
-## Current gate: GATE 1 (Audit + Scope) — IN PROGRESS → near complete
+## Current gate: GATE 3 next (Curriculum/Levels/Packages/Journeys/IA)
 
 | Gate | Scope | Status |
 |---|---|---|
-| G1 | Forensic audit + product scope + current reality + gaps | ✅ docs written (00/01/02/03/STATUS); 1 blocking owner decision open |
-| G2 | Research + learning methodology + age/adaptation + OSS | ⬜ not started |
+| G1 | Forensic audit + product scope + current reality + gaps | ✅ done + committed; 1 blocking owner decision open (tree) |
+| G2 | Research + learning methodology + age/adaptation + OSS | ✅ done (04/05/06/07/36), research-cited |
 | G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ⬜ not started |
 | G4 | Design system + domain products + engines + FE/BE/data/API contracts | ⬜ not started |
 | G5 | Migration + rebuild inside ONE app + test + deprecate legacy | ⬜ not started |
@@ -52,8 +52,22 @@ canonical. Recommendation: root `src/`. See 02 §A. This does NOT block Gates
 > stale 11-module app.module + grep that doesn't index backend/). 02/03 corrected
 > against ground truth. Prior `47_PRICING_PACKAGING.md` was right about Plan/Sub.
 
+## Gate 2 decisions (anchor for Gate 3+)
+
+- Mastery = evidence/retrieval-driven (not exposure). Review scheduling = ADOPT
+  `ts-fsrs` (keep confidence model for mastery-state). Session loop = REVIEW→
+  DISCOVERY→EXPLAIN→PRACTICE→INTERACT→CREATE→REFLECT (adds the missing teach beat).
+- Adaptation multi-factor (age+ability+mastery+interests+history+objective+load);
+  wiring is the work (inputs already stored).
+- Coding: KEEP Pyodide/Sandpack; map to ISTE/CSTA. AI: AI4K12 five big ideas.
+  English: CEFR young-learner pre-A1→B1 descriptors. Entrepreneurship: design
+  thinking (Problem→…→Pitch).
+- Pricing: multi-domain premium, family-affordable (~$130/yr FAMILY anchor);
+  Socratic + parent-inspectable AI = table stakes.
+
 ## Next
 
-- Gate 2: competitor + learning-science research (cited) → product rules;
-  age/adaptation spec; OSS discovery for voice, sandbox, FSRS, content.
+- Gate 3: curriculum DAG (08), levels (09), packages/entitlements (10), pricing
+  (11), content inventory/gaps (12/13), journeys (14-16), IA/nav/page/feature/
+  engine maps (17-21). Merge prior 47/48/66/69 + Product Bible.
 - Do not stop after planning; proceed gate by gate.
