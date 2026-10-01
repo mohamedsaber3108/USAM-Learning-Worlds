@@ -54,6 +54,16 @@ function jsonFor(url: string): unknown {
       percentComplete: { minutes: 60, activities: 66 },
       goalMet: false,
     }
+  if (url.includes('/projects/real-world-challenges'))
+    return [
+      { id: 'ch1', title: 'Clean-up Crew', description: 'Design a plan to reduce litter in your neighbourhood.', externalSourceUrl: 'https://example.org' },
+      { id: 'ch2', title: 'Reading Buddy', description: 'Build something that helps a younger kid learn to read.', externalSourceUrl: null },
+    ]
+  if (url.includes('/projects/my') || url.endsWith('/projects'))
+    return [
+      { id: 'p1', title: 'My Weather App', description: 'A tiny app that shows if I need an umbrella today.', createdAt: '2026-09-20T10:00:00Z', isShowcased: true },
+      { id: 'p2', title: 'Story Generator', description: 'Press a button, get a silly story starter.', createdAt: '2026-09-25T10:00:00Z', isShowcased: false },
+    ]
   if (url.includes('/cross-curricular/ai-literacy'))
     return [
       { id: 'a1', name: 'What is AI, really?', description: 'How machines learn from examples — and where they get things wrong.', category: 'foundations', ageAppropriate: 'AGE_10_11', order: 1 },
@@ -99,6 +109,7 @@ const AUTHED_ROUTES: { tag: string; path: string }[] = [
   { tag: 'coding', path: '/coding' },
   { tag: 'ai', path: '/cross-curricular/ai-literacy' },
   { tag: 'entrepreneurship', path: '/cross-curricular/entrepreneurship' },
+  { tag: 'projects', path: '/projects' },
 ]
 
 for (const lang of ['en', 'ar'] as const) {

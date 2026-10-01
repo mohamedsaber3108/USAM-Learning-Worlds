@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { FolderKanban, Plus, Star, X, Globe2, ExternalLink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Plus, Star, X, Globe2, ExternalLink } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { EmptyState, LoadingState } from '@/components/common/CharacterState'
 import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 
@@ -17,6 +19,7 @@ function NewProjectModal({
   initialTitle?: string
   initialDescription?: string
 }) {
+  const { t } = useTranslation()
   const [title, setTitle] = useState(initialTitle)
   const [description, setDescription] = useState(initialDescription)
   const [type, setType] = useState('INDEPENDENT')
@@ -30,17 +33,17 @@ function NewProjectModal({
   })
 
   const createErrorMessage = create.isError
-    ? getFriendlyErrorMessage(create.error, 'We could not create your project. Please try again.')
+    ? getFriendlyErrorMessage(create.error, t('projectsPage.createError', 'We could not create your project. Please try again.'))
     : null
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-card shadow-soft-lg max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-bold text-lg text-slate-900">New Project</h2>
+          <h2 className="font-display font-bold text-lg text-slate-900">{t('projectsPage.newProject', 'New project')}</h2>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('common.close', 'Close')}
             className="text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 rounded-full"
           >
             <X className="w-5 h-5" strokeWidth={2} />
@@ -48,30 +51,30 @@ function NewProjectModal({
         </div>
         <div className="space-y-3">
           <input
-            className="w-full border border-slate-200 rounded-control px-3 py-2 text-sm"
-            placeholder="Project title"
+            className="input"
+            placeholder={t('projectsPage.titlePlaceholder', 'Project title')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <textarea
-            className="w-full border border-slate-200 rounded-control px-3 py-2 text-sm"
-            placeholder="What are you building?"
+            className="input"
+            placeholder={t('projectsPage.descPlaceholder', 'What are you building?')}
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
           <select
-            className="w-full border border-slate-200 rounded-control px-3 py-2 text-sm"
+            className="input"
             value={type}
             onChange={(e) => setType(e.target.value)}
           >
-            <option value="INDEPENDENT">Independent</option>
-            <option value="GUIDED">Guided</option>
-            <option value="COLLABORATIVE">Collaborative</option>
+            <option value="INDEPENDENT">{t('projectsPage.type.independent', 'Independent')}</option>
+            <option value="GUIDED">{t('projectsPage.type.guided', 'Guided')}</option>
+            <option value="COLLABORATIVE">{t('projectsPage.type.collaborative', 'Collaborative')}</option>
           </select>
         </div>
         {createErrorMessage && (
-          <p className="mt-3 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-control px-3 py-2">
+          <p className="mt-3 text-sm text-error-700 bg-error-50 border border-error-200 rounded-control px-3 py-2">
             {createErrorMessage}
           </p>
         )}
@@ -80,7 +83,7 @@ function NewProjectModal({
           disabled={!title.trim() || !description.trim() || create.isPending}
           onClick={() => create.mutate()}
         >
-          {create.isPending ? 'Creating...' : 'Create Project'}
+          {create.isPending ? t('projectsPage.creating', 'Creating…') : t('projectsPage.createCta', 'Create project')}
         </button>
       </div>
     </div>
@@ -88,6 +91,7 @@ function NewProjectModal({
 }
 
 export function ProjectsPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showModal, setShowModal] = useState(false)
@@ -111,10 +115,12 @@ export function ProjectsPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="icon-chip bg-white/15 text-white"><FolderKanban className="w-6 h-6" strokeWidth={2} /></div>
+              <div className="rounded-full bg-white/15 p-1.5 shrink-0">
+                <CharacterFace characterId="Codey" size={52} state="encouraging" />
+              </div>
               <div>
-                <h1 className="text-2xl font-display font-extrabold text-white">My Projects</h1>
-                <p className="text-white/80 text-sm mt-0.5">Build, save, and showcase what you create.</p>
+                <h1 className="text-2xl font-display font-extrabold text-white">{t('projectsPage.title', 'My Projects')}</h1>
+                <p className="text-white/80 text-sm mt-0.5">{t('projectsPage.subtitle', 'Build, save, and showcase what you create.')}</p>
               </div>
             </div>
             <button
@@ -122,7 +128,7 @@ export function ProjectsPage() {
               onClick={() => setShowModal(true)}
             >
               <Plus className="w-4 h-4" strokeWidth={2} />
-              New Project
+              {t('projectsPage.newProject', 'New project')}
             </button>
           </div>
         </div>
@@ -134,8 +140,8 @@ export function ProjectsPage() {
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-3">
               <Globe2 className="w-5 h-5 text-secondary-600" strokeWidth={2} />
-              <h2 className="font-display font-bold text-lg text-slate-900">Real-World Challenges</h2>
-              <span className="text-xs text-slate-500">Adopt one and make it your own project</span>
+              <h2 className="font-display font-bold text-lg text-slate-900">{t('projectsPage.challengesTitle', 'Real-world challenges')}</h2>
+              <span className="text-xs text-slate-500">{t('projectsPage.challengesHint', 'Adopt one and make it your own project')}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {challenges.map((c: any) => (
@@ -150,17 +156,17 @@ export function ProjectsPage() {
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-primary-600 hover:underline"
                       >
-                        Source <ExternalLink className="w-3 h-3" strokeWidth={2} />
+                        {t('projectsPage.source', 'Source')} <ExternalLink className="w-3 h-3" strokeWidth={2} />
                       </a>
                     )}
                     <button
-                      className="btn btn-sm bg-secondary-600 text-white hover:bg-secondary-700 shadow-none text-xs px-2 py-1"
+                      className="inline-flex items-center rounded-pill bg-secondary-500 text-white hover:bg-secondary-600 text-xs font-semibold px-3 py-1.5 transition-colors"
                       onClick={() => {
                         setAdopted({ title: c.title, description: c.description })
                         setShowModal(true)
                       }}
                     >
-                      Adopt
+                      {t('projectsPage.adopt', 'Adopt')}
                     </button>
                   </div>
                 </div>
@@ -169,7 +175,7 @@ export function ProjectsPage() {
           </div>
         )}
         {isLoading ? (
-          <LoadingState character="Codey" message="Codey is gathering your projects..." />
+          <LoadingState character="Codey" message={t('projectsPage.loading', 'Codey is gathering your projects…')} />
         ) : projects && projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((project: any) => (
@@ -187,7 +193,7 @@ export function ProjectsPage() {
                   {project.isShowcased && (
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-secondary-50 text-secondary-700 rounded-control text-xs font-medium">
                       <Star className="w-3.5 h-3.5" strokeWidth={2} fill="currentColor" />
-                      Showcased
+                      {t('projectsPage.showcased', 'Showcased')}
                     </span>
                   )}
                 </div>
@@ -197,9 +203,9 @@ export function ProjectsPage() {
         ) : (
           <EmptyState
             character="Codey"
-            title="No Projects Yet"
-            message="Every great builder starts with an empty canvas. Create your first project and start your portfolio!"
-            actionLabel="Create Your First Project"
+            title={t('projectsPage.emptyTitle', 'No projects yet')}
+            message={t('projectsPage.emptyMessage', 'Every great builder starts with an empty canvas. Create your first project and start your portfolio!')}
+            actionLabel={t('projectsPage.emptyAction', 'Create your first project')}
             onAction={() => setShowModal(true)}
           />
         )}
