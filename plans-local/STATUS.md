@@ -195,6 +195,41 @@ NO Clear-Site-Data (would log users out), NO SW kill-switch (no SW to kill).
 - gitignored qa-screenshots artifacts.
 - Gate: lint 0, tsc 0, build 0, 40/40 tests. NOT yet deployed (next deploy batch).
 
+## INNER-SURFACE RECONSTRUCTION COMPLETE (7/7 batches, 2026-10-01)
+
+All inner surfaces audited against the locked 4-domain product + real backend
+and reconstructed/verified. Dominant finding: the canonical `frontend/` tree was
+already largely REAL + honest (prior rebuild landed here); defects were (a) old
+school-subject scope leftovers in a few hardcoded lists, (b) a couple of
+wrong-enum bugs, (c) the Entrepreneurship content gap. All fixed surgically
+(§5: keep good real code, don't demolish).
+
+Batches (all pushed; owner deploys via scripts/deploy.sh):
+- 9ab70cc landing (LIVE), 5adce02 dashboard (LIVE), 5986a52 cache/SW (LIVE)
+- b5b86d9 Learn hub + worlds→4 domains
+- fd57a23 missions filters real
+- 43af328 Progress mastery-bug fix
+- 8c80ba0 Entrepreneurship vertical-slice seed
+- 2156539 characters/voice audit + stale-note fixes
+- 4f894f9 parent/commerce/admin audit + memory-governance false-alarm correction
+- (task 7) nav active-state → 4 domains + perf investigation + acceptance doc
+
+Perf (§19): the 1.9MB vendor chunk = coding runtime (sandpack/codemirror/blockly/
+monaco), home-bundle gate PASSES (not statically imported by entry). Prior
+engineer's e2e-proven note says force-splitting it regressed worse — left as the
+validated tradeoff; documented in 45. Not a blind code-split.
+
+No mocks in frontend/ production source (verified). a11y axe tests pass (full
+WCAG = manual AT testing, documented). i18n EN/AR present with fallbacks.
+
+## REMAINING = OWNER-RUN (I cannot reach the server / see pixels)
+1. Deploy the 6 pushed batches: `bash scripts/deploy.sh` (+ DEPLOY_BACKEND=1 for
+   the backend seed changes).
+2. Seed content: `cd backend && npm run seed:entrepreneurship:vertical`.
+3. Live acceptance walk (46 §7): 8/10/12/14 child personas + parent, EN/AR,
+   phone/tablet/desktop, voice on real speech. Eyes-on — the only acceptance
+   that counts (I have no browser on the live domain).
+
 ## Next (execution — 44)
 
 Phase A foundation wiring (one API client + AgePresentationProvider + real auth)

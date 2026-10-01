@@ -57,13 +57,46 @@ guardrail; content shown as "final" is unreviewed.
   limitation explicitly and the checks become an OWNER-RUN manual acceptance
   pass on the server — NOT silently marked passed.
 
-## 7. Current honest state
+## 7. Current honest state (2026-10-01, after inner-surface reconstruction)
 
-Pre-execution: NONE of these are passed yet (planning gates G1–G5 docs complete;
-code execution not started). This section is updated with real evidence as Gate-5
-phases (44) complete. The reconstruction is "finished" only when every persona +
-parent walk passes with observed evidence and the 45 truth table has no
-MOCK_ONLY/MISSING in required surfaces.
+### What is DONE + verifiable (code-side)
+- Canonical tree LOCKED = `frontend/` (deploy-chain verified). Cache/SW hygiene
+  fixed + live. Landing + dashboard reconstructed to the 4 domains, LIVE.
+- Inner-surface reconstruction pass complete across all 7 batches: Learn hub +
+  worlds reframed to 4 domains; missions filters made real; Progress mastery-bug
+  fixed; Entrepreneurship vertical-slice seed authored (thinnest domain);
+  characters confirmed on the locked 15 roster (no old cast); voice confirmed a
+  real ASR→AI→TTS round-trip with honest fallback; parent/commerce/admin
+  confirmed real; nav active-state aligned to the 4 domains.
+- Every batch gated green: frontend lint 0 / tsc 0 / build 0 / 40 tests /
+  home-bundle; backend tsc 0 / 120 tests / drift gates (on deploy).
+- No mocks in `frontend/` production source (verified sweep). The mock-backed
+  tree was the LEGACY root `src/` (not deployed).
+
+### What is HONESTLY NOT yet verified (owner-run — I cannot see pixels/live)
+These are the §3/§4 checklists; they require a real browser on the live domain,
+which only runs on the server. They are NOT marked passed:
+- [ ] Child-truth walk for 8 / 10 / 12 / 14 personas on `https://kids.usamif.com`.
+- [ ] Parent-truth walk.
+- [ ] EN/AR + RTL on phone / tablet / desktop (visual).
+- [ ] Voice end-to-end on real child speech (EG-Arabic WER).
+- [ ] The 1.9MB coding-runtime preload perf item (known tradeoff, §45).
+
+### Owner-run live acceptance checklist (run on the server, then eyes-on)
+```bash
+cd ~/USAM-Learning-Worlds && git pull            # get all pushed batches
+# backend: apply the 4-domain + worlds + entrepreneurship content
+cd backend && npm run seed:entrepreneurship:vertical   # (+ other seed:* as desired)
+cd .. && DEPLOY_BACKEND=1 RUN_TESTS=1 bash scripts/deploy.sh
+bash scripts/verify-deployment.sh                # must end GREEN incl [C]
+# then eyes-on: screenshot harness (if present) OR manual browser walk per §2
+```
+Then open `https://kids.usamif.com/` in a fresh browser and walk §2 for each
+persona + the parent journey, checking §3/§4. Report any surface that feels
+confusing/empty/fake/unfinished/too-hard/too-static/LMS-like (§5 fail conditions).
+
+The reconstruction is "finished" only when those owner-run walks pass with
+observed evidence. Code-side: all required surfaces are real + green + pushed.
 
 ## 8. Known standing limitations (documented, not hidden)
 

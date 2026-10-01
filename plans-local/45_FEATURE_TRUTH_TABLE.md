@@ -98,8 +98,20 @@ Date: 2026-09-30 (pre-execution baseline)
 
 - `frontend/`: `tsc --noEmit` **PASS**; `npm test` **40/40 pass (11 files)**;
   `npm run build` **PASS**; `check:home-bundle` **PASS**. Healthy real app.
-- PERF FINDING (directive §19): one vendor chunk `vendor-D50g1LQf.js` = **1.9 MB**
-  (gzip 531 kB) — code-split in the hardening phase. Status: REFACTOR (perf).
+- PERF FINDING (directive §19) — INVESTIGATED, documented tradeoff: the 1.9 MB
+  `vendor` chunk contains the CODING RUNTIME (sandpack + codemirror + blockly +
+  monaco), not stray libs ("moment" fingerprint = false positive; not a dep).
+  The home-bundle gate PASSES — this runtime is NOT statically imported by the
+  entry (Home load graph is clean). It is a lazy chunk that is modulepreload-
+  HINTED. The prior engineer's vite.config documents (with an e2e proof) that
+  force-splitting sandpack/pyodide into named chunks REGRESSED it worse
+  (hoisted __vitePreload into the entry, dragging ~950kB into Home). So further
+  splitting is NOT a safe quick fix — it needs the e2e network assertion
+  (e2e/home.spec.ts) as a guard. Tried a Radix split (safe) — no size impact
+  (Radix tree-shakes small), reverted to keep the validated config. Status:
+  KNOWN TRADEOFF (REFACTOR behind e2e guard), not a blind code-split. Honest:
+  Home does not block on this chunk, but the preload hint could be trimmed in a
+  dedicated e2e-guarded perf pass.
 - SCOPE-VIOLATION FINDING (landing, directive §17): `landing/LandingPage.tsx`
   presents the OLD 6 "worlds" = Math/Science/Language/Coding/Arts/World — the
   REJECTED generic school-subject model, NOT the locked 4 domains. No AI or

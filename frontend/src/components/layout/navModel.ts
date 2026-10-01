@@ -34,7 +34,14 @@ const isHome = (p: string) => p === '/' || p === '/dashboard'
 const HOME: NavEntry = { key: 'home', icon: Home, to: '/dashboard', match: isHome, placement: 'primary' }
 const LEARN: NavEntry = {
   key: 'learn', icon: BookOpen, to: '/learn', placement: 'primary',
-  match: (p) => p.startsWith('/learn') || p.startsWith('/english'),
+  // Highlights for the Learn hub AND the 4 domain surfaces reached from it:
+  // /learn*, /learning/domains/:slug/path, and each domain's own tool route
+  // (english/coding/cross-curricular for AI & Entrepreneurship).
+  match: (p) =>
+    p.startsWith('/learn') ||
+    p.startsWith('/english') ||
+    p.startsWith('/coding') ||
+    p.startsWith('/cross-curricular'),
 }
 const PLAY: NavEntry = {
   key: 'play', icon: Gamepad2, to: '/missions', placement: 'primary',
