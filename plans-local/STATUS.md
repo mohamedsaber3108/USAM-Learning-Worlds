@@ -148,6 +148,31 @@ auth reset/verify/OAuth.
 - CharacterFace already renders all 15 locked names; characterPreference supports
   the 4 hero picks. Backend 4-domain seed already corrected (74768aa).
 
+## LIVE CUTOVER DONE (2026-10-01) — 9ab70cc on https://kids.usamif.com/
+
+Owner ran `scripts/deploy.sh` on the server. VERIFIED LIVE: deployed commit
+9ab70cc matches source+remote; live bundle == built bundle; `/` 200; backend
+health ok (db connected, env=production); nested-route `/dashboard` 200 (SPA
+fallback ok); all auth-guarded endpoints 401; backend 120/120 tests + enum/
+migration drift gates pass; frontend 40/40 tests + build + home-bundle pass. DB
+backup confirmed working (usam_user@localhost/usam, 362K dump). The 2 "uncommitted"
+server files were just QA screenshot artifacts (now gitignored).
+
+HONEST live state: landing is reconstructed+live; the INNER app is the real,
+deployed, build-green EXISTING app — good, but only landing + dashboard-quick-
+actions have been reconstructed against the new 4-domain product so far. Inner-
+surface reconstruction continues; owner re-runs deploy.sh per batch.
+
+## Reconstruction progress (post-cutover, batch 2)
+
+- Dashboard quick-actions → 4 locked domains (English/Coding/AI/Entrepreneurship),
+  AI/Entrepreneurship via /learning/domains/:slug/path. Dashboard was already
+  REAL (not mock) — scope fix, not rebuild (directive §5: don't demolish good pages).
+- Domain-path page: added Entrepreneurship (Adam) config + EN/AR i18n.
+- Fixed 2 pre-existing CI-lint blockers (vitest-axe, Toast). lint now exit 0.
+- gitignored qa-screenshots artifacts.
+- Gate: lint 0, tsc 0, build 0, 40/40 tests. NOT yet deployed (next deploy batch).
+
 ## Next (execution — 44)
 
 Phase A foundation wiring (one API client + AgePresentationProvider + real auth)

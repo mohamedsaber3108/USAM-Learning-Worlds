@@ -55,7 +55,10 @@ Date: 2026-09-30 (pre-execution baseline)
 | i18n EN/AR + RTL | PRESENT | partial | PARTIAL | i18next + translations (human-approval); RTL pass needed |
 | Design system | PRESENT(FE) | PRESENT | PARTIAL | src/design mature; adopt; palette owner decision |
 | Memory-governance admin | PRESENT | — | BLOCKED | authz gap — WITHHELD until RolesGuard fix (35 §2) |
-| **Landing page** | static | REBUILT | PARTIAL→verify | REBUILT on locked 4 domains + AI/Entrepreneurship + journey/companions/parent/pricing/§17; tsc+build+home-bundle green; i18n keys use fallbacks (AR/EN keys = i18n pass); visual QA = owner-run (46) |
+| **Landing page** | static | REBUILT | LIVE | REBUILT on locked 4 domains + AI/Entrepreneurship + journey/companions/parent/pricing/§17; DEPLOYED live 9ab70cc (kids.usamif.com, verified 200 + bundle match); visual QA = owner-run (46) |
+| **Learner Home/Dashboard** | real APIs | REAL+scope-fixed | LIVE(existing)/PARTIAL | Dashboard already REAL (gamification/mastery/missions/cosmetics/dailyGoals APIs, age-adaptive, recommendations, review-due, honest states). Fixed: quick-actions now lead with the 4 LOCKED domains (was generic worlds+leaderboard); AI→/learning/domains/ai-literacy/path, Entrepreneurship→.../entrepreneurship/path. lint+tsc+build+40 tests green. Not yet re-deployed. |
+| **Domain path page** | learning/domains/:slug/path | REAL+Entrepreneurship added | PARTIAL | Generic slug-driven page (english/coding/ai-literacy/creativity/entrepreneurship). Added Entrepreneurship config (Adam mentor) + EN/AR i18n. Entrepreneurship CONTENT still thin (13). |
+| CI lint health | — | FIXED | — | Fixed 2 pre-existing CI-lint blockers (vitest-axe stale eslint-disable rule name; Toast react-refresh). `npm run lint` now exit 0. |
 
 ## Honest headline (pre-execution)
 

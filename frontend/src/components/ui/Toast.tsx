@@ -20,6 +20,7 @@ interface ToastItem {
 
 const ToastCtx = createContext<{ push: (t: Omit<ToastItem, 'id'>) => void } | null>(null)
 
+// eslint-disable-next-line react-refresh/only-export-components -- the toast hook is co-located with its provider by design; splitting it would churn every import for no runtime benefit
 export function useToast() {
   const ctx = useContext(ToastCtx)
   if (!ctx) throw new Error('useToast must be used within <ToastProvider>')

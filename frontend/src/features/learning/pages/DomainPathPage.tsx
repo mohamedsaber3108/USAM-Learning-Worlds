@@ -64,6 +64,17 @@ const DOMAIN_CONFIG: Record<string, DomainConfig> = {
     toolLabelKey: 'domainPath.tool.creativity',
     toolLabelFallback: 'Make something',
   },
+  // Entrepreneurship — the 4th LOCKED primary domain (Adam mentor). Content is
+  // the thinnest today (plans-local/13); the generic spine still renders its
+  // path, and the tool link opens the entrepreneurship concept/simulation
+  // surface via the cross-curricular route.
+  entrepreneurship: {
+    companion: 'Adam',
+    nameKey: 'domainPath.name.entrepreneurship',
+    toolTo: '/cross-curricular/entrepreneurship',
+    toolLabelKey: 'domainPath.tool.entrepreneurship',
+    toolLabelFallback: 'Build & pitch an idea',
+  },
 }
 
 const DEFAULT_CONFIG: DomainConfig = {

@@ -13,12 +13,11 @@ import {
   BookOpen,
   Palette,
   Sparkles,
-  Trophy,
+  Rocket,
   Mic,
   Languages,
   Code2,
   Users2,
-  Globe2,
   TrendingUp,
   CheckCircle2,
   Clock,
@@ -43,20 +42,23 @@ import { masteryLabel } from '@/lib/mastery/masteryLabels'
 
 // Quick-action tiles: each gets ONE tasteful icon-chip tint, not a rainbow gradient.
 // `labelKey` resolves against dashboard.quickActions.* in both locales.
+// LEAD with the 4 LOCKED primary domains (English/Coding/AI/Entrepreneurship),
+// then the cross-domain actions. The old grid led with generic "worlds" + a
+// leaderboard; the product is organized around the 4 domains, not school
+// subjects. AI/Entrepreneurship route through the generic domain-path page by
+// slug (routes verified: /learning/domains/:slug/path). Younger bands see the
+// first 4 (the domains); older bands see the full set.
 const quickActions = [
-  { to: '/worlds', labelKey: 'worlds', icon: Globe2, tint: 'bg-sky-50 text-sky-600' },
-  { to: '/learn', labelKey: 'learn', icon: BookOpen, tint: 'bg-primary-50 text-primary-600' },
-  { to: '/missions', labelKey: 'missions', icon: Target, tint: 'bg-accent-50 text-accent-600' },
-  { to: '/projects', labelKey: 'projects', icon: Palette, tint: 'bg-secondary-50 text-secondary-600' },
-  { to: '/balanced', labelKey: 'balanced', icon: Sparkles, tint: 'bg-grape-50 text-grape-600' },
-  { to: '/community', labelKey: 'community', icon: Users2, tint: 'bg-primary-50 text-primary-600' },
-  { to: '/achievements', labelKey: 'achievements', icon: Trophy, tint: 'bg-warning-50 text-warning-600' },
-  { to: '/leaderboard', labelKey: 'leaderboard', icon: BarChart3, tint: 'bg-success-50 text-success-600' },
-  { to: '/voice-chat', labelKey: 'voiceChat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
-  { to: '/english', labelKey: 'english', icon: Languages, tint: 'bg-accent-50 text-accent-600' },
+  { to: '/english', labelKey: 'english', icon: Languages, tint: 'bg-grape-50 text-grape-600' },
   { to: '/coding', labelKey: 'coding', icon: Code2, tint: 'bg-success-50 text-success-600' },
+  { to: '/learning/domains/ai-literacy/path', labelKey: 'ai', icon: Sparkles, tint: 'bg-secondary-50 text-secondary-600' },
+  { to: '/learning/domains/entrepreneurship/path', labelKey: 'entrepreneurship', icon: Rocket, tint: 'bg-accent-50 text-accent-600' },
   { to: '/practice', labelKey: 'practice', icon: RotateCcw, tint: 'bg-accent-50 text-accent-600' },
+  { to: '/projects', labelKey: 'projects', icon: Palette, tint: 'bg-secondary-50 text-secondary-600' },
+  { to: '/voice-chat', labelKey: 'voiceChat', icon: Mic, tint: 'bg-primary-50 text-primary-600' },
+  { to: '/balanced', labelKey: 'balanced', icon: Sparkles, tint: 'bg-grape-50 text-grape-600' },
   { to: '/evidence', labelKey: 'evidence', icon: Award, tint: 'bg-success-50 text-success-600' },
+  { to: '/community', labelKey: 'community', icon: Users2, tint: 'bg-primary-50 text-primary-600' },
 ]
 
 // Age-adaptive copy now lives in frontend/src/lib/i18n/locales/{en,ar}.ts
