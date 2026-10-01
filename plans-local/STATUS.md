@@ -15,6 +15,7 @@ Last updated: 2026-09-30
 | G2 | Research + learning methodology + age/adaptation + OSS | ✅ done (04/05/06/07/36), research-cited |
 | G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ✅ done (08-21); merged prior 47/48/66/69 + Product Bible/North Star |
 | G4 | Design system + characters + voice + domain products + engines + FE/BE/data/API contracts | ✅ done (22-40) |
+| G5 (plan) | Migration/deletion, testing, production, sequence, truth table, acceptance | ✅ docs done (41-46); EXECUTION pending owner tree-confirm |
 | G3 | Curriculum + levels + packages + pricing + content + journeys + IA | ⬜ not started |
 | G4 | Design system + domain products + engines + FE/BE/data/API contracts | ⬜ not started |
 | G5 | Migration + rebuild inside ONE app + test + deprecate legacy | ⬜ not started |
@@ -96,14 +97,28 @@ canonical. Recommendation: root `src/`. See 02 §A. This does NOT block Gates
 - Clean mock→real seam EXISTS: `src/services/contracts.ts` ("mock today, real
   tomorrow") — the central migration lever; swap service bodies, pages unchanged.
 
-## Next
+## ALL PLANNING GATES COMPLETE (G1–G5 docs). Canonical set 00–46 + STATUS written.
 
-- Gate 5: write 41_MIGRATION_AND_DELETION, 42_TESTING, 43_PRODUCTION,
-  44_IMPLEMENTATION_SEQUENCE, 45_FEATURE_TRUTH_TABLE, 46_FINAL_ACCEPTANCE; then
-  EXECUTE the rebuild inside root src/ (owner tree confirm needed to START
-  execution): replace seed → wire mock→real behind contracts, surface by surface,
-  verifying each API shape; deprecate frontend/ + any preview.
-- OPEN owner decisions: (1) rebuild target = root src/ (recommended); (2) palette
-  (keep amber/teal/magenta vs white/green/black); (3) final price + payment
-  gateway (before charging); (4) legal/privacy copy review.
-- Do not stop after planning; proceed gate by gate.
+The product is fully RE-DEFINED and the implementation plan is locked. The
+reconstruction now moves from PLANNING to EXECUTION (44 phases A–J).
+
+## EXECUTION precondition (one owner confirm)
+
+Gate-5 EXECUTION (writing code in the ONE app) needs the owner to confirm the
+rebuild target = **root `src/`** (recommended; evidence in 02 §A / 37 §1). This
+is the single high-impact, hard-to-reverse decision (picking the wrong tree wastes
+the build). Everything else proceeds.
+
+Other owner decisions (do NOT block starting execution; resolve as reached):
+(2) palette amber/teal/magenta vs white/green/black (token-value change only);
+(3) final price + enabling real payment gateway (before charging real customers);
+(4) legal/privacy copy review; (5) optional auth reset/verify/OAuth for v1.
+
+## Next (execution — 44)
+
+Phase A foundation wiring (one API client + AgePresentationProvider + real auth)
+→ B correct seed (4 domains + 15 chars + worlds) → C core learning loop real →
+D first-run + session engine → E companions + voice → F create/projects/portfolio
+→ G entrepreneurship content → H parent/mod/admin → I commerce → J harden+QA+
+cutover+delete legacy. Each phase ends green + updates 45 truth table with
+evidence. Do not stop after planning.
