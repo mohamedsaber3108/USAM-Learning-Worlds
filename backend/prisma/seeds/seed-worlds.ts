@@ -1,15 +1,15 @@
 /**
- * World Engine / World State Engine Seeding
+ * World Engine seeding — ONE world per LOCKED primary domain.
  *
- * Seeds `World` with 7 real worlds (one per major learning Domain, out of
- * the 13 live `domains` rows) — a genuine step up from the previous
- * `Mission.worldId` free-string-with-no-model state
- * (USAM_KIDS_ENGINE_GAP_MATRIX.md Part 7b: "no World model, no FK, no
- * relation, no seed data").
+ * Product-first reconstruction (plans-local/01, 08): the four primary domains
+ * are English, Coding, AI Literacy, Entrepreneurship. This replaces the former
+ * 7 school-subject worlds (Numeria/Verdantia/Circuit City/… mapped to
+ * mathematics/science/technology/arts/engineering), which no longer match the
+ * seeded domains and would all be skipped ("domain slug not found").
  *
- * Each World's `domainId` is looked up live by the real domain `slug`
- * (backend/prisma/seed.ts), not hardcoded, so this seed is safe to re-run
- * against any environment with the standard domain set.
+ * Each World's `domainId` is looked up live by the domain `slug` (see
+ * backend/prisma/seed.ts), so this stays in sync with the domain seed and is
+ * safe to re-run (idempotent upsert by world slug).
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -18,67 +18,40 @@ const prisma = new PrismaClient();
 
 const worldDefs = [
   {
-    domainSlug: 'mathematics',
-    name: 'Numeria',
-    slug: 'numeria',
-    description:
-      'A world built from numbers, shapes, and puzzles — where every problem has a satisfying "click" the moment it clicks into place.',
-    unlockCondition: 'Always unlocked — Numeria is one of the starting worlds.',
-    order: 1,
-  },
-  {
-    domainSlug: 'science',
-    name: 'Verdantia',
-    slug: 'verdantia',
-    description:
-      'A living laboratory of plants, planets, and tiny creatures, where curiosity is the only tool you need to start exploring.',
-    unlockCondition: 'Always unlocked — Verdantia is one of the starting worlds.',
-    order: 2,
-  },
-  {
-    domainSlug: 'technology',
-    name: 'Circuit City',
-    slug: 'circuit-city',
-    description:
-      'A neon-lit city of code and gadgets, where you build things that actually run — from your first "Hello World" to real working programs.',
-    unlockCondition: 'Unlocks after completing at least 1 mission in Numeria or Verdantia.',
-    order: 3,
-  },
-  {
-    domainSlug: 'arts',
-    name: 'Prisma Isles',
-    slug: 'prisma-isles',
-    description:
-      'A chain of colorful islands where painters, sculptors, and designers gather to turn imagination into something you can see.',
-    unlockCondition: 'Unlocks after completing at least 1 mission in Numeria or Verdantia.',
-    order: 4,
-  },
-  {
-    domainSlug: 'language',
+    domainSlug: 'english',
     name: 'Wordhaven',
     slug: 'wordhaven',
     description:
-      'A cozy town built from stories, letters, and conversation, where every word you learn opens a new door.',
-    unlockCondition: 'Always unlocked — Wordhaven is one of the starting worlds.',
-    order: 5,
+      'A living town built from stories, conversation, and words — where every new word you learn opens another door.',
+    unlockCondition: 'Always unlocked — Wordhaven is a starting world.',
+    order: 1,
   },
   {
-    domainSlug: 'engineering',
-    name: 'Gearhollow',
-    slug: 'gearhollow',
+    domainSlug: 'coding',
+    name: 'Circuit City',
+    slug: 'circuit-city',
     description:
-      'A workshop-world of gears, bridges, and machines, where you design, build, and test your own inventions.',
-    unlockCondition: 'Unlocks after completing at least 2 missions across any world.',
-    order: 6,
+      'A neon city of code and gadgets where you build things that actually run — from your first line to real working programs.',
+    unlockCondition: 'Always unlocked — Circuit City is a starting world.',
+    order: 2,
   },
   {
-    domainSlug: 'critical-thinking',
-    name: 'The Riddle Reach',
-    slug: 'the-riddle-reach',
+    domainSlug: 'ai-literacy',
+    name: 'Mindspring',
+    slug: 'mindspring',
     description:
-      'A misty archipelago of logic puzzles and brain-teasers, where the fastest way through is always to think, not guess.',
+      'A world of thinking machines where you learn how AI really works, where it gets things wrong, and how to create with it wisely.',
+    unlockCondition: 'Unlocks after completing at least 1 mission in Wordhaven or Circuit City.',
+    order: 3,
+  },
+  {
+    domainSlug: 'entrepreneurship',
+    name: 'Launch Bay',
+    slug: 'launch-bay',
+    description:
+      'A harbor of big ideas where you spot a real problem, build a solution, test it, and pitch it to the world.',
     unlockCondition: 'Unlocks after completing at least 2 missions across any world.',
-    order: 7,
+    order: 4,
   },
 ];
 

@@ -59,6 +59,9 @@ Date: 2026-09-30 (pre-execution baseline)
 | **Learner Home/Dashboard** | real APIs | REAL+scope-fixed | LIVE(existing)/PARTIAL | Dashboard already REAL (gamification/mastery/missions/cosmetics/dailyGoals APIs, age-adaptive, recommendations, review-due, honest states). Fixed: quick-actions now lead with the 4 LOCKED domains (was generic worlds+leaderboard); AI→/learning/domains/ai-literacy/path, Entrepreneurship→.../entrepreneurship/path. lint+tsc+build+40 tests green. Not yet re-deployed. |
 | **Domain path page** | learning/domains/:slug/path | REAL+Entrepreneurship added | PARTIAL | Generic slug-driven page (english/coding/ai-literacy/creativity/entrepreneurship). Added Entrepreneurship config (Adam mentor) + EN/AR i18n. Entrepreneurship CONTENT still thin (13). |
 | CI lint health | — | FIXED | — | Fixed 2 pre-existing CI-lint blockers (vitest-axe stale eslint-disable rule name; Toast react-refresh). `npm run lint` now exit 0. |
+| Cache/SW hygiene | nginx+verify | FIXED | LIVE | /sw.js+/service-worker.js→404; index.html no-cache; assets immutable. verify-deployment.sh [C] guards it. Confirmed live (verify GREEN). docs/ops/NGINX_CACHE.md. |
+| **Learn hub (/learn)** | curriculum/learning/worlds/mastery APIs | REAL+scope-fixed | LIVE(existing)/PARTIAL | Was framed as generic "Curriculum/every subject" + 7 school-subject worlds. Re-framed around the 4 LOCKED domains as the spine (prominent cards → domain-path); thinking/cross-curricular demoted to "supporting"; AI/Entrepreneurship promoted out of cross-curricular. Real world-path + concept browser kept. seed-worlds.ts rewritten to 4 domains (Wordhaven/CircuitCity/Mindspring/LaunchBay) — fixes would-be-empty world path. Not yet redeployed. |
+| World seed | seed-worlds.ts | FIXED | — | Was 7 school-subject worlds (mathematics/science/... slugs) → all would skip post-domain-fix. Now 4 worlds mapped to english/coding/ai-literacy/entrepreneurship slugs. |
 
 ## Honest headline (pre-execution)
 

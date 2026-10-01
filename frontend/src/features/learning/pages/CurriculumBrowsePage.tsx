@@ -185,10 +185,10 @@ export function CurriculumBrowsePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="icon-chip bg-white/15 text-white"><BookOpen className="w-6 h-6" strokeWidth={2} /></div>
+              <div className="icon-chip bg-white/15 text-white"><Compass className="w-6 h-6" strokeWidth={2} /></div>
               <div>
-                <h1 className="text-2xl font-display font-extrabold text-white">Curriculum</h1>
-                <p className="text-white/80 text-sm mt-0.5">Explore every subject, concept by concept.</p>
+                <h1 className="text-2xl font-display font-extrabold text-white">Learn</h1>
+                <p className="text-white/80 text-sm mt-0.5">Your four learning worlds — English, Coding, AI, and Entrepreneurship.</p>
               </div>
             </div>
             <Link
@@ -215,9 +215,36 @@ export function CurriculumBrowsePage() {
         </div>
       </header>
 
+      {/* The 4 LOCKED primary domains — the product spine. Each opens its
+          generic domain-path page (verified route /learning/domains/:slug/path). */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { slug: 'english', name: 'English', icon: BookOpen, tint: 'bg-grape-50 text-grape-600', desc: 'Words, reading, writing & speaking' },
+            { slug: 'coding', name: 'Coding', icon: Code, tint: 'bg-success-50 text-success-600', desc: 'Logic, programs & problem-solving' },
+            { slug: 'ai-literacy', name: 'AI Literacy', icon: Bot, tint: 'bg-secondary-50 text-secondary-600', desc: 'How AI works & creating with it' },
+            { slug: 'entrepreneurship', name: 'Entrepreneurship', icon: Lightbulb, tint: 'bg-accent-50 text-accent-600', desc: 'Turn an idea into something real' },
+          ].map(({ slug, name, icon: Icon, tint, desc }) => (
+            <Link
+              key={slug}
+              to={`/learning/domains/${slug}/path`}
+              className="card hover:shadow-soft-hover transition-shadow flex flex-col gap-2"
+            >
+              <span className={`icon-chip w-12 h-12 ${tint}`}><Icon className="w-6 h-6" strokeWidth={2} /></span>
+              <h3 className="font-display font-bold text-ink mt-1">{name}</h3>
+              <p className="text-sm text-slate-500 leading-snug">{desc}</p>
+              <span className="mt-auto pt-2 inline-flex items-center gap-1 text-sm font-semibold text-primary-600">
+                Start <ArrowRight className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="card mb-2">
-          <h2 className="text-lg font-heading font-semibold mb-3">Thinking Skills</h2>
+          <h2 className="text-lg font-heading font-semibold mb-1">Thinking Skills</h2>
+          <p className="text-xs text-slate-500 mb-3">Supporting skills woven across the four domains.</p>
           <div className="flex flex-wrap gap-3">
             <Link to="/thinking/problem-solving" className="btn btn-secondary flex items-center gap-2">
               <span className="icon-chip w-7 h-7 bg-accent-50 text-accent-600"><PuzzleIcon className="w-4 h-4" strokeWidth={2} /></span>
@@ -235,21 +262,15 @@ export function CurriculumBrowsePage() {
         </div>
       </div>
 
-      {/* Cross-Curricular quick links — real seeded AILiteracyConcept /
-          EntrepreneurshipConcept / FinancialLiteracyConcept content,
-          surfaced from the main curriculum browse page. */}
+      {/* Supporting / cross-domain skills — real seeded concept content.
+          (AI Literacy and Entrepreneurship are now PRIMARY domains above; the
+          financial/digital/career/communication strands remain supporting
+          competencies woven across missions and projects.) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="card mb-2">
-          <h2 className="text-lg font-heading font-semibold mb-3">Cross-Curricular</h2>
+          <h2 className="text-lg font-heading font-semibold mb-1">Life &amp; Future Skills</h2>
+          <p className="text-xs text-slate-500 mb-3">Cross-domain skills that grow alongside the four worlds.</p>
           <div className="flex flex-wrap gap-3">
-            <Link to="/cross-curricular/ai-literacy" className="btn btn-secondary flex items-center gap-2">
-              <span className="icon-chip w-7 h-7 bg-primary-50 text-primary-600"><Bot className="w-4 h-4" strokeWidth={2} /></span>
-              AI Literacy
-            </Link>
-            <Link to="/cross-curricular/entrepreneurship" className="btn btn-secondary flex items-center gap-2">
-              <span className="icon-chip w-7 h-7 bg-secondary-50 text-secondary-600"><Lightbulb className="w-4 h-4" strokeWidth={2} /></span>
-              Entrepreneurship
-            </Link>
             <Link to="/cross-curricular/financial-literacy" className="btn btn-secondary flex items-center gap-2">
               <span className="icon-chip w-7 h-7 bg-success-100 text-success-600"><DollarSign className="w-4 h-4" strokeWidth={2} /></span>
               Financial Literacy
