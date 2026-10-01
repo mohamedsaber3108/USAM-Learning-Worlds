@@ -7,7 +7,35 @@
 
 ---
 
-## A. BLOCKING DECISION — which tree is "the original project"?
+## A. RESOLVED — canonical tree is `frontend/` (deployment-chain verified)
+
+> **LOCKED (2026-09-30, owner-authorized deployment-chain verification):** the
+> canonical production frontend is **`frontend/`** (React 18 + react-router +
+> axios). This REVERSES this doc's earlier recommendation of root `src/`.
+>
+> Authoritative evidence (the real deploy chain, not inference):
+> - `scripts/deploy.sh` step 3 does `cd "$REPO/frontend"` → npm ci → tsc →
+>   `npm run build` → `dist/index.html` → nginx reload. It builds **`frontend/`**.
+> - `.github/workflows/ci.yml` `frontend` job `working-directory: frontend`,
+>   PLUS a `frontend-canonical-guard` job that FAILS the build if deploy ever
+>   targets root `src/`, stating root `src/` is the Lovable scaffold and
+>   "intentionally NOT built or deployed".
+> - `docs/architecture/FRONTEND_CANONICAL.md` confirms the same.
+> - `frontend/src` is RICH: 24 feature dirs (admin/analytics/auth/billing/
+>   characters/coding/community/cosmetics/creativity/cross-curricular/dashboard/
+>   english/evidence/gamification/landing/learning/missions/onboarding/parents/
+>   practice/projects/stories/thinking-skills/voice) + `frontend/src/lib/api/
+>   endpoints.ts` with 61 real (axios) API groups + a real router. NOT mock.
+> - `src/LEGACY_DO_NOT_EDIT.md` is CORRECT (not stale, as earlier claimed) — root
+>   `src/` is the Lovable scaffold; `.output` is not present in this checkout.
+>
+> CORRECTION OWNED: my earlier audit over-weighted a stale `.output` reference
+> (from the first sub-agent pass) and under-inventoried `frontend/`. The deploy
+> chain is authoritative. **Rebuild target = `frontend/src/`. Root `src/` =
+> legacy Lovable scaffold (do not build; delete only via the Lovable-safe
+> process in 77 after salvage). This is now LOCKED — not revisited.**
+
+## A-OLD. (superseded) earlier tree ambiguity analysis
 
 There are **two** frontend trees in this checkout (not three; `frontend-rebuild/`
 is NOT here — it lived on the server in the prior era):

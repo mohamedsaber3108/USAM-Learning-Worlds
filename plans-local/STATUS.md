@@ -97,22 +97,32 @@ canonical. Recommendation: root `src/`. See 02 §A. This does NOT block Gates
 - Clean mock→real seam EXISTS: `src/services/contracts.ts` ("mock today, real
   tomorrow") — the central migration lever; swap service bodies, pages unchanged.
 
-## ALL PLANNING GATES COMPLETE (G1–G5 docs). Canonical set 00–46 + STATUS written.
+## ALL PLANNING GATES COMPLETE (G1–G5 docs). EXECUTION AUTHORIZED + STARTED.
 
-The product is fully RE-DEFINED and the implementation plan is locked. The
-reconstruction now moves from PLANNING to EXECUTION (44 phases A–J).
+Owner confirmed execution. Canonical frontend tree VERIFIED + LOCKED.
 
-## EXECUTION precondition (one owner confirm)
+## CANONICAL TREE LOCKED: `frontend/` (deployment-chain verified)
 
-Gate-5 EXECUTION (writing code in the ONE app) needs the owner to confirm the
-rebuild target = **root `src/`** (recommended; evidence in 02 §A / 37 §1). This
-is the single high-impact, hard-to-reverse decision (picking the wrong tree wastes
-the build). Everything else proceeds.
+Owner-authorized verification done. `scripts/deploy.sh` builds `frontend/`
+(`cd "$REPO/frontend"`); CI `frontend-canonical-guard` FAILS if deploy targets
+root `src/`; `docs/architecture/FRONTEND_CANONICAL.md` confirms. **CORRECTION
+OWNED:** my earlier root-`src/` recommendation was WRONG (over-weighted a stale
+`.output` ref, under-inventoried `frontend/`). `frontend/` is RICH: 24 feature
+dirs + 61 real axios API groups + real router. Root `src/` = legacy Lovable
+scaffold (CI-guarded against deploy; delete via Lovable-safe salvage process 77).
+Docs 02/37/41/44 corrected. **Not revisited.**
 
-Other owner decisions (do NOT block starting execution; resolve as reached):
-(2) palette amber/teal/magenta vs white/green/black (token-value change only);
-(3) final price + enabling real payment gateway (before charging real customers);
-(4) legal/privacy copy review; (5) optional auth reset/verify/OAuth for v1.
+Backup: tag `pre-reconstruction-checkpoint-20260930` created + pushed (rollback).
+
+Owner directives applied: visual identity is research-driven & replaceable (NOT
+locked to any tree's styling); let structurally-bad pages die + rebuild; no new
+preview/`/v2`; EXISTENCE != COMPLETENESS (verify every engine end-to-end, update
+45 continuously); pricing/legal continue without blocking; execute continuously,
+stop only for irreversible owner decisions.
+
+Owner decisions that do NOT block (resolve as reached): final price + enabling
+real payment gateway (before charging); legal/privacy counsel copy; optional
+auth reset/verify/OAuth.
 
 ## Execution started (tree-independent, safe-first)
 

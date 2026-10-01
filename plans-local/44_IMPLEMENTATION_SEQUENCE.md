@@ -8,20 +8,25 @@ Date: 2026-09-30
 
 ---
 
-## 0. Preconditions
+## 0. Preconditions — MET
 
-- Owner confirms rebuild target = root `src/` (recommended). [BLOCKS execution]
+- Rebuild target LOCKED = **`frontend/`** (deployment-chain verified, 02 §A/37).
+- Backup tag `pre-reconstruction-checkpoint-20260930` pushed.
 - Backend reachable for shape verification (dev DB or live `/api`). If not
-  reachable from this workspace, shape-verify by reading controllers/DTOs +
-  defer live verification to the server (document, don't fake — 46).
+  reachable here, shape-verify by reading controllers/DTOs + defer live
+  verification to the server (document, don't fake — 46).
 
-## 1. Phase A — Foundation wiring (unblocks everything)
+## 1. Phase A — Foundation audit + wiring (inside `frontend/`)
 
-1. Consolidate ONE typed API client under `/api` (merge `src/services/api.ts` +
-   `contracts.ts`) with auth token + refresh + error conventions (40 §4).
-2. Wrap app in `AgePresentationProvider` (22). TanStack Query client.
+1. AUDIT `frontend/src` honestly: what each of the 24 feature dirs + the 61
+   `endpoints.ts` groups actually does (real vs partial vs broken). Record in 45.
+   `frontend/` is largely REAL (axios) — do NOT assume done; verify.
+2. Confirm ONE axios client (`endpoints.ts`) with token + refresh + error
+   conventions (40 §4). Fix if partial.
 3. Auth real: login/register/me/refresh; session + role routing + guards (18).
-Gate: a real learner can log in and land on a role home.
+4. Establish the final design-token system (22/37 §5) — research-driven.
+Gate: a real learner can log in and land on a role home; audit of `frontend/`
+state recorded in 45.
 
 ## 2. Phase B — Correct the product shape (backend seed)
 

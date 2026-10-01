@@ -8,21 +8,20 @@ Date: 2026-09-30
 
 ---
 
-## 1. Target (37 §1)
+## 1. Target (37 §1) — LOCKED
 
-Rebuild INSIDE root `src/` (the Lovable TanStack app that builds `.output` and
-syncs to `kids.usamif.com`). [Owner-confirm before deletion steps.]
+Rebuild INSIDE **`frontend/src/`** (the deployed app per deploy.sh + CI). Root
+`src/` is the LEGACY Lovable scaffold.
 
 ## 2. What gets migrated vs deleted
 
 | Tree | Action |
 |---|---|
-| root `src/` | THE app — rebuilt in place (mock→real behind contracts, 37 §3) |
-| `frontend/` (legacy react-router) | REFERENCE during rebuild → DELETE after cutover |
-| `frontend-rebuild/` (server-only, prior era) | REFERENCE ONLY → DELETE after cutover |
-| `src/data/*` mocks | REMOVE as each service goes real (no mock left in prod paths) |
-| `src/services/*` mock bodies | REPLACED by real `/api` impls behind same contracts |
-| stale `src/LEGACY_DO_NOT_EDIT.md` | UPDATE/REMOVE once target confirmed |
+| **`frontend/`** | THE app — reconstructed in place (verify/finish/rebuild surfaces) |
+| root `src/` (Lovable scaffold) | SALVAGE good patterns/content (77) → DELETE via Lovable-safe process |
+| `frontend-rebuild/` (server-only, prior era) | its work largely landed in `frontend/`; any residue = REFERENCE → DELETE |
+| root `src/data/*` + `src/services/*` mocks | SALVAGE useful data (character authoring, Arabic rules) → DELETE with the scaffold |
+| `src/LEGACY_DO_NOT_EDIT.md` | KEEP until the scaffold is deleted (CI guard requires it present while `src/` exists) |
 
 ## 3. Migration method (reuse good work, don't rewrite blindly)
 
@@ -40,11 +39,16 @@ live. Deletion is a reviewable commit; legacy stays in git history (revertable).
 Order: cut over → verify live → delete `frontend/` + `frontend-rebuild/` →
 remove remaining mock data/services.
 
-## 5. Lovable / git-history safety (AGENTS.md)
+## 5. Lovable / git-history safety (AGENTS.md + FRONTEND_CANONICAL + 77)
 
-Root `src/` is Lovable-managed. Do NOT force-push / rewrite pushed history
-(syncs to Lovable; loses project history). Keep the connected branch working.
-Deletion of legacy trees is normal commits, not history rewrites.
+Root `src/` + root `package.json`/`vite.config.ts` are Lovable-managed
+(`.lovable/project.json` pins `tanstack_start_ts_current`). Deleting them may
+break Lovable editor sync + rewrite project history. So scaffold removal is a
+DELIBERATE, separately-reviewed, owner-gated step (per FRONTEND_CANONICAL + 77) —
+NOT a casual cleanup, and NOT a history rewrite. Backup tag
+`pre-reconstruction-checkpoint-20260930` pushed. Do NOT force-push/rewrite pushed
+history. The CI `frontend-canonical-guard` requires `src/LEGACY_DO_NOT_EDIT.md`
+to exist while `src/` exists — keep it until the scaffold is removed.
 
 ## 6. Backend migration (surgical, not rebuild — 38 §3)
 
@@ -55,9 +59,10 @@ approval (standing rule).
 
 ## 7. End-state checklist
 
-- [ ] ONE frontend (root `src/`), no parallel trees.
+- [ ] ONE frontend (`frontend/`), no parallel trees.
 - [ ] No mock data in production paths.
-- [ ] `frontend/` + `frontend-rebuild/` deleted.
+- [ ] root `src/` Lovable scaffold salvaged + deleted (owner-gated, Lovable-safe).
+- [ ] `frontend-rebuild/` residue (if any) deleted.
 - [ ] Seed = 4 domains + 15 characters + worlds.
-- [ ] All role journeys on real APIs.
-- [ ] Legacy references removed from docs (LEGACY_DO_NOT_EDIT updated).
+- [ ] All role journeys on real APIs (`frontend/src/lib/api/endpoints.ts`).
+- [ ] No `/preview`, `/new`, `/v2` parallel trees.

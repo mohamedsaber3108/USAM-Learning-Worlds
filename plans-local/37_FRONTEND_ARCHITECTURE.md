@@ -1,63 +1,74 @@
 # 37 — FRONTEND ARCHITECTURE
 
-> Where and how the ONE frontend is built. Resolves the rebuild-target question
-> (with an owner-decision flag) and defines the mock→real migration seam.
+> Where and how the ONE frontend is built. Target RESOLVED + LOCKED via the
+> deployment chain (02 §A).
 
-Date: 2026-09-30
+Date: 2026-09-30 (corrected after deployment-chain verification)
 
 ---
 
-## 1. Rebuild target (RECOMMENDATION; owner-confirm — 02 §A)
+## 1. Rebuild target — LOCKED: `frontend/`
 
-**Build inside root `src/`** (TanStack Start + Lovable, React 19, Vite 8).
-Evidence: it is what `.output` builds, what `start-frontend.sh` runs, and what
-Lovable syncs to `kids.usamif.com`. `frontend/` is a thinner legacy react-router
-app; `src/LEGACY_DO_NOT_EDIT.md` is stale (references deploy.sh/CI absent here).
+**Build inside `frontend/src/`** (React 18 + react-router-dom v6 + axios +
+zustand + framer-motion + Vite 5 + i18next). Authoritative evidence:
+- `scripts/deploy.sh` step 3 → `cd "$REPO/frontend"` → npm ci → `tsc --noEmit`
+  → `npm run build` → verify `dist/index.html` → nginx reload → verify-deployment.
+- `.github/workflows/ci.yml`: `frontend` job `working-directory: frontend` +
+  `frontend-canonical-guard` job that FAILS the build if deploy ever targets root
+  `src/` ("root src/ is the Lovable scaffold, intentionally NOT built/deployed").
+- `docs/architecture/FRONTEND_CANONICAL.md` confirms.
 
-> OWNER DECISION (the one blocking item): confirm root `src/` is the target. If
-> the owner means the server `frontend/` tree instead, 37/41 change. Everything
-> else in the plan is tree-independent. **This blocks Gate 5 execution only.**
+Root `src/` (TanStack/Lovable, React 19) = LEGACY scaffold. NOT a build target
+(CI-enforced). Keep marked (`src/LEGACY_DO_NOT_EDIT.md`); delete only via the
+Lovable-safe salvage-then-remove process (77). **This is LOCKED — not revisited**
+(owner-authorized verification done).
 
-## 2. Stack (root `src/`)
+## 2. Stack (`frontend/`)
 
-TanStack Start/Router (file routes `src/routes/*`), React 19, Vite 8,
-TanStack Query, Radix primitives, Tailwind v4, i18next (EN/AR), Pyodide +
-Sandpack (coding), the `src/design/` system (22). Deploys as Nitro/Cloudflare
-(`.output`).
+React 18, react-router-dom v6, Vite 5, axios, zustand, framer-motion, i18next
+(EN/AR). Real API client `frontend/src/lib/api/endpoints.ts` (61 groups). Router
+`frontend/src/app/router/index.tsx`. Tests vitest. 24 feature dirs present
+(admin, analytics, auth, billing, characters, coding, community, cosmetics,
+creativity, cross-curricular, dashboard, english, evidence, gamification,
+landing, learning, missions, onboarding, parents, practice, projects, stories,
+thinking-skills, voice). Coding runtime lazy-loaded (home-bundle perf gate).
 
-## 3. The mock→real seam (the central migration lever)
+## 3. Integration reality (`frontend/` is largely REAL)
 
-`src/services/contracts.ts` already defines typed service interfaces with the
-rule "Frontend ONLY talks to these interfaces — mock today, real tomorrow". Today
-most `src/services/*` are mock implementations (`src/data/*` + setTimeout); only
-`src/services/api.ts` calls the real backend.
+`frontend/src/lib/api/endpoints.ts` is a real axios client (~61 groups) hitting
+the backend. So the work here is NOT "swap mocks" — it is: VERIFY each group's
+real response shape, FINISH partial wiring, and REBUILD surfaces that are
+structurally wrong/missing (directive §5: let bad pages die; do not preserve).
+The prior frontend-rebuild effort landed in this tree — reconcile its actual
+state honestly in 45 (don't assume done).
 
-**Migration = replace mock service bodies with real `/api` calls behind the SAME
-contracts** — pages don't change, only the service implementation swaps. This is
-the cleanest possible path and already designed-for. Prefer one TanStack Query
-client + a typed API client (consolidate `api.ts` + contracts).
+> The root `src/services/contracts.ts` "mock→real seam" is the LEGACY tree's
+> concern, not this path. Salvage valuable patterns/content from root `src/`
+> (richer character authoring, Arabic pluralization) per 77, then delete it.
 
 ## 4. API base + prefix
 
-Backend global prefix is `/api` (verified main.ts). Frontend base = `/api`
-(same-origin in prod). `src/services/api.ts` base = `VITE_API_URL || .../api`.
-Consolidate all groups (auth, learning, missions, mastery, adaptive, characters,
-voice, projects, gamification, entitlements, parents, etc.) under one client with
-token handling + refresh.
+Backend global prefix `/api` (verified main.ts). Frontend base `/api`
+(same-origin prod) via `endpoints.ts` axios instance + token handling + refresh.
 
-## 5. Age-adaptive rendering
+## 5. Design / visual system (research-driven, replaceable — 22, directive §4/§5)
 
-Wrap the app in `AgePresentationProvider` (22 §4); components read presentation
-knobs + `resolveCopy` for age-appropriate copy; never branch on age directly.
+The visual identity is NOT locked to any existing tree's styling. Build the final
+USAM design language (palette/type/spacing/radii/shadows/cards/nav/iconography/
+illustration/motion) from the research + child-UX + Arabic-first + characters +
+worlds + age bands, expressed as SEMANTIC design tokens. Reuse the strong
+age-presentation MODEL concept from root `src/design/age-presentation.ts` as
+reference (3 modes), but the token VALUES and component styling are rebuilt in
+`frontend/` to feel like USAM — not Duolingo/SaaS/Lovable-template.
 
 ## 6. Routing / shell
 
-One role-variant shell (18). File-routes reconciled to the IA (17): learner
-surfaces, parent `/parent*`, mod `/mod*`, admin `/admin*`, public. Honest 404 for
-auth+unauth; role guards with honest 403.
+One role-variant shell (18). Routes reconciled to IA (17): learner, parent, mod,
+admin, public. Honest 404 (auth+unauth), role guards with honest 403.
 
 ## 7. Rules
 
-- No second frontend; `frontend/` + any preview deprecated after cutover (41).
+- ONE frontend (`frontend/`). Root `src/` + any preview deprecated/deleted (41).
 - All strings i18n (EN/AR), RTL via logical properties.
-- Reuse `src/design` + `src/components`; no parallel component system.
+- No parallel component system; one design-token system.
+- Let structurally-bad pages die and rebuild (directive §5), not re-skin.
