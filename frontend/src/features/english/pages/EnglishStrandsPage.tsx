@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
-  Languages, MessageCircle, BookOpen, PencilLine, Mic, Ear, BookMarked,
+  MessageCircle, BookOpen, PencilLine, Mic, Ear, BookMarked,
   PenLine, MessagesSquare, Drama, Keyboard,
 } from 'lucide-react'
 import { englishApi, type EnglishStrand, type EnglishStrandFamily } from '@/lib/api/endpoints'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DomainLearningPath } from '@/features/learning/components/DomainLearningPath'
 
@@ -80,7 +81,9 @@ export function EnglishStrandsPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="icon-chip bg-white/15 text-white w-12 h-12"><Languages className="w-6 h-6" strokeWidth={2} /></div>
+              <div className="rounded-full bg-white/15 p-1.5 shrink-0">
+                <CharacterFace characterId="Luma" size={52} state="encouraging" />
+              </div>
               <div>
                 <h1 className="text-2xl font-display font-extrabold text-white">{t('english.title')}</h1>
                 <p className="text-white/80 text-sm mt-0.5">{t('english.subtitle')}</p>

@@ -74,6 +74,8 @@ const VIEWPORTS = [
 const AUTHED_ROUTES: { tag: string; path: string }[] = [
   { tag: 'worlds', path: '/worlds' },
   { tag: 'missions', path: '/missions' },
+  { tag: 'english', path: '/english' },
+  { tag: 'english-coach', path: '/english/coach' },
 ]
 
 for (const lang of ['en', 'ar'] as const) {

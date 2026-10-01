@@ -769,6 +769,28 @@ export const ar: TranslationKeys = {
     unavailable: 'كودي مرتاح دلوقتي — كمّل كودك وجرّب تاني بعد شوية!',
     suggestedFix: 'جرّب كده',
   },
+  englishCoach: {
+    title: 'كوتش الإنجليزي',
+    subtitle: 'اتمرّن مع لمى — صبورة معاك، وكل غلطة بتساعدك تتعلّم.',
+    backToStrands: 'المسارات',
+    emptyHint: 'اختار وضع وابعت رسالة عشان تبدأ تتمرّن على الإنجليزي مع لمى.',
+    thinking: 'لمى بتفكّر...',
+    send: 'ابعت',
+    errorHttp: 'لمى مش قادرة ترد دلوقتي (HTTP {{status}}{{detail}}). متصفّح المسارات شغّال تمام من غير الكوتش الذكي.',
+    errorNetwork: 'لمى مش قادرة ترد دلوقتي (مشكلة في الشبكة). جرّب تاني بعد شوية.',
+    mode: {
+      conversation: 'محادثة',
+      grammar: 'تصحيح القواعد',
+      vocabulary: 'كلمات',
+      reading: 'قطعة قراءة',
+    },
+    placeholder: {
+      conversation: 'قول حاجة بالإنجليزي...',
+      grammar: 'اكتب جملة عشان نراجعها...',
+      vocabulary: 'اكتب موضوع (مثلاً "الحيوانات")...',
+      reading: 'اكتب موضوع لقطعة قراءة...',
+    },
+  },
   missionPlayer: {
     loading: 'بنجهّز مهمتك...',
     missionFallback: 'مهمة',

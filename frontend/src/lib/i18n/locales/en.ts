@@ -775,6 +775,28 @@ export const en = {
     unavailable: "Codey is resting right now — keep coding, and try again in a bit!",
     suggestedFix: 'Try this',
   },
+  englishCoach: {
+    title: 'English Coach',
+    subtitle: "Practice with Luma — she's patient, and every mistake helps you learn.",
+    backToStrands: 'Strands',
+    emptyHint: 'Pick a mode and send a message to start practicing English with Luma.',
+    thinking: 'Luma is thinking...',
+    send: 'Send',
+    errorHttp: "Luma can't reply right now (HTTP {{status}}{{detail}}). The strands browser still works fully without the AI coach.",
+    errorNetwork: "Luma can't reply right now (network error). Please try again later.",
+    mode: {
+      conversation: 'Conversation',
+      grammar: 'Grammar check',
+      vocabulary: 'Vocabulary',
+      reading: 'Reading passage',
+    },
+    placeholder: {
+      conversation: 'Say something in English...',
+      grammar: 'Type a sentence to check...',
+      vocabulary: 'Enter a topic (e.g. "animals")...',
+      reading: 'Enter a topic for a reading passage...',
+    },
+  },
   missionPlayer: {
     loading: 'Getting your mission ready...',
     missionFallback: 'Mission',
