@@ -114,6 +114,17 @@ Other owner decisions (do NOT block starting execution; resolve as reached):
 (3) final price + enabling real payment gateway (before charging real customers);
 (4) legal/privacy copy review; (5) optional auth reset/verify/OAuth for v1.
 
+## Execution started (tree-independent, safe-first)
+
+- Phase B (partial): corrected the default `backend/prisma/seed.ts` to seed the 4
+  LOCKED domains (English/Coding/AI Literacy/Entrepreneurship) via idempotent
+  upsert + a demonstrative English vertical slice, retiring the 12 school-subject
+  domains + Math-only slice. Kept the 15-character universe + cosmetics +
+  reflection seeders (already wired). tsc clean. This is backend-only and correct
+  under either frontend-tree outcome.
+- Remaining Phase B: wire cross-curricular concept tables into the graph; seed
+  worlds per the 4 domains (verify `seed-worlds.ts` targets them).
+
 ## Next (execution — 44)
 
 Phase A foundation wiring (one API client + AgePresentationProvider + real auth)

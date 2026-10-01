@@ -76,51 +76,58 @@ async function main() {
 
   console.log('✅ Linked guardian to learner');
 
-  // Seed 12 domains
+  // Seed the 4 LOCKED primary domains (product-first reconstruction, Option A).
+  // See plans-local/01_PRODUCT_SCOPE.md + 08_CURRICULUM.md. The previous 12
+  // school-subject domains (Math/Science/PE/Music/…) were WRONG for the product
+  // and are retired. Real domain breadth content is seeded by the named
+  // `seed:*` scripts (english/coding/ai-literacy/entrepreneurship); this default
+  // seeder establishes the correct domain shells + a demonstrative English slice.
+  // Idempotent (upsert) so re-running against an existing db is safe.
   const domains = [
-    { name: 'Mathematics', slug: 'mathematics', icon: '🔢', color: '#3B82F6', order: 1 },
-    { name: 'Science', slug: 'science', icon: '🔬', color: '#10B981', order: 2 },
-    { name: 'Engineering', slug: 'engineering', icon: '⚙️', color: '#F59E0B', order: 3 },
-    { name: 'Technology', slug: 'technology', icon: '💻', color: '#8B5CF6', order: 4 },
-    { name: 'Arts', slug: 'arts', icon: '🎨', color: '#EC4899', order: 5 },
-    { name: 'Language', slug: 'language', icon: '📚', color: '#EF4444', order: 6 },
-    { name: 'Social Studies', slug: 'social-studies', icon: '🌍', color: '#14B8A6', order: 7 },
-    { name: 'Health & Wellness', slug: 'health', icon: '❤️', color: '#F43F5E', order: 8 },
-    { name: 'Music', slug: 'music', icon: '🎵', color: '#A855F7', order: 9 },
-    { name: 'Physical Education', slug: 'physical-education', icon: '⚽', color: '#22C55E', order: 10 },
-    { name: 'Critical Thinking', slug: 'critical-thinking', icon: '🧠', color: '#6366F1', order: 11 },
-    { name: 'Creativity', slug: 'creativity', icon: '✨', color: '#F472B6', order: 12 },
+    { name: 'English', slug: 'english', icon: '📖', color: '#2563EB', order: 1,
+      description: 'Language acquisition: vocabulary, grammar, reading, listening, speaking, writing, conversation (CEFR).' },
+    { name: 'Coding', slug: 'coding', icon: '💻', color: '#7C3AED', order: 2,
+      description: 'Computational thinking: decomposition, patterns, abstraction, algorithms, real coding + projects.' },
+    { name: 'AI Literacy', slug: 'ai-literacy', icon: '🤖', color: '#0D9488', order: 3,
+      description: 'How AI works, data & bias, judging AI output, responsible creation (AI4K12 five big ideas).' },
+    { name: 'Entrepreneurship', slug: 'entrepreneurship', icon: '🚀', color: '#EA580C', order: 4,
+      description: 'Young business building: problem → idea → user → solution → create → test → value → pitch.' },
   ];
 
   for (const domain of domains) {
-    await prisma.domain.create({ data: domain });
+    await prisma.domain.upsert({
+      where: { slug: domain.slug },
+      update: { name: domain.name, icon: domain.icon, color: domain.color, order: domain.order, description: domain.description },
+      create: domain,
+    });
   }
 
-  console.log('✅ Created 12 domains');
+  console.log('✅ Created/updated the 4 primary domains (English, Coding, AI Literacy, Entrepreneurship)');
 
-  // Create sample skill for Mathematics
-  const mathDomain = await prisma.domain.findUnique({
-    where: { slug: 'mathematics' },
+  // Demonstrative vertical slice under English (a LOCKED domain). Real breadth
+  // comes from `seed:english:*` scripts; this proves the spine end-to-end.
+  const englishDomain = await prisma.domain.findUnique({
+    where: { slug: 'english' },
   });
 
   const skill = await prisma.skill.create({
     data: {
-      domainId: mathDomain.id,
-      name: 'Number Sense',
-      slug: 'number-sense',
-      description: 'Understanding numbers and their relationships',
+      domainId: englishDomain.id,
+      name: 'Vocabulary',
+      slug: 'english-vocabulary',
+      description: 'Recognising and using everyday words.',
       order: 1,
     },
   });
 
-  console.log('✅ Created sample skill: Number Sense');
+  console.log('✅ Created sample skill: Vocabulary (English)');
 
   // Create sample competency
   const competency = await prisma.competency.create({
     data: {
       skillId: skill.id,
-      name: 'Understanding Place Value',
-      description: 'Recognize the place value of digits in numbers',
+      name: 'Everyday words (A1)',
+      description: 'Recognise and match common everyday words.',
       order: 1,
     },
   });
@@ -131,8 +138,8 @@ async function main() {
   const objective = await prisma.learningObjective.create({
     data: {
       competencyId: competency.id,
-      name: 'Identify place value in 3-digit numbers',
-      description: 'Understand hundreds, tens, and ones places',
+      name: 'Recognise & match everyday words',
+      description: 'Match everyday words to their meaning or picture.',
       order: 1,
     },
   });
@@ -144,13 +151,13 @@ async function main() {
     data: {
       objectiveId: objective.id,
       type: 'SELECT',
-      title: 'Place Value Challenge',
-      description: 'Identify the place value of digits',
-      difficulty: 'MEDIUM',
+      title: 'Everyday Words',
+      description: 'Pick the word that matches the picture.',
+      difficulty: 'EASY',
       content: {
-        question: 'In the number 347, what is the value of the digit 4?',
-        options: ['4', '40', '400', '4000'],
-        correctAnswers: ['40'],
+        question: 'Which word means a place where you live?',
+        options: ['house', 'river', 'cloud', 'spoon'],
+        correctAnswers: ['house'],
       },
       order: 1,
     },
@@ -168,11 +175,11 @@ async function main() {
   // database actually has the 3 prompt rows the frontend/controller expect.
   await seedReflectionPrompts(prisma);
 
-  // Create sample mission
+  // Create sample mission (English everyday-words slice)
   const mission = await prisma.mission.create({
     data: {
-      title: 'Number Detective',
-      description: 'Explore the world of place value and discover the secrets of numbers!',
+      title: 'Everyday Words',
+      description: 'Meet the words you use every day and learn to spot them fast!',
       type: 'GUIDED',
       estimatedMinutes: 15,
       order: 1,
