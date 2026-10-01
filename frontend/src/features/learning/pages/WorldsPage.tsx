@@ -3,11 +3,28 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
-  Globe2, Lock, ArrowRight, Sparkles,
+  Globe2, Lock, ArrowRight,
 } from 'lucide-react'
 import { worldsApi, type WorldRecord } from '@/lib/api/endpoints'
 import { visualFor } from '@/features/learning/lib/worldVisual'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/CharacterState'
+
+// Domain slug -> mentor character — the same mapping the Home WorldJourneyMap
+// uses, so a world shows the SAME companion on the Home journey and here on the
+// full map. Keeps the "characters are the connective tissue" promise consistent
+// across surfaces. Fallback = Azouz (the main guide).
+const DOMAIN_MENTOR: Record<string, string> = {
+  english: 'Luma', language: 'Luma',
+  coding: 'Codey', technology: 'Codey',
+  'ai-literacy': 'Nova', ai: 'Nova',
+  entrepreneurship: 'Adam',
+  creativity: 'Mira', arts: 'Mira',
+}
+
+function mentorFor(world: WorldRecord): string {
+  return DOMAIN_MENTOR[world.domain?.slug || world.slug] ?? 'Azouz'
+}
 
 /**
  * Worlds — the learner-facing map of the backend Worlds engine
@@ -85,8 +102,10 @@ export function WorldsPage() {
                 >
                   <div aria-hidden className="dots-layer opacity-20" />
                   <div className="relative flex items-start justify-between">
-                    <div className="icon-chip bg-white/20 text-white w-12 h-12">
-                      <Icon className="w-6 h-6" strokeWidth={2} />
+                    {/* Mentor standing in the world (same companion as Home) —
+                        falls back to the world icon chip only if art is missing. */}
+                    <div className="rounded-full bg-white/15 p-1.5">
+                      <CharacterFace characterId={mentorFor(world)} size={52} locked={locked} animate={!locked} />
                     </div>
                     {locked ? (
                       <span className="inline-flex items-center gap-1 rounded-pill bg-black/25 text-white/90 text-[11px] font-semibold px-2.5 py-1">
@@ -94,7 +113,9 @@ export function WorldsPage() {
                         {t('worlds.locked', 'Locked')}
                       </span>
                     ) : (
-                      <Sparkles className="w-4 h-4 text-white/80" />
+                      <div className="icon-chip bg-white/20 text-white w-9 h-9">
+                        <Icon className="w-4.5 h-4.5" strokeWidth={2} />
+                      </div>
                     )}
                   </div>
                   <div className="relative">

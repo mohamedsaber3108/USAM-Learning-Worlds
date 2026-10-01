@@ -54,6 +54,13 @@ function jsonFor(url: string): unknown {
       percentComplete: { minutes: 60, activities: 66 },
       goalMet: false,
     }
+  if (url.includes('/missions'))
+    return [
+      { id: 'm1', title: 'Find a Problem Worth Solving', description: 'Spot a real problem around you and describe who it affects.', type: 'GUIDED', estimatedMinutes: 15 },
+      { id: 'm2', title: 'Debug the Broken Robot', description: 'Read the code, predict what it does, then fix the bug.', type: 'CHALLENGE', estimatedMinutes: 20 },
+      { id: 'm3', title: 'Tell a Story Out Loud', description: 'Practice speaking so a stranger could picture it.', type: 'EXPLORATION', estimatedMinutes: 10 },
+      { id: 'm4', title: 'Build Your First Pitch', description: 'Turn your idea into a short, clear pitch.', type: 'PROJECT_BASED', estimatedMinutes: 25 },
+    ]
   return []
 }
 
@@ -62,6 +69,12 @@ const VIEWPORTS = [
   { tag: 'tablet', width: 834, height: 1112 },
   { tag: 'mobile', width: 390, height: 844 },
 ] as const
+
+// Authed routes to capture beyond Home (Phase 3: Learn + Missions surfaces).
+const AUTHED_ROUTES: { tag: string; path: string }[] = [
+  { tag: 'worlds', path: '/worlds' },
+  { tag: 'missions', path: '/missions' },
+]
 
 for (const lang of ['en', 'ar'] as const) {
   for (const vp of VIEWPORTS) {
@@ -92,5 +105,27 @@ for (const lang of ['en', 'ar'] as const) {
       await page.waitForTimeout(1100)
       await page.screenshot({ path: `e2e/__screenshots__/home-${lang}-${vp.tag}.png`, fullPage: true })
     })
+
+    for (const route of AUTHED_ROUTES) {
+      test(`capture ${route.tag} ${lang} ${vp.tag}`, async ({ page }) => {
+        await page.addInitScript((args) => {
+          const [user, l] = args as [unknown, string]
+          localStorage.setItem('accessToken', 'e2e-token')
+          localStorage.setItem('user', JSON.stringify(user))
+          localStorage.setItem('usam.language', l)
+        }, [mockUser, lang])
+        await page.route('**/api/**', (r) => {
+          r.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(jsonFor(r.request().url())),
+          })
+        })
+        await page.setViewportSize({ width: vp.width, height: vp.height })
+        await page.goto(route.path)
+        await page.waitForTimeout(1000)
+        await page.screenshot({ path: `e2e/__screenshots__/${route.tag}-${lang}-${vp.tag}.png`, fullPage: true })
+      })
+    }
   }
 }

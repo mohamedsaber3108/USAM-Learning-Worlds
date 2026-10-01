@@ -1,18 +1,12 @@
 import { motion } from 'framer-motion'
 import {
   BookOpen,
-  Calculator,
-  FlaskConical,
+  Languages,
   Palette,
-  Cpu,
-  Music as MusicIcon,
-  Dumbbell,
-  HeartPulse,
-  Globe2,
-  Brain,
-  Sparkles,
-  Wrench,
   Code2,
+  Bot,
+  Rocket,
+  Sparkles,
   Lock,
   type LucideIcon,
 } from 'lucide-react'
@@ -38,21 +32,21 @@ interface WorldPathMapProps {
  */
 function iconForDomain(name: string): LucideIcon {
   const key = name.trim().toLowerCase()
+  // The 4 LOCKED primary domains + their common aliases. Anything else falls
+  // back to Sparkles (so a stray domain never renders blank), but we no longer
+  // carry icons for scope-wrong school subjects (math/science/PE/music/etc.).
   const map: Record<string, LucideIcon> = {
-    language: BookOpen,
-    mathematics: Calculator,
-    science: FlaskConical,
+    english: Languages,
+    language: Languages,
+    coding: Code2,
+    technology: Code2,
+    'ai-literacy': Bot,
+    ai: Bot,
+    'ai literacy': Bot,
+    entrepreneurship: Rocket,
+    creativity: Palette,
     arts: Palette,
-    technology: Cpu,
-    music: MusicIcon,
-    'physical education': Dumbbell,
-    'health & wellness': HeartPulse,
-    health: HeartPulse,
-    'social studies': Globe2,
-    'critical thinking': Brain,
-    creativity: Sparkles,
-    engineering: Wrench,
-    'coding sandbox demo': Code2,
+    reading: BookOpen,
   }
   return map[key] ?? Sparkles
 }

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Target, Clock } from 'lucide-react'
 import { missionsApi } from '@/lib/api/endpoints'
+import { CharacterFace } from '@/features/characters/components/CharacterFace'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { CardGridSkeleton } from '@/components/common/Skeleton'
 
@@ -51,19 +52,28 @@ export function MissionsBrowsePage() {
 
   return (
     <div className="min-h-screen bg-surface-50">
-      {/* Header — one solid brand color, no rainbow gradient */}
-      <header className="bg-primary-600 shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/dashboard" className="text-white/90 hover:text-white transition-colors flex items-center gap-1">
-                <ArrowLeft className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
-                {t('missionsBrowse.back')}
-              </Link>
-              <h1 className="text-2xl font-display font-bold text-white flex items-center gap-2">
+      {/* Header — world-consistent brand-hero with Azouz present, so the
+          mission list reads as part of the learning world, not an admin table. */}
+      <header className="relative overflow-hidden bg-brand-hero shadow-lift">
+        <div aria-hidden className="dots-layer opacity-[0.15]" />
+        <div aria-hidden className="absolute -top-10 -end-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <Link to="/dashboard" className="inline-flex items-center gap-1 text-white/90 hover:text-white text-sm font-semibold mb-4 transition-colors">
+            <ArrowLeft className="w-4 h-4 rtl:scale-x-[-1]" strokeWidth={2} />
+            {t('missionsBrowse.back')}
+          </Link>
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-white/15 p-1.5 shrink-0">
+              <CharacterFace characterId="Azouz" size={56} state="encouraging" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-white tracking-tight flex items-center gap-2">
                 <Target className="w-6 h-6" strokeWidth={2} />
                 {t('missionsBrowse.title')}
               </h1>
+              <p className="text-white/80 text-sm mt-0.5">
+                {t('missionsBrowse.subtitle', 'Pick a mission and I\u2019ll cheer you on.')}
+              </p>
             </div>
           </div>
         </div>
