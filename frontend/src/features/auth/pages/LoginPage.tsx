@@ -4,13 +4,21 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { ArrowRight } from 'lucide-react'
 import apiClient from '@/lib/api/client'
 import { getFriendlyErrorMessage } from '@/lib/utils/friendlyError'
 import type { AuthResponse } from '@/types'
-import usamLogo from '@/assets/usam-logo.png'
 import { Button } from '@/components/ui/Button'
-import { CharacterFace } from '@/features/characters/components/CharacterFace'
+import { CharacterStage } from '@/features/characters/components/CharacterStage'
 
+/**
+ * Login — rebuilt (not restyled) from the rejected 50/50 split-panel
+ * template. Single centered world card on a warm canvas: Azouz present at
+ * scale with a speech bubble, the form inline below him, no giant empty
+ * brand panel, no demo credentials (removed from production — directive
+ * P0). One column at every breakpoint; the "panel" IS the card, not a
+ * separate half-screen rail.
+ */
 export function LoginPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -52,47 +60,30 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-white">
-      {/* ---- Brand panel (left on LTR / right on RTL) ---- */}
-      <div className="relative lg:w-1/2 bg-brand-hero text-white overflow-hidden flex flex-col justify-between p-8 lg:p-12 min-h-[36vh] lg:min-h-screen">
-        <div aria-hidden className="dots-layer opacity-[0.15]" />
-        <div aria-hidden className="absolute -top-24 -start-24 w-80 h-80 rounded-full bg-sky-400/20 blur-3xl animate-drift" />
-        <div aria-hidden className="absolute bottom-0 -end-16 w-80 h-80 rounded-full bg-secondary-300/20 blur-3xl animate-drift" style={{ animationDelay: '3s' }} />
+    <div className="min-h-screen bg-brand-soft relative overflow-hidden flex items-center justify-center px-4 py-10">
+      <div aria-hidden className="absolute -top-24 -start-24 w-[28rem] h-[28rem] rounded-full bg-sky-300/30 blur-3xl animate-drift" />
+      <div aria-hidden className="absolute bottom-0 -end-20 w-96 h-96 rounded-full bg-grape-300/25 blur-3xl animate-drift [animation-delay:3s]" />
+      <div aria-hidden className="dots-layer opacity-40" />
 
-        <Link to="/" className="relative flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-control w-fit">
-          <img src={usamLogo} alt="" aria-hidden className="h-9 w-auto brand-logo-invert" />
-          <span className="font-display font-bold text-lg">{t('common.appName')}</span>
+      <div className="relative w-full max-w-md">
+        <Link to="/" className="flex items-center justify-center gap-2.5 mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 rounded-xl w-fit mx-auto">
+          <span dir="ltr" className="inline-flex items-center justify-center h-9 px-3 rounded-xl font-display font-extrabold text-lg tracking-tight bg-primary-600 text-white">USAM</span>
+          <span className="font-display font-bold text-sm text-slate-500">{t('common.appName')}</span>
         </Link>
 
-        <div className="relative hidden lg:flex flex-col items-center text-center gap-4 my-8">
-          <div className="rounded-full bg-white/90 shadow-hero p-2 animate-bob">
-            <CharacterFace characterId="Azouz" size={140} />
-          </div>
-          <p className="max-w-sm text-white/85 text-lg font-medium">
-            {t('auth.login.subtitle')}
-          </p>
-        </div>
-
-        <p className="relative text-white/60 text-sm hidden lg:block">
-          © {new Date().getFullYear()} USAM Learning Worlds
-        </p>
-      </div>
-
-      {/* ---- Form panel ---- */}
-      <div className="lg:w-1/2 flex items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h1 className="display-lg">{t('auth.login.welcomeBack')}</h1>
-            <p className="text-slate-500 mt-2">{t('auth.login.subtitle')}</p>
+        <div className="bg-white rounded-blob shadow-hero border border-surface-200/70 p-6 sm:p-8">
+          <div className="flex flex-col items-center text-center mb-6">
+            <CharacterStage characterId="Azouz" size={96} state="encouraging" bubbleSide="top" speech={t('auth.login.subtitle')} />
+            <h1 className="display-lg mt-5">{t('auth.login.welcomeBack')}</h1>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-control text-error-700 text-sm" role="alert">
+            <div className="mb-5 p-3.5 bg-error-50 border border-error-200 rounded-control text-error-700 text-sm" role="alert">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label htmlFor="login-email" className="block text-sm font-semibold text-slate-700 mb-2">
                 {t('auth.login.emailLabel')}
@@ -125,22 +116,21 @@ export function LoginPage() {
 
             <Button type="submit" variant="hero" size="lg" fullWidth loading={loading || isSubmitting}>
               {loading || isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')}
+              {!(loading || isSubmitting) && <ArrowRight className="w-5 h-5 rtl:scale-x-[-1]" />}
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-slate-600">
+          <p className="mt-6 text-center text-slate-600 text-sm">
             {t('auth.login.noAccount')}{' '}
             <Link to="/register" className="text-primary-600 hover:text-primary-700 font-semibold">
               {t('auth.login.signUp')}
             </Link>
           </p>
-
-          <div className="mt-8 p-4 bg-surface-50 border border-surface-200 rounded-control text-center text-sm text-slate-500">
-            <p className="font-semibold text-slate-600 mb-1">{t('auth.login.demoAccountLabel')}</p>
-            <p>{t('auth.login.demoEmailLabel')}</p>
-            <p>{t('auth.login.demoPasswordLabel')}</p>
-          </div>
         </div>
+
+        <p className="relative text-slate-400 text-xs text-center mt-6">
+          © {new Date().getFullYear()} USAM Learning Worlds
+        </p>
       </div>
     </div>
   )

@@ -607,9 +607,6 @@ export const ar: TranslationKeys = {
       noAccount: 'ليس لديك حساب؟',
       signUp: 'إنشاء حساب',
       genericError: 'فشل تسجيل الدخول. حاول مرة أخرى.',
-      demoAccountLabel: 'حساب تجريبي:',
-      demoEmailLabel: 'البريد الإلكتروني: learner@test.com',
-      demoPasswordLabel: 'كلمة المرور: password123',
     },
     register: {
       createAccount: 'إنشاء حساب',

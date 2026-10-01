@@ -613,9 +613,6 @@ export const en = {
       noAccount: "Don't have an account?",
       signUp: 'Sign up',
       genericError: 'Login failed. Please try again.',
-      demoAccountLabel: 'Demo Account:',
-      demoEmailLabel: 'Email: learner@test.com',
-      demoPasswordLabel: 'Password: password123',
     },
     register: {
       createAccount: 'Create Account',

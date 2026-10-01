@@ -119,8 +119,23 @@ const AUTHED_ROUTES: { tag: string; path: string }[] = [
   { tag: 'voice', path: '/voice-chat' },
 ]
 
+const PUBLIC_ROUTES: { tag: string; path: string }[] = [
+  { tag: 'login', path: '/login' },
+  { tag: 'register', path: '/register' },
+]
+
 for (const lang of ['en', 'ar'] as const) {
   for (const vp of VIEWPORTS) {
+    for (const route of PUBLIC_ROUTES) {
+      test(`capture ${route.tag} ${lang} ${vp.tag}`, async ({ page }) => {
+        await page.addInitScript((l) => localStorage.setItem('usam.language', l), lang)
+        await page.setViewportSize({ width: vp.width, height: vp.height })
+        await page.goto(route.path)
+        await page.waitForTimeout(700)
+        await page.screenshot({ path: `e2e/__screenshots__/${route.tag}-${lang}-${vp.tag}.png`, fullPage: true })
+      })
+    }
+
     test(`capture landing ${lang} ${vp.tag}`, async ({ page }) => {
       await page.addInitScript((l) => localStorage.setItem('usam.language', l), lang)
       await page.setViewportSize({ width: vp.width, height: vp.height })
