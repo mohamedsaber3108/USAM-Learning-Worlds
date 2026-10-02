@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Languages, Code2, Bot, Sparkles, Brain, BookOpen, ArrowRight, type LucideIcon } from 'lucide-react'
+import { Languages, Code2, Bot, Sparkles, Brain, BookOpen, ArrowRight, Compass, type LucideIcon } from 'lucide-react'
 import { worldsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader } from '@/components/ui'
@@ -36,7 +36,15 @@ export function LearnPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('learner.chooseWorld')} />
+      <PageHeader
+        title={t('learner.chooseWorld')}
+        action={
+          <Link to="/app/explore" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
+            <Compass className="h-4 w-4" aria-hidden />
+            {t('learner.explore')}
+          </Link>
+        }
+      />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data.map((world) => {
           const slug = world.domain?.slug

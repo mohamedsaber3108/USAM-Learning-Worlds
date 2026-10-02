@@ -275,18 +275,36 @@ export const simulationsApi = {
   getNode: (scenarioId: string, nodeKey: string) =>
     apiClient.get<SimulationDecisionNode>(`/simulations/${scenarioId}/nodes/${nodeKey}`),
 }
-export const visualLanguageApi = {
-  list: () => apiClient.get('/visual-language'),
-  getBySlug: (slug: string) => apiClient.get(`/visual-language/${slug}`),
+export interface ConceptCatalogItem {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  category: string
+  ageAppropriate: string
+  order: number
 }
 export const crossCurricularApi = {
-  byCategory: (category: string) => apiClient.get(`/cross-curricular/${category}`),
-  getConcept: (category: string, slug: string) => apiClient.get(`/cross-curricular/${category}/${slug}`),
+  byCategory: (category: string) => apiClient.get<ConceptCatalogItem[]>(`/cross-curricular/${category}`),
+  getConcept: (category: string, slug: string) =>
+    apiClient.get<ConceptCatalogItem>(`/cross-curricular/${category}/${slug}`),
 }
 export const thinkingApi = {
-  problemSolving: () => apiClient.get('/problem-solving'),
-  computational: () => apiClient.get('/computational-thinking'),
-  critical: () => apiClient.get('/critical-thinking'),
+  problemSolving: () => apiClient.get<ConceptCatalogItem[]>('/problem-solving'),
+  computational: () => apiClient.get<ConceptCatalogItem[]>('/computational-thinking'),
+  critical: () => apiClient.get<ConceptCatalogItem[]>('/critical-thinking'),
+}
+export interface VisualLanguageCard {
+  id: string
+  word: string
+  slug: string
+  category: string
+  imageUrl: string
+  caption: string
+}
+export const visualLanguageApi = {
+  list: () => apiClient.get<VisualLanguageCard[]>('/visual-language'),
+  getBySlug: (slug: string) => apiClient.get<VisualLanguageCard>(`/visual-language/${slug}`),
 }
 
 // ==================== Credentials ====================

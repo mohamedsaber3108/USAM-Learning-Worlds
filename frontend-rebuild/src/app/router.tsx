@@ -13,6 +13,7 @@ import { SignupPage } from '@/features/auth/SignupPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { HomePage } from '@/features/learner/HomePage'
 import { LearnPage } from '@/features/learner/LearnPage'
+import { ExplorePage } from '@/features/learner/ExplorePage'
 import { DomainPathPage } from '@/features/learner/DomainPathPage'
 import { MissionDetailPage } from '@/features/learner/MissionDetailPage'
 import { MissionPlayerPage } from '@/features/learner/MissionPlayerPage'
@@ -115,6 +116,7 @@ export function AppRouter() {
       >
         <Route path="/app" element={<HomePage />} />
         <Route path="/app/learn" element={<LearnPage />} />
+        <Route path="/app/explore" element={<ExplorePage />} />
         <Route path="/app/learn/:slug" element={<DomainPathPage />} />
         <Route path="/app/missions/:id" element={<MissionDetailPage />} />
         <Route path="/app/runs/:runId" element={<MissionPlayerPage />} />
