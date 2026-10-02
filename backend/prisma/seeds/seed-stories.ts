@@ -32,6 +32,21 @@ interface RawPage {
   choiceOptions: { label: string; nextPageNumber: number | null }[];
 }
 
+// FIX (2026-10-02 reconciliation audit): all 3 stories were seeded with
+// domainSlug: 'science', a domain retired when the product moved to the 4
+// LOCKED primary domains (English, Coding, AI Literacy, Entrepreneurship —
+// see backend/prisma/seed.ts). seedStories() below looks up each story's
+// domainSlug via `prisma.domain.findUnique` and SKIPS the story entirely if
+// not found -- confirmed via a direct production run that all 3 stories
+// were silently skipped, leaving `stories: 0` in production despite this
+// file containing real, complete content. Remapped to 'english': the Story
+// Engine's own product framing (Wordhaven world: "a living town built from
+// stories, conversation, and words") is a reading-comprehension/English-
+// literacy mechanic -- the water-cycle/magnet/photosynthesis topics are the
+// plot setting, not a graded science objective, so this is the honest fit,
+// not a forced one.
+const STORY_DOMAIN_SLUG = 'english';
+
 interface RawStory {
   title: string;
   summary: string;
@@ -46,7 +61,7 @@ const stories: RawStory[] = [
     summary:
       'A water droplet named Dewey travels the whole water cycle — evaporating from the ocean, meeting a talking cloud, and choosing between falling as rain over a forest or as snow on a mountain — learning exactly how evaporation, condensation, precipitation, and collection fit together.',
     ageBand: AgeBand.AGE_8_9,
-    domainSlug: 'science',
+    domainSlug: STORY_DOMAIN_SLUG,
     pages: [
       {
         pageNumber: 1,
@@ -137,7 +152,7 @@ THE END`,
     summary:
       "Young inventor Max's robot dog Circuit rolls under a cluttered garage shelf. Using a horseshoe magnet, Max has to work out which materials magnets actually attract, and how north and south poles attract or repel each other, to rescue Circuit — learning real magnetism along the way.",
     ageBand: AgeBand.AGE_10_11,
-    domainSlug: 'science',
+    domainSlug: STORY_DOMAIN_SLUG,
     pages: [
       {
         pageNumber: 1,
@@ -224,7 +239,7 @@ THE END`,
     summary:
       "Zara's classroom plant is wilting and pale. She has to investigate whether it's missing sunlight or water to figure out how photosynthesis really works — learning that plants need light, water, and carbon dioxide together to make their own food and release oxygen.",
     ageBand: AgeBand.AGE_12_14,
-    domainSlug: 'science',
+    domainSlug: STORY_DOMAIN_SLUG,
     pages: [
       {
         pageNumber: 1,
