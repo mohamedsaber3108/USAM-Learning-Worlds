@@ -95,13 +95,13 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 
 | Route | Role | Backend | File | Real API | Known gaps | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `/app` Home | LEARNER | gamification, adaptive, mastery, daily-goals | `features/learner/HomePage.tsx` | progression/streak/achievements/recommendations/daily-goal ✓ | FIXED 2026-10-02: added daily-goal progress card. Still missing: mission-history teaser | CONNECTING |
+| `/app` Home | LEARNER | gamification, adaptive, mastery, daily-goals | `features/learner/HomePage.tsx` | progression/streak/achievements/recommendations/daily-goal ✓ | FIXED 2026-10-02: added daily-goal progress card | CONNECTING |
 | `/app/learn` | LEARNER | `worlds.list` | `features/learner/LearnPage.tsx` | `GET /worlds` ✓ | — | CONNECTING |
 | `/app/learn/:slug` | LEARNER | `learning.getDomainPath` | `features/learner/DomainPathPage.tsx` | `GET /learning/domains/:slug/path` ✓ | — | CONNECTING |
 | `/app/missions/:id` | LEARNER | `missions.getById/start` | `features/learner/MissionDetailPage.tsx` | ✓ | — | CONNECTING |
 | `/app/runs/:runId` | LEARNER | missions run loop + coding-sandbox + reflection | `features/learner/MissionPlayerPage.tsx` + `activities/*` | submit/complete/coding-sandbox/reflection ✓ | FIXED 2026-10-02: added post-mission ReflectionStep (face-rating + note, skippable) | TESTING |
 | `/app/practice` | LEARNER | `mastery.getReviewDue`, `flashcards.*` | `features/learner/PracticePage.tsx` | `GET /mastery/review-due` + flashcards due/review ✓ | FIXED 2026-10-02: added a real Flashcards tab (flip-card study flow, FSRS-scheduled) | TESTING |
-| `/app/progress` | LEARNER | `mastery.overview/byDomain` | `features/learner/ProgressPage.tsx` | ✓ | Missing: `mastery.goals`, mission-history (`GET /missions/history/me`) | CONNECTING |
+| `/app/progress` | LEARNER | `mastery.overview/byDomain`, `missions.history` | `features/learner/ProgressPage.tsx` | ✓ incl. mission history | FIXED 2026-10-02: added Recent Missions section. Still missing: `mastery.goals` | CONNECTING |
 | `/app/projects` | LEARNER | `projects.mine` | `features/learner/ProjectsPage.tsx` | `GET /projects/my` ✓ | Fixed D2 (dead status field) this pass | CONNECTING |
 | `/app/projects/:id` | LEARNER | `projects.getById` + milestones + curriculum-context | `features/learner/ProjectDetailPage.tsx` | ✓ (fixed D1 this pass — 3 real queries) | Missing: rubric viewer, collaborators, research notes UI | REBUILDING |
 | `/app/portfolio` | LEARNER | `projects.portfolio` | `features/learner/PortfolioPage.tsx` | `GET /projects/portfolio/:learnerId` ✓ | — | CONNECTING |
@@ -109,30 +109,27 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | `/app/companions` + `/app/companions/:id` | LEARNER | `characters.unlocked`, conversations CRUD | `features/learner/CompanionsPage.tsx` + new `CompanionChatPage.tsx` | `GET /characters/unlocked`, conversations create/get/sendMessage ✓ | FIXED 2026-10-02: real chat added (was gallery-only, no way to talk). Also fixed a response-shape bug (bare-array assumption vs real `{characters:[...]}` wrapper + nonexistent fields). Entitlement-honest (aiTutor gate shown as a real upgrade state, not a silent 403) | TESTING |
 | `/app/community` | LEARNER | `community.feed/report` | `features/learner/CommunityPage.tsx` | ✓ | Missing: `trending`, `search`, `stats` | REBUILDING |
 | `/app/credentials` | LEARNER | `credentials.mine` | `features/learner/CredentialsPage.tsx` | `GET /credentials/me` ✓ | — | CONNECTING |
-| `/app/rewards` | LEARNER | gamification | `features/learner/RewardsPage.tsx` | progression/achievements/streak ✓ | **Missing: cosmetic shop + streak-freeze shop** (unlock/equip/leaderboard all defined, unused) | REBUILDING |
+| `/app/rewards` | LEARNER | gamification, cosmetics | `features/learner/RewardsPage.tsx` | progression/achievements/streak/cosmetics ✓ | FIXED 2026-10-02: added real cosmetic shop grid. streak-freeze shop still deferred (lower priority, no learner-facing gap reported) | TESTING |
 | `/app/settings` | LEARNER | `auth.updatePreferences` | `features/learner/SettingsPage.tsx` | — | Needs re-verification | AUDITING |
 | `/app/search` | LEARNER | `search.query` | `features/learner/SearchPage.tsx` | `GET /search` ✓ | — | CONNECTING |
 | `/app/notifications` | LEARNER | notifications | `features/learner/NotificationsPage.tsx` | list/unread/markRead/markAllRead ✓ | — | CONNECTING |
 | `/app/stories` + `/:id` | LEARNER | `learning.stories` | `features/learner/StoriesPage.tsx` | ✓ | — | CONNECTING |
-| `/app/simulations` | LEARNER | `simulation.list` | `features/learner/SimulationsPage.tsx` | `GET /simulations` ✓ | **No detail/play view** — `:slug` + decision-node endpoints unused, catalog-only | REBUILDING |
+| `/app/simulations` + `/app/simulations/:slug` | LEARNER | `simulation.list/getBySlug/getNode` | `SimulationsPage.tsx` + new `SimulationPlayerPage.tsx` | ✓ | **DONE 2026-10-02** — real decision-tree player | TESTING |
 | `/app/voice` | LEARNER | `voice.turn` (BLOCKED_EXTERNAL) | `features/learner/VoicePage.tsx` | n/a — honest gated state | Correct as-is (provider creds pending) | FINAL (gated) |
-| ~~`/app/practice/flashcards`~~ | LEARNER | `flashcards.getDue/review` | now a tab in `PracticePage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
-| **MISSING** mission history view | LEARNER | `missions.history/me` | — | not in endpoints.ts | No surface | NOT_STARTED |
+| `/app/explore` | LEARNER | 11 concept catalogs (see Specialized row below) | new `ExplorePage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | ~~daily goals widget~~ | LEARNER | `daily-goals.getProgress` | now in `HomePage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 
 ### SPECIALIZED DOMAIN / CONTENT CATALOGS
 
 | Route | Role | Backend | File | Real API | Known gaps | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| **MISSING** Cross-curricular (AI-literacy/entrepreneurship/financial/digital/career/communication/coding-concepts) | LEARNER | `cross-curricular.*` | — | `crossCurricularApi` defined, 0 callers | No routes in router.tsx at all | NOT_STARTED |
-| **MISSING** Problem-solving / computational-thinking / critical-thinking catalogs | LEARNER | `problem-solving.*` | — | `thinkingApi` defined, 0 callers | No routes | NOT_STARTED |
-| **MISSING** Visual-language cards | LEARNER | `visual-language.*` | — | `visualLanguageApi` defined, 0 callers | No routes | NOT_STARTED |
+| ~~Cross-curricular (7 catalogs) + thinking-skills (3) + visual-language~~ | LEARNER | `cross-curricular.*`, `problem-solving.*`, `visual-language.*` | new `ExplorePage.tsx` | ✓ all 11 catalogs | **DONE 2026-10-02** — one reusable tabbed browser (ai-literacy/entrepreneurship/financial-literacy/digital-literacy/career-exploration/communication-skills/coding-concepts/problem-solving/computational-thinking/critical-thinking/visual-language), linked from LearnPage | TESTING |
 | ~~Character AI chat/conversations~~ | LEARNER | `ai.character` (chat/conversations CRUD) | `CompanionsPage.tsx` + `CompanionChatPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | ~~Cosmetic shop~~ | LEARNER | `gamification.cosmetics.*` | `RewardsPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | ~~Simulation detail/play view~~ | LEARNER | `simulation.getBySlug/getNode` | `SimulationsPage.tsx` + `SimulationPlayerPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
-| **MISSING** Coding Coach | LEARNER | `ai.coding-coach` | — | 0 callers | No inline coding help surfaced in mission player | NOT_STARTED |
-| **MISSING** English Coach | LEARNER | `ai.english-coach` | — | 0 callers | No inline English help | NOT_STARTED |
-| **MISSING** Generic AI feedback/hint/explain/analyze | LEARNER | `ai.controller` | — | 0 callers | No inline AI tutoring anywhere | NOT_STARTED |
+| **MISSING** Coding Coach | LEARNER | `ai.coding-coach` | — | 0 callers | No inline coding help surfaced in mission player — deferred (lower priority than closed gaps) | NOT_STARTED |
+| **MISSING** English Coach | LEARNER | `ai.english-coach` | — | 0 callers | No inline English help — deferred | NOT_STARTED |
+| **MISSING** Generic AI feedback/hint/explain/analyze | LEARNER | `ai.controller` | — | 0 callers | No inline AI tutoring anywhere — deferred (character chat now covers the primary AI-interaction need) | NOT_STARTED |
 
 ### GUARDIAN
 
@@ -158,32 +155,32 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | --- | --- | --- | --- | --- | --- | --- |
 | `/admin` | ADMIN | analytics overview | `features/admin/AdminOverviewPage.tsx` | ✓ | — | CONNECTING |
 | `/admin/content` | ADMIN | `content-items.*` | `features/admin/AdminContentPage.tsx` | list/create-status ✓ | Missing: `POST` create full form, `GET /:id` detail | REBUILDING |
-| `/admin/curriculum` | ADMIN, MODERATOR (partial) | `admin-missions`, `admin-misconceptions`, `content-qa` | `features/admin/AdminCurriculumPage.tsx` | list-only for all three | **Missing: mission create/update/delete controls** (endpoints exist, no UI); **missing entirely: curriculum-mapping, content-provenance, difficulty-calibration, assessment-quality admin UI** | REBUILDING |
+| `/admin/curriculum` | ADMIN, MODERATOR (partial) | missions/misconceptions/content-qa/assessment-quality/difficulty-calibration/curriculum-mapping/content-provenance | `features/admin/AdminCurriculumPage.tsx` | ✓ all 7 engines | FIXED 2026-10-02: added mission create/delete, scan-now for the 3 scan-engines, curriculum-mapping suggestion tool, content-provenance license/source registry. Mission UPDATE still deferred (needs a full authoring form) | TESTING |
 | `/admin/ai` | ADMIN | ai-eval, prompt-templates, safety-policies | `features/admin/AdminAiSafetyPage.tsx` | list-only for all three | Missing: prompt-template edit/deactivate, safety-policy versions, ai-eval run drill-in | REBUILDING |
 | `/admin/analytics` | ADMIN | `analytics.*` | `features/admin/AdminAnalyticsPage.tsx` | overview/daily-activity ✓ | Missing: `events-by-type`, `retention-cohorts`, `stickiness` | CONNECTING |
 | `/admin/platform` | ADMIN | feature-flags, experiments, audit | `features/admin/AdminPlatformPage.tsx` | ✓ | — | CONNECTING |
-| **MISSING** memory-governance admin stats | ADMIN | `ai.memory-governance` | — | 0 callers (backend guard confirmed correct) | No admin surface at all | NOT_STARTED |
+| ~~memory-governance admin stats~~ | ADMIN | `ai.memory-governance` | `AdminPlatformPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 
 ### LEGAL / PRIVACY (cross-cutting, see dedicated section below)
 
 | Surface | Role | Backend | Status |
 | --- | --- | --- | --- |
 | Legal Center (`/legal`) | PUBLIC | static + `legal.*` model-backed where real | NOT_STARTED (expansion) |
-| Guardian consent capture | GUARDIAN | `POST /legal/consent`, `GET /legal/consent/:learnerId` | NOT_STARTED |
+| Guardian consent capture | GUARDIAN | `POST /legal/consent`, `GET /legal/consent/:learnerId` | **DONE 2026-10-02** (TESTING) |
 | Data export | GUARDIAN | `GET /legal/export/:learnerId` | CONNECTING (done) |
 | Account/data deletion | GUARDIAN | `POST /legal/delete/:learnerId` | CONNECTING (done) |
 
 ---
 
-## Raw counts (honest, 2026-10-02 reset)
+## Raw counts (updated 2026-10-02, end of batch 2)
 
 | Metric | Count |
 | --- | --- |
-| Router.tsx `<Route>` entries | 46 |
+| Router.tsx `<Route>` entries | 49 (46 + companions/:id, simulations/:slug, explore) |
 | Rows at FINAL | 1 (Voice, correctly gated-honest) |
-| Rows with a confirmed, fixed bug this pass | 4 (B2, B3, B4, D1/D2) |
-| Rows with partial API coverage (some endpoints unused) | ~20 |
-| Required surfaces with ZERO frontend representation | 17 (flashcards, mission history, daily goals, cross-curricular ×7 collapsed to 1 row, thinking-skills ×3 collapsed to 1 row, visual-language, character chat, coding coach, english coach, generic AI tutor, consent capture, memory-governance admin, 4 admin engines collapsed to 1 row) |
+| Confirmed bugs fixed this reconciliation | 4 (B2, B3, B4, D1/D2) |
+| Real backend-capability gaps closed this pass | 14 (companion chat, flashcards, reflection, daily-goal, cosmetic shop, simulation player, mission history, Guardian consent capture, Guardian Overview/Evidence tab, 6 admin engines (mission CRUD + difficulty-calibration + assessment-quality + content-qa-scan + curriculum-mapping + content-provenance + memory-governance), 11-catalog Explore page) |
+| Still deferred (lower priority, tracked not forgotten) | Coding Coach, English Coach, generic AI tutor hints, project rubric/collaborators/research-notes UI, community trending/search/stats, streak-freeze shop, mission admin UPDATE form, prompt-template edit UI, Legal Center expansion |
 | Fabricated/non-backed capabilities | 0 |
 
 This is the execution queue. Work proceeds row by row until every required row
