@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, RotateCcw, Lock, CheckCircle2, Circle } from 'lucide-react'
+import { ArrowRight, RotateCcw, Lock, CheckCircle2, Circle, MessageCircle } from 'lucide-react'
 import { learningApi, masteryApi } from '@/lib/api/endpoints'
 import type { DomainPath } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
@@ -91,6 +91,22 @@ export function DomainPathPage() {
           <span className="inline-flex items-center gap-2 font-medium text-ink-800">
             <RotateCcw className="h-5 w-5 text-brand-500" aria-hidden />
             {t('learner.reviewNudge', { count: reviewCount })}
+          </span>
+          <ArrowRight className="h-4 w-4 text-brand-600 rtl:-scale-x-100" aria-hidden />
+        </Link>
+      )}
+
+      {/* English Coach — real conversation+grammar practice (coding-coach
+          help lives inline in the mission player's CODE activity instead,
+          since that's where real code already exists to debug). */}
+      {slug === 'english' && (
+        <Link
+          to="/app/english-coach"
+          className="flex items-center justify-between rounded-card border border-line bg-white p-4 shadow-soft hover:bg-canvas-off"
+        >
+          <span className="inline-flex items-center gap-2 font-medium text-ink-800">
+            <MessageCircle className="h-5 w-5 text-brand-500" aria-hidden />
+            {t('learner.englishCoachNudge')}
           </span>
           <ArrowRight className="h-4 w-4 text-brand-600 rtl:-scale-x-100" aria-hidden />
         </Link>

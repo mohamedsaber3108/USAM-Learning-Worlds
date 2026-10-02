@@ -377,6 +377,57 @@ export const voiceApi = {
   turn: (body: Record<string, unknown>) => apiClient.post('/voice/turn', body),
 }
 
+/**
+ * Generic AI tutoring (feedback/hint/explain/analyze) — real backend
+ * (`ai.controller.ts`), had ZERO frontend callers before this pass despite
+ * full working logic + child-safety moderation on every path. Surfaced as
+ * an inline "Ask for a hint" / "Explain this" action on non-code activities
+ * (ActivityView) — never auto-fires, always learner-initiated.
+ */
+export const aiTutorApi = {
+  hint: (body: { question: string; learnerAttempt?: string; difficulty?: string }) =>
+    apiClient.post<{ hint: string }>('/ai/hint', body),
+  explain: (body: { concept: string; learnerAge?: number; context?: string }) =>
+    apiClient.post<{ explanation: string }>('/ai/explain', body),
+  feedback: (body: { work: string; rubric?: string; context?: string }) =>
+    apiClient.post<{ feedback: string }>('/ai/feedback', body),
+}
+
+/**
+ * Coding Coach — real backend (`coding-coach.controller.ts`), had ZERO
+ * frontend callers before this pass. Surfaced as an "Ask Codey" debug-help
+ * action in CodingActivityPanel, learner-initiated after a failed run —
+ * never auto-fires, never writes the solution for the learner (the backend
+ * prompt explicitly coaches toward self-correction, not an answer).
+ */
+export const codingCoachApi = {
+  debug: (body: { code: string; language: 'scratch' | 'blockly' | 'python' | 'javascript' | 'html' | 'css'; error?: string; expectedBehavior?: string }) =>
+    apiClient.post<{ diagnosis: string; suggestedFix?: string; explanation?: string; learningPoints?: string[] }>(
+      '/coding-coach/debug',
+      body,
+    ),
+  explain: (body: { code: string; language: string; specificLine?: number }) =>
+    apiClient.post<{ explanation: string }>('/coding-coach/explain', body),
+}
+
+/**
+ * English Coach — real backend (`english-coach.controller.ts`), had ZERO
+ * frontend callers before this pass. Surfaced as a dedicated conversation-
+ * practice + grammar-check page, linked from the English domain path.
+ */
+export const englishCoachApi = {
+  conversation: (body: { topic?: string; difficulty?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; userMessage: string }) =>
+    apiClient.post<{ response: string; cefrLevel: string; suggestedVocabulary?: string[] }>(
+      '/english-coach/conversation',
+      body,
+    ),
+  grammar: (body: { text: string; explainMistakes: boolean }) =>
+    apiClient.post<{ originalText: string; correctedText: string; feedback: string; mistakeCount: number }>(
+      '/english-coach/grammar',
+      body,
+    ),
+}
+
 // ==================== Guardian (parent) ====================
 export interface ChildDashboard {
   progression: { level: number; totalXP: number; coins: number }

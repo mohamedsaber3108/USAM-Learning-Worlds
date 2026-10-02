@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
+import { aiTutorApi } from '@/lib/api/endpoints'
 import type { ActivitySummary } from '@/lib/api/learning-types'
 
 /**
@@ -31,8 +33,29 @@ export function ActivityView({
   const [order, setOrder] = useState<string[]>(() => [...((c.items as string[]) ?? [])])
   const [text, setText] = useState('')
   const [matches, setMatches] = useState<Record<string, string>>({})
+  const [hint, setHint] = useState<string | null>(null)
+  const [loadingHint, setLoadingHint] = useState(false)
 
   const question = (c.question as string) ?? (c.problem as string) ?? (c.prompt as string) ?? activity.title
+
+  /**
+   * Generic AI hint — real POST /ai/hint (ledger 88: zero frontend callers
+   * before this pass despite full child-safety-moderated backend logic).
+   * Learner-initiated only (a visible "Need a hint?" button), never auto-
+   * fires, and never reveals the answer — the backend prompt is a nudge,
+   * not a solution.
+   */
+  async function askForHint() {
+    setLoadingHint(true)
+    try {
+      const res = await aiTutorApi.hint({ question, learnerAttempt: text || undefined })
+      setHint(res.data.hint)
+    } catch {
+      setHint(t('states.error'))
+    } finally {
+      setLoadingHint(false)
+    }
+  }
 
   function submit() {
     switch (activity.type) {
@@ -142,6 +165,30 @@ export function ActivityView({
           />
         )}
       </div>
+
+      {activity.type !== 'CREATE' && (
+        <div className="mt-4">
+          {!hint ? (
+            <button
+              type="button"
+              onClick={() => void askForHint()}
+              disabled={loadingHint}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60"
+            >
+              <Lightbulb className="h-4 w-4" aria-hidden />
+              {loadingHint ? t('common.loading') : t('learner.needHint')}
+            </button>
+          ) : (
+            <div className="rounded-control border border-brand-200 bg-brand-50 p-3 text-sm text-ink-700">
+              <p className="inline-flex items-center gap-1.5 font-display font-bold text-brand-700">
+                <Lightbulb className="h-4 w-4" aria-hidden />
+                {t('learner.hintTitle')}
+              </p>
+              <p className="mt-1">{hint}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <Button className="mt-5" disabled={disabled || !canSubmit} onClick={submit}>
         {t('learner.submit')}

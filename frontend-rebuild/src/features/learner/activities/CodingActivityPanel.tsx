@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { codingSandboxApi } from '@/lib/api/endpoints'
+import { codingSandboxApi, codingCoachApi } from '@/lib/api/endpoints'
 import { Button } from '@/components/ui/Button'
 import { LoadingState, ErrorState } from '@/components/common/States'
 import { runPythonTests, type PyTest } from './pyodideRunner'
@@ -45,6 +45,9 @@ export function CodingActivityPanel({
   const [code, setCode] = useState('')
   const [running, setRunning] = useState(false)
   const [output, setOutput] = useState<string | null>(null)
+  const [askingCoach, setAskingCoach] = useState(false)
+  const [coachDiagnosis, setCoachDiagnosis] = useState<string | null>(null)
+  const [lastFailed, setLastFailed] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -76,6 +79,8 @@ export function CodingActivityPanel({
       }
       const run = await runPythonTests(code, spec.tests, expectedByTest)
       setOutput(run.stdout || run.stderr || '(no output)')
+      setLastFailed(run.outcomes.some((o) => !o.passed))
+      setCoachDiagnosis(null)
 
       const res = (
         await codingSandboxApi.submit({
@@ -103,6 +108,30 @@ export function CodingActivityPanel({
     }
   }
 
+  /**
+   * "Ask Codey" — real POST /coding-coach/debug (ledger 88: Coding Coach had
+   * zero frontend callers). Learner-initiated only, shown after a failed run.
+   * The backend prompt coaches toward self-correction and never hands back a
+   * full solution, so this is safe to surface directly as the diagnosis text.
+   */
+  async function askCoach() {
+    if (!spec) return
+    setAskingCoach(true)
+    try {
+      const res = await codingCoachApi.debug({
+        code,
+        language: (spec.language as 'python' | 'javascript' | 'html' | 'css' | 'scratch' | 'blockly') || 'python',
+        error: output ?? undefined,
+        expectedBehavior: spec.prompt,
+      })
+      setCoachDiagnosis(res.data.diagnosis)
+    } catch {
+      setCoachDiagnosis(t('states.error'))
+    } finally {
+      setAskingCoach(false)
+    }
+  }
+
   return (
     <div className="rounded-card border border-line bg-white p-6 shadow-soft">
       <p className="font-display text-lg font-bold text-ink-900">{spec.title}</p>
@@ -125,6 +154,21 @@ export function CodingActivityPanel({
         <pre dir="ltr" className="mt-3 max-h-40 overflow-auto rounded-control bg-canvas-off p-3 font-mono text-xs text-ink-800">
           {output}
         </pre>
+      )}
+
+      {lastFailed && (
+        <div className="mt-3">
+          {!coachDiagnosis ? (
+            <Button variant="secondary" onClick={() => void askCoach()} loading={askingCoach}>
+              {t('learner.askCodey')}
+            </Button>
+          ) : (
+            <div className="rounded-control border border-brand-200 bg-brand-50 p-3 text-sm text-ink-700">
+              <p className="font-display font-bold text-brand-700">{t('learner.codeyDiagnosis')}</p>
+              <p className="mt-1 whitespace-pre-wrap">{coachDiagnosis}</p>
+            </div>
+          )}
+        </div>
       )}
 
       <Button className="mt-4" onClick={runAndSubmit} loading={running}>

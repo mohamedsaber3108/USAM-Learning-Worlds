@@ -127,9 +127,9 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | ~~Character AI chat/conversations~~ | LEARNER | `ai.character` (chat/conversations CRUD) | `CompanionsPage.tsx` + `CompanionChatPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | ~~Cosmetic shop~~ | LEARNER | `gamification.cosmetics.*` | `RewardsPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | ~~Simulation detail/play view~~ | LEARNER | `simulation.getBySlug/getNode` | `SimulationsPage.tsx` + `SimulationPlayerPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
-| **MISSING** Coding Coach | LEARNER | `ai.coding-coach` | — | 0 callers | No inline coding help surfaced in mission player — deferred (lower priority than closed gaps) | NOT_STARTED |
-| **MISSING** English Coach | LEARNER | `ai.english-coach` | — | 0 callers | No inline English help — deferred | NOT_STARTED |
-| **MISSING** Generic AI feedback/hint/explain/analyze | LEARNER | `ai.controller` | — | 0 callers | No inline AI tutoring anywhere — deferred (character chat now covers the primary AI-interaction need) | NOT_STARTED |
+| ~~Coding Coach~~ | LEARNER | `coding-coach.*` (debug/explain) | `activities/CodingActivityPanel.tsx` | `POST /coding-coach/debug` ✓ | **DONE 2026-10-02 (batch 3)** — "Ask Codey" button appears after a failed test run; shows the coach's diagnosis inline. Learner-initiated only, never auto-fires, never pastes a full solution (backend prompt enforces this) | TESTING |
+| ~~English Coach~~ | LEARNER | `english-coach.*` (conversation/grammar) | new `EnglishCoachPage.tsx` (`/app/english-coach`) | `POST /english-coach/conversation`, `/grammar` ✓ | **DONE 2026-10-02 (batch 3)** — dedicated conversation-practice (framed as Luma) + standalone grammar-checker page, linked from the English domain path | TESTING |
+| ~~Generic AI feedback/hint/explain/analyze~~ | LEARNER | `ai.controller` (`/ai/hint` wired) | `activities/ActivityView.tsx` | `POST /ai/hint` ✓ | **PARTIALLY DONE 2026-10-02 (batch 3)** — "Need a hint?" surfaced on SELECT/SEQUENCE/SOLVE/EXPLAIN/MATCH activities (learner-initiated, never reveals the answer). `/ai/feedback`, `/ai/explain`, `/ai/analyze` still have 0 callers — lower priority (feedback/analyze overlap with activity grading; explain overlaps with Coding Coach's explain and the companion chat) — tracked, not fabricated as done | TESTING |
 
 ### GUARDIAN
 
@@ -172,16 +172,19 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 
 ---
 
-## Raw counts (updated 2026-10-02, end of batch 2)
+## Raw counts (updated 2026-10-02, end of batch 3)
 
 | Metric | Count |
 | --- | --- |
-| Router.tsx `<Route>` entries | 49 (46 + companions/:id, simulations/:slug, explore) |
+| Router.tsx `<Route>` entries | 50 (49 + english-coach) |
 | Rows at FINAL | 1 (Voice, correctly gated-honest) |
 | Confirmed bugs fixed this reconciliation | 4 (B2, B3, B4, D1/D2) |
-| Real backend-capability gaps closed this pass | 14 (companion chat, flashcards, reflection, daily-goal, cosmetic shop, simulation player, mission history, Guardian consent capture, Guardian Overview/Evidence tab, 6 admin engines (mission CRUD + difficulty-calibration + assessment-quality + content-qa-scan + curriculum-mapping + content-provenance + memory-governance), 11-catalog Explore page) |
-| Still deferred (lower priority, tracked not forgotten) | Coding Coach, English Coach, generic AI tutor hints, project rubric/collaborators/research-notes UI, community trending/search/stats, streak-freeze shop, mission admin UPDATE form, prompt-template edit UI, Legal Center expansion |
+| Real backend-capability gaps closed (batch 2) | 14 (companion chat, flashcards, reflection, daily-goal, cosmetic shop, simulation player, mission history, Guardian consent capture, Guardian Overview/Evidence tab, 6 admin engines (mission CRUD + difficulty-calibration + assessment-quality + content-qa-scan + curriculum-mapping + content-provenance + memory-governance), 11-catalog Explore page) |
+| Real backend-capability gaps closed (batch 3) | 3 (Coding Coach "Ask Codey" debug help, English Coach conversation+grammar page, generic AI hint on non-code activities) |
+| Still deferred (lower priority, tracked not forgotten) | generic AI feedback/explain/analyze (0 callers — overlaps existing surfaces, see row above), project rubric/collaborators/research-notes UI, community trending/search/stats, streak-freeze shop, mission admin UPDATE form, prompt-template edit UI, Legal Center expansion |
 | Fabricated/non-backed capabilities | 0 |
+| Dependency security (frontend-rebuild, 2026-10-02) | Full audit 7 (5 moderate/1 high/1 critical) — all 5 non-react-router findings are dev-tooling only (vite/vitest/esbuild dev server, never shipped). Production-only audit (`--omit=dev`): 2 moderate (react-router/react-router-dom), both justified not-reachable given this app's architecture (no SSR/data-router, no raw redirect-target input) — see `docs/security/npm-audit-findings.md`. Zero CRITICAL/HIGH ship in the production bundle. |
+| ESLint | Previously configured (`lint` script existed) but never actually installed/wired — fixed this pass (`eslint.config.js` added, mirrors `frontend/`'s flat config; devDependencies installed). 2 pre-existing `react-refresh/only-export-components` warnings found and fixed (split `roleHome` out of `guards.tsx`, `useToast`/context out of `Toast.tsx`). `npm run lint` now passes with 0 warnings. |
 
 This is the execution queue. Work proceeds row by row until every required row
 is `FINAL`. No cutover prep begins until this ledger has zero rows below
