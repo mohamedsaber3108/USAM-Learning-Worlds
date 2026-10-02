@@ -452,6 +452,26 @@ export const englishCoachApi = {
       '/english-coach/grammar',
       body,
     ),
+  /**
+   * Vocabulary + reading — real backend (english-coach.controller.ts
+   * vocabulary/reading routes), had ZERO frontend callers before this pass
+   * despite full working logic (CEFR-leveled, age-appropriate generation).
+   * `vocabulary` items are typed `unknown[]` because the backend's own
+   * parser (`parseVocabulary`) returns `any[]` — rendered defensively on
+   * the frontend rather than assuming a shape the backend doesn't guarantee.
+   * `pronunciation` is intentionally NOT wrapped here: the backend's own
+   * code comment states `pronunciationScore` is a hardcoded placeholder
+   * pending real STT-based scoring — wrapping it would surface fabricated
+   * data as if it were measured, which the product's own data-honesty rule
+   * forbids.
+   */
+  vocabulary: (body: { topic: string; wordCount?: number }) =>
+    apiClient.post<{ topic: string; cefrLevel: string; vocabulary: unknown[] }>('/english-coach/vocabulary', body),
+  reading: (body: { topic: string; length?: 'short' | 'medium' | 'long' }) =>
+    apiClient.post<{ topic: string; cefrLevel: string; passage: string; wordCount: number; estimatedReadingTime: number }>(
+      '/english-coach/reading',
+      body,
+    ),
 }
 
 // ==================== Guardian (parent) ====================

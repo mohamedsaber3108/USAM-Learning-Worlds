@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { RotateCcw } from 'lucide-react'
-import { masteryApi, flashcardsApi, type Flashcard } from '@/lib/api/endpoints'
+import { masteryApi, flashcardsApi, charactersApi, type Flashcard } from '@/lib/api/endpoints'
 import type { MasteryRecord } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, StatusPill, Button, Tabs } from '@/components/ui'
 import { REVIEW_FRAMING, masteryLabel } from '@/lib/labels/masteryLabels'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 /**
  * Practice / review — "keep it strong". Two real tabs:
@@ -15,14 +16,26 @@ import { REVIEW_FRAMING, masteryLabel } from '@/lib/labels/masteryLabels'
  *      flashcard engine (GET /flashcards/due, POST /flashcards/:id/review)
  *      had zero frontend representation despite being fully built
  *      (FSRS-scheduled). Added a real flip-card study flow.
+ *
+ * Companion presence (owner directive): a real GET /characters/orchestrate
+ * pick appears beside the header — practice is a core engagement surface
+ * that previously had zero companion presence at all.
  */
 export function PracticePage() {
   const { t } = useTranslation()
   const [tab, setTab] = useState<'review' | 'flashcards'>('review')
+  const companion = useQuery({
+    queryKey: ['practice-companion'],
+    queryFn: async () => (await charactersApi.orchestrate()).data,
+    retry: false,
+  })
 
   return (
     <div className="space-y-6">
-      <PageHeader title={REVIEW_FRAMING.title} subtitle={REVIEW_FRAMING.subtitle} />
+      <div className="flex items-center gap-3">
+        {companion.data?.character && <CharacterStage characterId={companion.data.character.name} size={56} />}
+        <PageHeader title={REVIEW_FRAMING.title} subtitle={REVIEW_FRAMING.subtitle} />
+      </div>
       <Tabs
         tabs={[
           { key: 'review', label: t('learner.practiceTabReview') },

@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, XCircle } from 'lucide-react'
-import { missionsApi, reflectionApi } from '@/lib/api/endpoints'
+import { missionsApi, reflectionApi, charactersApi } from '@/lib/api/endpoints'
 import type { MissionRun, ActivitySummary, SubmitActivityResult } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, Button, Textarea } from '@/components/ui'
 import { cn } from '@/lib/utils/cn'
 import { ActivityView } from './activities/ActivityView'
+import { CharacterStage } from '@/features/characters/CharacterStage'
+import type { CharacterState } from '@/features/characters/CharacterFace'
 
 const FACES = ['😣', '😕', '😐', '🙂', '😄'] as const
 const RATING_KEYS = [
@@ -127,6 +129,17 @@ export function MissionPlayerPage() {
     queryFn: async () => (await missionsApi.getRun(runId)).data as MissionRun,
     enabled: Boolean(runId),
   })
+  // Companion presence (owner directive: companions must appear inside the
+  // mission player, not just the gallery+chat). Real GET /characters/
+  // orchestrate, scoped to this mission so the backend's domain-aware
+  // fallback picks the right mentor for the subject being played.
+  const companion = useQuery({
+    queryKey: ['mission-companion', run?.missionId],
+    queryFn: async () => (await charactersApi.orchestrate({ missionId: run?.missionId })).data,
+    enabled: Boolean(run?.missionId),
+    retry: false,
+  })
+  const companionState: CharacterState = result ? (result.correct ? 'celebrating' : 'encouraging') : 'idle'
 
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState onRetry={() => void refetch()} />
@@ -166,7 +179,12 @@ export function MissionPlayerPage() {
 
   if (showReflection) {
     return (
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-2xl space-y-4">
+        {companion.data?.character && (
+          <div className="flex justify-center">
+            <CharacterStage characterId={companion.data.character.name} size={88} state="encouraging" />
+          </div>
+        )}
         <ReflectionStep missionRunId={runId} onDone={() => navigate('/app/progress', { replace: true })} />
       </div>
     )
@@ -183,7 +201,12 @@ export function MissionPlayerPage() {
           />
         ))}
       </div>
-      <h1 className="font-display text-xl font-bold text-ink-900">{run.mission.title}</h1>
+      <div className="flex items-center gap-3">
+        {companion.data?.character && (
+          <CharacterStage characterId={companion.data.character.name} size={56} state={companionState} animate />
+        )}
+        <h1 className="font-display text-xl font-bold text-ink-900">{run.mission.title}</h1>
+      </div>
 
       {activity ? (
         activity.type === 'CODE' ? (

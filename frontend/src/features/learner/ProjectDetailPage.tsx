@@ -2,9 +2,10 @@ import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Circle } from 'lucide-react'
-import { projectsApi } from '@/lib/api/endpoints'
+import { projectsApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, StatusPill } from '@/components/ui'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 interface Milestone {
   id: string
@@ -64,6 +65,14 @@ export function ProjectDetailPage() {
     queryFn: async () => (await projectsApi.getMilestones(id)).data as Milestone[],
     enabled: Boolean(id),
   })
+  // Companion presence (owner directive): projects previously had zero
+  // companion presence — a project reviewer/mentor should be present here,
+  // not just a bare brief + milestone list.
+  const companion = useQuery({
+    queryKey: ['project-companion'],
+    queryFn: async () => (await charactersApi.orchestrate()).data,
+    retry: false,
+  })
 
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState onRetry={() => void refetch()} />
@@ -76,14 +85,20 @@ export function ProjectDetailPage() {
   const domainName = curriculumContext?.linked
     ? curriculumContext.domain?.name
     : data.competency?.skill?.domain?.name
+  const allDone = items.length > 0 && items.every((m) => m.status?.toUpperCase() === 'DONE' || m.status?.toUpperCase() === 'COMPLETED')
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={data.title}
-        subtitle={data.description}
-        action={data.state ? <StatusPill tone="brand">{data.state}</StatusPill> : undefined}
-      />
+      <div className="flex items-start gap-3">
+        {companion.data?.character && (
+          <CharacterStage characterId={companion.data.character.name} size={56} state={allDone ? 'celebrating' : 'idle'} />
+        )}
+        <PageHeader
+          title={data.title}
+          subtitle={data.description}
+          action={data.state ? <StatusPill tone="brand">{data.state}</StatusPill> : undefined}
+        />
+      </div>
 
       {competencyName && (
         <Card>

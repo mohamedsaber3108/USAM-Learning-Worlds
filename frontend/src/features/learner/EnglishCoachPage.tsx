@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send, SpellCheck } from 'lucide-react'
+import { Send, SpellCheck, BookOpenText, Hash } from 'lucide-react'
 import { englishCoachApi } from '@/lib/api/endpoints'
-import { Button, Card, PageHeader, Tabs, Textarea } from '@/components/ui'
+import { Button, Card, PageHeader, Tabs, Textarea, Input, Select } from '@/components/ui'
 import { AiDisclosureNotice } from '@/components/common/AiDisclosureNotice'
 import { CharacterStage } from '@/features/characters/CharacterStage'
 
@@ -24,7 +24,7 @@ interface ChatTurn {
  */
 export function EnglishCoachPage() {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<'conversation' | 'grammar'>('conversation')
+  const [tab, setTab] = useState<'conversation' | 'grammar' | 'vocabulary' | 'reading'>('conversation')
 
   return (
     <div className="space-y-6">
@@ -33,11 +33,16 @@ export function EnglishCoachPage() {
         tabs={[
           { key: 'conversation', label: t('learner.englishCoachTabConversation') },
           { key: 'grammar', label: t('learner.englishCoachTabGrammar') },
+          { key: 'vocabulary', label: t('learner.englishCoachTabVocabulary') },
+          { key: 'reading', label: t('learner.englishCoachTabReading') },
         ]}
         active={tab}
         onChange={setTab}
       />
-      {tab === 'conversation' ? <ConversationTab /> : <GrammarTab />}
+      {tab === 'conversation' && <ConversationTab />}
+      {tab === 'grammar' && <GrammarTab />}
+      {tab === 'vocabulary' && <VocabularyTab />}
+      {tab === 'reading' && <ReadingTab />}
     </div>
   )
 }
@@ -161,6 +166,132 @@ function GrammarTab() {
             </p>
             <p className="mt-1 whitespace-pre-wrap text-sm text-ink-700">{result.feedback}</p>
           </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+/**
+ * Vocabulary practice — real POST /english-coach/vocabulary. Backend
+ * returns `vocabulary: any[]` (its own parser is unstructured), so each
+ * item is rendered defensively: common shapes (word/definition/example) are
+ * shown when present, with a raw-string fallback so nothing silently
+ * disappears if the AI's JSON came back shaped differently.
+ */
+function VocabularyTab() {
+  const { t } = useTranslation()
+  const [topic, setTopic] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [words, setWords] = useState<unknown[] | null>(null)
+
+  async function generate() {
+    if (!topic.trim() || loading) return
+    setLoading(true)
+    setWords(null)
+    try {
+      const res = await englishCoachApi.vocabulary({ topic: topic.trim() })
+      setWords(res.data.vocabulary ?? [])
+    } catch {
+      setWords([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="space-y-4">
+      <Input
+        label={t('learner.englishCoachVocabTopicLabel')}
+        value={topic}
+        onChange={(e) => setTopic(e.target.value)}
+        placeholder={t('learner.englishCoachVocabTopicPlaceholder')}
+      />
+      <Button onClick={() => void generate()} disabled={loading || !topic.trim()} loading={loading}>
+        <Hash className="h-4 w-4" aria-hidden />
+        {t('learner.englishCoachVocabGenerate')}
+      </Button>
+      {words && (
+        words.length === 0 ? (
+          <p className="text-sm text-ink-500">{t('states.error')}</p>
+        ) : (
+          <div className="space-y-2">
+            {words.map((w, i) => {
+              const item = (w ?? {}) as Record<string, unknown>
+              const word = typeof item.word === 'string' ? item.word : undefined
+              const definition = typeof item.definition === 'string' ? item.definition : undefined
+              const example = typeof item.example === 'string' ? item.example : undefined
+              return (
+                <div key={i} className="rounded-control border border-line p-3">
+                  {word ? (
+                    <>
+                      <p className="font-display font-bold text-ink-900">{word}</p>
+                      {definition && <p className="mt-1 text-sm text-ink-700">{definition}</p>}
+                      {example && <p className="mt-1 text-sm italic text-ink-500">{example}</p>}
+                    </>
+                  ) : (
+                    <p className="text-sm text-ink-700">{String(w)}</p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )
+      )}
+    </Card>
+  )
+}
+
+/** Reading passage — real POST /english-coach/reading. */
+function ReadingTab() {
+  const { t } = useTranslation()
+  const [topic, setTopic] = useState('')
+  const [length, setLength] = useState<'short' | 'medium' | 'long'>('short')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<{ passage: string; wordCount: number; estimatedReadingTime: number } | null>(null)
+
+  async function generate() {
+    if (!topic.trim() || loading) return
+    setLoading(true)
+    setResult(null)
+    try {
+      const res = await englishCoachApi.reading({ topic: topic.trim(), length })
+      setResult(res.data)
+    } catch {
+      setResult(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="space-y-4">
+      <Input
+        label={t('learner.englishCoachReadingTopicLabel')}
+        value={topic}
+        onChange={(e) => setTopic(e.target.value)}
+        placeholder={t('learner.englishCoachVocabTopicPlaceholder')}
+      />
+      <Select
+        label={t('learner.englishCoachReadingLengthLabel')}
+        value={length}
+        onChange={(e) => setLength(e.target.value as 'short' | 'medium' | 'long')}
+        options={[
+          { value: 'short', label: t('learner.englishCoachReadingShort') },
+          { value: 'medium', label: t('learner.englishCoachReadingMedium') },
+          { value: 'long', label: t('learner.englishCoachReadingLong') },
+        ]}
+      />
+      <Button onClick={() => void generate()} disabled={loading || !topic.trim()} loading={loading}>
+        <BookOpenText className="h-4 w-4" aria-hidden />
+        {t('learner.englishCoachReadingGenerate')}
+      </Button>
+      {result && (
+        <div className="rounded-control border border-brand-200 bg-brand-50 p-4">
+          <p className="whitespace-pre-wrap text-ink-900">{result.passage}</p>
+          <p className="mt-3 text-xs text-ink-400">
+            {t('learner.englishCoachReadingMeta', { minutes: result.estimatedReadingTime })}
+          </p>
         </div>
       )}
     </Card>

@@ -8,14 +8,7 @@ import type { DomainPath } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, Button, StatusPill } from '@/components/ui'
 import { masteryLabel, type MasteryState } from '@/lib/labels/masteryLabels'
-
-// Per-domain companion + accent framing (keeps shared spine, adds domain feel).
-const DOMAIN_COMPANION: Record<string, string> = {
-  english: 'Luma',
-  coding: 'Codey',
-  'ai-literacy': 'Nova',
-  creativity: 'Mira',
-}
+import { DOMAIN_COMPANION } from '@/lib/labels/domainCompanions'
 
 function masteryTone(state: MasteryState): 'success' | 'brand' | 'neutral' {
   if (state === 'MASTERED' || state === 'PROFICIENT') return 'success'
