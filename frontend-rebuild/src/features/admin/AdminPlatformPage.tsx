@@ -65,6 +65,46 @@ export function AdminPlatformPage() {
         columns={['Action', 'Role']}
         row={(l) => [String(l.action ?? l.id), l.actorRole ? String(l.actorRole) : '—']}
       />
+      <MemoryGovernanceSection />
     </div>
+  )
+}
+
+/**
+ * Memory governance stats — NEW (2026-10-02, ledger 88 task 12): had zero
+ * frontend representation despite the backend guard being correct
+ * (ADMIN/MODERATOR only via a manual role check, verified during the
+ * reconciliation pass). Shows AI conversation-memory retention/purge
+ * telemetry as a plain stat grid.
+ */
+function MemoryGovernanceSection() {
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['admin-memory-governance'],
+    queryFn: async () => (await adminApi.memoryGovernanceStats()).data as Record<string, number>,
+    retry: false,
+  })
+
+  return (
+    <section>
+      <SectionHeader title="Memory Governance" />
+      {isLoading ? (
+        <LoadingState />
+      ) : isError ? (
+        <ErrorState onRetry={() => void refetch()} />
+      ) : !data || Object.keys(data).length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {Object.entries(data)
+            .filter(([, v]) => typeof v === 'number')
+            .map(([k, v]) => (
+              <Card key={k}>
+                <p className="text-xs uppercase tracking-wide text-ink-400">{k}</p>
+                <p className="mt-1 font-display text-2xl font-extrabold text-brand-700">{v}</p>
+              </Card>
+            ))}
+        </div>
+      )}
+    </section>
   )
 }

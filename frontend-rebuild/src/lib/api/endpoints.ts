@@ -449,14 +449,33 @@ export const adminApi = {
   setContentStatus: (id: string, status: string) => apiClient.patch(`/admin/content-items/${id}/status`, { status }),
   missions: () => apiClient.get('/admin/missions'),
   createMission: (body: Record<string, unknown>) => apiClient.post('/admin/missions', body),
+  updateMission: (id: string, body: Record<string, unknown>) => apiClient.patch(`/admin/missions/${id}`, body),
   deleteMission: (id: string) => apiClient.delete(`/admin/missions/${id}`),
   promptTemplates: () => apiClient.get('/admin/prompt-templates'),
   safetyPolicies: () => apiClient.get('/admin/safety-policies'),
   aiEvalRuns: () => apiClient.get('/admin/ai-eval/runs'),
   misconceptions: () => apiClient.get('/admin/misconceptions'),
   contentQaFlags: () => apiClient.get('/admin/content-qa/flags'),
+  contentQaScan: () => apiClient.post('/admin/content-qa/scan'),
   featureFlags: () => apiClient.get('/feature-flags'),
   setFeatureFlag: (key: string, enabled: boolean) => apiClient.patch(`/feature-flags/${key}`, { enabled }),
   experiments: () => apiClient.get('/experiments'),
   auditLogs: () => apiClient.get('/audit/logs'),
+  memoryGovernanceStats: () => apiClient.get('/admin/memory-governance/stats'),
+  // Difficulty calibration (admin-only; scan + list open flags).
+  difficultyCalibrationFlags: (take?: number) =>
+    apiClient.get('/admin/difficulty-calibration/flags', { params: { take } }),
+  difficultyCalibrationScan: () => apiClient.post('/admin/difficulty-calibration/scan'),
+  // Assessment quality (admin+moderator; scan + list open flags).
+  assessmentQualityFlags: () => apiClient.get('/admin/assessment-quality/flags'),
+  assessmentQualityScan: () => apiClient.post('/admin/assessment-quality/scan'),
+  // Content provenance (licenses/sources registry + compliance check).
+  provenanceLicenses: () => apiClient.get('/admin/content-provenance/licenses'),
+  upsertProvenanceLicense: (body: Record<string, unknown>) =>
+    apiClient.post('/admin/content-provenance/licenses', body),
+  provenanceSources: () => apiClient.get('/admin/content-provenance/sources'),
+  createProvenanceSource: (body: Record<string, unknown>) => apiClient.post('/admin/content-provenance/sources', body),
+  // Curriculum mapping (free-text -> ranked LearningObjective suggestions).
+  suggestCurriculumMapping: (body: { title: string; description?: string; take?: number }) =>
+    apiClient.post('/admin/curriculum-mapping/suggest', body),
 }
