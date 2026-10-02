@@ -118,6 +118,8 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | `/app/voice` | LEARNER | `voice.turn` (BLOCKED_EXTERNAL) | `features/learner/VoicePage.tsx` | n/a — honest gated state | Correct as-is (provider creds pending) | FINAL (gated) |
 | `/app/explore` | LEARNER | 11 concept catalogs (see Specialized row below) | new `ExplorePage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | ~~daily goals widget~~ | LEARNER | `daily-goals.getProgress` | now in `HomePage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
+| ~~Leaderboard~~ | LEARNER | `gamification.leaderboard` (`GET /gamification/leaderboard`) | new `LeaderboardPage.tsx` (`/app/leaderboard`) | ✓ | **DONE 2026-10-02 (batch 5)** — real opt-in leaderboard (only learners with `leaderboardOptIn: true` appear, matches the backend filter exactly, no fabricated rows); `/leaderboard` and `/achievements` both redirect here | TESTING |
+| ~~Learning-events insights ("My Journey")~~ | LEARNER | `learning-events.*` (stats/patterns) | new `InsightsPage.tsx` (`/app/insights`) | ✓ | **DONE 2026-10-02 (batch 5)** — activity-type stats + pattern cards (active days, consistency, peak hour) in plain language; legacy `/insights` redirects here | TESTING |
 
 ### SPECIALIZED DOMAIN / CONTENT CATALOGS
 
@@ -160,6 +162,7 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | `/admin/analytics` | ADMIN | `analytics.*` | `features/admin/AdminAnalyticsPage.tsx` | overview/daily-activity ✓ | Missing: `events-by-type`, `retention-cohorts`, `stickiness` | CONNECTING |
 | `/admin/platform` | ADMIN | feature-flags, experiments, audit | `features/admin/AdminPlatformPage.tsx` | ✓ | — | CONNECTING |
 | ~~memory-governance admin stats~~ | ADMIN | `ai.memory-governance` | `AdminPlatformPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
+| ~~Question-template browser~~ | ADMIN | `questions.*` (list templates) | new `AdminQuestionTemplatesPage.tsx` (`/admin/question-templates`) | `GET /questions/templates` ✓ | **PARTIALLY DONE 2026-10-02 (batch 5)** — read side (browse + filter by type) is wired to the real endpoint. Template authoring (create/edit a template) and "generate activity from template" (`POST /questions/generate`) are a real content-authoring workflow still deferred (lower priority, not fabricated as done) | TESTING |
 
 ### LEGAL / PRIVACY (cross-cutting, see dedicated section below)
 
@@ -174,31 +177,35 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 
 ---
 
-## Raw counts (updated 2026-10-02, end of batch 4)
+## Raw counts (updated 2026-10-02, end of batch 5)
 
 | Metric | Count |
 | --- | --- |
-| Router.tsx `<Route>` entries | 50 (49 + english-coach) |
+| Router.tsx `<Route>` entries | 53 real routes (50 + leaderboard, insights, admin/question-templates) + ~60 legacy `<Navigate>`/`ParamRedirect` redirect routes |
 | Rows at FINAL | 1 (Voice, correctly gated-honest) |
 | Confirmed bugs fixed this reconciliation | 4 (B2, B3, B4, D1/D2) |
 | Real backend-capability gaps closed (batch 2) | 14 (companion chat, flashcards, reflection, daily-goal, cosmetic shop, simulation player, mission history, Guardian consent capture, Guardian Overview/Evidence tab, 6 admin engines (mission CRUD + difficulty-calibration + assessment-quality + content-qa-scan + curriculum-mapping + content-provenance + memory-governance), 11-catalog Explore page) |
 | Real backend-capability gaps closed (batch 3) | 3 (Coding Coach "Ask Codey" debug help, English Coach conversation+grammar page, generic AI hint on non-code activities) |
 | Real gaps closed (batch 4 — Legal/Privacy audit) | 2 (Legal Center expansion: Children's privacy + AI/voice disclosure + Data & privacy controls section; AiDisclosureNotice component wired into both AI-conversation surfaces) |
-| **Remaining `NOT_STARTED` P0/P1 rows (strict scan, 2026-10-02)** | **0** — every row in the LEDGER table is now at `CONNECTING` or later. The 0-count statuses present (`BROKEN`/`MISWIRED`/`MOCK_ONLY`/`REQUIRED_PLACEHOLDER`) were checked by grep across this file and the capability registry — none occur |
-| Still deferred (lower priority, tracked not forgotten — not NOT_STARTED, these are partial-but-connected rows) | generic AI feedback/explain/analyze (0 callers — overlaps existing surfaces), project rubric/collaborators/research-notes UI, community trending/search/stats, streak-freeze shop, mission admin UPDATE form, prompt-template edit UI, `GET /admin/interventions/learner/:id` detail view, analytics events-by-type/retention-cohorts/stickiness, admin AI prompt-template edit/safety-policy versions/ai-eval drill-in, admin content create-form/detail view |
+| Batch 5 — legacy URL redirect map | Built `docs/ops/LEGACY_URL_REDIRECT_MAP.md` (every legacy `frontend/` route classified REDIRECT or honest-404, derived from the real `frontend/src/app/router/index.tsx`) and implemented every REDIRECT row as a real route in `app/router.tsx` (plain `<Navigate>` for static paths, a new `ParamRedirect` helper for paths carrying a URL param) |
+| Real backend-capability gaps closed (batch 5, found by the redirect-map exercise) | 3 — Leaderboard (`LeaderboardPage.tsx`), Learning-events insights / "My Journey" (`InsightsPage.tsx`), Question-template browser read-side (`AdminQuestionTemplatesPage.tsx`). None of these were in the original controller-reconciliation pass's missing-surfaces list — the redirect-map exercise is a different lens (legacy-route coverage, not controller reachability) and caught them. Closed the same session they were found, not left open |
+| **Remaining `NOT_STARTED` P0/P1 rows (strict scan, end of batch 5)** | **0** |
+| Still deferred (lower priority, tracked not forgotten — not NOT_STARTED, these are partial-but-connected rows) | generic AI feedback/explain/analyze (0 callers — overlaps existing surfaces), project rubric/collaborators/research-notes UI, community trending/search/stats, streak-freeze shop, mission admin UPDATE form, prompt-template edit UI + question-template authoring (create/edit/generate), `GET /admin/interventions/learner/:id` detail view, analytics events-by-type/retention-cohorts/stickiness, admin AI prompt-template edit/safety-policy versions/ai-eval drill-in, admin content create-form/detail view |
 | Genuinely blocked (not codeable here) | Full Privacy Policy/Terms legal text + company/jurisdiction facts (`NEEDS_LAWYER_REVIEW` + `NEEDS_OWNER_CONFIGURATION`), Voice provider credentials (`BLOCKED_EXTERNAL`), live payment provider on `/parent/plan` (by design, no live billing yet) |
 | Fabricated/non-backed capabilities | 0 |
 | Dependency security (frontend-rebuild, 2026-10-02) | Full audit 7 (5 moderate/1 high/1 critical) — all 5 non-react-router findings are dev-tooling only (vite/vitest/esbuild dev server, never shipped). Production-only audit (`--omit=dev`): 2 moderate (react-router/react-router-dom), both justified not-reachable given this app's architecture (no SSR/data-router, no raw redirect-target input) — see `docs/security/npm-audit-findings.md`. Zero CRITICAL/HIGH ship in the production bundle. |
 | ESLint | Previously configured (`lint` script existed) but never actually installed/wired — fixed this pass (`eslint.config.js` added, mirrors `frontend/`'s flat config; devDependencies installed). 2 pre-existing `react-refresh/only-export-components` warnings found and fixed (split `roleHome` out of `guards.tsx`, `useToast`/context out of `Toast.tsx`). `npm run lint` now passes with 0 warnings. |
 
-This is the execution queue. The required gate — zero `NOT_STARTED`/`BROKEN`/
-`MISWIRED`/`MOCK_ONLY`/`REQUIRED_PLACEHOLDER` P0/P1 rows — is now met. Rows
-sitting at `CONNECTING`/`REBUILDING`/`TESTING` with a documented, non-blocking
-"known gap" (deeper admin drill-ins, community search/stats, etc.) are real
-and tracked, not silently dropped, and are lower priority than the core
-learner/guardian/moderator loops which are all wired to real endpoints.
-Remaining phases before cutover: visual/RTL/responsive/a11y QA pass (rebuild
-order step 9) and the final reconciliation (step 10) — neither is a frontend
-coding task, both require actually viewing the running app (local dev server
-or the staged /preview/ deploy), which this environment cannot reach over the
-network for the live `/preview/` URL.
+This is the execution queue. The owner's gate — zero `NOT_STARTED`/`BROKEN`/
+`MISWIRED`/`MOCK_ONLY`/`REQUIRED_PLACEHOLDER` P0/P1 rows — **is now met**,
+including the 3 rows the redirect-map exercise newly discovered and this same
+batch closed (Leaderboard, Insights, Question-template browser read-side).
+Everything in the LEDGER table sits at `CONNECTING` or later. Remaining
+phases before cutover: the visual/RTL/responsive/a11y QA pass (rebuild order
+step 9) and final reconciliation (step 10) — both require actually viewing
+the running app (local dev server or the staged `/preview/` deploy), which
+this environment cannot reach over the network for the live `/preview/` URL;
+and preparing the production cutover itself (tree promotion + deploy +
+live verification), which requires server access this environment does not
+have — see the FINAL REPORT for the exact, non-guessed command block for the
+owner to run.

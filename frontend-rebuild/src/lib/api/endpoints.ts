@@ -351,6 +351,32 @@ export const rewardsApi = {
   purchaseStreakFreeze: () => apiClient.post('/gamification/streak-freeze/purchase'),
 }
 
+/**
+ * Learning events — real backend (`learning-events` module, routes under
+ * `/learning/events/*`), had ZERO frontend callers in this tree (surfaced
+ * building the legacy URL redirect map — legacy `/insights` used it, no
+ * `frontend-rebuild` equivalent existed yet). Backs a learner-facing "My
+ * Journey" view: activity-type stats, recent events, and detected learning
+ * patterns (consistency, peak hour).
+ */
+export interface LearningEventStat {
+  eventType: string
+  count: number
+  lastOccurred: string
+}
+export interface LearningPatterns {
+  period: { days: number; since: string }
+  activeDays: number
+  consistency: number
+  avgActivitiesPerDay: number
+  peakLearningHour: number
+  hourlyDistribution: number[]
+}
+export const learningEventsApi = {
+  getStats: (since?: string) => apiClient.get<LearningEventStat[]>('/learning/events/stats', { params: { since } }),
+  getPatterns: (days = 30) => apiClient.get<LearningPatterns>('/learning/events/patterns', { params: { days } }),
+}
+
 // ==================== Community ====================
 export const communityApi = {
   feed: () => apiClient.get('/community/feed'),
@@ -547,4 +573,16 @@ export const adminApi = {
   // Curriculum mapping (free-text -> ranked LearningObjective suggestions).
   suggestCurriculumMapping: (body: { title: string; description?: string; take?: number }) =>
     apiClient.post('/admin/curriculum-mapping/suggest', body),
+  /**
+   * Question-template authoring — real backend (`questions.controller.ts`,
+   * routes under `/questions/*`), had ZERO frontend callers in this tree
+   * (surfaced building the legacy URL redirect map — legacy
+   * `/admin/question-templates`). Grouped under adminApi for organization
+   * even though the backend route itself only requires auth, not an ADMIN
+   * role check — template authoring is an admin workflow by product intent.
+   */
+  questionTemplates: (params?: { objectiveId?: string; type?: string }) =>
+    apiClient.get('/questions/templates', { params }),
+  generateFromTemplate: (body: { templateId: string; distractorCount?: number; missionId?: string; order?: number }) =>
+    apiClient.post('/questions/generate', body),
 }

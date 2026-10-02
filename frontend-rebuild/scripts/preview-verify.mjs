@@ -75,6 +75,8 @@ const LEARNER_ROUTES = [
   '/app/simulations',
   '/app/voice',
   '/app/english-coach',
+  '/app/leaderboard',
+  '/app/insights',
 ]
 
 // Guardian/Moderator/Admin — each OPTIONAL, gated on its own env creds.
@@ -99,6 +101,7 @@ const ROLE_SETS = [
       '/admin/ai',
       '/admin/analytics',
       '/admin/platform',
+      '/admin/question-templates',
     ],
   },
 ]

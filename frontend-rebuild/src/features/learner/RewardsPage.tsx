@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Star, Flame, Coins, Lock, Check } from 'lucide-react'
+import { Star, Flame, Coins, Lock, Check, Trophy } from 'lucide-react'
 import { rewardsApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState, EmptyState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, Button, useToast } from '@/components/ui'
@@ -71,7 +72,15 @@ export function RewardsPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title={t('learner.rewards')} />
+      <PageHeader
+        title={t('learner.rewards')}
+        action={
+          <Link to="/app/leaderboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
+            <Trophy className="h-4 w-4" aria-hidden />
+            {t('learner.leaderboard')}
+          </Link>
+        }
+      />
       <div className="grid gap-4 sm:grid-cols-3">
         {stat(<Star className="h-5 w-5" aria-hidden />, t('learner.level'), progression.data?.level ?? 1)}
         {stat(<Flame className="h-5 w-5" aria-hidden />, t('learner.streak'), streak.data?.current ?? 0)}

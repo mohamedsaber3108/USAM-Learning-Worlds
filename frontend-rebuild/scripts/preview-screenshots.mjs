@@ -68,6 +68,8 @@ const LEARNER_PAGES = [
   ['simulations', '/app/simulations'],
   ['voice', '/app/voice'],
   ['english-coach', '/app/english-coach'],
+  ['leaderboard', '/app/leaderboard'],
+  ['insights', '/app/insights'],
 ]
 
 // Optional role captures if creds are provided.
@@ -100,6 +102,7 @@ const ROLE_SETS = [
       ['admin-ai', '/admin/ai'],
       ['admin-analytics', '/admin/analytics'],
       ['admin-platform', '/admin/platform'],
+      ['admin-question-templates', '/admin/question-templates'],
     ],
     landing: /\/preview\/admin/,
   },

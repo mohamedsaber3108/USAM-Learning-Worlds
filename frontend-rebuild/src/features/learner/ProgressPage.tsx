@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Compass } from 'lucide-react'
 import { masteryApi, missionsApi } from '@/lib/api/endpoints'
 import type { MasteryRecord, DomainMastery } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
@@ -49,7 +51,15 @@ export function ProgressPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title={t('learner.progressTitle')} />
+      <PageHeader
+        title={t('learner.progressTitle')}
+        action={
+          <Link to="/app/insights" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
+            <Compass className="h-4 w-4" aria-hidden />
+            {t('learner.insightsTitle')}
+          </Link>
+        }
+      />
 
       {byDomain.data && byDomain.data.length > 0 && (
         <section>

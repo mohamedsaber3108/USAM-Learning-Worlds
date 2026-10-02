@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { RequireRole } from './guards'
@@ -30,6 +30,8 @@ import { EnglishCoachPage } from '@/features/learner/EnglishCoachPage'
 import { CommunityPage } from '@/features/learner/CommunityPage'
 import { CredentialsPage } from '@/features/learner/CredentialsPage'
 import { RewardsPage } from '@/features/learner/RewardsPage'
+import { LeaderboardPage } from '@/features/learner/LeaderboardPage'
+import { InsightsPage } from '@/features/learner/InsightsPage'
 import { SettingsPage } from '@/features/learner/SettingsPage'
 import { SearchPage } from '@/features/learner/SearchPage'
 import { NotificationsPage } from '@/features/learner/NotificationsPage'
@@ -52,6 +54,7 @@ import { AdminCurriculumPage } from '@/features/admin/AdminCurriculumPage'
 import { AdminAiSafetyPage } from '@/features/admin/AdminAiSafetyPage'
 import { AdminAnalyticsPage } from '@/features/admin/AdminAnalyticsPage'
 import { AdminPlatformPage } from '@/features/admin/AdminPlatformPage'
+import { AdminQuestionTemplatesPage } from '@/features/admin/AdminQuestionTemplatesPage'
 
 /** `/` — public landing for signed-out visitors; role home for signed-in. */
 function RootRoute() {
@@ -60,6 +63,21 @@ function RootRoute() {
   if (status === 'idle' || status === 'loading') return <LoadingState />
   if (status === 'authenticated' && user) return <Navigate to={roleHome(user.role)} replace />
   return <LandingPage />
+}
+
+/**
+ * Redirects a legacy path that carries a URL param to its new-router
+ * equivalent, substituting the param into the target. `to` uses the same
+ * `:name` syntax as the route path, e.g. `to="/app/missions/:id"` with
+ * `path="/missions/:id"`. A plain `<Navigate to="...">` can't interpolate a
+ * param, so this small wrapper does the substitution before navigating.
+ * See docs/ops/LEGACY_URL_REDIRECT_MAP.md for the full legacy->new mapping
+ * this and the static <Navigate> block below implement.
+ */
+function ParamRedirect({ to }: { to: string }) {
+  const params = useParams()
+  const resolved = to.replace(/:([A-Za-z0-9_]+)/g, (_, name: string) => params[name] ?? '')
+  return <Navigate to={resolved} replace />
 }
 
 /** Honest 404 (no silent bounce). */
@@ -134,6 +152,8 @@ export function AppRouter() {
         <Route path="/app/community" element={<CommunityPage />} />
         <Route path="/app/credentials" element={<CredentialsPage />} />
         <Route path="/app/rewards" element={<RewardsPage />} />
+        <Route path="/app/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/app/insights" element={<InsightsPage />} />
         <Route path="/app/settings" element={<SettingsPage />} />
         <Route path="/app/search" element={<SearchPage />} />
         <Route path="/app/notifications" element={<NotificationsPage />} />
@@ -186,7 +206,84 @@ export function AppRouter() {
         <Route path="/admin/ai" element={<AdminAiSafetyPage />} />
         <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
         <Route path="/admin/platform" element={<AdminPlatformPage />} />
+        <Route path="/admin/question-templates" element={<AdminQuestionTemplatesPage />} />
       </Route>
+
+      {/*
+        Legacy URL redirects (frontend/ -> frontend-rebuild/), for the
+        production cutover. Full mapping + rationale per route:
+        docs/ops/LEGACY_URL_REDIRECT_MAP.md. Routes with a path param use
+        ParamRedirect so the param carries over; everything else is a plain
+        <Navigate>. Intentionally excludes legacy paths with NO new
+        equivalent (worlds/:id, learn/concepts/:id, learn/paths/:id) -
+        those fall through to the honest NotFound below rather than redirect
+        to the wrong page. /leaderboard, /insights, and
+        /admin/question-templates WERE in that excluded set until ledger-88
+        batch 5 closed them (LeaderboardPage, InsightsPage,
+        AdminQuestionTemplatesPage above) - they now redirect/route for real.
+      */}
+      <Route path="/register" element={<Navigate to="/signup" replace />} />
+      <Route path="/onboarding/language" element={<Navigate to="/onboarding" replace />} />
+      <Route path="/onboarding/welcome" element={<Navigate to="/onboarding" replace />} />
+      <Route path="/onboarding/age" element={<Navigate to="/onboarding" replace />} />
+      <Route path="/onboarding/interests" element={<Navigate to="/onboarding" replace />} />
+      <Route path="/onboarding/character" element={<Navigate to="/onboarding" replace />} />
+      <Route path="/onboarding/complete" element={<Navigate to="/onboarding" replace />} />
+      <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+      <Route path="/practice" element={<Navigate to="/app/practice" replace />} />
+      <Route path="/evidence" element={<Navigate to="/app/progress" replace />} />
+      <Route path="/missions" element={<Navigate to="/app/learn" replace />} />
+      <Route path="/missions/complete" element={<Navigate to="/app/progress" replace />} />
+      <Route path="/missions/:id" element={<ParamRedirect to="/app/missions/:id" />} />
+      <Route path="/missions/play/:runId" element={<ParamRedirect to="/app/runs/:runId" />} />
+      <Route path="/worlds" element={<Navigate to="/app/learn" replace />} />
+      <Route path="/simulations" element={<Navigate to="/app/simulations" replace />} />
+      <Route path="/simulations/:slug" element={<ParamRedirect to="/app/simulations/:slug" />} />
+      <Route path="/learn" element={<Navigate to="/app/learn" replace />} />
+      <Route path="/learn/paths" element={<Navigate to="/app/learn" replace />} />
+      <Route path="/learn/flashcards" element={<Navigate to="/app/practice" replace />} />
+      <Route path="/learn/visual-language" element={<Navigate to="/app/explore" replace />} />
+      <Route path="/learning/domains/:slug/path" element={<ParamRedirect to="/app/learn/:slug" />} />
+      <Route path="/projects" element={<Navigate to="/app/projects" replace />} />
+      <Route path="/projects/:id" element={<ParamRedirect to="/app/projects/:id" />} />
+      <Route path="/portfolio" element={<Navigate to="/app/portfolio" replace />} />
+      <Route path="/community" element={<Navigate to="/app/community" replace />} />
+      <Route path="/achievements" element={<Navigate to="/app/rewards" replace />} />
+      <Route path="/leaderboard" element={<Navigate to="/app/leaderboard" replace />} />
+      <Route path="/progress" element={<Navigate to="/app/progress" replace />} />
+      <Route path="/balanced" element={<Navigate to="/app/progress" replace />} />
+      <Route path="/plans" element={<Navigate to="/pricing" replace />} />
+      <Route path="/english" element={<Navigate to="/app/learn/english" replace />} />
+      <Route path="/english/coach" element={<Navigate to="/app/english-coach" replace />} />
+      <Route path="/coding" element={<Navigate to="/app/learn/coding" replace />} />
+      <Route path="/characters" element={<Navigate to="/app/companions" replace />} />
+      <Route path="/characters/:id/chat" element={<ParamRedirect to="/app/companions/:id" />} />
+      <Route path="/stories" element={<Navigate to="/app/stories" replace />} />
+      <Route path="/stories/:id" element={<ParamRedirect to="/app/stories/:id" />} />
+      <Route path="/creativity" element={<Navigate to="/app/create" replace />} />
+      <Route path="/shop" element={<Navigate to="/app/rewards" replace />} />
+      <Route path="/insights" element={<Navigate to="/app/insights" replace />} />
+      <Route path="/cross-curricular/:category" element={<Navigate to="/app/explore" replace />} />
+      <Route path="/cross-curricular/:category/:slug" element={<Navigate to="/app/explore" replace />} />
+      <Route path="/thinking/:engine" element={<Navigate to="/app/explore" replace />} />
+      <Route path="/thinking/:engine/:slug" element={<Navigate to="/app/explore" replace />} />
+      <Route path="/parents" element={<Navigate to="/parent" replace />} />
+      <Route path="/parents/children/:learnerId/time-limits" element={<ParamRedirect to="/parent/child/:learnerId" />} />
+      <Route path="/parents/children/:learnerId/privacy" element={<Navigate to="/parent/privacy" replace />} />
+      <Route path="/admin/missions" element={<Navigate to="/admin/curriculum" replace />} />
+      <Route path="/admin/feature-flags" element={<Navigate to="/admin/platform" replace />} />
+      <Route path="/admin/audit-log" element={<Navigate to="/admin/platform" replace />} />
+      <Route path="/admin/safety-escalations" element={<Navigate to="/mod/escalations" replace />} />
+      <Route path="/admin/interventions" element={<Navigate to="/mod/interventions" replace />} />
+      <Route path="/admin/misconceptions" element={<Navigate to="/admin/curriculum" replace />} />
+      <Route path="/admin/ai-eval" element={<Navigate to="/admin/ai" replace />} />
+      <Route path="/admin/assessment-quality" element={<Navigate to="/admin/curriculum" replace />} />
+      <Route path="/admin/content-qa" element={<Navigate to="/admin/curriculum" replace />} />
+      <Route path="/admin/memory-governance" element={<Navigate to="/admin/platform" replace />} />
+      <Route path="/admin/experiments" element={<Navigate to="/admin/platform" replace />} />
+      <Route path="/admin/safety-policies" element={<Navigate to="/admin/ai" replace />} />
+      <Route path="/admin/prompt-templates" element={<Navigate to="/admin/ai" replace />} />
+      <Route path="/admin/content-items" element={<Navigate to="/admin/content" replace />} />
 
       {/* Fallback — honest 404 for everyone (auth and unauth); no silent bounce */}
       <Route path="*" element={<NotFound />} />
