@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Boxes } from 'lucide-react'
@@ -12,7 +13,8 @@ interface Simulation {
   description?: string
 }
 
-/** Simulations catalog — real GET /api/simulations. DS. */
+/** Simulations catalog — real GET /api/simulations. Cards now link to a real
+ * decision-tree player (ledger 88 task 9: was a catalog-only dead end). DS. */
 export function SimulationsPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({
@@ -29,13 +31,15 @@ export function SimulationsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {data.map((s) => (
-            <Card key={s.id}>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
-                <Boxes className="h-5 w-5" aria-hidden />
-              </span>
-              <h2 className="mt-3 font-display font-bold text-ink-900">{s.title}</h2>
-              {s.description && <p className="mt-1 text-sm text-ink-500">{s.description}</p>}
-            </Card>
+            <Link key={s.id} to={`/app/simulations/${s.slug}`}>
+              <Card className="h-full transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+                  <Boxes className="h-5 w-5" aria-hidden />
+                </span>
+                <h2 className="mt-3 font-display font-bold text-ink-900">{s.title}</h2>
+                {s.description && <p className="mt-1 text-sm text-ink-500">{s.description}</p>}
+              </Card>
+            </Link>
           ))}
         </div>
       )}

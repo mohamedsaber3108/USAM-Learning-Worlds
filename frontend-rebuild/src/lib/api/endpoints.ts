@@ -244,9 +244,28 @@ export const storiesApi = {
   list: () => apiClient.get('/stories'),
   getById: (id: string) => apiClient.get(`/stories/${id}`),
 }
+export interface SimulationDecisionNode {
+  id: string
+  scenarioId: string
+  nodeKey: string
+  prompt: string
+  isEnding: boolean
+  outcomeNote?: string | null
+  choiceOptions: Array<{ label: string; nextNode?: string }>
+}
+export interface SimulationScenarioDetail {
+  id: string
+  title: string
+  slug: string
+  description: string
+  startNodeId: string | null
+  nodes: SimulationDecisionNode[]
+}
 export const simulationsApi = {
   list: () => apiClient.get('/simulations'),
-  getBySlug: (slug: string) => apiClient.get(`/simulations/${slug}`),
+  getBySlug: (slug: string) => apiClient.get<SimulationScenarioDetail>(`/simulations/${slug}`),
+  getNode: (scenarioId: string, nodeKey: string) =>
+    apiClient.get<SimulationDecisionNode>(`/simulations/${scenarioId}/nodes/${nodeKey}`),
 }
 export const visualLanguageApi = {
   list: () => apiClient.get('/visual-language'),

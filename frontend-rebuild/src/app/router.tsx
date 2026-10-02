@@ -32,6 +32,7 @@ import { SearchPage } from '@/features/learner/SearchPage'
 import { NotificationsPage } from '@/features/learner/NotificationsPage'
 import { StoriesPage, StoryReaderPage } from '@/features/learner/StoriesPage'
 import { SimulationsPage } from '@/features/learner/SimulationsPage'
+import { SimulationPlayerPage } from '@/features/learner/SimulationPlayerPage'
 import { VoicePage } from '@/features/learner/VoicePage'
 import { VerifyCredentialPage } from '@/features/public/VerifyCredentialPage'
 import { ParentHomePage } from '@/features/parent/ParentHomePage'
@@ -134,6 +135,7 @@ export function AppRouter() {
         <Route path="/app/stories" element={<StoriesPage />} />
         <Route path="/app/stories/:id" element={<StoryReaderPage />} />
         <Route path="/app/simulations" element={<SimulationsPage />} />
+        <Route path="/app/simulations/:slug" element={<SimulationPlayerPage />} />
         <Route path="/app/voice" element={<VoicePage />} />
       </Route>
 
