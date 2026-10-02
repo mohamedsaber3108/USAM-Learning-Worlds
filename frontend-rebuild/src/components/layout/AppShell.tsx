@@ -93,7 +93,8 @@ export function AppShell() {
     <div className="min-h-screen bg-canvas-off pb-16 md:pb-0">
       <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-          <Link to={items[0]?.to ?? '/app'} className="font-display text-lg font-extrabold text-brand-700">
+          <Link to={items[0]?.to ?? '/app'} className="flex items-center gap-2 font-display text-lg font-extrabold text-brand-700">
+            <img src="/usam-logo.png" alt="" width={24} height={24} className="h-6 w-6" />
             USAM
           </Link>
 

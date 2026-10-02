@@ -25,8 +25,9 @@ export function PublicNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-        <Link to="/" className="font-display text-xl font-extrabold text-brand-700" aria-label="USAM home">
-          USAM
+        <Link to="/" className="flex items-center gap-2" aria-label="USAM home">
+          <img src="/usam-logo.png" alt="" width={28} height={28} className="h-7 w-7" />
+          <span className="font-display text-xl font-extrabold text-brand-700">USAM</span>
         </Link>
 
         <nav className="ms-6 hidden items-center gap-1 md:flex" aria-label="Primary">
@@ -80,7 +81,10 @@ export function PublicNav() {
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="font-display text-lg font-extrabold text-brand-700">USAM</span>
+            <span className="flex items-center gap-2 font-display text-lg font-extrabold text-brand-700">
+              <img src="/usam-logo.png" alt="" width={24} height={24} className="h-6 w-6" />
+              USAM
+            </span>
             <button onClick={() => setOpen(false)} aria-label="Close" className="rounded-control p-2 text-ink-500">
               <X className="h-5 w-5" aria-hidden />
             </button>
