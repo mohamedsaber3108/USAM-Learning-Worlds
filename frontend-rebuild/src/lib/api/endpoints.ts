@@ -360,10 +360,23 @@ export const voiceApi = {
 }
 
 // ==================== Guardian (parent) ====================
+export interface ChildDashboard {
+  progression: { level: number; totalXP: number; coins: number }
+  streak: { current: number; longest: number }
+  mastery: {
+    total: number
+    proficient: number
+    developing: number
+    emerging: number
+    byDomain: Record<string, unknown>
+  }
+  recentActivity: Array<{ type: string; success: boolean; date: string }>
+  projects: { showcased: number }
+}
 export const parentsApi = {
   children: () => apiClient.get('/parents/children'),
   familySummary: () => apiClient.get('/parents/family-summary'),
-  dashboard: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/dashboard`),
+  dashboard: (learnerId: string) => apiClient.get<ChildDashboard>(`/parents/children/${learnerId}/dashboard`),
   progress: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/progress`),
   activity: (learnerId: string, days = 7) =>
     apiClient.get(`/parents/children/${learnerId}/activity`, { params: { days } }),
