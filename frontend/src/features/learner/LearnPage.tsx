@@ -11,6 +11,7 @@ interface World {
   name: string
   description?: string
   domain?: { slug: string; name: string }
+  isUnlocked?: boolean
 }
 
 // Per-domain icon (slug-keyed); default for anything else.
@@ -56,19 +57,19 @@ export function LearnPage() {
               </span>
               <h2 className="mt-4 font-display text-lg font-bold text-ink-900">{world.domain?.name ?? world.name}</h2>
               {world.description && <p className="mt-1 text-sm text-ink-500">{world.description}</p>}
-              {slug && (
-                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-600">
-                  {t('learner.startMission')} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
-                </span>
-              )}
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-600">
+                {world.isUnlocked === false ? t('learner.worldLocked') : t('learner.startMission')}{' '}
+                <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
+              </span>
             </Card>
           )
-          return slug ? (
-            <Link key={world.id} to={`/app/learn/${slug}`}>
+          // World Detail (real sequential per-world mission order with
+          // lock status) is the entry point now; DomainPathPage remains
+          // reachable from inside it for the broader skill tree view.
+          return (
+            <Link key={world.id} to={`/app/worlds/${world.id}`}>
               {card}
             </Link>
-          ) : (
-            <div key={world.id}>{card}</div>
           )
         })}
       </div>

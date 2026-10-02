@@ -1,12 +1,12 @@
 import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Circle } from 'lucide-react'
 import { projectsApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader, SectionHeader, StatusPill } from '@/components/ui'
+import { Card, PageHeader, SectionHeader, StatusPill, Button, useToast } from '@/components/ui'
 import { CharacterStage } from '@/features/characters/CharacterStage'
-import { projectStateLabel, projectStateTone } from '@/lib/labels/projectLabels'
+import { projectStateLabel, projectStateTone, milestoneStatusLabel, isMilestoneComplete } from '@/lib/labels/projectLabels'
 
 interface Milestone {
   id: string
@@ -48,6 +48,8 @@ interface CurriculumContext {
 export function ProjectDetailPage() {
   const { t } = useTranslation()
   const { id = '' } = useParams<{ id: string }>()
+  const qc = useQueryClient()
+  const toast = useToast()
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['project', id],
@@ -86,7 +88,48 @@ export function ProjectDetailPage() {
   const domainName = curriculumContext?.linked
     ? curriculumContext.domain?.name
     : data.competency?.skill?.domain?.name
-  const allDone = items.length > 0 && items.every((m) => m.status?.toUpperCase() === 'DONE' || m.status?.toUpperCase() === 'COMPLETED')
+  // FIX (2026-10-02): the real Milestone.status enum (projects.service.ts
+  // updateMilestoneStatus validStatuses) is PENDING|IN_PROGRESS|COMPLETE —
+  // this previously checked for 'DONE'/'COMPLETED', neither of which the
+  // backend ever sends, so a milestone could never register as done.
+  const allDone = items.length > 0 && items.every((m) => isMilestoneComplete(m.status))
+
+  async function markDone(milestoneId: string) {
+    try {
+      await projectsApi.updateMilestoneStatus(id, milestoneId, 'COMPLETE')
+      toast.show(t('learner.milestoneMarkedDone'), 'success')
+      await qc.invalidateQueries({ queryKey: ['project-milestones', id] })
+    } catch {
+      toast.show(t('states.error'), 'error')
+    }
+  }
+
+  async function showcase() {
+    try {
+      await projectsApi.showcase(id)
+      toast.show(t('learner.projectShowcased'), 'success')
+      await qc.invalidateQueries({ queryKey: ['project', id] })
+    } catch {
+      toast.show(t('states.error'), 'error')
+    }
+  }
+
+  // Real backend rule (projects.service.ts showcaseProject): state must be
+  // COMPLETED before showcasing. Milestones all COMPLETE does not itself
+  // flip the project's own state — that's a separate PUT /:id write the
+  // learner must trigger (markComplete below); showcase stays disabled
+  // honestly until the real precondition is met, never faked client-side.
+  const canShowcase = data.state === 'COMPLETED'
+
+  async function markComplete() {
+    try {
+      await projectsApi.update(id, { state: 'COMPLETED' })
+      toast.show(t('learner.milestoneMarkedDone'), 'success')
+      await qc.invalidateQueries({ queryKey: ['project', id] })
+    } catch {
+      toast.show(t('states.error'), 'error')
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -116,7 +159,7 @@ export function ProjectDetailPage() {
         {items.length > 0 ? (
           <ol className="space-y-2">
             {items.map((m) => {
-              const done = m.status?.toUpperCase() === 'DONE' || m.status?.toUpperCase() === 'COMPLETED'
+              const done = isMilestoneComplete(m.status)
               return (
                 <li key={m.id}>
                   <Card className="flex items-center gap-3">
@@ -126,7 +169,12 @@ export function ProjectDetailPage() {
                       <Circle className="h-5 w-5 shrink-0 text-ink-400" aria-hidden />
                     )}
                     <span className="flex-1 font-medium text-ink-900">{m.title}</span>
-                    {m.status && <StatusPill tone={done ? 'success' : 'neutral'}>{m.status}</StatusPill>}
+                    {m.status && <StatusPill tone={done ? 'success' : 'neutral'}>{milestoneStatusLabel(m.status)}</StatusPill>}
+                    {!done && (
+                      <Button size="sm" variant="secondary" onClick={() => void markDone(m.id)}>
+                        {t('learner.markMilestoneDone')}
+                      </Button>
+                    )}
                   </Card>
                 </li>
               )
@@ -136,6 +184,24 @@ export function ProjectDetailPage() {
           <EmptyState />
         )}
       </section>
+
+      {data.state !== 'SHOWCASED' && data.state !== 'COMPLETED' && (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm text-ink-600">{t('learner.showcaseRequiresCompleted')}</span>
+          <Button size="sm" disabled={!allDone} onClick={() => void markComplete()}>
+            {t('learner.markMilestoneDone')}
+          </Button>
+        </Card>
+      )}
+
+      {data.state === 'COMPLETED' && (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm text-ink-600">{t('learner.showcaseProject')}</span>
+          <Button size="sm" disabled={!canShowcase} onClick={() => void showcase()}>
+            {t('learner.showcaseProject')}
+          </Button>
+        </Card>
+      )}
     </div>
   )
 }

@@ -37,8 +37,35 @@ export const learningApi = {
   getDomainPath: (slug: string) => apiClient.get(`/learning/domains/${slug}/path`),
 }
 
+export interface WorldMission {
+  id: string
+  title: string
+  description?: string | null
+  order: number
+  status: 'COMPLETED' | 'IN_PROGRESS' | 'AVAILABLE' | 'LOCKED'
+  locked: boolean
+}
+export interface WorldDetail {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  domain: { id: string; name: string; slug: string }
+  isUnlocked: boolean
+  missions: WorldMission[]
+}
 export const worldsApi = {
   list: () => apiClient.get('/worlds'),
+  /**
+   * World Detail — real GET /worlds/:id (worlds.service.ts getWorld). Had
+   * zero frontend wrapper/caller before this pass despite the backend
+   * computing real per-learner sequential mission-unlock status
+   * (COMPLETED/IN_PROGRESS/AVAILABLE/LOCKED) — the app previously only
+   * showed the flat world list, skipping straight to a mission by id and
+   * never surfacing a world's own missions-in-order view. Named explicitly
+   * as a required surface ("World Details").
+   */
+  getById: (id: string) => apiClient.get<WorldDetail>(`/worlds/${id}`),
 }
 
 // ==================== Missions ====================

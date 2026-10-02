@@ -40,3 +40,28 @@ export function projectStateTone(state?: string | null): ProjectStateTone {
   if (!state) return 'neutral'
   return (PROJECT_STATE_TONE as Record<string, ProjectStateTone>)[state] ?? 'neutral'
 }
+
+/**
+ * Milestone status — real enum is `PENDING | IN_PROGRESS | COMPLETE`
+ * (projects.service.ts updateMilestoneStatus validStatuses), confirmed by
+ * reading the service directly. ProjectDetailPage previously checked for
+ * `'DONE'` or `'COMPLETED'`, neither of which the backend ever sends — a
+ * milestone could never visually register as done regardless of its real
+ * state. Added the real child-language map alongside the fix.
+ */
+export type MilestoneStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETE'
+
+export const MILESTONE_STATUS_LABEL: Record<MilestoneStatus, string> = {
+  PENDING: 'Not started',
+  IN_PROGRESS: 'In progress',
+  COMPLETE: 'Done',
+}
+
+export function milestoneStatusLabel(status?: string | null): string {
+  if (!status) return ''
+  return (MILESTONE_STATUS_LABEL as Record<string, string>)[status] ?? status
+}
+
+export function isMilestoneComplete(status?: string | null): boolean {
+  return status === 'COMPLETE'
+}
