@@ -282,14 +282,28 @@ export const searchApi = {
 }
 
 // ==================== Gamification (rewards) ====================
+export interface CosmeticItem {
+  id: string
+  name: string
+  category: 'BORDER' | 'BADGE' | 'TITLE' | 'COLOR_THEME'
+  xpCost: number
+  iconOrStyleKey: string
+  isDefault: boolean
+  owned: boolean
+  canAfford: boolean
+  isEquipped: boolean
+}
 export const rewardsApi = {
   progression: () => apiClient.get('/gamification/progression'),
   achievements: () => apiClient.get('/gamification/achievements'),
   leaderboard: () => apiClient.get('/gamification/leaderboard'),
   streak: () => apiClient.get('/gamification/streak'),
-  cosmetics: () => apiClient.get('/gamification/cosmetics'),
+  cosmetics: () => apiClient.get<{ totalXP: number; items: CosmeticItem[] }>('/gamification/cosmetics'),
   equipCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/equip`),
   unlockCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/unlock`),
+  streakFreezeStatus: () =>
+    apiClient.get<{ freezesAvailable: number; coinCost: number }>('/gamification/streak-freeze/status'),
+  purchaseStreakFreeze: () => apiClient.post('/gamification/streak-freeze/purchase'),
 }
 
 // ==================== Community ====================
