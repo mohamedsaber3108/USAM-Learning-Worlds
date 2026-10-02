@@ -346,9 +346,29 @@ export const rewardsApi = {
   cosmetics: () => apiClient.get<{ totalXP: number; items: CosmeticItem[] }>('/gamification/cosmetics'),
   equipCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/equip`),
   unlockCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/unlock`),
+  /**
+   * Streak Freeze shop — real backend (gamification.controller.ts +
+   * streak-freeze.service.ts), had ZERO frontend callers before this pass
+   * (the wrapper existed with a WRONG response shape -
+   * `{ freezesAvailable, coinCost }` - that didn't match what the service
+   * actually returns, confirmed by reading streak-freeze.service.ts's
+   * `getStatus`/`purchase` return statements directly). Fixed the type and
+   * wired it into RewardsPage next to the streak stat.
+   */
   streakFreezeStatus: () =>
-    apiClient.get<{ freezesAvailable: number; coinCost: number }>('/gamification/streak-freeze/status'),
-  purchaseStreakFreeze: () => apiClient.post('/gamification/streak-freeze/purchase'),
+    apiClient.get<{
+      coins: number
+      freezesAvailable: number
+      costCoins: number
+      maxFreezesHeld: number
+      canAfford: boolean
+      atCap: boolean
+      lastFreezeUsedAt: string | null
+    }>('/gamification/streak-freeze/status'),
+  purchaseStreakFreeze: () =>
+    apiClient.post<{ success: boolean; remainingCoins: number; freezesAvailable: number }>(
+      '/gamification/streak-freeze/purchase',
+    ),
 }
 
 /**

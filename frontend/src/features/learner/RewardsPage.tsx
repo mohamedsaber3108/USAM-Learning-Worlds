@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Star, Flame, Coins, Lock, Check, Trophy } from 'lucide-react'
+import { Star, Flame, Coins, Lock, Check, Trophy, Snowflake } from 'lucide-react'
 import { rewardsApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState, EmptyState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, Button, useToast } from '@/components/ui'
@@ -45,6 +45,22 @@ export function RewardsPage() {
     queryFn: async () => (await rewardsApi.cosmetics()).data,
     retry: false,
   })
+  const streakFreeze = useQuery({
+    queryKey: ['rewards-streak-freeze'],
+    queryFn: async () => (await rewardsApi.streakFreezeStatus()).data,
+    retry: false,
+  })
+
+  async function buyStreakFreeze() {
+    try {
+      await rewardsApi.purchaseStreakFreeze()
+      await qc.invalidateQueries({ queryKey: ['rewards-streak-freeze'] })
+      await qc.invalidateQueries({ queryKey: ['rewards-progression'] })
+      toast.show(t('learner.streakFreezeBought'), 'success')
+    } catch {
+      toast.show(t('states.error'), 'error')
+    }
+  }
 
   async function unlock(id: string) {
     try {
@@ -86,6 +102,32 @@ export function RewardsPage() {
         {stat(<Flame className="h-5 w-5" aria-hidden />, t('learner.streak'), streak.data?.current ?? 0)}
         {stat(<Coins className="h-5 w-5" aria-hidden />, 'XP', progression.data?.totalXP ?? 0)}
       </div>
+
+      {streakFreeze.data && (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+              <Snowflake className="h-5 w-5" aria-hidden />
+            </span>
+            <span>
+              <span className="block font-medium text-ink-900">{t('learner.streakFreezeTitle')}</span>
+              <span className="block text-sm text-ink-500">
+                {t('learner.streakFreezeHeld', { count: streakFreeze.data.freezesAvailable, max: streakFreeze.data.maxFreezesHeld })}
+              </span>
+            </span>
+          </span>
+          <Button
+            size="sm"
+            variant={streakFreeze.data.canAfford && !streakFreeze.data.atCap ? 'primary' : 'secondary'}
+            disabled={!streakFreeze.data.canAfford || streakFreeze.data.atCap}
+            onClick={() => void buyStreakFreeze()}
+          >
+            {streakFreeze.data.atCap
+              ? t('learner.streakFreezeAtCap')
+              : t('learner.streakFreezeBuy', { cost: streakFreeze.data.costCoins })}
+          </Button>
+        </Card>
+      )}
 
       <section>
         <SectionHeader title={t('learner.achievements')} />
