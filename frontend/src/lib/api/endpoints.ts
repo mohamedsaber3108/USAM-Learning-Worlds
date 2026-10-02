@@ -627,8 +627,17 @@ export const adminApi = {
   misconceptions: () => apiClient.get('/admin/misconceptions'),
   contentQaFlags: () => apiClient.get('/admin/content-qa/flags'),
   contentQaScan: () => apiClient.post('/admin/content-qa/scan'),
-  featureFlags: () => apiClient.get('/feature-flags'),
-  setFeatureFlag: (key: string, enabled: boolean) => apiClient.patch(`/feature-flags/${key}`, { enabled }),
+  /**
+   * FIX (2026-10-02): FeatureFlagController.toggleFlag reads
+   * `dto.isEnabledGlobally` (feature-flag.controller.ts), not `enabled` —
+   * this wrapper previously sent `{ enabled }`, a key the backend never
+   * reads, so every toggle PATCH silently wrote `isEnabledGlobally:
+   * undefined` instead of the intended value. Corrected to the real DTO
+   * key.
+   */
+  featureFlags: () => apiClient.get<Array<{ id: string; key: string; description?: string | null; isEnabledGlobally: boolean }>>('/feature-flags'),
+  setFeatureFlag: (key: string, isEnabledGlobally: boolean) =>
+    apiClient.patch(`/feature-flags/${key}`, { isEnabledGlobally }),
   experiments: () => apiClient.get('/experiments'),
   auditLogs: () => apiClient.get('/audit/logs'),
   memoryGovernanceStats: () => apiClient.get('/admin/memory-governance/stats'),

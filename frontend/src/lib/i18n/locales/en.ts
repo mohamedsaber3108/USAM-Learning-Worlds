@@ -447,6 +447,8 @@ export const en = {
     createContent: 'New content item',
     publish: 'Publish',
     archive: 'Archive',
+    contentAdvanceToValidating: 'Send for validation',
+    contentAdvanceToValidated: 'Mark validated',
     draft: 'Draft',
     status: 'Status',
     runScan: 'Run scan',

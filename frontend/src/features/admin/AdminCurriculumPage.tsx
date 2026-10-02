@@ -216,13 +216,33 @@ function ScanAndFlagsSection({
   )
 }
 
-/** Curriculum mapping — free-text -> ranked LearningObjective suggestions.
- * Human-confirmation-only by design (the backend never auto-commits). */
+interface MappingSuggestion {
+  objectiveId: string
+  objectiveName: string
+  competencyName: string
+  skillName: string
+  domainName: string
+  score: number
+}
+
+/**
+ * FIX (2026-10-02): POST /admin/curriculum-mapping/suggest
+ * (curriculum-mapping.service.ts suggest()) returns a wrapped
+ * `{ queryTokens: string[], suggestions: MappingSuggestion[] }` object,
+ * not a bare array — the previous code cast the whole response to an
+ * array, so `results.map` would throw at runtime whenever a non-empty
+ * response came back. Unwrapped `.suggestions` and render the real
+ * `objectiveName`/`competencyName`/`domainName`/`score` fields instead of
+ * a nonexistent `name` field.
+ *
+ * Curriculum mapping — free-text -> ranked LearningObjective suggestions.
+ * Human-confirmation-only by design (the backend never auto-commits).
+ */
 function CurriculumMappingSection() {
   const { t } = useTranslation()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [results, setResults] = useState<Record<string, unknown>[] | null>(null)
+  const [results, setResults] = useState<MappingSuggestion[] | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function suggest() {
@@ -230,7 +250,8 @@ function CurriculumMappingSection() {
     setLoading(true)
     try {
       const res = await adminApi.suggestCurriculumMapping({ title: title.trim(), description: description.trim() || undefined })
-      setResults((res.data as Record<string, unknown>[]) ?? [])
+      const data = res.data as { queryTokens: string[]; suggestions: MappingSuggestion[] }
+      setResults(data.suggestions ?? [])
     } finally {
       setLoading(false)
     }
@@ -260,7 +281,9 @@ function CurriculumMappingSection() {
             ) : (
               results.map((r, i) => (
                 <div key={i} className="rounded-control border border-line p-2 text-sm text-ink-800">
-                  {String(r.name ?? r.objectiveName ?? JSON.stringify(r))}
+                  <span className="font-medium">{r.objectiveName}</span>
+                  <span className="text-ink-400"> · {r.competencyName} · {r.skillName} · {r.domainName}</span>
+                  <span className="ms-2 text-xs text-brand-600">({Math.round(r.score * 100)}%)</span>
                 </div>
               ))
             )}

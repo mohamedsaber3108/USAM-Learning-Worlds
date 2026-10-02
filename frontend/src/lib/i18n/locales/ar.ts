@@ -438,6 +438,8 @@ export const ar: TranslationSchema = {
     createContent: 'عنصر محتوى جديد',
     publish: 'نشر',
     archive: 'أرشفة',
+    contentAdvanceToValidating: 'إرسال للتحقق',
+    contentAdvanceToValidated: 'وضع علامة تم التحقق',
     draft: 'مسودة',
     status: 'الحالة',
     runScan: 'تشغيل الفحص',
