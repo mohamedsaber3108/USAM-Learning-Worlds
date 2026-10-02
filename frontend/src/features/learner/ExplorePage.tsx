@@ -15,9 +15,9 @@ import {
   Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react'
-import { crossCurricularApi, thinkingApi, visualLanguageApi, type ConceptCatalogItem, type VisualLanguageCard } from '@/lib/api/endpoints'
+import { crossCurricularApi, thinkingApi, visualLanguageApi, codingCoachApi, type ConceptCatalogItem, type VisualLanguageCard } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader, Tabs } from '@/components/ui'
+import { Card, PageHeader, Tabs, Button, Select } from '@/components/ui'
 
 /**
  * Explore — a single real browser for the 10 cross-curricular/thinking-skills
@@ -108,8 +108,55 @@ function ConceptGrid({ catalog }: { catalog: CatalogKey }) {
           </span>
           <h3 className="mt-3 font-display font-bold text-ink-900">{item.name}</h3>
           {item.description && <p className="mt-1 text-sm text-ink-500">{item.description}</p>}
+          {catalog === 'coding-concepts' && <CodingChallengeAction conceptId={item.id} />}
         </Card>
       ))}
+    </div>
+  )
+}
+
+/**
+ * "Generate a challenge" — real POST /coding-coach/challenge
+ * (coding-coach.controller.ts), had ZERO frontend callers before this
+ * pass. Needs a real `CodingConcept.id` to work (the backend 404s
+ * otherwise), so it's attached here rather than CodingActivityPanel,
+ * which only ever knows a mission's activityId, not a concept id.
+ */
+function CodingChallengeAction({ conceptId }: { conceptId: string }) {
+  const { t } = useTranslation()
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
+  const [loading, setLoading] = useState(false)
+  const [challenge, setChallenge] = useState<string | null>(null)
+
+  async function generate() {
+    setLoading(true)
+    setChallenge(null)
+    try {
+      const res = await codingCoachApi.challenge({ conceptId, difficulty })
+      setChallenge(res.data.challenge)
+    } catch {
+      setChallenge(t('states.error'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-2 border-t border-line pt-3">
+      <Select
+        label={t('learner.codingChallengeDifficulty')}
+        value={difficulty}
+        onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
+        options={[
+          { value: 'easy', label: t('learner.codingChallengeEasy') },
+          { value: 'medium', label: t('learner.codingChallengeMedium') },
+          { value: 'hard', label: t('learner.codingChallengeHard') },
+        ]}
+      />
+      <Button size="sm" variant="secondary" onClick={() => void generate()} loading={loading}>
+        {t('learner.codingChallengeGenerate')}
+      </Button>
+      {challenge && <p className="whitespace-pre-wrap text-sm text-ink-700">{challenge}</p>}
     </div>
   )
 }

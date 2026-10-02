@@ -425,6 +425,19 @@ export const aiTutorApi = {
  * action in CodingActivityPanel, learner-initiated after a failed run —
  * never auto-fires, never writes the solution for the learner (the backend
  * prompt explicitly coaches toward self-correction, not an answer).
+ *
+ * `review` and `challenge` added in a follow-up pass — same backend
+ * controller, same zero-caller gap (confirmed by reading
+ * coding-coach.controller.ts's `@Post('review')`/`@Post('challenge')`
+ * handlers, which existed with real working service logic but no route
+ * was ever called from the frontend). `review` is wired into
+ * CodingActivityPanel as a "Review my code" action available after any run
+ * (pass or fail) — the service prompt explicitly coaches toward strengths/
+ * next-steps and never pastes a full solution. `challenge` requires a real
+ * `CodingConcept.id` (backend 404s on `generateChallenge` if the concept
+ * doesn't exist), so it's wired into the Explore page's existing
+ * "Coding Concepts" catalog tab, which is the only frontend surface that
+ * already fetches real concept ids.
  */
 export const codingCoachApi = {
   debug: (body: { code: string; language: 'scratch' | 'blockly' | 'python' | 'javascript' | 'html' | 'css'; error?: string; expectedBehavior?: string }) =>
@@ -434,6 +447,28 @@ export const codingCoachApi = {
     ),
   explain: (body: { code: string; language: string; specificLine?: number }) =>
     apiClient.post<{ explanation: string }>('/coding-coach/explain', body),
+  review: (body: {
+    code: string
+    language: string
+    objectiveId?: string
+    taskPrompt?: string
+    failingTests?: { description: string; actual?: string }[]
+    hintsUsed?: number
+    attemptNumber?: number
+  }) =>
+    apiClient.post<{
+      code: string
+      feedback: string
+      strengths: string[]
+      improvements: string[]
+      nextConcept: string
+      codeQualityScore: number
+    }>('/coding-coach/review', body),
+  challenge: (body: { conceptId: string; difficulty: 'easy' | 'medium' | 'hard' }) =>
+    apiClient.post<{ concept: string; difficulty: string; challenge: string; estimatedTime: number }>(
+      '/coding-coach/challenge',
+      body,
+    ),
 }
 
 /**
