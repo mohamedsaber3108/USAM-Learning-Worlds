@@ -1,128 +1,181 @@
 # 88 — New Frontend Page Rebuild Ledger
 
-> Every current + required page tracked against the REBUILD-FROM-BLANK standard.
-> All `frontend-rebuild/src` pages have been **rebuilt from blank** on the
-> finalized WHITE/GREEN/BLACK design system with new IA, real (shape-verified)
-> APIs, EN/AR + RTL, responsive layout, a11y, and reduced-motion-aware motion.
-> The only remaining gate is **live preview verification**, which runs on the
-> server (the dev workspace has no production network path). A page is not
-> "final-final" for cutover until the owner-run preview harness passes; every
-> page is otherwise complete in code.
+> **RESET 2026-10-02 (owner-confirmed governing decision).** The prior version
+> of this ledger (dated 2026-09-30) marked all 47 routes `REBUILT` and implied
+> near-FINAL acceptance. That status is **retracted as a completeness claim**.
+> "Rebuilt from blank" proved true structurally (confirmed: real routes, real
+> design tokens, no placeholders, builds/type-checks/tests pass) but did NOT
+> mean contract-correct, feature-complete, or visually approved. A full
+> controller-by-controller reconciliation against the CURRENT backend
+> (2026-10-02) found real functional bugs (now fixed — see below) and a long
+> list of backend capabilities with zero frontend representation. This ledger
+> now reflects that ground truth and drives the remaining work.
 >
-> Status vocab: `NOT_STARTED` · `AUDITING` · `DESIGNING` · `REBUILDING` ·
-> `CONNECTING` · `TESTING` · `VISUAL_QA` · `PREVIEW_VERIFIED` · `FINAL`.
-> `REBUILT` below = rebuilt-from-blank on the DS + real API + EN/AR/RTL +
-> responsive + a11y + motion, tsc/build/tests/home-bundle gates green.
-> `PREVIEW_VERIFIED` is set only after the owner-run harness confirms it live.
+> Workspace: `M:\USAM-main\frontend-rebuild\` is the canonical final frontend
+> under construction. `frontend/` is the legacy functional baseline / regression
+> oracle — stays live, not touched by this ledger. Root `src/` is quarantined.
+>
+> Status vocab (per surface): `NOT_STARTED` · `AUDITING` · `DESIGNING` ·
+> `REBUILDING` · `CONNECTING` · `TESTING` · `VISUAL_QA` · `PREVIEW_VERIFIED` ·
+> `FINAL`. A row at `FINAL` means: real API wired + contract-verified against
+> current backend, all required states covered (loading/empty/error/auth/
+> entitlement), EN+AR+RTL, responsive, a11y baseline, tested, visually
+> reviewed, and preview-verified. Nothing below is marked `FINAL` in this reset
+> pass — rows are set to their honest current state.
 
-## Rebuild order (per directive §27) — ALL COMPLETE
+## Reconciliation findings baked into this reset (2026-10-02)
 
-1. ✅ Research (docs/research/FINAL_FRONTEND_REFERENCE_STUDY.md)
-2. ✅ Design-system primitives IN CODE (WHITE/GREEN/BLACK, no Radix/default shadcn)
-3. ✅ Landing (from blank) + new public nav/footer
-4. ✅ Auth + onboarding + public pages
-5. ✅ Learner shell + Home (living world) + Learn hub
-6. ✅ All learner page families (English/Coding/AI/Creativity specialization)
-7. ✅ Guardian → Moderator → Admin/CMS
-8. ✅ Reconcile + cleanup + verify + final audit (this pass)
+Full detail in `docs/product/FINAL_CAPABILITY_REGISTRY.md` "RECONCILIATION
+PASS" section. Summary:
 
-## Gate status (repo-wide, this pass)
+**Real bugs found and FIXED this pass:**
+- B2: `EscalationsPage` resolve() sent the wrong body shape (400 every time) → fixed with a real resolve dialog + corrected `moderationApi.resolve` typing.
+- B3: `CommunityModerationPage` sent `decision: 'approve'/'remove'` instead of `'APPROVED'/'REJECTED'` (silent data corruption — reviewed items never left the pending queue) → fixed.
+- B4: backend `community.controller.ts` + `ai.controller.ts` moderation routes gated on `user.educator`/`user.parent`, properties that don't exist on any authenticated user → always 403'd, including for ADMIN. Fixed on the backend with proper `RolesGuard` + `@Roles()`.
+- D1: `ProjectDetailPage` rendered `data.milestones`/`data.curriculumContext` fields `GET /projects/:id` never returns (separate endpoints) → fixed with 3 real queries + `projectsApi` expanded (create/update/remove/showcase/milestones/curriculum-context/rubric/collaborators/research-notes).
+- D2: dead `p.status` fallback (field doesn't exist on `Project`, only `state`) → removed.
 
-- `npx tsc -b --noEmit` → **PASS**
-- `npm run build` → **PASS** (CodingActivityPanel is a separate lazy chunk; coding runtime absent from entry chunk)
-- `npm run test` (vitest smoke) → **PASS** (5/5)
-- `npm run check:home-bundle` → **PASS**
-- Placeholders / mocks / TODOs in `frontend-rebuild/src` → **0** (grep clean)
-- Unreferenced source files in `frontend-rebuild/src` → **0** (import-graph scan)
-- Preview harness (`npm run verify:preview`) → **owner-run on server** (pending)
+**Missing surfaces** carried into the ledger below as `NOT_STARTED` rows that
+did not exist as rows before: character chat, coding/English AI coach, generic
+AI feedback/hint/explain, reflection, daily goals, flashcards, cross-curricular
+catalogs, thinking-skills catalogs, visual-language, cosmetic/streak-freeze
+shop, mission history, project rubric viewer, guardian consent capture, admin
+mission CRUD controls, admin curriculum-mapping/content-provenance/difficulty-
+calibration/assessment-quality, memory-governance admin stats.
 
-## Ledger
+## Rebuild order (unchanged intent, re-executing with corrected gates)
 
-Columns: Route · File · Rebuilt-from-blank · Real API (shape-verified) · Status.
+1. Reconciliation against current backend — **DONE this pass** (2026-10-02).
+2. Research validation — pending (task 4 of session plan).
+3. Design-system completeness audit — pending (task 5).
+4. Landing re-audit against the full explanation bar — pending (task 6, may trigger a real rebuild, not just a re-approval).
+5. Navigation audit — pending (task 7).
+6. Fill every `NOT_STARTED`/`PARTIAL` row below to `FINAL`.
+7. Guardian → Moderator → Admin/CMS completion.
+8. Legal/Privacy integration.
+9. Test depth expansion + preview harness + visual/RTL/responsive/a11y QA.
+10. Final reconciliation before cutover prep (no cutover yet).
 
-### Public
-| Route | File | Rebuilt-from-blank | Real API | Status |
-| --- | --- | --- | --- | --- |
-| `/` Landing | public/LandingPage.tsx | YES (rebuilt from zero; ecosystem narrative, not SaaS funnel) | static | REBUILT |
-| `/pricing` | public/PricingPage.tsx | YES | entitlements/plans | REBUILT |
-| `/login` | auth/LoginPage.tsx | YES | auth/login | REBUILT |
-| `/signup` | auth/SignupPage.tsx | YES | auth/register | REBUILT |
-| `/verify/:uid` | public/VerifyCredentialPage.tsx | YES (Card/Badge/States, valid/invalid) | credentials/verify | REBUILT |
-| `/how-it-works` | public/ContentPages.tsx | YES | static | REBUILT |
-| `/for-families` | public/ContentPages.tsx | YES | static | REBUILT |
-| `/safety` | public/ContentPages.tsx | YES | static | REBUILT |
-| `/legal` privacy center | public/ContentPages.tsx | YES | static copy | REBUILT |
-| `*` 404 | router NotFound | YES (honest, role-aware back, renders for auth AND unauth) | — | REBUILT |
+---
 
-### Onboarding
-| Route | File | Rebuilt-from-blank | Real API | Status |
-| --- | --- | --- | --- | --- |
-| `/onboarding` | onboarding/OnboardingPage.tsx | YES (Stepper/Card) | age-band/preferences | REBUILT |
+## LEDGER
 
-### Learner (shell + families)
-| Route | File | Rebuilt-from-blank | Status |
+Columns: Route · Role · Backend capability · Current file · Real API (verified) · Known gaps · Status.
+
+### PUBLIC
+
+| Route | Role | Backend | File | Real API | Known gaps | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/` Landing | PUBLIC | static + role redirect | `features/public/LandingPage.tsx` | n/a (static) | Pending explicit re-audit against full explanation bar (what/who/experiences/connection/AI-characters/projects-mastery/parent-value/trust/start) | AUDITING |
+| `/pricing` | PUBLIC | `entitlements.plans` | `features/public/PricingPage.tsx` | `GET /entitlements/plans` ✓ | — | CONNECTING |
+| `/login` | PUBLIC | `auth.login` | `features/auth/LoginPage.tsx` | `POST /auth/login` ✓ | — | CONNECTING |
+| `/signup` | PUBLIC | `auth.register` | `features/auth/SignupPage.tsx` | `POST /auth/register` ✓ | — | CONNECTING |
+| `/how-it-works` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | — | CONNECTING |
+| `/for-families` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | — | CONNECTING |
+| `/safety` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | — | CONNECTING |
+| `/legal` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | Needs Legal Center expansion (see Legal/Privacy section below) | NOT_STARTED |
+| `/verify/:uid` | PUBLIC | `credentials.verify` | `features/public/VerifyCredentialPage.tsx` | `GET /credentials/:uid` ✓ | — | CONNECTING |
+| `*` 404 | PUBLIC | n/a | `app/router.tsx` NotFound | n/a | Honest, role-aware — verified correct | TESTING |
+
+### ONBOARDING
+
+| Route | Role | Backend | File | Real API | Known gaps | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/onboarding` | LEARNER | `auth.updateAgeBand`, `auth.updatePreferences` | `features/onboarding/OnboardingPage.tsx` | `PATCH /auth/me/age-band`, `PATCH /auth/me/preferences` | Not yet confirmed `updatePreferences` is actually called from this page — needs re-check | AUDITING |
+
+### LEARNER
+
+| Route | Role | Backend | File | Real API | Known gaps | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/app` Home | LEARNER | gamification, adaptive, mastery | `features/learner/HomePage.tsx` | progression/streak/achievements/recommendations ✓ | Missing: daily-goals widget, mission-history teaser | CONNECTING |
+| `/app/learn` | LEARNER | `worlds.list` | `features/learner/LearnPage.tsx` | `GET /worlds` ✓ | — | CONNECTING |
+| `/app/learn/:slug` | LEARNER | `learning.getDomainPath` | `features/learner/DomainPathPage.tsx` | `GET /learning/domains/:slug/path` ✓ | — | CONNECTING |
+| `/app/missions/:id` | LEARNER | `missions.getById/start` | `features/learner/MissionDetailPage.tsx` | ✓ | — | CONNECTING |
+| `/app/runs/:runId` | LEARNER | missions run loop + coding-sandbox | `features/learner/MissionPlayerPage.tsx` + `activities/*` | submit/complete/coding-sandbox ✓ | **Missing: post-mission reflection step** (`reflection.prompts`/`respond` defined, never called) | REBUILDING |
+| `/app/practice` | LEARNER | `mastery.getReviewDue` | `features/learner/PracticePage.tsx` | `GET /mastery/review-due` ✓ | **No flashcards surface at all** (`flashcardsApi` defined, zero route/UI) | REBUILDING |
+| `/app/progress` | LEARNER | `mastery.overview/byDomain` | `features/learner/ProgressPage.tsx` | ✓ | Missing: `mastery.goals`, mission-history (`GET /missions/history/me`) | CONNECTING |
+| `/app/projects` | LEARNER | `projects.mine` | `features/learner/ProjectsPage.tsx` | `GET /projects/my` ✓ | Fixed D2 (dead status field) this pass | CONNECTING |
+| `/app/projects/:id` | LEARNER | `projects.getById` + milestones + curriculum-context | `features/learner/ProjectDetailPage.tsx` | ✓ (fixed D1 this pass — 3 real queries) | Missing: rubric viewer, collaborators, research notes UI | REBUILDING |
+| `/app/portfolio` | LEARNER | `projects.portfolio` | `features/learner/PortfolioPage.tsx` | `GET /projects/portfolio/:learnerId` ✓ | — | CONNECTING |
+| `/app/create` | LEARNER | `creativity.prompts/submissions` | `features/learner/CreativityPage.tsx` | ✓ (prompts, submit, mine) | Missing: public gallery (`creativity.gallery`), `prompts/:slug` detail, visibility toggle | REBUILDING |
+| `/app/companions` | LEARNER | `characters.list` | `features/learner/CompanionsPage.tsx` | `GET /characters` ✓ | **Companion gallery exists but you cannot chat** — character chat/conversations entirely unwired despite rich backend support | REBUILDING |
+| `/app/community` | LEARNER | `community.feed/report` | `features/learner/CommunityPage.tsx` | ✓ | Missing: `trending`, `search`, `stats` | REBUILDING |
+| `/app/credentials` | LEARNER | `credentials.mine` | `features/learner/CredentialsPage.tsx` | `GET /credentials/me` ✓ | — | CONNECTING |
+| `/app/rewards` | LEARNER | gamification | `features/learner/RewardsPage.tsx` | progression/achievements/streak ✓ | **Missing: cosmetic shop + streak-freeze shop** (unlock/equip/leaderboard all defined, unused) | REBUILDING |
+| `/app/settings` | LEARNER | `auth.updatePreferences` | `features/learner/SettingsPage.tsx` | — | Needs re-verification | AUDITING |
+| `/app/search` | LEARNER | `search.query` | `features/learner/SearchPage.tsx` | `GET /search` ✓ | — | CONNECTING |
+| `/app/notifications` | LEARNER | notifications | `features/learner/NotificationsPage.tsx` | list/unread/markRead/markAllRead ✓ | — | CONNECTING |
+| `/app/stories` + `/:id` | LEARNER | `learning.stories` | `features/learner/StoriesPage.tsx` | ✓ | — | CONNECTING |
+| `/app/simulations` | LEARNER | `simulation.list` | `features/learner/SimulationsPage.tsx` | `GET /simulations` ✓ | **No detail/play view** — `:slug` + decision-node endpoints unused, catalog-only | REBUILDING |
+| `/app/voice` | LEARNER | `voice.turn` (BLOCKED_EXTERNAL) | `features/learner/VoicePage.tsx` | n/a — honest gated state | Correct as-is (provider creds pending) | FINAL (gated) |
+| **MISSING** `/app/practice/flashcards` or equivalent | LEARNER | `flashcards.getDue/review` | — | `flashcardsApi` defined, 0 callers | No route exists at all | NOT_STARTED |
+| **MISSING** mission history view | LEARNER | `missions.history/me` | — | not in endpoints.ts | No surface | NOT_STARTED |
+| **MISSING** daily goals widget | LEARNER | `daily-goals.getProgress` | — | defined, 0 callers | No surface | NOT_STARTED |
+
+### SPECIALIZED DOMAIN / CONTENT CATALOGS
+
+| Route | Role | Backend | File | Real API | Known gaps | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| **MISSING** Cross-curricular (AI-literacy/entrepreneurship/financial/digital/career/communication/coding-concepts) | LEARNER | `cross-curricular.*` | — | `crossCurricularApi` defined, 0 callers | No routes in router.tsx at all | NOT_STARTED |
+| **MISSING** Problem-solving / computational-thinking / critical-thinking catalogs | LEARNER | `problem-solving.*` | — | `thinkingApi` defined, 0 callers | No routes | NOT_STARTED |
+| **MISSING** Visual-language cards | LEARNER | `visual-language.*` | — | `visualLanguageApi` defined, 0 callers | No routes | NOT_STARTED |
+| **MISSING** Character AI chat/conversations | LEARNER | `ai.character` (chat/conversations CRUD) | `CompanionsPage.tsx` (list only) | 0 callers for chat endpoints | Companion gallery is a dead end — can't talk to a companion | NOT_STARTED |
+| **MISSING** Coding Coach | LEARNER | `ai.coding-coach` | — | 0 callers | No inline coding help surfaced in mission player | NOT_STARTED |
+| **MISSING** English Coach | LEARNER | `ai.english-coach` | — | 0 callers | No inline English help | NOT_STARTED |
+| **MISSING** Generic AI feedback/hint/explain/analyze | LEARNER | `ai.controller` | — | 0 callers | No inline AI tutoring anywhere | NOT_STARTED |
+
+### GUARDIAN
+
+| Route | Role | Backend | File | Real API | Known gaps | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/parent` | GUARDIAN | `parents.children` | `features/parent/ParentHomePage.tsx` | `GET /parents/children` ✓ | Not calling `family-summary` or per-child `dashboard` — may be intentional (children list is enough for a home), re-verify | CONNECTING |
+| `/parent/child/:id` | GUARDIAN | `parents.dashboard/progress/activity/reflections/safety/time-limits` | `features/parent/ChildDetailPage.tsx` | ✓ broad coverage | — | CONNECTING |
+| `/parent/privacy` | GUARDIAN | `legal.export/delete` | `features/parent/ParentPrivacyPage.tsx` | `GET /legal/export/:id`, `POST /legal/delete/:id` ✓ | **Missing: consent capture entirely** (`POST /legal/consent`, `GET /legal/consent/:id` — core COPPA/GDPR UI, not export/delete) | REBUILDING |
+| `/parent/plan` | GUARDIAN | `entitlements.subscribe/cancel` | `features/parent/ParentPlanPage.tsx` | ✓ | No live payment provider (honest, by design) | CONNECTING |
+
+### MODERATOR
+
+| Route | Role | Backend | File | Real API | Known gaps | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/mod` | MODERATOR, ADMIN | — | `features/moderator/ModerationHomePage.tsx` | — | — | AUDITING |
+| `/mod/escalations` | MODERATOR, ADMIN | `safety-escalations.*` | `features/moderator/EscalationsPage.tsx` | list/assign/resolve/stats ✓ | **B2 FIXED this pass** (resolve dialog + correct shape) | TESTING |
+| `/mod/community` | MODERATOR, ADMIN | `community.moderation.*` | `features/moderator/CommunityModerationPage.tsx` | quarantined/review ✓ | **B3 FIXED** (decision values) + **B4 FIXED on backend** (role-guard bug that always 403'd) | TESTING |
+| `/mod/interventions` | MODERATOR, ADMIN | `admin-interventions.*` | `features/moderator/InterventionsPage.tsx` | list/ack/resolve ✓ | Missing: `GET /admin/interventions/learner/:learnerId` detail view | CONNECTING |
+
+### ADMIN / CMS
+
+| Route | Role | Backend | File | Real API | Known gaps | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/admin` | ADMIN | analytics overview | `features/admin/AdminOverviewPage.tsx` | ✓ | — | CONNECTING |
+| `/admin/content` | ADMIN | `content-items.*` | `features/admin/AdminContentPage.tsx` | list/create-status ✓ | Missing: `POST` create full form, `GET /:id` detail | REBUILDING |
+| `/admin/curriculum` | ADMIN, MODERATOR (partial) | `admin-missions`, `admin-misconceptions`, `content-qa` | `features/admin/AdminCurriculumPage.tsx` | list-only for all three | **Missing: mission create/update/delete controls** (endpoints exist, no UI); **missing entirely: curriculum-mapping, content-provenance, difficulty-calibration, assessment-quality admin UI** | REBUILDING |
+| `/admin/ai` | ADMIN | ai-eval, prompt-templates, safety-policies | `features/admin/AdminAiSafetyPage.tsx` | list-only for all three | Missing: prompt-template edit/deactivate, safety-policy versions, ai-eval run drill-in | REBUILDING |
+| `/admin/analytics` | ADMIN | `analytics.*` | `features/admin/AdminAnalyticsPage.tsx` | overview/daily-activity ✓ | Missing: `events-by-type`, `retention-cohorts`, `stickiness` | CONNECTING |
+| `/admin/platform` | ADMIN | feature-flags, experiments, audit | `features/admin/AdminPlatformPage.tsx` | ✓ | — | CONNECTING |
+| **MISSING** memory-governance admin stats | ADMIN | `ai.memory-governance` | — | 0 callers (backend guard confirmed correct) | No admin surface at all | NOT_STARTED |
+
+### LEGAL / PRIVACY (cross-cutting, see dedicated section below)
+
+| Surface | Role | Backend | Status |
 | --- | --- | --- | --- |
-| shell | components/layout/AppShell.tsx | YES (icon nav + search + notifications badge + lang + profile; mobile tab bar; role-variant) | REBUILT |
-| `/app` Home | learner/HomePage.tsx | YES (living-world home) | REBUILT |
-| `/app/learn` | learner/LearnPage.tsx | YES | REBUILT |
-| `/app/learn/:slug` | learner/DomainPathPage.tsx | YES (skills→competencies, mastery states, CEFR/strand) | REBUILT |
-| `/app/missions/:id` | learner/MissionDetailPage.tsx | YES | REBUILT |
-| `/app/runs/:runId` | learner/MissionPlayerPage.tsx + activities/* | YES (run.mission.activities; submit → evaluation.correct/score/feedback) | REBUILT |
-| `/app/practice` | learner/PracticePage.tsx | YES (flashcards/adaptive/review-due) | REBUILT |
-| `/app/progress` | learner/ProgressPage.tsx | YES (mastery overview + by-domain) | REBUILT |
-| `/app/projects` (+`/:id`) | learner/ProjectsPage.tsx, ProjectDetailPage.tsx | YES (workspace/milestones/feedback/submit) | REBUILT |
-| `/app/portfolio` | learner/PortfolioPage.tsx | YES | REBUILT |
-| `/app/create` | learner/CreativityPage.tsx | YES (brief/create/improve/gallery/Mira) | REBUILT |
-| `/app/companions` | learner/CompanionsPage.tsx | YES (gallery + interaction) | REBUILT |
-| `/app/community` | learner/CommunityPage.tsx | YES | REBUILT |
-| `/app/credentials` | learner/CredentialsPage.tsx | YES | REBUILT |
-| `/app/rewards` | learner/RewardsPage.tsx | YES (gamification/rewards/daily goals) | REBUILT |
-| `/app/settings` | learner/SettingsPage.tsx | YES (profile/preferences/a11y/language) | REBUILT |
-| `/app/search` | learner/SearchPage.tsx | YES | REBUILT |
-| `/app/notifications` | learner/NotificationsPage.tsx | YES | REBUILT |
-| `/app/stories` (+`/:id`) | learner/StoriesPage.tsx | YES (list + reader) | REBUILT |
-| `/app/simulations` | learner/SimulationsPage.tsx | YES | REBUILT |
-| `/app/voice` | learner/VoicePage.tsx | YES (provider-gated) | REBUILT |
+| Legal Center (`/legal`) | PUBLIC | static + `legal.*` model-backed where real | NOT_STARTED (expansion) |
+| Guardian consent capture | GUARDIAN | `POST /legal/consent`, `GET /legal/consent/:learnerId` | NOT_STARTED |
+| Data export | GUARDIAN | `GET /legal/export/:learnerId` | CONNECTING (done) |
+| Account/data deletion | GUARDIAN | `POST /legal/delete/:learnerId` | CONNECTING (done) |
 
-### Guardian
-| Route | File | Rebuilt-from-blank | Status |
-| --- | --- | --- | --- |
-| `/parent` | parent/ParentHomePage.tsx | YES | REBUILT |
-| `/parent/child/:id` | parent/ChildDetailPage.tsx | YES (progress/activity/safety) | REBUILT |
-| `/parent/privacy` | parent/ParentPrivacyPage.tsx | YES | REBUILT |
-| `/parent/plan` | parent/ParentPlanPage.tsx | YES | REBUILT |
+---
 
-### Moderator (task-oriented, NOT an admin clone)
-| Route | File | Rebuilt-from-blank | Status |
-| --- | --- | --- | --- |
-| `/mod` | moderator/ModerationHomePage.tsx | YES | REBUILT |
-| `/mod/escalations` | moderator/EscalationsPage.tsx | YES | REBUILT |
-| `/mod/community` | moderator/CommunityModerationPage.tsx | YES | REBUILT |
-| `/mod/interventions` | moderator/InterventionsPage.tsx | YES | REBUILT |
+## Raw counts (honest, 2026-10-02 reset)
 
-### Admin (task-oriented, not one giant table)
-| Route | File | Rebuilt-from-blank | Status |
-| --- | --- | --- | --- |
-| `/admin` | admin/AdminOverviewPage.tsx | YES | REBUILT |
-| `/admin/content` | admin/AdminContentPage.tsx | YES | REBUILT |
-| `/admin/curriculum` | admin/AdminCurriculumPage.tsx | YES | REBUILT |
-| `/admin/ai` | admin/AdminAiSafetyPage.tsx | YES | REBUILT |
-| `/admin/analytics` | admin/AdminAnalyticsPage.tsx | YES | REBUILT |
-| `/admin/platform` | admin/AdminPlatformPage.tsx | YES | REBUILT |
+| Metric | Count |
+| --- | --- |
+| Router.tsx `<Route>` entries | 46 |
+| Rows at FINAL | 1 (Voice, correctly gated-honest) |
+| Rows with a confirmed, fixed bug this pass | 4 (B2, B3, B4, D1/D2) |
+| Rows with partial API coverage (some endpoints unused) | ~20 |
+| Required surfaces with ZERO frontend representation | 17 (flashcards, mission history, daily goals, cross-curricular ×7 collapsed to 1 row, thinking-skills ×3 collapsed to 1 row, visual-language, character chat, coding coach, english coach, generic AI tutor, consent capture, memory-governance admin, 4 admin engines collapsed to 1 row) |
+| Fabricated/non-backed capabilities | 0 |
 
-## Raw counts (end of rebuild-from-zero phase)
-
-- REQUIRED PAGES: 47 route surfaces (Public 10, Onboarding 1, Learner 22 + shell, Guardian 4, Moderator 4, Admin 6)
-- REBUILT FROM ZERO: 47 / 47 (**100%**)
-- NOT STARTED: 0
-- PLACEHOLDER SURFACES: 0
-- SUPERSEDED PROVISIONAL FILES: replaced in place (no `V2`/`Old`/`New` sprawl; router `Placeholder.tsx` deleted)
-- UNREFERENCED / DEAD SOURCE FILES: 0
-- PREVIEW_VERIFIED (owner-run harness): 0 (pending single server run; gate is QA, not a code gap)
-
-## Definition of "FINAL" for cutover
-
-A route reaches `FINAL` only after the owner-run preview harness
-(`BASE=https://kids.usamif.com/preview npm run verify:preview`) passes against
-the staged `/preview/` build. Until then every page is `REBUILT` (complete in
-code, all local gates green). Cutover follows runbook 85.
+This is the execution queue. Work proceeds row by row until every required row
+is `FINAL`. No cutover prep begins until this ledger has zero rows below
+`PREVIEW_VERIFIED`/`FINAL` for all P0/P1 surfaces.

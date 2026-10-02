@@ -21,9 +21,16 @@ export function CommunityModerationPage() {
     queryFn: async () => (await moderationApi.quarantined()).data as Quarantined[],
   })
 
-  async function review(id: string, decision: 'approve' | 'remove') {
+  /**
+   * FIX (2026-10-02): was sending decision: 'approve' | 'remove' — the
+   * backend's QuarantinedContent.status column only ever expects
+   * 'APPROVED' | 'REJECTED' (it's a plain string column, so the wrong
+   * values persisted silently instead of erroring — reviewed items never
+   * left the pending queue). Corrected to the real enum values.
+   */
+  async function review(id: string, decision: 'APPROVED' | 'REJECTED') {
     await moderationApi.review(id, { decision })
-    toast.show(decision === 'approve' ? t('mod.approve') : t('mod.remove'), 'success')
+    toast.show(decision === 'APPROVED' ? t('mod.approve') : t('mod.remove'), 'success')
     await qc.invalidateQueries({ queryKey: ['mod-quarantined'] })
   }
 
@@ -43,10 +50,10 @@ export function CommunityModerationPage() {
               {q.content && <p className="text-ink-800">{q.content}</p>}
               {q.reason && <p className="mt-1 text-xs text-ink-400">{q.reason}</p>}
               <div className="mt-3 flex gap-2">
-                <Button size="sm" onClick={() => review(q.id, 'approve')}>
+                <Button size="sm" onClick={() => review(q.id, 'APPROVED')}>
                   {t('mod.approve')}
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => review(q.id, 'remove')}>
+                <Button size="sm" variant="danger" onClick={() => review(q.id, 'REJECTED')}>
                   {t('mod.remove')}
                 </Button>
               </div>

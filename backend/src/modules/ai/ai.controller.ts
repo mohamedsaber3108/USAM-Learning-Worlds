@@ -2,7 +2,10 @@ import { Controller, Post, Body, UseGuards, Get, Query, ForbiddenException } fro
 import { BedrockService } from './bedrock.service';
 import { ModerationService } from './moderation.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Role } from '@prisma/client';
 import {
   GenerateFeedbackDto,
   GenerateHintDto,
@@ -148,16 +151,19 @@ export class AIController {
     return result;
   }
 
+  /**
+   * FIX (2026-10-02): same defect as community.controller.ts — gated on
+   * `user.educator`/`user.parent`, properties that never exist on the
+   * authenticated user (only `learner`/`guardian` do), so this always 403'd
+   * for everyone. Replaced with the standard RolesGuard + @Roles() pattern.
+   */
   @Get('moderation/stats')
+  @UseGuards(RolesGuard)
+  @Roles(Role.MODERATOR, Role.ADMIN)
   async getModerationStats(
-    @CurrentUser() user: any,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    if (!user.educator && !user.parent) {
-      throw new ForbiddenException('Only educators and parents can view moderation stats');
-    }
-
     const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const end = endDate ? new Date(endDate) : new Date();
 
@@ -165,14 +171,11 @@ export class AIController {
   }
 
   @Get('moderation/quarantined')
+  @UseGuards(RolesGuard)
+  @Roles(Role.MODERATOR, Role.ADMIN)
   async getQuarantinedContent(
-    @CurrentUser() user: any,
     @Query('status') status: 'PENDING' | 'APPROVED' | 'REJECTED' = 'PENDING',
   ) {
-    if (!user.educator && !user.parent) {
-      throw new ForbiddenException('Only educators and parents can view quarantined content');
-    }
-
     return this.moderation.getQuarantinedContent(status);
   }
 }

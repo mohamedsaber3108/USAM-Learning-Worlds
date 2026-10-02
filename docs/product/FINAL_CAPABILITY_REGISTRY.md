@@ -166,8 +166,81 @@ upgrade the enum.
 
 ## FLAGGED BACKEND GAPS (classify, do not fake)
 
-1. `GET /api/admin/memory-governance/stats` is under an admin path but guarded
-   only by `JwtAuthGuard` (no `RolesGuard`). **BACKEND CONTRACT GAP** — any
-   authenticated user can hit it. Fix on the backend before exposing in admin FE.
+1. `GET /api/admin/memory-governance/stats` is under an admin path, guarded by
+   `JwtAuthGuard` + a manual in-handler `role !== 'ADMIN' && role !== 'MODERATOR'`
+   check (not `@Roles()`/`RolesGuard`, but functionally correct — confirmed
+   2026-10-02). Gap is 100% missing FE wiring (zero references anywhere in
+   frontend-rebuild), not a role-guard defect. Build the admin surface; no
+   backend fix required.
 2. No parent-facing per-evidence timeline endpoint; no live payment provider.
    Represent honestly (no fabricated data).
+
+## RECONCILIATION PASS (2026-10-02) — exact findings against frontend-rebuild/
+
+Full controller-by-controller reconciliation performed against the current
+backend source (not against this doc's prior claims). Results below; this
+supersedes any "NONE"/"PLANNED" status above where it conflicts — this section
+is ground truth as of 2026-10-02.
+
+### Real bugs found and FIXED this pass
+
+- **B2 (frontend, FIXED)**: `EscalationsPage.tsx` sent
+  `{ resolution: 'reviewed' }` to `PATCH /safety-escalations/:id/resolve`,
+  which requires `{ resolutionType: RESOLVED_INTERNALLY|REFERRED_TO_GUARDIAN|
+  REFERRED_TO_HUMAN_SUPPORT|FALSE_POSITIVE, resolutionNote: non-empty string }`
+  per `ResolveSafetyEscalationDto`. Every resolve attempt 400'd (global
+  `forbidNonWhitelisted`). Fixed: added a real resolve dialog (resolution-type
+  select + required note textarea) and corrected `moderationApi.resolve`'s
+  type signature.
+- **B3 (frontend, FIXED)**: `CommunityModerationPage.tsx` sent
+  `decision: 'approve'|'remove'`; `QuarantinedContent.status` only accepts
+  `'APPROVED'|'REJECTED'` (plain string column, so the wrong values persisted
+  silently — reviewed items never left the pending queue). Fixed: corrected to
+  real enum values in both the page and `moderationApi.review`'s type.
+- **B4 (backend, FIXED)**: `community.controller.ts` (`moderation/quarantined`,
+  `moderation/review/:id`) and `ai.controller.ts` (`moderation/stats`,
+  `moderation/quarantined`) gated access on `user.educator`/`user.parent` —
+  properties that **never exist** on the authenticated user (JWT payload only
+  ever carries `learner`/`guardian`; no educator/parent role or relation
+  anywhere in the schema). This made those 4 endpoints unconditionally 403 for
+  every caller including ADMIN, permanently breaking the already-wired
+  Community Moderation page. Fixed: replaced with the standard
+  `RolesGuard` + `@Roles(Role.MODERATOR, Role.ADMIN)` pattern used by every
+  other staff-only controller.
+- **D1 (frontend, FIXED)**: `ProjectDetailPage.tsx` assumed `GET /projects/:id`
+  returns a combined `{ milestones, curriculumContext }` shape. The real
+  response (`ProjectsService.getProject`) includes `competency.skill.domain` +
+  `objective` only — no milestones, no flat `curriculumContext`. Those live on
+  separate endpoints (`GET /projects/:id/milestones`,
+  `GET /projects/:id/curriculum-context`), never called from endpoints.ts.
+  Fixed: split into three real queries against the actual contracts; added
+  `getMilestones`/`getCurriculumContext`/`create`/`update`/`remove`/`showcase`/
+  collaborators/research-notes/rubric to `projectsApi`.
+- **D2 (frontend, FIXED, minor)**: `ProjectsPage.tsx`/`ProjectDetailPage.tsx`
+  read a `p.status` field that doesn't exist on `Project` (only `state:
+  ProjectState` does) — dead fallback branch removed.
+
+### Confirmed NOT a bug (re-checked, retracted from an earlier draft)
+
+- `admin/safety-policies` path: both sides correctly resolve to
+  `/api/admin/safety-policies` — no mismatch.
+
+### Missing frontend surfaces (zero FE representation despite real backend
+support) — tracked as explicit ledger-88 rows, not silently dropped:
+
+Character AI chat/conversations · Coding Coach · English Coach · generic AI
+feedback/hint/explain/analyze · reflection prompts (no post-mission reflection
+step in MissionPlayerPage) · daily goals widget · flashcards (no route at all)
+· cross-curricular concept catalogs (AI-literacy/entrepreneurship/financial/
+digital/career/communication-skills/coding-concepts) · problem-solving /
+computational-thinking / critical-thinking catalogs · visual-language cards ·
+cosmetic shop + streak-freeze shop · mission history (`GET /missions/history/me`)
+· rubric viewer on project detail · guardian consent capture (`POST
+/legal/consent`, `GET /legal/consent/:learnerId` — ParentPrivacyPage only does
+export/delete today, missing the actual COPPA/GDPR consent-capture UI) · admin
+mission create/update/delete controls (list-only today) · admin
+curriculum-mapping / content-provenance / difficulty-calibration /
+assessment-quality (zero admin UI for any of the four) · memory-governance
+admin stats (zero UI; backend guard verified correct).
+
+Full per-controller detail lives in `plans-local/88_NEW_FRONTEND_PAGE_REBUILD_LEDGER.md`.

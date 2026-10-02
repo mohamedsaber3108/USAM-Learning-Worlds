@@ -93,9 +93,47 @@ export const dailyGoalsApi = {
 
 // ==================== Projects ====================
 export const projectsApi = {
+  create: (body: {
+    title: string
+    description: string
+    type: string
+    visibility: string
+    tags?: string[]
+    competencyId?: string
+    objectiveId?: string
+    domainIds?: string[]
+  }) => apiClient.post('/projects', body),
   mine: () => apiClient.get('/projects/my'),
+  browse: (params?: { type?: string; tags?: string; limit?: number }) =>
+    apiClient.get('/projects/browse', { params }),
   getById: (id: string) => apiClient.get(`/projects/${id}`),
+  update: (id: string, body: Record<string, unknown>) => apiClient.put(`/projects/${id}`, body),
+  remove: (id: string) => apiClient.delete(`/projects/${id}`),
+  showcase: (id: string) => apiClient.post(`/projects/${id}/showcase`),
   portfolio: (learnerId: string) => apiClient.get(`/projects/portfolio/${learnerId}`),
+  /** Project→Domain/Skill/Competency/Objective chain. Separate endpoint —
+   * NOT embedded in GET /projects/:id's response. */
+  getCurriculumContext: (id: string) => apiClient.get(`/projects/${id}/curriculum-context`),
+  /** Project milestones. Separate endpoint — NOT embedded in GET /projects/:id. */
+  getMilestones: (id: string) => apiClient.get(`/projects/${id}/milestones`),
+  updateMilestoneStatus: (id: string, milestoneId: string, status: string) =>
+    apiClient.put(`/projects/${id}/milestones/${milestoneId}`, { status }),
+  getRubric: (id: string) => apiClient.get(`/projects/${id}/rubric`),
+  listCollaborators: (id: string) => apiClient.get(`/projects/${id}/collaborators`),
+  addCollaborator: (id: string, learnerId: string, role?: 'EDITOR' | 'COMMENTER') =>
+    apiClient.post(`/projects/${id}/collaborators`, { learnerId, role }),
+  removeCollaborator: (id: string, learnerId: string) =>
+    apiClient.delete(`/projects/${id}/collaborators/${learnerId}`),
+  listResearchNotes: (id: string) => apiClient.get(`/projects/${id}/research-notes`),
+  addResearchNote: (id: string, body: { content: string; sourceTitle?: string; sourceUrl?: string }) =>
+    apiClient.post(`/projects/${id}/research-notes`, body),
+  removeResearchNote: (noteId: string) => apiClient.delete(`/projects/research-notes/${noteId}`),
+  realWorldChallenges: () => apiClient.get('/projects/real-world-challenges/list'),
+  crossDomain: (limit?: number) => apiClient.get('/projects/cross-domain/list', { params: { limit } }),
+}
+
+export const rubricsApi = {
+  list: () => apiClient.get('/rubrics'),
 }
 
 // ==================== Characters / companions ====================
@@ -216,10 +254,19 @@ export const moderationApi = {
   escalations: () => apiClient.get('/safety-escalations'),
   escalation: (id: string) => apiClient.get(`/safety-escalations/${id}`),
   assign: (id: string) => apiClient.patch(`/safety-escalations/${id}/assign`),
-  resolve: (id: string, body: Record<string, unknown>) => apiClient.patch(`/safety-escalations/${id}/resolve`, body),
+  /** body must match backend/src/modules/ai/dto/safety-escalation.dto.ts ResolveSafetyEscalationDto exactly. */
+  resolve: (
+    id: string,
+    body: {
+      resolutionType: 'RESOLVED_INTERNALLY' | 'REFERRED_TO_GUARDIAN' | 'REFERRED_TO_HUMAN_SUPPORT' | 'FALSE_POSITIVE'
+      resolutionNote: string
+    },
+  ) => apiClient.patch(`/safety-escalations/${id}/resolve`, body),
   stats: () => apiClient.get('/safety-escalations/stats/summary'),
   quarantined: () => apiClient.get('/community/moderation/quarantined'),
-  review: (id: string, body: Record<string, unknown>) => apiClient.post(`/community/moderation/review/${id}`, body),
+  /** decision must be 'APPROVED' | 'REJECTED' — matches QuarantinedContent.status exactly. */
+  review: (id: string, body: { decision: 'APPROVED' | 'REJECTED'; notes?: string }) =>
+    apiClient.post(`/community/moderation/review/${id}`, body),
   interventions: () => apiClient.get('/admin/interventions'),
   ackIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/acknowledge`),
   resolveIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/resolve`),

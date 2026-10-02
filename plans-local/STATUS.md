@@ -3,11 +3,46 @@
 > Living status. Updated after every phase. Honest: nothing marked done without
 > evidence. "Plans drive code; code updates plans."
 
-Last updated: 2026-09-30
+Last updated: 2026-10-02
 
 ---
 
-## Current gate: GATE 3 next (Curriculum/Levels/Packages/Journeys/IA)
+## GOVERNING DECISION (2026-10-02, owner-confirmed, FINAL — do not re-litigate)
+
+**Canonical final frontend workspace = `frontend-rebuild/`.** This supersedes
+the 2026-10-01 "Gate 1 reset" that had chosen to patch `frontend/`'s
+presentation layer instead. The owner reviewed both trees directly and
+confirmed `frontend-rebuild/` is real, substantial, buildable, and leaner (not
+a hollow scaffold) — see `docs/architecture/FRONTEND_CANONICAL.md` for the full
+three-tree policy. Current roles:
+
+- **`frontend-rebuild/`** = final new frontend UNDER CONSTRUCTION. All new UI
+  work goes here. Existing pages inside it are REBUILD CANDIDATES /
+  PROVISIONAL, not automatically final, until re-verified against the current
+  backend + current design system + current IA + visual QA + preview
+  verification.
+- **`frontend/`** = CURRENT FUNCTIONAL / PRODUCTION BASELINE. Stays live and
+  deployable throughout construction. Regression oracle + legacy reference
+  only. The Phase 1–9 "learning world" experience work done here (landing/home/
+  learn/missions/English/coding/AI/entrepreneurship/voice/projects, plus the
+  P0 auth rebuild and the DiscoverRail checkpoint) is **functional evidence and
+  a regression baseline**, not the final product design.
+- **root `src/`** = Lovable-managed quarantined scaffold. Preserve, never
+  delete, non-production. Settled, not revisited.
+
+**No cutover until**: full backend↔frontend-rebuild reconciliation is clean,
+ledger 88 has zero required rows below `FINAL`/`PREVIEW_VERIFIED`, Landing +
+Navigation + all 5 role shells are explicitly approved (not just "rebuilt"),
+RTL/responsive/a11y verified, and the Playwright preview harness is green
+against `/preview/`.
+
+## Current gate: FRONTEND-REBUILD RECONSTRUCTION (active)
+
+Prior gate history (G1–G5 docs, Gate 3 "not started" line below) is retained
+for context; it predates the 2026-10-02 governing decision above and is not
+the current execution driver. `plans-local/80_MASTER_EXECUTION_CONTROL.md` and
+`plans-local/88_NEW_FRONTEND_PAGE_REBUILD_LEDGER.md` are now the live execution
+documents for the frontend-rebuild completion effort.
 
 | Gate | Scope | Status |
 |---|---|---|

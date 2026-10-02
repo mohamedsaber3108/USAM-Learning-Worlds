@@ -6,11 +6,13 @@ import {
   Query,
   Param,
   UseGuards,
-  ForbiddenException,
 } from '@nestjs/common';
 import { CommunityService } from './community.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Role } from '@prisma/client';
 import { ReportContentDto } from './dto/community.dto';
 
 @Controller('community')
@@ -64,28 +66,31 @@ export class CommunityController {
     return this.communityService.reportContent(user.id, dto);
   }
 
+  /**
+   * FIX (2026-10-02): this was previously gated by `!user.educator &&
+   * !user.parent` — properties that never exist on the authenticated user
+   * object (the JWT payload only ever carries `learner`/`guardian`; there is
+   * no "educator" or "parent" role or relation anywhere in the schema). That
+   * made this endpoint unconditionally 403 for every caller, including
+   * ADMIN, permanently breaking the moderator Community Moderation page.
+   * Replaced with the same declarative RolesGuard + @Roles() pattern used by
+   * every other staff-only controller (safety-escalations, admin-*).
+   */
   @Get('moderation/quarantined')
-  async getQuarantinedContent(
-    @CurrentUser() user: any,
-    @Query('status') status?: string,
-  ) {
-    if (!user.educator && !user.parent) {
-      throw new ForbiddenException('Only educators and parents can view quarantined content');
-    }
-
+  @UseGuards(RolesGuard)
+  @Roles(Role.MODERATOR, Role.ADMIN)
+  async getQuarantinedContent(@Query('status') status?: string) {
     return this.communityService.getQuarantinedContent(status);
   }
 
   @Post('moderation/review/:id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.MODERATOR, Role.ADMIN)
   async reviewContent(
     @CurrentUser() user: any,
     @Param('id') id: string,
     @Body() dto: { decision: 'APPROVED' | 'REJECTED'; notes?: string },
   ) {
-    if (!user.educator && !user.parent) {
-      throw new ForbiddenException('Only educators and parents can review content');
-    }
-
     return this.communityService.reviewContent(id, user.id, dto);
   }
 }
