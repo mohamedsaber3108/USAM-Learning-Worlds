@@ -45,16 +45,24 @@ calibration/assessment-quality, memory-governance admin stats.
 
 ## Rebuild order (unchanged intent, re-executing with corrected gates)
 
-1. Reconciliation against current backend — **DONE this pass** (2026-10-02).
-2. Research validation — pending (task 4 of session plan).
-3. Design-system completeness audit — pending (task 5).
-4. Landing re-audit against the full explanation bar — pending (task 6, may trigger a real rebuild, not just a re-approval).
-5. Navigation audit — pending (task 7).
-6. Fill every `NOT_STARTED`/`PARTIAL` row below to `FINAL`.
+1. Reconciliation against current backend — **DONE** (2026-10-02, commit 7f9e095).
+2. Research validation — **DONE** (2026-10-02, addendum appended to the reference study, commit 1dd4f8e).
+3. Design-system completeness audit — **DONE** (2026-10-02): foundation verified coherent, kept; additive gaps noted (Tooltip, Pagination, Timeline, DataList primitives — build when a surface needs them, not blocking).
+4. Landing re-audit against the full explanation bar — **DONE** (2026-10-02, commit 1dd4f8e): character-presence gap found + fixed (CharacterFace/CharacterStage ported, hero + companions rebuilt). Visually verified.
+5. Navigation audit — **DONE** (2026-10-02, commit 367eb8d): structurally sound (role-variant model, RTL-safe logical properties, responsive patterns) — kept, not rebuilt. Real logo + favicon wired in (was text-only). Visually verified LTR/RTL/mobile.
+6. Fill every `NOT_STARTED`/`PARTIAL` row below to `FINAL`. **← current phase.**
 7. Guardian → Moderator → Admin/CMS completion.
 8. Legal/Privacy integration.
 9. Test depth expansion + preview harness + visual/RTL/responsive/a11y QA.
 10. Final reconciliation before cutover prep (no cutover yet).
+
+### NAVIGATION (cross-cutting, audited 2026-10-02)
+
+| Surface | Role | File | Status |
+| --- | --- | --- | --- |
+| Public nav (desktop + mobile sheet) | PUBLIC | `features/public/PublicNav.tsx` | VISUAL_QA (logo wired, RTL verified) |
+| Role shell nav (desktop + bottom tab bar) | LEARNER/GUARDIAN/MODERATOR/ADMIN | `components/layout/AppShell.tsx` | VISUAL_QA (logo wired, role-variant model confirmed correct) |
+| Public footer | PUBLIC | `features/public/PublicFooter.tsx` | CONNECTING (text-only identity, acceptable) |
 
 ---
 
@@ -66,7 +74,7 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 
 | Route | Role | Backend | File | Real API | Known gaps | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `/` Landing | PUBLIC | static + role redirect | `features/public/LandingPage.tsx` | n/a (static) | Pending explicit re-audit against full explanation bar (what/who/experiences/connection/AI-characters/projects-mastery/parent-value/trust/start) | AUDITING |
+| `/` Landing | PUBLIC | static + role redirect | `features/public/LandingPage.tsx` | n/a (static) | FIXED 2026-10-02: hero + companions section had zero character presence (lucide icon standing in for companions). Ported CharacterFace/CharacterStage SVG system from legacy `frontend/` (real asset, 15 characters matching backend seed exactly); Azouz now leads hero, 5 mentors shown as real characters. Research-validated (docs/research/.../section D). Visually verified. | VISUAL_QA |
 | `/pricing` | PUBLIC | `entitlements.plans` | `features/public/PricingPage.tsx` | `GET /entitlements/plans` ✓ | — | CONNECTING |
 | `/login` | PUBLIC | `auth.login` | `features/auth/LoginPage.tsx` | `POST /auth/login` ✓ | — | CONNECTING |
 | `/signup` | PUBLIC | `auth.register` | `features/auth/SignupPage.tsx` | `POST /auth/register` ✓ | — | CONNECTING |
