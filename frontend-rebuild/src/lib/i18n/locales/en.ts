@@ -11,6 +11,7 @@ export const en = {
     cancel: 'Cancel',
     logout: 'Log out',
     search: 'Search',
+    aiDisclosure: 'This is an AI companion, not a real person. Messages are checked for safety before they reach you.',
   },
   nav: {
     home: 'Home',
@@ -122,6 +123,18 @@ export const en = {
     legalTermsHeading: 'Terms of use',
     legalTermsBody: 'USAM is a learning platform for children used under guardian supervision. Accounts are personal and must not be shared.',
     legalContact: 'Questions about privacy? Contact your account guardian settings or support.',
+    legalPrivacyFullTextPending: 'The full Privacy Policy document is being finalized by our legal team.',
+    legalTermsFullTextPending: 'The full Terms of Use document is being finalized by our legal team.',
+    legalChildrenHeading: "Children's privacy",
+    legalChildrenBody:
+      'USAM is built for learners ages 7–15 and used under guardian supervision. A guardian creates and controls each learner account, approves what the learner can use (personalization, AI tutoring, voice, community sharing) one purpose at a time, and can export or delete their child’s data at any time — see Data & privacy controls below.',
+    legalAiHeading: 'AI companions & coaches',
+    legalAiBody:
+      'Companions and coaches (English, Coding) your child talks to are AI, not a person. Every message is checked by an automated safety filter before it reaches your child, and the system is designed to say "let’s ask a grown-up" rather than guess when it is unsure. AI features only turn on for a learner after a guardian grants that specific permission.',
+    legalDataRightsHeading: 'Data & privacy controls',
+    legalDataRightsBody:
+      'Guardians can review and change what each child is allowed to use, export a copy of their child’s data, or request deletion — all from the guardian privacy page.',
+    legalDataRightsCta: 'Go to privacy controls',
   },
   auth: {
     loginTitle: 'Welcome back',

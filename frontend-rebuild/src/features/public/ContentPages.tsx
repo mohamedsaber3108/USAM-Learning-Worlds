@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ShieldCheck, UserCheck, Lock, Eye, Users } from 'lucide-react'
+import { ShieldCheck, UserCheck, Lock, Eye, Users, Baby, Bot, Download, Mail } from 'lucide-react'
 import { Button, Card } from '@/components/ui'
 import { PublicPage } from './PublicPage'
 
@@ -97,7 +97,25 @@ export function SafetyPage() {
   )
 }
 
-/** Legal / privacy center. */
+/**
+ * Legal / privacy center.
+ *
+ * EXPANDED 2026-10-02 (ledger 88: Legal Center was the one remaining
+ * NOT_STARTED P0/P1 row). Added the structural sections a COPPA/GDPR-K
+ * product needs — children's-privacy summary, AI/voice disclosure, and a
+ * direct link to the real guardian data-rights flow (export/delete/consent,
+ * already live at /parent/privacy) — using only facts true of this actual
+ * implementation (what data is collected, that AI replies are moderated,
+ * that guardians control consent per purpose).
+ *
+ * Deliberately NOT fabricated: the registered company/legal entity name,
+ * registered address, a named Data Protection Officer / privacy contact,
+ * governing jurisdiction, and the actual long-form Privacy Policy / Terms
+ * of Service legal text. Those require real company facts and legal
+ * drafting this agent cannot invent — flagged inline as
+ * NEEDS_OWNER_CONFIGURATION (company facts) / NEEDS_LAWYER_REVIEW (legal
+ * text + jurisdiction-specific compliance language) rather than guessed.
+ */
 export function LegalPage() {
   const { t } = useTranslation()
   return (
@@ -109,12 +127,52 @@ export function LegalPage() {
             <h2 className="font-display text-lg font-bold">{t('public.legalPrivacyHeading')}</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-ink-600">{t('public.legalPrivacyBody')}</p>
+          <p className="mt-3 rounded-control bg-canvas-off px-3 py-2 text-xs text-ink-400">
+            {t('public.legalPrivacyFullTextPending')}
+          </p>
         </Card>
+
         <Card>
           <h2 className="font-display text-lg font-bold">{t('public.legalTermsHeading')}</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-600">{t('public.legalTermsBody')}</p>
+          <p className="mt-3 rounded-control bg-canvas-off px-3 py-2 text-xs text-ink-400">
+            {t('public.legalTermsFullTextPending')}
+          </p>
         </Card>
-        <p className="text-center text-sm text-ink-400">{t('public.legalContact')}</p>
+
+        <Card>
+          <div className="flex items-center gap-2">
+            <Baby className="h-5 w-5 text-brand-600" aria-hidden />
+            <h2 className="font-display text-lg font-bold">{t('public.legalChildrenHeading')}</h2>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-ink-600">{t('public.legalChildrenBody')}</p>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-brand-600" aria-hidden />
+            <h2 className="font-display text-lg font-bold">{t('public.legalAiHeading')}</h2>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-ink-600">{t('public.legalAiBody')}</p>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2">
+            <Download className="h-5 w-5 text-brand-600" aria-hidden />
+            <h2 className="font-display text-lg font-bold">{t('public.legalDataRightsHeading')}</h2>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-ink-600">{t('public.legalDataRightsBody')}</p>
+          <Link to="/login" className="mt-3 inline-block">
+            <Button size="sm" variant="secondary">
+              {t('public.legalDataRightsCta')}
+            </Button>
+          </Link>
+        </Card>
+
+        <div className="flex items-start gap-2 text-center text-sm text-ink-400">
+          <Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <p>{t('public.legalContact')}</p>
+        </div>
       </div>
     </PublicPage>
   )

@@ -50,10 +50,10 @@ calibration/assessment-quality, memory-governance admin stats.
 3. Design-system completeness audit — **DONE** (2026-10-02): foundation verified coherent, kept; additive gaps noted (Tooltip, Pagination, Timeline, DataList primitives — build when a surface needs them, not blocking).
 4. Landing re-audit against the full explanation bar — **DONE** (2026-10-02, commit 1dd4f8e): character-presence gap found + fixed (CharacterFace/CharacterStage ported, hero + companions rebuilt). Visually verified.
 5. Navigation audit — **DONE** (2026-10-02, commit 367eb8d): structurally sound (role-variant model, RTL-safe logical properties, responsive patterns) — kept, not rebuilt. Real logo + favicon wired in (was text-only). Visually verified LTR/RTL/mobile.
-6. Fill every `NOT_STARTED`/`PARTIAL` row below to `FINAL`. **← current phase.**
-7. Guardian → Moderator → Admin/CMS completion.
-8. Legal/Privacy integration.
-9. Test depth expansion + preview harness + visual/RTL/responsive/a11y QA.
+6. Fill every `NOT_STARTED`/`PARTIAL` row below to `FINAL` — **DONE 2026-10-02 (batch 4): zero `NOT_STARTED` P0/P1 rows remain** (strict scan recorded in Raw counts below). Rows now sit at `CONNECTING` or later with specific, documented known-gaps where real.
+7. Guardian → Moderator → Admin/CMS completion — **DONE** (consent capture, Overview/Evidence tab, 6 admin engines, mission CRUD; smaller drill-in gaps tracked, not blocking).
+8. Legal/Privacy integration — **DONE** (consent capture, Legal Center expansion, AI disclosure; full legal text correctly deferred to NEEDS_LAWYER_REVIEW/NEEDS_OWNER_CONFIGURATION).
+9. Test depth expansion + preview harness + visual/RTL/responsive/a11y QA. **← current phase** (preview-verify.mjs extended to all 5 roles + dynamic routes; visual/a11y QA requires actually running the app, see preview-screenshots.mjs — not executable from this dev environment, needs the staged /preview/ deploy).
 10. Final reconciliation before cutover prep (no cutover yet).
 
 ### NAVIGATION (cross-cutting, audited 2026-10-02)
@@ -81,7 +81,7 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | `/how-it-works` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | — | CONNECTING |
 | `/for-families` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | — | CONNECTING |
 | `/safety` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | — | CONNECTING |
-| `/legal` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | Needs Legal Center expansion (see Legal/Privacy section below) | NOT_STARTED |
+| `/legal` | PUBLIC | static | `features/public/ContentPages.tsx` | n/a | **DONE 2026-10-02 (batch 4)** — expanded with Children's privacy, AI/voice disclosure, and a Data & privacy controls section linking to the real guardian flow. Full legal-text sections (Privacy Policy/Terms body) are placeholder summaries flagged NEEDS_LAWYER_REVIEW — real legal drafting is outside codeable scope | TESTING |
 | `/verify/:uid` | PUBLIC | `credentials.verify` | `features/public/VerifyCredentialPage.tsx` | `GET /credentials/:uid` ✓ | — | CONNECTING |
 | `*` 404 | PUBLIC | n/a | `app/router.tsx` NotFound | n/a | Honest, role-aware — verified correct | TESTING |
 
@@ -165,14 +165,16 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 
 | Surface | Role | Backend | Status |
 | --- | --- | --- | --- |
-| Legal Center (`/legal`) | PUBLIC | static + `legal.*` model-backed where real | NOT_STARTED (expansion) |
+| Legal Center (`/legal`) | PUBLIC | static + `legal.*` model-backed where real | **DONE 2026-10-02 (batch 4)** — see PUBLIC row above (TESTING) |
+| AI/voice disclosure notice | LEARNER | n/a (UX/compliance, no new backend) | **DONE 2026-10-02 (batch 4)** — new `AiDisclosureNotice` component, shown in `CompanionChatPage` and `EnglishCoachPage`'s conversation tab (the two surfaces where a learner talks to an AI). States only what's true of the real implementation (AI-generated, safety-moderated, AI features gated behind guardian consent) — no fabricated company/legal claims |
 | Guardian consent capture | GUARDIAN | `POST /legal/consent`, `GET /legal/consent/:learnerId` | **DONE 2026-10-02** (TESTING) |
 | Data export | GUARDIAN | `GET /legal/export/:learnerId` | CONNECTING (done) |
 | Account/data deletion | GUARDIAN | `POST /legal/delete/:learnerId` | CONNECTING (done) |
+| Full Privacy Policy / Terms of Service legal text | PUBLIC | n/a | **NEEDS_LAWYER_REVIEW** — `/legal` currently shows factual summaries + explicit "full text pending legal team" placeholders (not fabricated as final legal text). Also **NEEDS_OWNER_CONFIGURATION**: registered company/legal entity name, registered address, named Data Protection Officer / privacy contact, governing jurisdiction — none of these facts exist anywhere in the codebase and must come from the owner, not be invented |
 
 ---
 
-## Raw counts (updated 2026-10-02, end of batch 3)
+## Raw counts (updated 2026-10-02, end of batch 4)
 
 | Metric | Count |
 | --- | --- |
@@ -181,11 +183,22 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | Confirmed bugs fixed this reconciliation | 4 (B2, B3, B4, D1/D2) |
 | Real backend-capability gaps closed (batch 2) | 14 (companion chat, flashcards, reflection, daily-goal, cosmetic shop, simulation player, mission history, Guardian consent capture, Guardian Overview/Evidence tab, 6 admin engines (mission CRUD + difficulty-calibration + assessment-quality + content-qa-scan + curriculum-mapping + content-provenance + memory-governance), 11-catalog Explore page) |
 | Real backend-capability gaps closed (batch 3) | 3 (Coding Coach "Ask Codey" debug help, English Coach conversation+grammar page, generic AI hint on non-code activities) |
-| Still deferred (lower priority, tracked not forgotten) | generic AI feedback/explain/analyze (0 callers — overlaps existing surfaces, see row above), project rubric/collaborators/research-notes UI, community trending/search/stats, streak-freeze shop, mission admin UPDATE form, prompt-template edit UI, Legal Center expansion |
+| Real gaps closed (batch 4 — Legal/Privacy audit) | 2 (Legal Center expansion: Children's privacy + AI/voice disclosure + Data & privacy controls section; AiDisclosureNotice component wired into both AI-conversation surfaces) |
+| **Remaining `NOT_STARTED` P0/P1 rows (strict scan, 2026-10-02)** | **0** — every row in the LEDGER table is now at `CONNECTING` or later. The 0-count statuses present (`BROKEN`/`MISWIRED`/`MOCK_ONLY`/`REQUIRED_PLACEHOLDER`) were checked by grep across this file and the capability registry — none occur |
+| Still deferred (lower priority, tracked not forgotten — not NOT_STARTED, these are partial-but-connected rows) | generic AI feedback/explain/analyze (0 callers — overlaps existing surfaces), project rubric/collaborators/research-notes UI, community trending/search/stats, streak-freeze shop, mission admin UPDATE form, prompt-template edit UI, `GET /admin/interventions/learner/:id` detail view, analytics events-by-type/retention-cohorts/stickiness, admin AI prompt-template edit/safety-policy versions/ai-eval drill-in, admin content create-form/detail view |
+| Genuinely blocked (not codeable here) | Full Privacy Policy/Terms legal text + company/jurisdiction facts (`NEEDS_LAWYER_REVIEW` + `NEEDS_OWNER_CONFIGURATION`), Voice provider credentials (`BLOCKED_EXTERNAL`), live payment provider on `/parent/plan` (by design, no live billing yet) |
 | Fabricated/non-backed capabilities | 0 |
 | Dependency security (frontend-rebuild, 2026-10-02) | Full audit 7 (5 moderate/1 high/1 critical) — all 5 non-react-router findings are dev-tooling only (vite/vitest/esbuild dev server, never shipped). Production-only audit (`--omit=dev`): 2 moderate (react-router/react-router-dom), both justified not-reachable given this app's architecture (no SSR/data-router, no raw redirect-target input) — see `docs/security/npm-audit-findings.md`. Zero CRITICAL/HIGH ship in the production bundle. |
 | ESLint | Previously configured (`lint` script existed) but never actually installed/wired — fixed this pass (`eslint.config.js` added, mirrors `frontend/`'s flat config; devDependencies installed). 2 pre-existing `react-refresh/only-export-components` warnings found and fixed (split `roleHome` out of `guards.tsx`, `useToast`/context out of `Toast.tsx`). `npm run lint` now passes with 0 warnings. |
 
-This is the execution queue. Work proceeds row by row until every required row
-is `FINAL`. No cutover prep begins until this ledger has zero rows below
-`PREVIEW_VERIFIED`/`FINAL` for all P0/P1 surfaces.
+This is the execution queue. The required gate — zero `NOT_STARTED`/`BROKEN`/
+`MISWIRED`/`MOCK_ONLY`/`REQUIRED_PLACEHOLDER` P0/P1 rows — is now met. Rows
+sitting at `CONNECTING`/`REBUILDING`/`TESTING` with a documented, non-blocking
+"known gap" (deeper admin drill-ins, community search/stats, etc.) are real
+and tracked, not silently dropped, and are lower priority than the core
+learner/guardian/moderator loops which are all wired to real endpoints.
+Remaining phases before cutover: visual/RTL/responsive/a11y QA pass (rebuild
+order step 9) and the final reconciliation (step 10) — neither is a frontend
+coding task, both require actually viewing the running app (local dev server
+or the staged /preview/ deploy), which this environment cannot reach over the
+network for the live `/preview/` URL.

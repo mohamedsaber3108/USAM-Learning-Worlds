@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Send } from 'lucide-react'
 import { charactersApi, conversationsApi, entitlementsApi, type ConversationMessage } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState } from '@/components/common/States'
+import { AiDisclosureNotice } from '@/components/common/AiDisclosureNotice'
 import { Button, Card, PageHeader } from '@/components/ui'
 import { CharacterStage } from '@/features/characters/CharacterStage'
 import type { CharacterState } from '@/features/characters/CharacterFace'
@@ -103,6 +104,7 @@ export function CompanionChatPage() {
         </Card>
       ) : (
         <>
+          <AiDisclosureNotice />
           <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto rounded-card border border-line bg-white p-4">
             <div className="flex justify-center py-4">
               <CharacterStage characterId={name} size={100} state={characterState} />

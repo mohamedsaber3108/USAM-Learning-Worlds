@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Send, SpellCheck } from 'lucide-react'
 import { englishCoachApi } from '@/lib/api/endpoints'
 import { Button, Card, PageHeader, Tabs, Textarea } from '@/components/ui'
+import { AiDisclosureNotice } from '@/components/common/AiDisclosureNotice'
 import { CharacterStage } from '@/features/characters/CharacterStage'
 
 interface ChatTurn {
@@ -70,6 +71,7 @@ function ConversationTab() {
 
   return (
     <div className="flex h-[60vh] flex-col gap-4">
+      <AiDisclosureNotice />
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto rounded-card border border-line bg-white p-4">
         <div className="flex justify-center py-2">
           <CharacterStage characterId="Luma" size={88} />
