@@ -282,6 +282,9 @@ export const en = {
     reviewDueTitle_other: 'Time to keep {{count}} skills strong',
     reviewDueSubtitle: 'A quick practice so you don’t forget',
     reviewDueCta: 'Practice',
+    reviewDueKicker: 'Keep it strong',
+    discoverRailTitle: 'A few things worth doing today',
+    goalPercent: '{{percent}}% there',
   },
   portfolio: {
     title: 'My Portfolio',

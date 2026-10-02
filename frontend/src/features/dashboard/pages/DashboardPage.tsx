@@ -3,16 +3,14 @@ import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { BookOpen, CheckCircle2, Clock, TrendingUp } from 'lucide-react'
-import { gamificationApi, masteryApi, missionsApi, cosmeticsApi, dailyGoalsApi } from '@/lib/api/endpoints'
+import { gamificationApi, masteryApi, missionsApi, cosmeticsApi } from '@/lib/api/endpoints'
 import { useAgeAdaptation } from '@/lib/hooks/useAgeAdaptation'
 import { useMilestoneDetection } from '@/lib/hooks/useMilestoneDetection'
 import { masteryLabel } from '@/lib/mastery/masteryLabels'
 import { CelebrationOverlay } from '@/components/celebrations/CelebrationOverlay'
-import { DailyGoalCard } from '@/features/gamification/components/DailyGoalCard'
-import { RecommendationsSection } from '../components/RecommendationsSection'
-import { ReviewDueCard } from '../components/ReviewDueCard'
 import { InterestChips } from '../components/InterestChips'
 import { WorldJourneyMap } from '../components/WorldJourneyMap'
+import { DiscoverRail } from '../components/DiscoverRail'
 import { LivingWorldHero } from '../components/LivingWorldHero'
 import { EmptyState, ErrorState } from '@/components/common/CharacterState'
 import { DashboardSkeleton } from '@/components/common/Skeleton'
@@ -77,11 +75,6 @@ export function DashboardPage() {
   const { data: equippedCosmetics } = useQuery({
     queryKey: ['cosmetics-equipped'],
     queryFn: () => cosmeticsApi.getEquipped().then(res => res.data),
-  })
-
-  const { data: dailyGoal, isLoading: dailyGoalLoading } = useQuery({
-    queryKey: ['daily-goal-progress'],
-    queryFn: () => dailyGoalsApi.getProgress().then(res => res.data),
   })
 
   // Mastery overview is NOT rendered as a panel on Home anymore (that analytics
@@ -164,18 +157,17 @@ export function DashboardPage() {
           equippedTitle={equippedTitleName}
         />
 
+        {/* 1b. A quiet identity footnote under the hero — not a stacked card. */}
+        <InterestChips />
+
         {/* 2. The world journey — 4 domains as places; mastery as place-state. */}
         <WorldJourneyMap />
 
-        {/* 3. Keep exploring — real engines. Younger band sees fewer items. */}
-        <InterestChips />
-        <ReviewDueCard />
-        <RecommendationsSection maxItems={adapt.density === 'simple' ? 2 : 4} />
-
-        {/* Today's goal — quiet, real server-computed ring. */}
-        <div className="mb-10 max-w-sm">
-          <DailyGoalCard data={dailyGoal} isLoading={dailyGoalLoading} />
-        </div>
+        {/* 3. One horizontally-scrolling rail of quest tiles — replaces four
+            stacked full-width "widget" cards (review/recommendations/goal)
+            with a single same-shaped-tile grammar, consistent with the world
+            portals above it. Self-hides when the learner has nothing due. */}
+        <DiscoverRail />
 
         {/* 4. Quiet secondary — recent activity + a single link to full progress.
             The old stat-grid / level-ring / mastery-count / 10-tile quick-action
@@ -216,7 +208,9 @@ export function DashboardPage() {
                       {run.finalScore ? `${run.finalScore}%` : '---'}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {new Date(run.startedAt).toLocaleDateString()}
+                      {run.startedAt && !Number.isNaN(new Date(run.startedAt).getTime())
+                        ? new Date(run.startedAt).toLocaleDateString()
+                        : '—'}
                     </p>
                   </div>
                 </div>

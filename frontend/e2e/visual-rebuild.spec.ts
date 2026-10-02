@@ -53,6 +53,12 @@ function jsonFor(url: string): unknown {
   if (url.includes('/gamification/streak')) return streak
   if (url.includes('/gamification/rank')) return { rank: 7 }
   if (url.includes('/mastery/overview')) return [{ state: 'MASTERED' }, { state: 'PRACTICING' }]
+  if (url.includes('/mastery/review-due')) return [{ competencyId: 'c1', state: 'MASTERED', reviewDue: '2026-10-01' }]
+  if (url.includes('/adaptive/recommendations'))
+    return [
+      { type: 'MISSION', entityId: 'm1', title: 'Finish the robot debugging mission', reason: 'You started this yesterday', priority: 1, estimatedMinutes: 10 },
+      { type: 'PROJECT', entityId: 'p1', title: 'Add a feature to Story Generator', reason: 'Your project is almost done', priority: 2 },
+    ]
   if (url.includes('/daily-goals') || url.includes('/daily-goal'))
     return {
       goal: { targetMinutes: 20, targetActivities: 3 },

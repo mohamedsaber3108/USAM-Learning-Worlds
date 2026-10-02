@@ -284,6 +284,9 @@ export const ar: TranslationKeys = {
     reviewDueTitle_other: 'وقت تخلّي {{count}} مهارات تفضل قوية',
     reviewDueSubtitle: 'تمرين سريع علشان ما تنساش',
     reviewDueCta: 'اتمرّن',
+    reviewDueKicker: 'خلّيها قوية',
+    discoverRailTitle: 'كم حاجة تستحق تعملها النهارده',
+    goalPercent: 'وصلت {{percent}}%',
   },
   portfolio: {
     title: 'معرض أعمالي',
