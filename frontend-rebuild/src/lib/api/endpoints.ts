@@ -42,6 +42,13 @@ export const worldsApi = {
 }
 
 // ==================== Missions ====================
+export interface MissionHistoryRun {
+  id: string
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED'
+  startedAt: string
+  completedAt?: string | null
+  mission: { id: string; title: string }
+}
 export const missionsApi = {
   getById: (id: string) => apiClient.get(`/missions/${id}`),
   start: (id: string) => apiClient.post(`/missions/${id}/start`),
@@ -50,6 +57,7 @@ export const missionsApi = {
   submit: (runId: string, body: { activityId: string; response: Record<string, unknown> }) =>
     apiClient.post(`/missions/runs/${runId}/submit`, body),
   complete: (runId: string) => apiClient.post(`/missions/runs/${runId}/complete`),
+  getHistory: () => apiClient.get<MissionHistoryRun[]>('/missions/history/me'),
 }
 
 // ==================== Coding sandbox (client-exec, server-revalidate) ========

@@ -1,10 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { masteryApi } from '@/lib/api/endpoints'
+import { masteryApi, missionsApi } from '@/lib/api/endpoints'
 import type { MasteryRecord, DomainMastery } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, StatusPill, Progress } from '@/components/ui'
 import { masteryLabel, type MasteryState } from '@/lib/labels/masteryLabels'
+
+const RUN_STATUS_TONE = { COMPLETED: 'success', IN_PROGRESS: 'brand', ABANDONED: 'neutral' } as const
+const RUN_STATUS_KEY = {
+  COMPLETED: 'learner.missionStatusCompleted',
+  IN_PROGRESS: 'learner.missionStatusInProgress',
+  ABANDONED: 'learner.missionStatusAbandoned',
+} as const
 
 function tone(state: MasteryState): 'success' | 'brand' | 'neutral' {
   if (state === 'MASTERED' || state === 'PROFICIENT') return 'success'
@@ -24,6 +31,13 @@ export function ProgressPage() {
   const byDomain = useQuery({
     queryKey: ['mastery-by-domain'],
     queryFn: async () => (await masteryApi.getByDomain()).data as DomainMastery[],
+    retry: false,
+  })
+  // NEW (2026-10-02, ledger 88 task 9): GET /missions/history/me had zero FE
+  // consumer despite being a natural fit for a progress view.
+  const history = useQuery({
+    queryKey: ['mission-history'],
+    queryFn: async () => (await missionsApi.getHistory()).data,
     retry: false,
   })
 
@@ -74,6 +88,22 @@ export function ProgressPage() {
             </Card>
           ))}
         </div>
+      </section>
+
+      <section>
+        <SectionHeader title={t('learner.missionHistory')} />
+        {history.data && history.data.length > 0 ? (
+          <div className="space-y-2">
+            {history.data.slice(0, 10).map((run) => (
+              <Card key={run.id} className="flex items-center justify-between">
+                <span className="min-w-0 truncate font-medium text-ink-900">{run.mission.title}</span>
+                <StatusPill tone={RUN_STATUS_TONE[run.status]}>{t(RUN_STATUS_KEY[run.status])}</StatusPill>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title={t('learner.missionHistoryEmpty')} />
+        )}
       </section>
     </div>
   )
