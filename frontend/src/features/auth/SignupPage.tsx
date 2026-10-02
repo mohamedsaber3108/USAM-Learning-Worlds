@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AxiosError } from 'axios'
 import { useAuthStore } from '@/lib/auth/authStore'
+import { roleHome } from '@/app/roleHome'
 import { Button, Card, Input } from '@/components/ui'
 import { AuthShell } from '@/features/public/PublicPage'
 import { cn } from '@/lib/utils/cn'
@@ -33,7 +34,13 @@ export function SignupPage() {
         : { email, password, role: 'GUARDIAN', guardianFirstName: firstName }
     try {
       const user = await register(payload)
-      navigate(user.role === 'LEARNER' ? '/onboarding' : '/parent', { replace: true })
+      // FIX (auth redirect audit): was hardcoded to '/parent' for any
+      // non-learner signup. Public registration only ever allows
+      // LEARNER|GUARDIAN (server-enforced allowlist), so this previously
+      // happened to be correct by accident — but roleHome() is the single
+      // source of truth for role->destination and must be used everywhere,
+      // not re-derived ad hoc, so a future role never silently breaks here.
+      navigate(user.role === 'LEARNER' ? '/onboarding' : roleHome(user.role), { replace: true })
     } catch (err) {
       const s = err instanceof AxiosError ? err.response?.status : undefined
       setError(s === 409 ? t('auth.emailTaken') : t('auth.createFailed'))
