@@ -6,6 +6,7 @@ import { projectsApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, StatusPill } from '@/components/ui'
 import { CharacterStage } from '@/features/characters/CharacterStage'
+import { projectStateLabel, projectStateTone } from '@/lib/labels/projectLabels'
 
 interface Milestone {
   id: string
@@ -96,7 +97,7 @@ export function ProjectDetailPage() {
         <PageHeader
           title={data.title}
           subtitle={data.description}
-          action={data.state ? <StatusPill tone="brand">{data.state}</StatusPill> : undefined}
+          action={data.state ? <StatusPill tone={projectStateTone(data.state)}>{projectStateLabel(data.state)}</StatusPill> : undefined}
         />
       </div>
 

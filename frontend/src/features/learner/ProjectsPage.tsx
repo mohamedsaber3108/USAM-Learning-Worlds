@@ -5,6 +5,7 @@ import { FolderKanban } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, StatusPill } from '@/components/ui'
+import { projectStateLabel, projectStateTone } from '@/lib/labels/projectLabels'
 
 /** Prisma `Project.state: ProjectState` is the only status field — there is no
  * separate `status` column (fixed a dead `p.status` fallback branch here). */
@@ -40,7 +41,7 @@ export function ProjectsPage() {
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
                     <FolderKanban className="h-5 w-5" aria-hidden />
                   </span>
-                  {p.state && <StatusPill tone="brand">{p.state}</StatusPill>}
+                  {p.state && <StatusPill tone={projectStateTone(p.state)}>{projectStateLabel(p.state)}</StatusPill>}
                 </div>
                 <h2 className="mt-3 font-display text-lg font-bold text-ink-900">{p.title}</h2>
                 {p.description && <p className="mt-1 text-sm text-ink-500">{p.description}</p>}
