@@ -128,6 +128,8 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | **MISSING** Problem-solving / computational-thinking / critical-thinking catalogs | LEARNER | `problem-solving.*` | — | `thinkingApi` defined, 0 callers | No routes | NOT_STARTED |
 | **MISSING** Visual-language cards | LEARNER | `visual-language.*` | — | `visualLanguageApi` defined, 0 callers | No routes | NOT_STARTED |
 | ~~Character AI chat/conversations~~ | LEARNER | `ai.character` (chat/conversations CRUD) | `CompanionsPage.tsx` + `CompanionChatPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
+| ~~Cosmetic shop~~ | LEARNER | `gamification.cosmetics.*` | `RewardsPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
+| ~~Simulation detail/play view~~ | LEARNER | `simulation.getBySlug/getNode` | `SimulationsPage.tsx` + `SimulationPlayerPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | **MISSING** Coding Coach | LEARNER | `ai.coding-coach` | — | 0 callers | No inline coding help surfaced in mission player | NOT_STARTED |
 | **MISSING** English Coach | LEARNER | `ai.english-coach` | — | 0 callers | No inline English help | NOT_STARTED |
 | **MISSING** Generic AI feedback/hint/explain/analyze | LEARNER | `ai.controller` | — | 0 callers | No inline AI tutoring anywhere | NOT_STARTED |
@@ -138,7 +140,7 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | --- | --- | --- | --- | --- | --- | --- |
 | `/parent` | GUARDIAN | `parents.children` | `features/parent/ParentHomePage.tsx` | `GET /parents/children` ✓ | Not calling `family-summary` or per-child `dashboard` — may be intentional (children list is enough for a home), re-verify | CONNECTING |
 | `/parent/child/:id` | GUARDIAN | `parents.dashboard/progress/activity/reflections/safety/time-limits` | `features/parent/ChildDetailPage.tsx` | ✓ broad coverage | — | CONNECTING |
-| `/parent/privacy` | GUARDIAN | `legal.export/delete` | `features/parent/ParentPrivacyPage.tsx` | `GET /legal/export/:id`, `POST /legal/delete/:id` ✓ | **Missing: consent capture entirely** (`POST /legal/consent`, `GET /legal/consent/:id` — core COPPA/GDPR UI, not export/delete) | REBUILDING |
+| `/parent/privacy` | GUARDIAN | `legal.export/delete/consent` | `features/parent/ParentPrivacyPage.tsx` | export/delete/consent ✓ | FIXED 2026-10-02: added real per-purpose consent toggle panel (ESSENTIAL_SERVICE locked-on + 5 togglable purposes matching the real `ConsentPurpose` enum). `policyVersion` is a placeholder date pending actual legal policy text — flagged NEEDS_OWNER_CONFIGURATION | TESTING |
 | `/parent/plan` | GUARDIAN | `entitlements.subscribe/cancel` | `features/parent/ParentPlanPage.tsx` | ✓ | No live payment provider (honest, by design) | CONNECTING |
 
 ### MODERATOR
