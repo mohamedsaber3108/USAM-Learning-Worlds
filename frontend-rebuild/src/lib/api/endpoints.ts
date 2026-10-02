@@ -74,9 +74,18 @@ export const masteryApi = {
   getGoals: () => apiClient.get('/mastery/goals'),
 }
 
+export interface Flashcard {
+  id: string
+  domainId: string
+  front: string
+  back: string
+}
 export const flashcardsApi = {
-  getDue: () => apiClient.get('/flashcards/due'),
-  review: (id: string, body: Record<string, unknown>) => apiClient.post(`/flashcards/${id}/review`, body),
+  getDue: (params?: { domainId?: string; limit?: number }) =>
+    apiClient.get<Flashcard[]>('/flashcards/due', { params }),
+  review: (id: string, remembered: boolean) => apiClient.post(`/flashcards/${id}/review`, { remembered }),
+  getStats: () =>
+    apiClient.get<{ totalReviewed: number; dueNow: number; mastered: number }>('/flashcards/stats'),
 }
 
 // ==================== Adaptive ====================
