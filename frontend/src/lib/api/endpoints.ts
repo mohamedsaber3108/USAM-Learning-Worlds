@@ -425,10 +425,34 @@ export const learningEventsApi = {
 }
 
 // ==================== Community ====================
+/**
+ * FIX (reconciliation audit, 2026-10-02): confirmed LIVE via an authenticated
+ * Playwright run against production (frontend/scripts/live-verify.mjs) —
+ * CommunityPage.tsx threw `TypeError: a.map is not a function` on real
+ * navigation, a bug route-200 checks never catch.
+ *
+ * 1) GET /community/feed (community.service.ts getCommunityFeed) returns
+ *    `{ projects, total }`, not a bare array — the frontend cast the whole
+ *    wrapped response to `FeedItem[]` and called `.map` on it directly.
+ * 2) POST /community/report's real DTO (community.dto.ts ReportContentDto)
+ *    requires `entityType` (one of PROJECT|COMMENT|MESSAGE|PROFILE) and
+ *    `reason` (one of INAPPROPRIATE|SPAM|HARASSMENT|COPYRIGHT|SAFETY|OTHER)
+ *    — the wrapper sent `targetType`/`targetId` (wrong keys) and a
+ *    lowercase `reason` value, so every report attempt would 400.
+ */
+export interface CommunityFeedItem {
+  id: string
+  title: string
+  description?: string | null
+  skills: string[]
+  learner: { id: string; displayName: string; avatarUrl?: string | null }
+}
+export type ReportEntityType = 'PROJECT' | 'COMMENT' | 'MESSAGE' | 'PROFILE'
+export type ReportReason = 'INAPPROPRIATE' | 'SPAM' | 'HARASSMENT' | 'COPYRIGHT' | 'SAFETY' | 'OTHER'
 export const communityApi = {
-  feed: () => apiClient.get('/community/feed'),
+  feed: () => apiClient.get<{ projects: CommunityFeedItem[]; total: number }>('/community/feed'),
   trending: () => apiClient.get('/community/trending'),
-  report: (body: { targetType: string; targetId: string; reason: string }) =>
+  report: (body: { entityType: ReportEntityType; entityId: string; reason: ReportReason; description?: string }) =>
     apiClient.post('/community/report', body),
 }
 
