@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, RotateCcw, Flame, Star } from 'lucide-react'
-import { masteryApi, gamificationApi, adaptiveApi, worldsApi } from '@/lib/api/endpoints'
+import { ArrowRight, RotateCcw, Flame, Star, CheckCircle2 } from 'lucide-react'
+import { masteryApi, gamificationApi, adaptiveApi, worldsApi, dailyGoalsApi } from '@/lib/api/endpoints'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { Card, Button, Progress } from '@/components/ui'
 import { Skeleton } from '@/components/ui'
@@ -52,6 +52,13 @@ export function HomePage() {
   const worlds = useQuery({
     queryKey: ['worlds'],
     queryFn: async () => (await worldsApi.list()).data as World[],
+    retry: false,
+  })
+  // NEW (2026-10-02, ledger 88 task 9): daily-goals had zero FE representation
+  // despite the backend tracking real minutes-spent/activities-completed.
+  const dailyGoal = useQuery({
+    queryKey: ['daily-goal-progress'],
+    queryFn: async () => (await dailyGoalsApi.getProgress()).data,
     retry: false,
   })
 
@@ -118,6 +125,32 @@ export function HomePage() {
           </span>
           <ArrowRight className="h-4 w-4 text-brand-600 rtl:-scale-x-100" aria-hidden />
         </Link>
+      )}
+
+      {/* Today's goal — quiet, real server-computed ring. */}
+      {dailyGoal.data && (
+        <Card className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">{t('learner.dailyGoalTitle')}</p>
+            <p className="mt-1 font-medium text-ink-900">
+              {dailyGoal.data.goalMet
+                ? t('learner.dailyGoalMet')
+                : t('learner.dailyGoalMinutes', {
+                    minutes: dailyGoal.data.progress.minutesSpent,
+                    target: dailyGoal.data.goal.targetMinutes,
+                  })}
+            </p>
+          </div>
+          {dailyGoal.data.goalMet ? (
+            <CheckCircle2 className="h-8 w-8 shrink-0 text-success-500" aria-hidden />
+          ) : (
+            <div className="w-24 shrink-0">
+              <Progress
+                value={Math.max(dailyGoal.data.percentComplete.minutes, dailyGoal.data.percentComplete.activities)}
+              />
+            </div>
+          )}
+        </Card>
       )}
 
       {/* Worlds quick access */}

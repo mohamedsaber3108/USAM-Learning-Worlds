@@ -99,8 +99,15 @@ export const gamificationApi = {
   getStreak: () => apiClient.get('/gamification/streak'),
 }
 
+export interface DailyGoalProgress {
+  goal: { targetMinutes: number; targetActivities: number }
+  progress: { minutesSpent: number; activitiesCompleted: number }
+  percentComplete: { minutes: number; activities: number }
+  goalMet: boolean
+}
 export const dailyGoalsApi = {
-  getProgress: () => apiClient.get('/daily-goals/me/progress'),
+  getProgress: () => apiClient.get<DailyGoalProgress>('/daily-goals/me/progress'),
+  setGoal: (body: { targetMinutes: number; targetActivities: number }) => apiClient.put('/daily-goals/me', body),
 }
 
 // ==================== Projects ====================
@@ -294,9 +301,16 @@ export const communityApi = {
 }
 
 // ==================== Reflection ====================
+export interface ReflectionPrompt {
+  id: string
+  text: string
+  kind: string
+  order: number
+}
 export const reflectionApi = {
-  prompts: () => apiClient.get('/reflection/prompts'),
-  respond: (body: Record<string, unknown>) => apiClient.post('/reflection/responses', body),
+  prompts: () => apiClient.get<ReflectionPrompt[]>('/reflection/prompts'),
+  respond: (body: { missionRunId: string; promptId: string; rating: number; note?: string }) =>
+    apiClient.post('/reflection/responses', body),
 }
 
 // ==================== Voice (PROVIDER-GATED) ====================

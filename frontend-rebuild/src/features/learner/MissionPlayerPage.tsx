@@ -3,12 +3,100 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, XCircle } from 'lucide-react'
-import { missionsApi } from '@/lib/api/endpoints'
+import { missionsApi, reflectionApi } from '@/lib/api/endpoints'
 import type { MissionRun, ActivitySummary, SubmitActivityResult } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, Textarea } from '@/components/ui'
 import { cn } from '@/lib/utils/cn'
 import { ActivityView } from './activities/ActivityView'
+
+const FACES = ['😣', '😕', '😐', '🙂', '😄'] as const
+const RATING_KEYS = [
+  'learner.reflectionRating1',
+  'learner.reflectionRating2',
+  'learner.reflectionRating3',
+  'learner.reflectionRating4',
+  'learner.reflectionRating5',
+] as const
+
+/**
+ * Post-mission reflection — a real quick check-in shown after completion.
+ *
+ * NEW (2026-10-02, ledger 88 task 9): the backend's Metacognition Engine
+ * (`reflection.controller.ts`: prompts + responses) had zero frontend trace
+ * anywhere, despite its own doc comment pointing at a `MissionCompletePage`
+ * that doesn't exist in this tree. Added inline in MissionPlayerPage as the
+ * final step before navigating away — a short prompt, a 1-5 face-rating
+ * scale (never a raw number — matches the design system's child-language
+ * rule), and an optional note. Skippable; never blocks progress.
+ */
+function ReflectionStep({ missionRunId, onDone }: { missionRunId: string; onDone: () => void }) {
+  const { t } = useTranslation()
+  const [rating, setRating] = useState<number | null>(null)
+  const [note, setNote] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const { data: prompts } = useQuery({
+    queryKey: ['reflection-prompts'],
+    queryFn: async () => (await reflectionApi.prompts()).data,
+  })
+  const prompt = prompts?.[0]
+
+  async function submit() {
+    if (!prompt || rating === null) return onDone()
+    setSubmitting(true)
+    try {
+      await reflectionApi.respond({ missionRunId, promptId: prompt.id, rating, note: note.trim() || undefined })
+    } finally {
+      onDone()
+    }
+  }
+
+  if (!prompt) {
+    // No active prompts configured — don't block mission completion on it.
+    onDone()
+    return null
+  }
+
+  return (
+    <Card>
+      <h2 className="font-display font-bold text-ink-900">{t('learner.reflectionTitle')}</h2>
+      <p className="mt-1 text-sm text-ink-600">{prompt.text}</p>
+      <div className="mt-4 flex justify-between gap-2">
+        {FACES.map((face, i) => (
+          <button
+            key={face}
+            type="button"
+            aria-label={t(RATING_KEYS[i])}
+            aria-pressed={rating === i + 1}
+            onClick={() => setRating(i + 1)}
+            className={cn(
+              'flex h-12 w-12 items-center justify-center rounded-full text-2xl transition-transform',
+              rating === i + 1 ? 'scale-110 bg-brand-100 ring-2 ring-brand-400' : 'hover:scale-105 hover:bg-canvas-off',
+            )}
+          >
+            {face}
+          </button>
+        ))}
+      </div>
+      <Textarea
+        className="mt-4"
+        placeholder={t('learner.reflectionNotePlaceholder')}
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        rows={2}
+      />
+      <div className="mt-4 flex justify-end gap-2">
+        <Button variant="secondary" onClick={onDone} disabled={submitting}>
+          {t('learner.reflectionSkip')}
+        </Button>
+        <Button onClick={() => void submit()} disabled={submitting || rating === null} loading={submitting}>
+          {t('learner.reflectionSubmit')}
+        </Button>
+      </div>
+    </Card>
+  )
+}
 
 // Coding runtime loads only when a CODE activity mounts (perf gate).
 const CodingActivityPanel = lazy(() =>
@@ -32,6 +120,7 @@ export function MissionPlayerPage() {
   const [result, setResult] = useState<GradeView | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [showReflection, setShowReflection] = useState(false)
 
   const { data: run, isLoading, isError, refetch } = useQuery({
     queryKey: ['run', runId],
@@ -66,13 +155,21 @@ export function MissionPlayerPage() {
       setCompleting(true)
       try {
         await missionsApi.complete(runId)
-        navigate('/app/progress', { replace: true })
+        setShowReflection(true)
       } finally {
         setCompleting(false)
       }
     } else {
       setIndex((i) => i + 1)
     }
+  }
+
+  if (showReflection) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <ReflectionStep missionRunId={runId} onDone={() => navigate('/app/progress', { replace: true })} />
+      </div>
+    )
   }
 
   return (
