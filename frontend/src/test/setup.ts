@@ -1,45 +1,33 @@
-import '@testing-library/jest-dom'
-import { beforeEach, expect } from 'vitest'
-import * as axeMatchers from 'vitest-axe/matchers'
+import '@testing-library/jest-dom/vitest'
 
-// Enable `expect(...).toHaveNoViolations()` for accessibility tests.
-expect.extend(axeMatchers)
-
-/**
- * jsdom in this project is started without a persistent localStorage backend
- * (the "--localstorage-file not provided" warning), so `window.localStorage`
- * can be undefined. The app reads/writes it in many places (auth tokens,
- * usam.language, etc.), so we install a simple in-memory implementation and
- * reset it before every test for isolation.
- */
-class MemoryStorage implements Storage {
-  private store = new Map<string, string>()
-  get length() {
-    return this.store.size
+// jsdom in this Node/vitest config exposes no localStorage — provide a simple
+// in-memory implementation so storage-based code (i18n language, auth tokens)
+// works under test. Tests only.
+if (typeof globalThis.localStorage === 'undefined') {
+  const store = new Map<string, string>()
+  const mem: Storage = {
+    get length() {
+      return store.size
+    },
+    clear: () => store.clear(),
+    getItem: (k: string) => (store.has(k) ? store.get(k)! : null),
+    key: (i: number) => Array.from(store.keys())[i] ?? null,
+    removeItem: (k: string) => void store.delete(k),
+    setItem: (k: string, v: string) => void store.set(k, String(v)),
   }
-  clear(): void {
-    this.store.clear()
-  }
-  getItem(key: string): string | null {
-    return this.store.has(key) ? (this.store.get(key) as string) : null
-  }
-  key(index: number): string | null {
-    return Array.from(this.store.keys())[index] ?? null
-  }
-  removeItem(key: string): void {
-    this.store.delete(key)
-  }
-  setItem(key: string, value: string): void {
-    this.store.set(key, String(value))
-  }
+  Object.defineProperty(globalThis, 'localStorage', { value: mem, configurable: true })
 }
 
-const memoryStorage = new MemoryStorage()
-Object.defineProperty(globalThis, 'localStorage', {
-  configurable: true,
-  value: memoryStorage,
-})
-
-beforeEach(() => {
-  memoryStorage.clear()
-})
+// jsdom has no matchMedia; some code (reduced-motion checks) expects it.
+if (!window.matchMedia) {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia
+}

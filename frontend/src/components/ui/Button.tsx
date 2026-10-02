@@ -1,94 +1,54 @@
-import { forwardRef } from 'react'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { Loader2 } from 'lucide-react'
+import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils/cn'
 
-/**
- * Button — the single canonical button primitive for the redesigned UI.
- *
- * Accessibility (Radix/Ark-aligned): real <button>, visible focus-visible
- * ring, disabled + aria-busy loading state that keeps size stable, and
- * icon slots that flip for RTL where relevant (callers pass rtl:scale-x-[-1]
- * on directional icons). Variants map to the design tokens in tailwind.config.
- */
-export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'accent'
-  | 'ghost'
-  | 'outline'
-  | 'danger'
-  | 'hero'
-export type ButtonSize = 'sm' | 'md' | 'lg'
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
+type Size = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant
-  size?: ButtonSize
+  variant?: Variant
+  size?: Size
   loading?: boolean
-  leftIcon?: ReactNode
-  rightIcon?: ReactNode
-  fullWidth?: boolean
 }
 
-const VARIANTS: Record<ButtonVariant, string> = {
-  primary:
-    'bg-primary-600 text-white hover:bg-primary-700 shadow-soft hover:shadow-soft-hover focus-visible:ring-primary-300',
-  secondary:
-    'bg-white text-primary-700 border border-surface-200 hover:bg-surface-100 shadow-soft focus-visible:ring-primary-300',
-  accent:
-    'bg-accent-500 text-white hover:bg-accent-600 shadow-soft hover:shadow-soft-hover focus-visible:ring-accent-300',
-  ghost: 'bg-transparent text-slate-600 hover:bg-surface-100 focus-visible:ring-primary-300',
-  outline:
-    'bg-transparent border border-surface-300 text-slate-700 hover:bg-surface-100 focus-visible:ring-primary-300',
-  danger:
-    'bg-error-500 text-white hover:bg-error-600 shadow-soft focus-visible:ring-error-300',
-  hero: 'bg-brand-hero text-white shadow-hero hover:-translate-y-0.5 focus-visible:ring-primary-300/60',
+const variants: Record<Variant, string> = {
+  // Green is the dominant brand hue for primary actions.
+  primary: 'bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 shadow-soft',
+  secondary: 'bg-white text-ink-900 border border-line hover:bg-canvas-off',
+  ghost: 'bg-transparent text-brand-600 hover:bg-brand-50',
+  danger: 'bg-error-500 text-white hover:bg-error-700',
 }
 
-const SIZES: Record<ButtonSize, string> = {
-  sm: 'px-3.5 py-2 text-xs gap-1.5 rounded-control',
-  md: 'px-5 py-2.5 text-sm gap-2 rounded-control',
-  lg: 'px-7 py-3.5 text-base gap-2 rounded-pill',
+const sizes: Record<Size, string> = {
+  sm: 'h-9 px-3 text-sm rounded-control',
+  md: 'h-11 px-5 text-sm rounded-control',
+  lg: 'h-12 px-6 text-base rounded-control',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  {
-    variant = 'primary',
-    size = 'md',
-    loading = false,
-    leftIcon,
-    rightIcon,
-    fullWidth = false,
-    disabled,
-    className,
-    children,
-    ...props
-  },
+  { variant = 'primary', size = 'md', loading = false, disabled, className, children, ...props },
   ref,
 ) {
   return (
     <button
       ref={ref}
       disabled={disabled || loading}
-      aria-busy={loading || undefined}
       className={cn(
-        'inline-flex items-center justify-center font-semibold transition-all duration-150',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
-        'disabled:opacity-60 disabled:pointer-events-none',
-        VARIANTS[variant],
-        SIZES[size],
-        fullWidth && 'w-full',
+        'inline-flex items-center justify-center gap-2 font-display font-semibold',
+        'transition-colors duration-fast ease-out-expo',
+        'disabled:opacity-50 disabled:cursor-not-allowed',
+        variants[variant],
+        sizes[size],
         className,
       )}
       {...props}
     >
-      {loading ? (
-        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-      ) : (
-        leftIcon
+      {loading && (
+        <span
+          aria-hidden
+          className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+        />
       )}
       {children}
-      {!loading && rightIcon}
     </button>
   )
 })

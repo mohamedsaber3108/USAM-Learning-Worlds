@@ -3,381 +3,44 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-surface-200;
+  :root {
+    color-scheme: light;
   }
 
-  /* Global focus-visible safety net — many interactive elements across the
-     app rely on component-level focus:ring utilities, but plain <button>,
-     <a>, and <Link> elements without those utility classes had no visible
-     keyboard-focus indicator at all. This additive baseline guarantees every
-     focusable element gets a visible outline on keyboard focus (not on
-     mouse click, via :focus-visible) without touching per-component markup
-     or layout. Component-level focus:ring/focus-visible:ring utilities still
-     apply on top of this and look consistent with the brand ring color. */
-  a:focus-visible,
-  button:focus-visible,
-  input:focus-visible,
-  textarea:focus-visible,
-  select:focus-visible,
-  [role='button']:focus-visible,
-  [tabindex]:focus-visible {
-    outline: 2px solid theme('colors.primary.500');
-    outline-offset: 2px;
+  html {
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-surface-100 text-ink-soft antialiased;
-    font-family: 'Inter', 'Tahoma', 'Segoe UI', sans-serif;
+    @apply bg-canvas-off text-ink-800 font-sans antialiased;
   }
 
-  /* Arabic (dir="rtl") uses Cairo — a real, high-quality Arabic UI webfont
-     (Google Fonts, loaded in index.html) designed for screen legibility at
-     UI sizes, with proper weights (400-800). This makes the Arabic
-     experience feel intentionally typeset rather than a Latin-font
-     fallback. Tahoma/Noto stay as graceful fallbacks if Cairo hasn't
-     loaded yet. Applies to both body and headings so Arabic gets a single
-     cohesive type voice (Cairo carries display weight well, so headings
-     don't need a separate Latin display face that lacks Arabic glyphs). */
+  /* Arabic / RTL: swap the UI face and reading direction. The type scale is
+     shared; only the family + direction change (see design system). */
   html[dir='rtl'] body {
-    font-family: 'Cairo', 'Tahoma', 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+    @apply font-arabic;
   }
 
-  html[dir='rtl'] h1,
-  html[dir='rtl'] h2,
-  html[dir='rtl'] h3,
-  html[dir='rtl'] h4,
-  html[dir='rtl'] .font-display,
-  html[dir='rtl'] .font-heading {
-    font-family: 'Cairo', 'Tahoma', 'Noto Sans Arabic', 'Segoe UI', sans-serif;
-    letter-spacing: 0; /* Arabic must never get Latin negative tracking */
+  /* Visible focus on every interactive element — never removed (a11y). */
+  :focus-visible {
+    @apply outline-none shadow-focus rounded-control;
   }
 
-  /* Arabic reads better with slightly more line-height than tight Latin
-     display text — give RTL body copy a touch more breathing room. */
-  html[dir='rtl'] body {
-    line-height: 1.7;
-  }
-
-  h1, h2, h3 {
-    font-family: 'Nunito', 'Manrope', sans-serif;
-    letter-spacing: -0.01em;
-  }
-
-  h1 {
-    @apply text-3xl font-bold text-ink;
-  }
-
-  h2 {
-    @apply text-2xl font-bold text-ink;
-  }
-
-  h3 {
-    @apply text-lg font-semibold text-ink;
-  }
-
-  h4 {
-    @apply text-base font-semibold text-ink;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-ink-900;
   }
 }
 
-@layer components {
-  /* ---------------------------------------------------------------------
-   * TACTILE 3D BUTTONS (design-language synthesis: Duolingo/Aaply/Playful).
-   * Solid fill + a darker SOLID bottom border that reads as physical depth,
-   * NO drop shadow. Pressing the button (active) sinks it by shrinking the
-   * bottom border and nudging it down, so it feels like a real key press.
-   * The whole app inherits this because every page uses .btn-*.
-   *
-   * Radius: fully rounded pill for a friendly, chunky kid feel.
-   * ------------------------------------------------------------------- */
-  .btn {
-    @apply relative inline-flex items-center justify-center gap-2 px-6 py-2.5
-      rounded-pill font-bold text-sm select-none
-      transition-[transform,background-color,border-color] duration-100
-      border-b-[4px] active:translate-y-[2px] active:border-b-[2px]
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-      focus-visible:ring-offset-white disabled:opacity-60
-      disabled:pointer-events-none;
-  }
-
-  /* Primary — teal brand fill, darker teal "shadow" edge. */
-  .btn-primary {
-    @apply bg-primary-500 text-white border-primary-700
-      hover:bg-primary-400 focus-visible:ring-primary-400;
-  }
-
-  /* Secondary — white surface with a solid gray depth edge. */
-  .btn-secondary {
-    @apply bg-white text-primary-700 border-surface-300
-      hover:bg-surface-50 focus-visible:ring-primary-300;
-  }
-
-  /* Accent — warm amber CTA, darker amber edge. Used sparingly. */
-  .btn-accent {
-    @apply bg-accent-500 text-white border-accent-700
-      hover:bg-accent-400 focus-visible:ring-accent-300;
-  }
-
-  /* Outline — quiet, no depth edge (keeps the same footprint via a
-     transparent bottom border so it aligns with sibling buttons). */
-  .btn-outline {
-    @apply bg-transparent border-b-transparent border border-surface-300
-      text-slate-700 hover:bg-surface-100 active:translate-y-0;
-  }
-
-  /* Cards — depth comes from a crisp hairline border + warm canvas contrast
-     (design-reference principle), with only a whisper of shadow. */
-  .card {
-    @apply bg-white rounded-card shadow-soft p-6 border border-surface-200
-      transition-all duration-200 hover:border-surface-300 hover:shadow-soft-md;
-  }
-
-  /* Stat card — ONE tint color used tastefully (bg tint + colored icon chip), not a full gradient block */
-  .stat-card {
-    @apply bg-white rounded-card shadow-soft p-5 border border-surface-200/70
-      transition-all duration-200 hover:shadow-soft-hover hover:-translate-y-0.5;
-  }
-
-  /* Hero stat card — the ONE flagship metric (Level+XP) gets real visual weight:
-     tinted surface, thicker accent edge, more internal air. Distinguishes it from
-     the secondary cards instead of every stat looking like an identical white box. */
-  .stat-card-hero {
-    @apply relative overflow-hidden bg-primary-50/60 rounded-card shadow-soft-md p-7
-      border border-primary-100 transition-all duration-200 hover:shadow-soft-hover;
-  }
-
-  /* Secondary stat card — visually quieter than the hero: tighter padding, plain
-     surface, smaller type scale enforced via the parent utility classes in JSX. */
-  .stat-card-secondary {
-    @apply bg-white rounded-card shadow-soft p-4 border border-surface-200/70
-      transition-all duration-200 hover:shadow-soft-hover hover:-translate-y-0.5;
-  }
-
-  .icon-chip {
-    @apply w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0;
-  }
-
-  .input {
-    @apply w-full px-4 py-2.5 border border-surface-200 rounded-control bg-white
-      focus:ring-2 focus:ring-primary-300 focus:border-primary-400 transition-all
-      text-sm placeholder:text-slate-400;
-  }
-
-  .progress-track {
-    @apply w-full bg-surface-100 rounded-full h-2 overflow-hidden;
-  }
-
-  .progress-fill {
-    @apply h-full rounded-full bg-primary-500 transition-[width] duration-700 ease-out;
-  }
-
-  /* XP progress bar — same track, taller + secondary(gold) fill so it reads
-     as "reward currency" distinct from generic primary-indigo progress
-     (mastery/achievements). Solid fill, ONE hue — no gradient. The shimmer
-     span is an optional child (see XPProgressBar component) that sweeps
-     once on mount/update instead of animating a rainbow gradient. */
-  .xp-progress-track {
-    @apply w-full bg-secondary-100/60 rounded-full h-3 overflow-hidden relative;
-  }
-
-  .xp-progress-fill {
-    @apply h-full rounded-full bg-secondary-500 transition-[width] duration-700 ease-out relative overflow-hidden;
-  }
-
-  /* Streak flame chip — flat, single accent hue. A "warm" state (practiced
-     today / freeze-protected) gets a solid accent-500 fill; the neutral/at
-     rest state stays a flat tint, no glow-by-default (glow is reserved for
-     the one-off StreakCelebration milestone overlay, not everyday chrome). */
-  .streak-chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5
-      border transition-colors duration-200;
-  }
-
-  .streak-chip-active {
-    @apply bg-accent-50 border-accent-200 text-accent-700;
-  }
-
-  .streak-chip-idle {
-    @apply bg-surface-100 border-surface-200 text-slate-400;
-  }
-
-  .quick-action {
-    @apply flex flex-col items-center gap-2 p-4 rounded-card border border-surface-200/70
-      bg-white hover:border-primary-200 hover:shadow-soft-md hover:-translate-y-0.5
-      transition-all duration-200 text-center;
-  }
-
-  /* ---------------------------------------------------------------------
-   * Parent-facing "admin register" primitives — deliberately distinct
-   * from the playful learner surface above: muted slate/gray, restrained
-   * indigo accents, tighter density, table/row layouts over big cards.
-   * Scoped ONLY to frontend/src/features/parents/** — do not reuse on
-   * learner-facing pages.
-   * ------------------------------------------------------------------- */
-  .parent-shell {
-    @apply min-h-screen bg-slate-50;
-  }
-
-  .parent-topbar {
-    @apply bg-primary-800 border-b border-primary-900;
-  }
-
-  .parent-badge {
-    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md
-      bg-primary-500/10 text-primary-200 text-[11px] font-semibold
-      uppercase tracking-wide border border-primary-500/20;
-  }
-
-  .parent-panel {
-    @apply bg-white rounded-lg border border-slate-200 shadow-sm;
-  }
-
-  .parent-panel-header {
-    @apply flex items-center justify-between px-4 py-3 border-b border-slate-100;
-  }
-
-  .parent-row {
-    @apply flex items-center justify-between px-4 py-2.5 border-b border-slate-100
-      last:border-0 text-sm;
-  }
-
-  .parent-section-label {
-    @apply text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2;
-  }
-
-  .parent-input {
-    @apply w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm
-      text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-200
-      focus:border-primary-400 transition-all placeholder:text-slate-400;
-  }
-
-  .parent-btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
-      bg-primary-600 text-white text-sm font-medium hover:bg-primary-700
-      disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-      focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-1;
-  }
-
-  .parent-btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-md
-      bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200
-      transition-colors border border-slate-200;
-  }
-
-  .parent-chip {
-    @apply px-3 py-1.5 rounded-md text-xs font-medium transition-colors border;
-  }
-
-  /* ---------------------------------------------------------------------
-   * Brand primitives — USAM deep-teal identity. Shared helpers so the logo,
-   * brand headers and hero surfaces stay consistent everywhere.
-   * ------------------------------------------------------------------- */
-
-  /* Deep-teal brand surface with a subtle vertical depth gradient — used for
-     the app header and marketing/auth hero panels. One calm gradient in a
-     single hue family, not a rainbow wash. */
-  .brand-surface {
-    @apply bg-gradient-to-b from-primary-700 to-primary-800 text-white;
-  }
-
-  /* The logo mark on a light surface. The source PNG is a black wordmark on
-     white; on dark/teal surfaces we invert it to white so it reads cleanly. */
-  .brand-logo {
-    @apply h-8 w-auto select-none;
-  }
-
-  .brand-logo-invert {
-    filter: brightness(0) invert(1);
-  }
-
-  /* Soft ambient brand glow behind hero content — a blurred teal blob that
-     breathes slowly (animate-pulse-soft). Purely decorative, aria-hidden. */
-  .hero-glow {
-    @apply pointer-events-none absolute rounded-full blur-3xl bg-primary-300/30;
-  }
-
-  /* Section eyebrow label — small uppercase teal kicker above headings. */
-  .eyebrow {
-    @apply inline-flex items-center gap-1.5 text-xs font-semibold uppercase
-      tracking-wider text-primary-600;
-  }
-
-  /* =====================================================================
-   * REDESIGN UPLIFT PRIMITIVES (additive). Richer, more playful surfaces
-   * for the kid-facing marketing + world/home experience. Existing .btn/
-   * .card/.stat-card etc are untouched so all current pages keep working.
-   * ===================================================================== */
-
-  /* Large pill CTA — the flagship "start" button on marketing surfaces.
-     Tactile 3D: solid teal fill + darker teal depth edge, sinks on press. */
-  .btn-hero {
-    @apply inline-flex items-center justify-center gap-2 rounded-pill px-8 py-4
-      text-base font-extrabold text-white bg-primary-500 border-b-[5px] border-primary-700
-      transition-[transform,background-color] duration-100
-      hover:bg-primary-400 active:translate-y-[3px] active:border-b-[2px]
-      focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-300/60;
-  }
-
-  .btn-hero-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-pill px-8 py-4
-      text-base font-extrabold text-white bg-accent-500 border-b-[5px] border-accent-700
-      transition-[transform,background-color] duration-100
-      hover:bg-accent-400 active:translate-y-[3px] active:border-b-[2px]
-      focus:outline-none focus-visible:ring-4 focus-visible:ring-accent-300/60;
-  }
-
-  /* Frosted pill used in nav / chips over colored surfaces. */
-  .chip-glass {
-    @apply inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold
-      bg-white/15 text-white backdrop-blur-sm border border-white/20;
-  }
-
-  /* Playful elevated card for the kid surface — bigger radius, hero shadow,
-     lifts and tilts slightly on hover. */
-  .card-playful {
-    @apply relative bg-white rounded-blob shadow-lift border border-surface-200/60
-      p-6 transition-all duration-200 hover:shadow-hero hover:-translate-y-1;
-  }
-
-  /* World tile — a full-bleed colored gradient card representing a learning
-     world / subject. Set the gradient via an inline style or a bg-* util. */
-  .world-tile {
-    @apply relative overflow-hidden rounded-blob p-6 text-white shadow-lift
-      transition-all duration-200 hover:shadow-hero hover:-translate-y-1
-      focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50;
-  }
-
-  /* Decorative dotted backdrop layer (place absolutely, aria-hidden). */
-  .dots-layer {
-    @apply pointer-events-none absolute inset-0 bg-dot-grid opacity-60;
-  }
-
-  /* Section shell — consistent max width + horizontal padding. */
-  .section-x {
-    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  /* Big display heading for hero/section titles. */
-  .display-xl {
-    @apply font-display font-extrabold tracking-tight text-ink
-      text-4xl sm:text-5xl lg:text-6xl leading-[1.05];
-  }
-
-  .display-lg {
-    @apply font-display font-bold tracking-tight text-ink
-      text-2xl sm:text-3xl lg:text-4xl leading-tight;
-  }
-
-  /* Sidebar nav item (desktop shell). */
-  .side-nav-item {
-    @apply flex items-center gap-3 rounded-control px-3.5 py-2.5 text-sm font-semibold
-      text-slate-500 transition-colors duration-150
-      hover:bg-primary-50 hover:text-primary-700
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300;
-  }
-
-  .side-nav-item-active {
-    @apply bg-primary-50 text-primary-700;
+@layer utilities {
+  /* Respect reduced motion globally: disable non-essential animation. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

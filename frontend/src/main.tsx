@@ -1,11 +1,11 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './styles/index.css'
-import './lib/i18n'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import '@/lib/i18n'
+import '@/styles/index.css'
+import { App } from '@/app/App'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
     <App />
-  </React.StrictMode>,
+  </StrictMode>,
 )

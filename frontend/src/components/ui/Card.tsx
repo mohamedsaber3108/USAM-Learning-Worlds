@@ -1,38 +1,28 @@
-import type { HTMLAttributes, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils/cn'
 
-/**
- * Card — canonical surface container for the redesign. `tone` picks the
- * visual weight: `plain` (white/soft), `playful` (bigger radius + lift),
- * `tinted` (subtle brand wash). Keeps existing global `.card` class usable
- * elsewhere; this is the composable React version for new/updated pages.
- */
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  tone?: 'plain' | 'playful' | 'tinted'
-  interactive?: boolean
-  children: ReactNode
+/** Surface card — hairline border + whisper shadow (design system). */
+export function Card({ className, children }: { className?: string; children: ReactNode }) {
+  return <div className={cn('rounded-card border border-line bg-white p-5 shadow-soft', className)}>{children}</div>
 }
 
-const TONES: Record<NonNullable<CardProps['tone']>, string> = {
-  plain: 'bg-white rounded-card shadow-soft border border-surface-200/70 p-6',
-  playful:
-    'bg-white rounded-blob shadow-lift border border-surface-200/60 p-6',
-  tinted:
-    'bg-primary-50/60 rounded-card shadow-soft border border-primary-100 p-6',
-}
-
-export function Card({ tone = 'plain', interactive = false, className, children, ...props }: CardProps) {
+export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
-    <div
-      className={cn(
-        'transition-all duration-200',
-        TONES[tone],
-        interactive && 'hover:shadow-hero hover:-translate-y-1 cursor-pointer',
-        className,
-      )}
-      {...props}
-    >
-      {children}
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h1 className="font-display text-2xl font-extrabold text-ink-900">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-ink-500">{subtitle}</p>}
+      </div>
+      {action}
+    </div>
+  )
+}
+
+export function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="mb-3">
+      <h2 className="font-display text-lg font-bold text-ink-900">{title}</h2>
+      {subtitle && <p className="mt-0.5 text-sm text-ink-500">{subtitle}</p>}
     </div>
   )
 }

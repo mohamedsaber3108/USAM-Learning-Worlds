@@ -1,378 +1,369 @@
 import { apiClient } from './client'
-import type { AuthResponse, LoginRequest } from '@/types'
+import type { AuthResponse, CurrentUser, LoginRequest, RegisterRequest, AgeBand } from './types'
 
-// ==================== Auth ====================
+/**
+ * Typed endpoint groups. Each maps 1:1 to a real backend route (see
+ * docs/frontend/BACKEND_FRONTEND_TRACEABILITY_MATRIX.md). Feature code calls
+ * these — never raw axios — so contracts live in one place. Groups are added
+ * as surfaces are built; the foundation ships auth (needed by every screen).
+ */
+
 export const authApi = {
-  login: (data: LoginRequest) =>
-    apiClient.post<AuthResponse>('/auth/login', data),
-
-  me: () =>
-    apiClient.get('/auth/me'),
-
+  login: (data: LoginRequest) => apiClient.post<AuthResponse>('/auth/login', data),
+  register: (data: RegisterRequest) => apiClient.post<AuthResponse>('/auth/register', data),
+  me: () => apiClient.get<CurrentUser>('/auth/me'),
   refresh: (refreshToken: string) =>
-    apiClient.post('/auth/refresh', { refreshToken }),
-
-  // Persist onboarding learner preferences (interests, learning style, goals)
-  // → PATCH /auth/me/preferences (merged server-side onto Learner.preferences).
-  updatePreferences: (data: { interests?: string[]; learningStyle?: string; goals?: string[]; extra?: Record<string, unknown> }) =>
-    apiClient.patch('/auth/me/preferences', data),
+    apiClient.post<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken }),
+  updateAgeBand: (ageBand: AgeBand) => apiClient.patch<CurrentUser>('/auth/me/age-band', { ageBand }),
+  updatePreferences: (data: {
+    interests?: string[]
+    learningStyle?: string
+    goals?: string[]
+    extra?: Record<string, unknown>
+  }) => apiClient.patch<CurrentUser>('/auth/me/preferences', data),
 }
 
-// ==================== Gamification ====================
-export const gamificationApi = {
-  getProgression: () =>
-    apiClient.get('/gamification/progression'),
-
-  getLeaderboard: (params?: { scope?: 'global' | 'friends'; limit?: number }) =>
-    apiClient.get('/gamification/leaderboard', { params }),
-
-  getAchievements: () =>
-    apiClient.get('/gamification/achievements'),
-
-  getStreak: () =>
-    apiClient.get('/gamification/streak'),
-
-  getRank: () =>
-    apiClient.get('/gamification/rank'),
+/** Public plan catalog (no auth). */
+export const entitlementsApi = {
+  listPlans: () => apiClient.get('/entitlements/plans'),
+  getMine: () =>
+    apiClient.get<{ plan: { code: string; name: string } | null; features: Record<string, unknown> }>(
+      '/entitlements/me',
+    ),
 }
 
-// ==================== Cosmetics (XP-spending shop) ====================
-export const cosmeticsApi = {
-  list: () =>
-    apiClient.get('/gamification/cosmetics'),
-
-  getEquipped: () =>
-    apiClient.get('/gamification/cosmetics/equipped'),
-
-  unlock: (id: string) =>
-    apiClient.post(`/gamification/cosmetics/${id}/unlock`),
-
-  equip: (id: string) =>
-    apiClient.post(`/gamification/cosmetics/${id}/equip`),
+// ==================== Learning ====================
+export const learningApi = {
+  getDomainPath: (slug: string) => apiClient.get(`/learning/domains/${slug}/path`),
 }
 
-// ==================== Daily Goal (real server-computed progress) ====================
-export const dailyGoalsApi = {
-  getGoal: () =>
-    apiClient.get('/daily-goals/me'),
-
-  setGoal: (data: { targetMinutes: number; targetActivities: number }) =>
-    apiClient.put('/daily-goals/me', data),
-
-  getProgress: () =>
-    apiClient.get('/daily-goals/me/progress'),
-}
-
-// ==================== Streak Freeze (coin-spending shop) ====================
-export const streakFreezeApi = {
-  getStatus: () =>
-    apiClient.get('/gamification/streak-freeze/status'),
-
-  purchase: () =>
-    apiClient.post('/gamification/streak-freeze/purchase'),
-}
-
-// ==================== Mastery ====================
-export const masteryApi = {
-  getOverview: () =>
-    apiClient.get('/mastery/overview'),
-
-  getByDomain: () =>
-    apiClient.get('/mastery/by-domain'),
-
-  getReviewDue: () =>
-    apiClient.get('/mastery/review-due'),
-
-  getGoals: () =>
-    apiClient.get('/mastery/goals'),
+export const worldsApi = {
+  list: () => apiClient.get('/worlds'),
 }
 
 // ==================== Missions ====================
+export interface MissionHistoryRun {
+  id: string
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED'
+  startedAt: string
+  completedAt?: string | null
+  mission: { id: string; title: string }
+}
 export const missionsApi = {
-  browse: (params?: {
-    domainId?: number
-    difficulty?: string
-    status?: string
-    search?: string
-    page?: number
-    limit?: number
-  }) =>
-    apiClient.get('/missions', { params }),
-
-  getById: (id: string) =>
-    apiClient.get(`/missions/${id}`),
-
-  start: (id: string) =>
-    apiClient.post(`/missions/${id}/start`),
-
-  getRun: (runId: string) =>
-    apiClient.get(`/missions/runs/${runId}`),
-
-  submitActivity: (runId: string, data: any) =>
-    apiClient.post(`/missions/runs/${runId}/submit`, data),
-
-  complete: (runId: string) =>
-    apiClient.post(`/missions/runs/${runId}/complete`),
-
-  getHistory: () =>
-    apiClient.get('/missions/history/me'),
+  getById: (id: string) => apiClient.get(`/missions/${id}`),
+  start: (id: string) => apiClient.post(`/missions/${id}/start`),
+  getRun: (runId: string) => apiClient.get(`/missions/runs/${runId}`),
+  /** body: { activityId, response: {...} } */
+  submit: (runId: string, body: { activityId: string; response: Record<string, unknown> }) =>
+    apiClient.post(`/missions/runs/${runId}/submit`, body),
+  complete: (runId: string) => apiClient.post(`/missions/runs/${runId}/complete`),
+  getHistory: () => apiClient.get<MissionHistoryRun[]>('/missions/history/me'),
 }
 
-// ==================== Projects ====================
-export const projectsApi = {
-  create: (data: any) =>
-    apiClient.post('/projects', data),
-
-  getMy: () =>
-    apiClient.get('/projects/my'),
-
-  browse: (params?: { category?: string; featured?: boolean }) =>
-    apiClient.get('/projects/browse', { params }),
-
-  getById: (id: string) =>
-    apiClient.get(`/projects/${id}`),
-
-  update: (id: string, data: any) =>
-    apiClient.put(`/projects/${id}`, data),
-
-  delete: (id: string) =>
-    apiClient.delete(`/projects/${id}`),
-
-  showcase: (id: string) =>
-    apiClient.post(`/projects/${id}/showcase`),
-
-  getRubric: (id: number | string) =>
-    apiClient.get(`/projects/${id}/rubric`),
-
-  getMilestones: (id: string) =>
-    apiClient.get(`/projects/${id}/milestones`),
-
-  updateMilestone: (id: string, milestoneId: string, status: string) =>
-    apiClient.put(`/projects/${id}/milestones/${milestoneId}`, { status }),
-
-  listResearchNotes: (id: string) =>
-    apiClient.get(`/projects/${id}/research-notes`),
-
-  addResearchNote: (id: string, data: { content: string; sourceTitle?: string; sourceUrl?: string }) =>
-    apiClient.post(`/projects/${id}/research-notes`, data),
-
-  listCollaborators: (id: string) =>
-    apiClient.get(`/projects/${id}/collaborators`),
-
-  // Real-World Challenge Engine: surfaces Project rows flagged
-  // isRealWorldChallenge=true (externally-sourced project prompts a
-  // learner can adopt and turn into their own real project), backed by
-  // GET /projects/real-world-challenges/list (projects.controller.ts).
-  listRealWorldChallenges: () =>
-    apiClient.get('/projects/real-world-challenges/list'),
+// ==================== Coding sandbox (client-exec, server-revalidate) ========
+export const codingSandboxApi = {
+  getMission: (activityId: string) => apiClient.get(`/coding-sandbox/missions/${activityId}`),
+  submit: (body: {
+    runId: string
+    activityId: string
+    code: string
+    language: string
+    stdout: string
+    stderr?: string
+    testOutcomes?: Array<{ id: string; description?: string; hidden?: boolean; passed: boolean; actual?: string }>
+  }) => apiClient.post('/coding-sandbox/submissions', body),
 }
 
-// ==================== Rubrics ====================
-export const rubricsApi = {
-  list: () =>
-    apiClient.get('/rubrics'),
+// ==================== Mastery / review ====================
+export const masteryApi = {
+  getOverview: () => apiClient.get('/mastery/overview'),
+  getByDomain: () => apiClient.get('/mastery/by-domain'),
+  getReviewDue: () => apiClient.get('/mastery/review-due'),
+  getGoals: () => apiClient.get('/mastery/goals'),
+}
+
+export interface Flashcard {
+  id: string
+  domainId: string
+  front: string
+  back: string
+}
+export const flashcardsApi = {
+  getDue: (params?: { domainId?: string; limit?: number }) =>
+    apiClient.get<Flashcard[]>('/flashcards/due', { params }),
+  review: (id: string, remembered: boolean) => apiClient.post(`/flashcards/${id}/review`, { remembered }),
+  getStats: () =>
+    apiClient.get<{ totalReviewed: number; dueNow: number; mastered: number }>('/flashcards/stats'),
 }
 
 // ==================== Adaptive ====================
 export const adaptiveApi = {
-  getZPD: () =>
-    apiClient.get('/adaptive/zpd'),
-
-  getRecommendations: () =>
-    apiClient.get('/adaptive/recommendations'),
-
-  getNextActivity: (competencyId: number) =>
-    apiClient.get(`/adaptive/next-activity/${competencyId}`),
+  getRecommendations: () => apiClient.get('/adaptive/recommendations'),
 }
 
-// ==================== Community ====================
-// Backed by backend/src/modules/community/community.controller.ts +
-// community.service.ts. The feed only ever surfaces Project rows with
-// visibility=PUBLIC and state=SHOWCASED — i.e. content that has already
-// passed the showcase step. There is no separate "community post" entity;
-// posting to the community means creating a Project and submitting it for
-// showcase via projectsApi.create() + projectsApi.showcase(), which is the
-// real moderation-adjacent pipeline available on this backend today.
-export interface CommunityReportPayload {
-  entityType: 'PROJECT' | 'COMMENT' | 'MESSAGE' | 'PROFILE'
-  entityId: string
-  reason: 'INAPPROPRIATE' | 'SPAM' | 'HARASSMENT' | 'COPYRIGHT' | 'SAFETY' | 'OTHER'
-  description?: string
+// ==================== Gamification ====================
+export const gamificationApi = {
+  getProgression: () => apiClient.get('/gamification/progression'),
+  getStreak: () => apiClient.get('/gamification/streak'),
 }
 
-export const communityApi = {
-  getFeed: (params?: { type?: string; limit?: number }) =>
-    apiClient.get('/community/feed', { params }),
-
-  getTrending: (params?: { limit?: number }) =>
-    apiClient.get('/community/trending', { params }),
-
-  search: (query: string, params?: { type?: string; limit?: number }) =>
-    apiClient.get('/community/search', { params: { q: query, ...params } }),
-
-  getStats: () =>
-    apiClient.get('/community/stats'),
-
-  // Reports flagged content into the real ModerationService/QuarantinedContent
-  // pipeline (community.service.ts -> moderation.moderateWithQuarantine).
-  report: (data: CommunityReportPayload) =>
-    apiClient.post('/community/report', data),
-
-  // Educator/parent-only moderation queue endpoints.
-  getQuarantined: (status?: string) =>
-    apiClient.get('/community/moderation/quarantined', { params: { status } }),
-
-  reviewContent: (id: string, decision: 'APPROVED' | 'REJECTED', notes?: string) =>
-    apiClient.post(`/community/moderation/review/${id}`, { decision, notes }),
+export interface DailyGoalProgress {
+  goal: { targetMinutes: number; targetActivities: number }
+  progress: { minutesSpent: number; activitiesCompleted: number }
+  percentComplete: { minutes: number; activities: number }
+  goalMet: boolean
+}
+export const dailyGoalsApi = {
+  getProgress: () => apiClient.get<DailyGoalProgress>('/daily-goals/me/progress'),
+  setGoal: (body: { targetMinutes: number; targetActivities: number }) => apiClient.put('/daily-goals/me', body),
 }
 
-// ==================== Parents ====================
-// Backed by backend/src/modules/parents/parents.controller.ts + parents.service.ts.
-// learnerId is a UUID string (Learner.id), not a numeric id.
-export interface SetTimeLimitsPayload {
-  dailyMinutes?: number
-  weeklyMinutes?: number
-  bedtimeHour?: number
+// ==================== Projects ====================
+export const projectsApi = {
+  create: (body: {
+    title: string
+    description: string
+    type: string
+    visibility: string
+    tags?: string[]
+    competencyId?: string
+    objectiveId?: string
+    domainIds?: string[]
+  }) => apiClient.post('/projects', body),
+  mine: () => apiClient.get('/projects/my'),
+  browse: (params?: { type?: string; tags?: string; limit?: number }) =>
+    apiClient.get('/projects/browse', { params }),
+  getById: (id: string) => apiClient.get(`/projects/${id}`),
+  update: (id: string, body: Record<string, unknown>) => apiClient.put(`/projects/${id}`, body),
+  remove: (id: string) => apiClient.delete(`/projects/${id}`),
+  showcase: (id: string) => apiClient.post(`/projects/${id}/showcase`),
+  portfolio: (learnerId: string) => apiClient.get(`/projects/portfolio/${learnerId}`),
+  /** Project→Domain/Skill/Competency/Objective chain. Separate endpoint —
+   * NOT embedded in GET /projects/:id's response. */
+  getCurriculumContext: (id: string) => apiClient.get(`/projects/${id}/curriculum-context`),
+  /** Project milestones. Separate endpoint — NOT embedded in GET /projects/:id. */
+  getMilestones: (id: string) => apiClient.get(`/projects/${id}/milestones`),
+  updateMilestoneStatus: (id: string, milestoneId: string, status: string) =>
+    apiClient.put(`/projects/${id}/milestones/${milestoneId}`, { status }),
+  getRubric: (id: string) => apiClient.get(`/projects/${id}/rubric`),
+  listCollaborators: (id: string) => apiClient.get(`/projects/${id}/collaborators`),
+  addCollaborator: (id: string, learnerId: string, role?: 'EDITOR' | 'COMMENTER') =>
+    apiClient.post(`/projects/${id}/collaborators`, { learnerId, role }),
+  removeCollaborator: (id: string, learnerId: string) =>
+    apiClient.delete(`/projects/${id}/collaborators/${learnerId}`),
+  listResearchNotes: (id: string) => apiClient.get(`/projects/${id}/research-notes`),
+  addResearchNote: (id: string, body: { content: string; sourceTitle?: string; sourceUrl?: string }) =>
+    apiClient.post(`/projects/${id}/research-notes`, body),
+  removeResearchNote: (noteId: string) => apiClient.delete(`/projects/research-notes/${noteId}`),
+  realWorldChallenges: () => apiClient.get('/projects/real-world-challenges/list'),
+  crossDomain: (limit?: number) => apiClient.get('/projects/cross-domain/list', { params: { limit } }),
 }
 
-export const parentsApi = {
-  getChildren: () =>
-    apiClient.get('/parents/children'),
-
-  getFamilySummary: () =>
-    apiClient.get('/parents/family-summary'),
-
-  getChildDashboard: (learnerId: string) =>
-    apiClient.get(`/parents/children/${learnerId}/dashboard`),
-
-  getChildProgress: (learnerId: string) =>
-    apiClient.get(`/parents/children/${learnerId}/progress`),
-
-  getChildActivity: (learnerId: string, params?: { days?: number }) =>
-    apiClient.get(`/parents/children/${learnerId}/activity`, { params }),
-
-  // Parent-safe safety summary: escalation counts/status/dates + referred-to-
-  // guardian flag. Never returns raw trigger/resolution text (backend
-  // ParentsService.getChildSafety).
-  getChildSafety: (learnerId: string) =>
-    apiClient.get(`/parents/children/${learnerId}/safety`),
-  setTimeLimits: (learnerId: string, data: SetTimeLimitsPayload) =>
-    apiClient.post(`/parents/children/${learnerId}/time-limits`, data),
+export const rubricsApi = {
+  list: () => apiClient.get('/rubrics'),
 }
 
-// ==================== Curriculum (Domains) ====================
-export const curriculumApi = {
-  getDomains: () =>
-    apiClient.get('/domains'),
+// ==================== Characters / companions ====================
+// NOTE: every GET below returns a wrapped `{ characters: [...] }` /
+// `{ character: {...} }` / `{ conversation: {...} }` object, NOT a bare
+// array/object — matches backend/src/modules/ai/character.controller.ts
+// exactly (confirmed by reading every handler's return statement).
+export const charactersApi = {
+  list: (role?: string) => apiClient.get<{ characters: unknown[] }>('/characters', { params: { role } }),
+  unlocked: () => apiClient.get<{ characters: unknown[] }>('/characters/unlocked'),
+  orchestrate: (params?: { domainSlug?: string; missionId?: string }) =>
+    apiClient.get<{
+      character: { id: string; name: string; role: string; avatarUrl: string | null }
+      reason: string
+      domainSlug: string | null
+      isFallback: boolean
+    }>('/characters/orchestrate', { params }),
+  getById: (id: string) =>
+    apiClient.get<{ id: string; name: string; role: string; personality: unknown; avatarUrl: string | null }>(
+      `/characters/${id}`,
+    ),
+  getState: (id: string) =>
+    apiClient.get<{
+      state: {
+        characterId: string
+        characterName: string
+        characterRole: string
+        relationshipLevel: number
+        interactionCount: number
+        lastInteraction: string | null
+      }
+    }>(`/characters/${id}/state`),
 }
 
-// ==================== Learning (Concepts, Prerequisites, Paths) ====================
-export const learningApi = {
-  // Concepts
-  getConcepts: (params?: { competencyId?: string }) =>
-    apiClient.get('/learning/concepts', { params }),
-
-  getConcept: (id: string) =>
-    apiClient.get(`/learning/concepts/${id}`),
-
-  getConceptBySlug: (slug: string) =>
-    apiClient.get(`/learning/concepts/slug/${slug}`),
-
-  getPrerequisiteChain: (id: string) =>
-    apiClient.get(`/learning/concepts/${id}/prerequisites`),
-
-  getUnlockStatus: (id: string) =>
-    apiClient.get(`/learning/concepts/${id}/unlock-status`),
-
-  getConceptsForSkill: (skillId: string) =>
-    apiClient.get(`/learning/skills/${skillId}/concepts`),
-
-  getConceptsForDomain: (domainId: string) =>
-    apiClient.get(`/learning/domains/${domainId}/concepts`),
-
-  // Generic canonical-spine domain path (skills → competencies → first mission
-  // + learner mastery), by domain SLUG. Backed by DomainPathService.getPath —
-  // the same engine behind GET /english/path. Works for english/coding/
-  // ai-literacy/creativity (any seeded Domain slug). Preferred over the
-  // per-domain shims for building a shared domain-experience page.
-  getDomainPath: (slug: string) =>
-    apiClient.get<DomainPath>(`/learning/domains/${slug}/path`),
-
-  // Learning Paths
-  getPaths: (params?: { domainId?: string; ageBand?: string }) =>
-    apiClient.get('/learning/paths', { params }),
-
-  getPath: (id: string) =>
-    apiClient.get(`/learning/paths/${id}`),
-
-  getPathProgress: (id: string) =>
-    apiClient.get(`/learning/paths/${id}/progress`),
-
-  advancePathProgress: (id: string, nodeId: string) =>
-    apiClient.post(`/learning/paths/${id}/advance`, { nodeId }),
-
-  resetPathProgress: (id: string) =>
-    apiClient.post(`/learning/paths/${id}/reset`),
-
-  recommendPath: (domainId?: string) =>
-    apiClient.get('/learning/paths/recommend', { params: { domainId } }),
-
-  getMyPaths: () =>
-    apiClient.get('/learning/my-paths'),
-}
-
-// Shared shape for the generic domain path (GET /learning/domains/:slug/path,
-// DomainPathService.getPath). masteryState is the raw backend MasteryState
-// string — callers MUST translate it via lib/mastery/masteryLabels before
-// showing it to a learner (never render the raw enum or the confidence
-// decimal). cefrLevel/strandType are English-only decorations (null elsewhere).
-export interface DomainPathCompetency {
+// ==================== Character conversations (chat) ====================
+export interface ConversationMessage {
   id: string
-  name: string
-  description: string | null
-  cefrLevel: string | null
-  strandType: string | null
-  missionId: string | null
-  missionTitle: string | null
-  masteryState: string
-  confidence: number
+  conversationId: string
+  role: 'LEARNER' | 'CHARACTER' | 'SYSTEM'
+  content: string
+  metadata?: { mood?: string; suggestedActions?: string[] } | null
+  createdAt: string
 }
-export interface DomainPathSkill {
+export interface ConversationRecord {
+  id: string
+  learnerId: string
+  characterId: string
+  type: 'LEARNING_SUPPORT' | 'ENGLISH_PRACTICE' | 'CODING_HELP' | 'PROJECT_GUIDANCE' | 'CASUAL' | 'ROLEPLAY' | 'DEBATE' | 'INTERVIEW'
+  status: 'ACTIVE' | 'PAUSED' | 'ENDED' | 'BLOCKED'
+  startedAt: string
+  messages?: ConversationMessage[]
+  character?: { id: string; name: string; role: string; avatarUrl: string | null }
+}
+
+export const conversationsApi = {
+  create: (characterId: string, body: { type: ConversationRecord['type']; sessionId?: string; initialMessage?: string }) =>
+    apiClient.post<{ conversation: ConversationRecord }>(`/characters/${characterId}/conversations`, body),
+  get: (conversationId: string) =>
+    apiClient.get<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}`),
+  sendMessage: (conversationId: string, body: { content: string; metadata?: Record<string, unknown> }) =>
+    apiClient.post<{ learnerMessage: ConversationMessage; characterMessage: ConversationMessage }>(
+      `/characters/conversations/${conversationId}/messages`,
+      body,
+    ),
+  getMessages: (conversationId: string, params?: { limit?: number; offset?: number }) =>
+    apiClient.get<{ messages: ConversationMessage[] }>(`/characters/conversations/${conversationId}/messages`, { params }),
+  list: (params?: { status?: ConversationRecord['status']; characterId?: string; limit?: number }) =>
+    apiClient.get<{ conversations: ConversationRecord[] }>('/characters/conversations', { params }),
+  pause: (conversationId: string) =>
+    apiClient.patch<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}/pause`),
+  resume: (conversationId: string) =>
+    apiClient.patch<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}/resume`),
+  end: (conversationId: string) =>
+    apiClient.patch<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}/end`),
+}
+
+// ==================== Creativity ====================
+export const creativityApi = {
+  getPrompts: () => apiClient.get('/creativity/prompts'),
+  getPrompt: (slug: string) => apiClient.get(`/creativity/prompts/${slug}`),
+  submit: (body: { promptId?: string; title?: string; content: string }) =>
+    apiClient.post('/creativity/submissions', body),
+  mySubmissions: () => apiClient.get('/creativity/submissions/mine'),
+  gallery: () => apiClient.get('/creativity/gallery'),
+}
+
+// ==================== Content libraries (consumed inside Learn) ============
+export const storiesApi = {
+  list: () => apiClient.get('/stories'),
+  getById: (id: string) => apiClient.get(`/stories/${id}`),
+}
+export interface SimulationDecisionNode {
+  id: string
+  scenarioId: string
+  nodeKey: string
+  prompt: string
+  isEnding: boolean
+  outcomeNote?: string | null
+  choiceOptions: Array<{ label: string; nextNode?: string }>
+}
+export interface SimulationScenarioDetail {
+  id: string
+  title: string
+  slug: string
+  description: string
+  startNodeId: string | null
+  nodes: SimulationDecisionNode[]
+}
+export const simulationsApi = {
+  list: () => apiClient.get('/simulations'),
+  getBySlug: (slug: string) => apiClient.get<SimulationScenarioDetail>(`/simulations/${slug}`),
+  getNode: (scenarioId: string, nodeKey: string) =>
+    apiClient.get<SimulationDecisionNode>(`/simulations/${scenarioId}/nodes/${nodeKey}`),
+}
+export interface ConceptCatalogItem {
   id: string
   name: string
   slug: string
-  competencies: DomainPathCompetency[]
+  description?: string | null
+  category: string
+  ageAppropriate: string
+  order: number
 }
-export interface DomainPath {
-  domain: { id: string; name: string; slug: string } | null
-  skills: DomainPathSkill[]
+export const crossCurricularApi = {
+  byCategory: (category: string) => apiClient.get<ConceptCatalogItem[]>(`/cross-curricular/${category}`),
+  getConcept: (category: string, slug: string) =>
+    apiClient.get<ConceptCatalogItem>(`/cross-curricular/${category}/${slug}`),
+}
+export const thinkingApi = {
+  problemSolving: () => apiClient.get<ConceptCatalogItem[]>('/problem-solving'),
+  computational: () => apiClient.get<ConceptCatalogItem[]>('/computational-thinking'),
+  critical: () => apiClient.get<ConceptCatalogItem[]>('/critical-thinking'),
+}
+export interface VisualLanguageCard {
+  id: string
+  word: string
+  slug: string
+  category: string
+  imageUrl: string
+  caption: string
+}
+export const visualLanguageApi = {
+  list: () => apiClient.get<VisualLanguageCard[]>('/visual-language'),
+  getBySlug: (slug: string) => apiClient.get<VisualLanguageCard>(`/visual-language/${slug}`),
 }
 
-// ==================== Learning Events (Analytics pipeline) ====================
-// Real response shapes read from backend/src/modules/learning/services/
-// learning-event.service.ts + learning.controller.ts — NOT guessed:
-//   GET /learning/events/stats    -> EventStats[]   { eventType, count, lastOccurred }
-//   GET /learning/events/recent   -> LearningEvent[] (Prisma rows: id, learnerId, type,
-//                                     entityType, entityId, data, sessionId, createdAt)
-//   GET /learning/events/patterns -> { period: { days, since }, activeDays, consistency,
-//                                     avgActivitiesPerDay, peakLearningHour, hourlyDistribution }
+// ==================== Credentials ====================
+export const credentialsApi = {
+  mine: () => apiClient.get('/credentials/me'),
+  verify: (uid: string) => apiClient.get(`/credentials/${uid}`),
+}
+
+// ==================== Notifications ====================
+export const notificationsApi = {
+  list: () => apiClient.get('/notifications'),
+  unreadCount: () => apiClient.get('/notifications/unread-count'),
+  markRead: (id: string) => apiClient.post(`/notifications/${id}/read`),
+  markAllRead: () => apiClient.post('/notifications/read-all'),
+}
+
+// ==================== Search ====================
+export const searchApi = {
+  query: (q: string) => apiClient.get('/search', { params: { q } }),
+}
+
+// ==================== Gamification (rewards) ====================
+export interface CosmeticItem {
+  id: string
+  name: string
+  category: 'BORDER' | 'BADGE' | 'TITLE' | 'COLOR_THEME'
+  xpCost: number
+  iconOrStyleKey: string
+  isDefault: boolean
+  owned: boolean
+  canAfford: boolean
+  isEquipped: boolean
+}
+export const rewardsApi = {
+  progression: () => apiClient.get('/gamification/progression'),
+  achievements: () => apiClient.get('/gamification/achievements'),
+  leaderboard: () => apiClient.get('/gamification/leaderboard'),
+  streak: () => apiClient.get('/gamification/streak'),
+  cosmetics: () => apiClient.get<{ totalXP: number; items: CosmeticItem[] }>('/gamification/cosmetics'),
+  equipCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/equip`),
+  unlockCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/unlock`),
+  streakFreezeStatus: () =>
+    apiClient.get<{ freezesAvailable: number; coinCost: number }>('/gamification/streak-freeze/status'),
+  purchaseStreakFreeze: () => apiClient.post('/gamification/streak-freeze/purchase'),
+}
+
+/**
+ * Learning events — real backend (`learning-events` module, routes under
+ * `/learning/events/*`), had ZERO frontend callers in this tree (surfaced
+ * building the legacy URL redirect map — legacy `/insights` used it, no
+ * `frontend-rebuild` equivalent existed yet). Backs a learner-facing "My
+ * Journey" view: activity-type stats, recent events, and detected learning
+ * patterns (consistency, peak hour).
+ */
 export interface LearningEventStat {
   eventType: string
   count: number
   lastOccurred: string
 }
-
-export interface LearningEventRow {
-  id: string
-  learnerId: string
-  type: string
-  entityType: string | null
-  entityId: string | null
-  data: any
-  sessionId: string | null
-  createdAt: string
-}
-
 export interface LearningPatterns {
   period: { days: number; since: string }
   activeDays: number
@@ -381,1219 +372,217 @@ export interface LearningPatterns {
   peakLearningHour: number
   hourlyDistribution: number[]
 }
-
 export const learningEventsApi = {
-  getStats: (since?: string) =>
-    apiClient.get<LearningEventStat[]>('/learning/events/stats', { params: { since } }),
-
-  getRecent: (hours: number = 72) =>
-    apiClient.get<LearningEventRow[]>('/learning/events/recent', { params: { hours } }),
-
-  getPatterns: (days: number = 30) =>
-    apiClient.get<LearningPatterns>('/learning/events/patterns', { params: { days } }),
+  getStats: (since?: string) => apiClient.get<LearningEventStat[]>('/learning/events/stats', { params: { since } }),
+  getPatterns: (days = 30) => apiClient.get<LearningPatterns>('/learning/events/patterns', { params: { days } }),
 }
 
-// ==================== English (Strands + Coach) ====================
-export type EnglishStrandFamily =
-  | 'VOCABULARY'
-  | 'GRAMMAR'
-  | 'PRONUNCIATION'
-  | 'LISTENING'
-  | 'READING'
-  | 'WRITING'
-  | 'SPEAKING'
-  | 'SHADOWING'
-  | 'DICTATION'
-
-export interface EnglishStrand {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  cefrLevel: string | null
-  strandType: EnglishStrandFamily | null
-  order: number
-  isActive: boolean
-  createdAt: string
+// ==================== Community ====================
+export const communityApi = {
+  feed: () => apiClient.get('/community/feed'),
+  trending: () => apiClient.get('/community/trending'),
+  report: (body: { targetType: string; targetId: string; reason: string }) =>
+    apiClient.post('/community/report', body),
 }
 
-/**
- * Real content routes, backed by the `EnglishStrand` Prisma model
- * (`backend/src/modules/learning/english.controller.ts`, mounted at
- * `/api/english`). 45 seeded rows across the 9 strand families
- * (Vocabulary, Grammar, Pronunciation, Listening, Reading, Writing,
- * Speaking, Shadowing, Dictation), CEFR A1-B2. Family is a real
- * `strandType` enum column (migration
- * `20260903_add_english_strand_type_column.sql`), not client-side
- * name-string-parsing.
- */
-export const englishApi = {
-  listStrands: (params?: { cefrLevel?: string; strandType?: EnglishStrandFamily }) =>
-    apiClient.get<EnglishStrand[]>('/english/strands', { params }),
-
-  getStrand: (slug: string) =>
-    apiClient.get<EnglishStrand>(`/english/strands/${slug}`),
-  // Option A: the real English learning path (skills → competencies → mission +
-  // learner mastery) through the shared spine.
-  getLearningPath: () => apiClient.get<EnglishPath>('/english/path'),
-}
-
-// English path is the same canonical-spine projection as any other domain
-// (GET /english/path is a back-compat shim over DomainPathService.getPath).
-// Kept as aliases so there is ONE source of truth for the shape.
-export type EnglishPathCompetency = DomainPathCompetency
-export type EnglishPathSkill = DomainPathSkill
-export type EnglishPath = DomainPath
-
-/**
- * Real Bedrock-backed coaching routes
- * (`backend/src/modules/ai/english-coach.controller.ts`, mounted at
- * `/api/english-coach`). Requires a valid AWS Bedrock credential on the
- * backend; if Bedrock creds are invalid the backend still responds (500
- * with a JSON error body), it does not crash the process — the caller
- * should treat any non-2xx here as "coach unavailable" and show a
- * graceful message rather than a stack trace.
- */
-export const englishCoachApi = {
-  conversation: (data: { userMessage: string; topic?: string; difficulty?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' }) =>
-    apiClient.post('/english-coach/conversation', data),
-
-  grammar: (data: { text: string; explainMistakes?: boolean }) =>
-    apiClient.post('/english-coach/grammar', data),
-
-  pronunciation: (data: { word: string; transcript?: string }) =>
-    apiClient.post('/english-coach/pronunciation', data),
-
-  vocabulary: (data: { topic: string; wordCount?: number }) =>
-    apiClient.post('/english-coach/vocabulary', data),
-
-  reading: (data: { topic: string; length?: 'short' | 'medium' | 'long' }) =>
-    apiClient.post('/english-coach/reading', data),
-}
-
-// ==================== Character Universe ====================
-/**
- * Talks to `backend/src/modules/ai/character.controller.ts` (mounted at
- * `/api/characters`).
- *
- * Verified live against production on 2026-09-02:
- *   - GET /characters/:id            → 200, real Character row (confirmed
- *     with Azouz's real id, e.g. {"id":"...","name":"Azouz","role":"GUIDE",
- *     "personality":{...},"avatarUrl":"/characters/azouz.png"})
- *   - POST /characters/:id/chat      → routes correctly (auth + Prisma +
- *     controller all fire), but currently 500s downstream at the Bedrock
- *     call ("The security token included in the request is invalid").
- *     That is the pre-existing, documented AWS Bedrock credential blocker
- *     (same one english-coach hits) — not a bug in this client or in the
- *     chat route itself.
- *
- * `list()` (GET /characters) and `getUnlocked()` (GET /characters/unlocked)
- * are NOT live yet — the sibling backend-data agent is adding the full
- * 15-character seed + these two endpoints in parallel. Built here against
- * the expected response shape (an array of the same Character shape the
- * working `:id` endpoint already returns, with `getUnlocked()` additionally
- * carrying `isUnlocked` / `unlockHint` per item so the gallery can render
- * locked silhouettes). FOLLOW-UP: once that lands, sanity-check the actual
- * field names against this comment and adjust CharacterGalleryPage's mapping
- * if they differ.
- */
-export interface CharacterSummary {
-  id: string
-  name: string
-  nameAr?: string
-  role: string
-  personality?: {
-    tone?: string
-    style?: string
-    traits?: string[]
-  }
-  description?: string
-  avatarUrl?: string | null
-  isActive?: boolean
-  // Present on /characters/unlocked (expected shape, backend pending):
-  isUnlocked?: boolean
-  unlockHint?: string
-}
-
-export const charactersApi = {
-  list: () => apiClient.get<CharacterSummary[]>('/characters'),
-
-  getUnlocked: () => apiClient.get<CharacterSummary[]>('/characters/unlocked'),
-
-  getById: (id: string) => apiClient.get<CharacterSummary>(`/characters/${id}`),
-
-  /**
-   * Per-learner relationship state for a character (GET /characters/:id/state).
-   * Backed by CharacterService.getCharacterState — real relationshipLevel
-   * (1-5, derived from interaction count) used to drive the companion's
-   * visual evolution stage in CharacterFace (see engine gap matrix,
-   * "Character Progression Engine" Conflict row — avatar/companion visual
-   * leveling interpretation).
-   */
-  getState: (id: string) =>
-    apiClient.get<{
-      state: {
-        characterId: string;
-        characterName: string;
-        characterRole: string;
-        relationshipLevel: number;
-        interactionCount: number;
-        lastInteraction?: string;
-      };
-    }>(`/characters/${id}/state`),
-
-  chat: (id: string, message: string, context?: Record<string, unknown>) =>
-    apiClient.post<{ response: { message: string; mood?: string; suggestedActions?: string[] } }>(
-      `/characters/${id}/chat`,
-      { message, context },
-    ),
-
-  /**
-   * Create a conversation with a character (POST /characters/:id/conversations).
-   * Used to auto-start a voice/text session so a child never has to paste a
-   * conversation id by hand. `type` is a ConversationType enum value.
-   */
-  createConversation: (
-    characterId: string,
-    body: { type: string; sessionId?: string; initialMessage?: string },
-  ) =>
-    apiClient.post<{ conversation: { id: string } }>(
-      `/characters/${characterId}/conversations`,
-      body,
-    ),
-
-  /** List the learner's conversations (GET /characters/conversations). */
-  listConversations: () =>
-    apiClient.get<{ conversations: Array<{ id: string; characterId: string; status: string }> }>(
-      '/characters/conversations',
-    ),
-}
-
-// ==================== Flashcard Engine (spaced-repetition study cards) ====================
-export interface Flashcard {
-  id: string
-  domainId: string
-  front: string
-  back: string
-  isActive: boolean
-}
-
-export interface FlashcardStats {
-  totalReviewed: number
-  dueNow: number
-  mastered: number
-}
-
-export const flashcardsApi = {
-  listByDomain: (domainId: string) =>
-    apiClient.get<Flashcard[]>(`/flashcards/domain/${domainId}`),
-
-  getDueCards: (domainId?: string, limit?: number) =>
-    apiClient.get<Flashcard[]>('/flashcards/due', {
-      params: { domainId, limit },
-    }),
-
-  recordReview: (flashcardId: string, remembered: boolean) =>
-    apiClient.post(`/flashcards/${flashcardId}/review`, { remembered }),
-
-  getStats: () => apiClient.get<FlashcardStats>('/flashcards/stats'),
-}
-
-// ==================== Visual Language Engine (image-paired vocabulary/emotion/sequencing cards) ====================
-export interface VisualLanguageCard {
-  id: string
-  word: string
-  slug: string
-  category: 'VOCABULARY' | 'EMOTION' | 'SEQUENCING' | 'COMPREHENSION'
-  imageUrl: string
-  caption: string
-  ageAppropriate: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
-  order: number
-  isActive: boolean
-}
-
-export const visualLanguageApi = {
-  list: (ageBand?: string, category?: string) =>
-    apiClient.get<VisualLanguageCard[]>('/visual-language', {
-      params: { ageBand, category },
-    }),
-
-  getBySlug: (slug: string) => apiClient.get<VisualLanguageCard>(`/visual-language/${slug}`),
-}
-
-// ==================== Coding Sandbox (Pyodide/Sandpack — zero backend execution) ====================
-/** One test case in a coding exercise (mirrors backend coding-test-model). */
-export interface CodingTest {
-  id: string
-  description: string
-  hidden?: boolean
-  kind: 'stdout-equals' | 'stdout-contains' | 'function-call' | 'result-equals'
-  stdin?: string
-  expectedOutput?: string
-  functionName?: string
-  args?: unknown[]
-  expectedReturn?: unknown
-}
-
-/** Per-test outcome the client computes and reports (server re-validates). */
-export interface CodingTestOutcome {
-  id: string
-  description: string
-  hidden: boolean
-  passed: boolean
-  actual?: string
-}
-
-export interface CodingSandboxMission {
-  activityId: string
-  title: string
-  language: 'python' | 'javascript'
-  runner: 'pyodide' | 'sandpack' | 'blockly'
-  prompt: string
-  starterCode: string
-  timeoutMs: number
-  executionPolicy: 'FORMATIVE' | 'CREDENTIAL'
-  testModelVersion: number
-  tests: CodingTest[]
-}
-
-export interface CodingSandboxSubmission {
-  runId: string | number
-  activityId: string
-  code: string
-  language: 'python' | 'javascript'
-  stdout: string
-  stderr?: string
-  result?: unknown
-  durationMs?: number
-  timedOut?: boolean
-  /** Per-test outcomes computed client-side; server re-validates `actual`. */
-  testOutcomes?: CodingTestOutcome[]
-  hintsUsed?: number
-  attemptNumber?: number
-}
-
-/**
- * Talks to backend/src/modules/coding-sandbox/*. That backend module
- * NEVER executes code — it serves mission specs and grades results that
- * were already executed client-side (Pyodide Worker or Sandpack).
- */
-export const codingSandboxApi = {
-  getMission: (activityId: string) =>
-    apiClient.get<CodingSandboxMission>(`/coding-sandbox/missions/${activityId}`),
-
-  submitResult: (submission: CodingSandboxSubmission) =>
-    apiClient.post('/coding-sandbox/submissions', submission),
-}
-
-// ==================== Cross-Curricular Concepts ====================
-// Real data backed by three Prisma models seeded with age-banded content
-// (backend/prisma/seeds/seed-cross-curricular.ts):
-//   - AILiteracyConcept        (18 rows, ai_literacy_concepts)
-//   - EntrepreneurshipConcept  (15 rows, entrepreneurship_concepts)
-//   - FinancialLiteracyConcept (19 rows, financial_literacy_concepts)
-// Served by backend/src/modules/cross-curricular/cross-curricular.controller.ts,
-// mounted at `/api/cross-curricular`.
-export type CrossCurricularCategory = 'ai-literacy' | 'entrepreneurship' | 'financial-literacy' | 'digital-literacy' | 'career-exploration' | 'communication-skills' | 'coding-concepts'
-
-export interface CrossCurricularConcept {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  category: string
-  /** Absent (undefined) on CodingConcept rows, which use `difficulty` instead. */
-  ageAppropriate?: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
-  /** Only present on CodingConcept rows (1-5 scale). */
-  difficulty?: number
-  order: number
-  isActive: boolean
-  createdAt: string
-}
-
-export const crossCurricularApi = {
-  list: (category: CrossCurricularCategory, params?: { ageBand?: string }) =>
-    apiClient.get<CrossCurricularConcept[]>(`/cross-curricular/${category}`, { params }),
-
-  getConcept: (category: CrossCurricularCategory, slug: string) =>
-    apiClient.get<CrossCurricularConcept>(`/cross-curricular/${category}/${slug}`),
-}
-
-// ==================== Thinking Skills (Problem Solving / Computational /
-// Critical Thinking) ====================
-// Three real, independently-seeded models sharing an identical shape:
-//   - ProblemSolvingConcept        (15 rows, problem_solving_concepts)
-//   - ComputationalThinkingConcept (14 rows, computational_thinking_concepts)
-//   - CriticalThinkingConcept      (15 rows, critical_thinking_concepts)
-// Each served by its own thin controller (problem-solving.controller.ts,
-// computational-thinking.controller.ts, critical-thinking.controller.ts),
-// mounted at `/api/problem-solving`, `/api/computational-thinking`,
-// `/api/critical-thinking` respectively. Found (2026-09-03) fully built and
-// seeded on the backend with zero frontend surface — same bug class as the
-// Cross-Curricular/Flashcards/Communication-Skills fixes.
-export type ThinkingSkillEngine = 'problem-solving' | 'computational-thinking' | 'critical-thinking'
-
-export interface ThinkingSkillConcept {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  category: string
-  ageAppropriate: 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
-  order: number
-  isActive: boolean
-  createdAt: string
-}
-
-export const thinkingSkillsApi = {
-  list: (engine: ThinkingSkillEngine, params?: { ageBand?: string; category?: string }) =>
-    apiClient.get<ThinkingSkillConcept[]>(`/${engine}`, { params }),
-
-  listCategories: (engine: ThinkingSkillEngine) =>
-    apiClient.get<string[]>(`/${engine}/categories`),
-
-  getConcept: (engine: ThinkingSkillEngine, slug: string) =>
-    apiClient.get<ThinkingSkillConcept>(`/${engine}/${slug}`),
-}
-
-// ==================== Metacognition / Reflection ====================
-// Real data backed by ReflectionPrompt + MissionReflection Prisma models
-// (backend/prisma/seeds/seed-reflection-prompts.ts, 3 seeded prompts).
-// Served by backend/src/modules/reflection/reflection.controller.ts,
-// mounted at `/api/reflection`. Shown to learners right after a mission
-// completes (see MissionCompletePage.tsx).
+// ==================== Reflection ====================
 export interface ReflectionPrompt {
   id: string
   text: string
-  kind: 'FEELING' | 'DIFFICULTY' | 'STRATEGY'
-  isActive: boolean
+  kind: string
   order: number
-  createdAt: string
 }
-
-export interface MissionReflection {
-  id: string
-  learnerId: string
-  missionRunId: string
-  promptId: string
-  rating: number
-  note: string | null
-  createdAt: string
-}
-
 export const reflectionApi = {
-  getPrompts: () => apiClient.get<ReflectionPrompt[]>('/reflection/prompts'),
-
-  submitResponse: (data: { missionRunId: string; promptId: string; rating: number; note?: string }) =>
-    apiClient.post<MissionReflection>('/reflection/responses', data),
-
-  getResponsesForRun: (missionRunId: string) =>
-    apiClient.get<MissionReflection[]>('/reflection/responses/by-run', { params: { missionRunId } }),
+  prompts: () => apiClient.get<ReflectionPrompt[]>('/reflection/prompts'),
+  respond: (body: { missionRunId: string; promptId: string; rating: number; note?: string }) =>
+    apiClient.post('/reflection/responses', body),
 }
 
-// ==================== Admin: Missions CMS/Authoring (v1) ====================
-// Thin wrapper around the admin-only /admin/missions endpoints (ADMIN role
-// required server-side via RolesGuard). Mission-content-type only — see
-// docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md CMS row for scope notes.
-export interface AdminMissionInput {
-  title: string
-  description: string
-  type: 'GUIDED' | 'EXPLORATION' | 'CHALLENGE' | 'PROJECT_BASED'
-  estimatedMinutes?: number | undefined
-  order?: number | undefined
-  isActive?: boolean | undefined
-  worldId?: string | undefined
+// ==================== Voice (PROVIDER-GATED) ====================
+export const voiceApi = {
+  turn: (body: Record<string, unknown>) => apiClient.post('/voice/turn', body),
 }
 
-export const adminMissionsApi = {
-  list: () => apiClient.get('/admin/missions'),
-
-  getById: (id: string) => apiClient.get(`/admin/missions/${id}`),
-
-  create: (data: AdminMissionInput) => apiClient.post('/admin/missions', data),
-
-  update: (id: string, data: Partial<AdminMissionInput>) =>
-    apiClient.patch(`/admin/missions/${id}`, data),
-
-  remove: (id: string) => apiClient.delete(`/admin/missions/${id}`),
+/**
+ * Generic AI tutoring (feedback/hint/explain/analyze) — real backend
+ * (`ai.controller.ts`), had ZERO frontend callers before this pass despite
+ * full working logic + child-safety moderation on every path. Surfaced as
+ * an inline "Ask for a hint" / "Explain this" action on non-code activities
+ * (ActivityView) — never auto-fires, always learner-initiated.
+ */
+export const aiTutorApi = {
+  hint: (body: { question: string; learnerAttempt?: string; difficulty?: string }) =>
+    apiClient.post<{ hint: string }>('/ai/hint', body),
+  explain: (body: { concept: string; learnerAge?: number; context?: string }) =>
+    apiClient.post<{ explanation: string }>('/ai/explain', body),
+  feedback: (body: { work: string; rubric?: string; context?: string }) =>
+    apiClient.post<{ feedback: string }>('/ai/feedback', body),
 }
 
-// ==================== Story Engine (gap matrix cluster-8) ====================
-// Small, real branching-story reader — StoryPage.choiceOptions carries the
-// branching tree, walked client-side (satisfies "Story Branching Engine").
-export interface StoryPage {
-  id: string
-  pageNumber: number
-  text: string
-  safetyReviewed?: boolean
-  choiceOptions: { label: string; nextPageNumber: number | null }[] | null
+/**
+ * Coding Coach — real backend (`coding-coach.controller.ts`), had ZERO
+ * frontend callers before this pass. Surfaced as an "Ask Codey" debug-help
+ * action in CodingActivityPanel, learner-initiated after a failed run —
+ * never auto-fires, never writes the solution for the learner (the backend
+ * prompt explicitly coaches toward self-correction, not an answer).
+ */
+export const codingCoachApi = {
+  debug: (body: { code: string; language: 'scratch' | 'blockly' | 'python' | 'javascript' | 'html' | 'css'; error?: string; expectedBehavior?: string }) =>
+    apiClient.post<{ diagnosis: string; suggestedFix?: string; explanation?: string; learningPoints?: string[] }>(
+      '/coding-coach/debug',
+      body,
+    ),
+  explain: (body: { code: string; language: string; specificLine?: number }) =>
+    apiClient.post<{ explanation: string }>('/coding-coach/explain', body),
 }
 
-export interface StorySummary {
-  id: string
-  title: string
-  summary?: string
-  ageBand: string
-  domain?: { name: string; slug: string; icon?: string; color?: string } | null
-  _count?: { pages: number }
-}
-
-export interface StoryDetail extends StorySummary {
-  pages: StoryPage[]
-}
-
-export const storiesApi = {
-  listStories: (params?: { ageBand?: string; domainSlug?: string }) =>
-    apiClient.get<StorySummary[]>('/stories', { params }),
-
-  getStory: (id: string) => apiClient.get<StoryDetail>(`/stories/${id}`),
-}
-
-// ==================== Notifications ====================
-export interface NotificationRecord {
-  id: string
-  type: string
-  title: string
-  body: string
-  isRead: boolean
-  createdAt: string
-  data?: Record<string, unknown> | null
-}
-
-export const notificationsApi = {
-  list: (unreadOnly?: boolean) =>
-    apiClient.get<NotificationRecord[]>('/notifications', { params: unreadOnly ? { unreadOnly: 'true' } : undefined }),
-
-  unreadCount: () => apiClient.get<{ count: number }>('/notifications/unread-count'),
-
-  markRead: (id: string) => apiClient.post(`/notifications/${id}/read`),
-
-  markAllRead: () => apiClient.post('/notifications/read-all'),
-}
-
-// ==================== Search ====================
-export interface SearchResultItem {
-  type: 'mission' | 'activity' | 'concept'
-  id: string
-  title: string
-  snippet: string
-  rank: number
-  // Only set for type === 'activity' — the specific Mission this activity
-  // lives under (there's no standalone activity detail route; activities
-  // only render inside a Mission's page). Null/undefined means no active
-  // mission links it, in which case callers should fall back to /missions.
-  missionId?: string | null
-}
-
-export const searchApi = {
-  search: (q: string, limit?: number) =>
-    apiClient.get<{ query: string; results: SearchResultItem[] }>('/search', { params: { q, limit } }),
-}
-
-// ==================== Worlds (World Engine) ====================
-// Real data backed by the `World` Prisma model (one per major Domain),
-// seeded via backend/prisma/seeds/seed-worlds.ts (7 worlds: Numeria,
-// Verdantia, Circuit City, Prisma Isles, Wordhaven, Gearhollow, The Riddle
-// Reach). Served by worlds.controller.ts, mounted at `/api/worlds`.
-// Per-learner unlock status is computed server-side (domain-engagement +
-// mission-completion signal), not derived client-side.
-export interface WorldRecord {
-  id: string
-  name: string
-  slug: string
-  description?: string | null
-  order: number
-  isActive: boolean
-  unlockCondition?: string | null
-  domain: { id: string; name: string; slug: string }
-  missionCount: number
-  isUnlocked: boolean
-}
-
-export type WorldMissionStatus = 'COMPLETED' | 'IN_PROGRESS' | 'AVAILABLE' | 'LOCKED'
-export interface WorldMissionRecord {
-  id: string
-  title: string
-  description: string
-  type: string
-  estimatedMinutes?: number | null
-  order: number
-  status: WorldMissionStatus
-  locked: boolean
-}
-export interface WorldDetailRecord extends WorldRecord {
-  missions: WorldMissionRecord[]
-}
-
-export const worldsApi = {
-  list: () => apiClient.get<WorldRecord[]>('/worlds'),
-  getOne: (id: string) => apiClient.get<WorldDetailRecord>('/worlds/' + id),
-}
-
-// ==================== Creativity Engine ====================
-// Real data backed by CreativityPrompt/CreativitySubmission Prisma models
-// (backend/src/modules/creativity/creativity.controller.ts, mounted at
-// `/api/creativity`), seeded via backend/prisma/seeds/seed-creativity-prompts.ts
-// (13 open-ended prompts spanning story/art/music/invention across Domains).
-// A guided creative-project-prompt system distinct from generic
-// Project/ProjectMilestone — a curated prompt library + opt-in public
-// submission gallery, not open-ended free-form project tracking.
-export interface CreativityPromptRecord {
-  id: string
-  title: string
-  slug: string
-  prompt: string
-  ageBand: string
-  order: number
-  isActive: boolean
-  domain?: { id: string; name: string; slug: string } | null
-}
-
-export interface CreativitySubmissionRecord {
-  id: string
-  promptId: string
-  learnerId: string
-  title?: string | null
-  content: string
-  visibility: 'PRIVATE' | 'PUBLIC'
-  createdAt: string
-  prompt?: { id: string; title: string; slug: string }
-  learner?: { id: string; displayName: string; avatarUrl?: string | null }
-}
-
-export const creativityApi = {
-  listPrompts: (params?: { ageBand?: string; domainId?: string }) =>
-    apiClient.get<CreativityPromptRecord[]>('/creativity/prompts', { params }),
-
-  getPrompt: (slug: string) => apiClient.get<CreativityPromptRecord>(`/creativity/prompts/${slug}`),
-
-  submit: (dto: { promptId: string; title?: string; content: string; visibility?: 'PRIVATE' | 'PUBLIC' }) =>
-    apiClient.post<CreativitySubmissionRecord>('/creativity/submissions', dto),
-
-  mySubmissions: () => apiClient.get<CreativitySubmissionRecord[]>('/creativity/submissions/mine'),
-
-  gallery: (promptId?: string) =>
-    apiClient.get<CreativitySubmissionRecord[]>('/creativity/gallery', { params: promptId ? { promptId } : {} }),
-
-  setVisibility: (id: string, visibility: 'PRIVATE' | 'PUBLIC') =>
-    apiClient.post(`/creativity/submissions/${id}/visibility`, { visibility }),
-}
-
-// ==================== Feature Flags (admin) ====================
-export interface FeatureFlagRecord {
-  key: string
-  description?: string | null
-  isEnabledGlobally: boolean
-}
-
-export const featureFlagsApi = {
-  list: () => apiClient.get<FeatureFlagRecord[]>('/feature-flags'),
-
-  toggle: (key: string, isEnabledGlobally: boolean) =>
-    apiClient.patch(`/feature-flags/${key}`, { isEnabledGlobally }),
-}
-
-// ==================== Experimentation Engine v1 ====================
-// Backend: ExperimentationController/ExperimentationService
-// (backend/src/modules/experimentation/), deterministic hash-based
-// variant bucketing + persisted ExperimentAssignment rows. Merged with
-// zero frontend consumer — same "backend built, frontend dead" bug class
-// as the Audit/Feature-Flag engines. Staff (ADMIN/MODERATOR) list;
-// ADMIN-only create + status changes. No outcome/results endpoint exists
-// server-side yet (by design — see service header comment), so this page
-// is a plain list + create + status-control surface only.
-export interface ExperimentRecord {
-  id: string
-  key: string
-  name: string
-  description: string | null
-  status: 'DRAFT' | 'RUNNING' | 'PAUSED' | 'COMPLETED'
-  variants: (string | { name: string })[]
-  createdAt: string
-  updatedAt?: string
-}
-
-export const experimentsApi = {
-  list: () => apiClient.get<ExperimentRecord[]>('/experiments'),
-
-  create: (data: { key: string; name: string; description?: string; variants: string[] }) =>
-    apiClient.post<ExperimentRecord>('/experiments', data),
-
-  setStatus: (key: string, status: 'DRAFT' | 'RUNNING' | 'PAUSED' | 'COMPLETED') =>
-    apiClient.patch<ExperimentRecord>(`/experiments/${key}/status`, { status }),
-}
-
-// ==================== Safety Policy Engine (read-only history viewer) ====================
-// Backend: AdminSafetyPolicyController (backend/src/modules/ai/admin-safety-policy.controller.ts)
-// over SafetyPolicyService, a versioned/auditable per-ageBand table that
-// moderation.service.ts / character-safety.service.ts fall back from if a
-// row is missing (never hard-fails safety-critical paths). ADMIN-only,
-// read-only — no create/edit endpoint exists server-side (policy authoring
-// is via seed scripts today). Had zero frontend consumer despite being a
-// real audit-trail surface — same bug class as Audit Log/Experimentation.
-export type AgeBandKey = 'AGE_8_9' | 'AGE_10_11' | 'AGE_12_14'
-
-export interface SafetyPolicyRecord {
-  id: string
-  ageBand: AgeBandKey
-  policyVersion: number
-  isActive: boolean
-  rules: Record<string, unknown>
-  createdAt: string
-}
-
-export const safetyPolicyApi = {
-  list: (ageBand?: AgeBandKey) =>
-    apiClient.get<SafetyPolicyRecord[]>('/admin/safety-policies', {
-      params: ageBand ? { ageBand } : undefined,
-    }),
-
-  getActive: (ageBand: AgeBandKey) =>
-    apiClient.get<SafetyPolicyRecord | null>(`/admin/safety-policies/${ageBand}/active`),
-
-  getVersion: (ageBand: AgeBandKey, version: number) =>
-    apiClient.get<SafetyPolicyRecord>(`/admin/safety-policies/${ageBand}/versions/${version}`),
-}
-
-// ==================== Prompt Template Engine (AI Prompt/Policy Engine, generic slice) ====================
-// Backend: AdminPromptTemplateController (backend/src/modules/ai/
-// admin-prompt-template.controller.ts) over PromptTemplateService, a
-// versioned/changelog-tracked table backing every system-prompt string
-// previously hardcoded in character.service.ts/moderation.service.ts/
-// coding-coach.service.ts/english-coach.service.ts. Closes the
-// "generic prompt templates sub-gap" half of the AI Prompt/Policy
-// Engine (the SafetyPolicy half already has AdminSafetyPolicyPage).
-// ADMIN-only. Edits go through upsertTemplate (bumps version, keeps
-// changelog history — never destructive); deactivate is a soft-disable
-// that makes the owning service fall back to its inline default.
-export interface PromptTemplateRecord {
-  id: string
-  key: string
-  content: string
-  version: number
-  changelog: string | null
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export const promptTemplateApi = {
-  list: () => apiClient.get<PromptTemplateRecord[]>('/admin/prompt-templates'),
-
-  get: (key: string) => apiClient.get<PromptTemplateRecord>(`/admin/prompt-templates/${key}`),
-
-  update: (key: string, data: { content: string; changelog: string }) =>
-    apiClient.put<PromptTemplateRecord>(`/admin/prompt-templates/${key}`, data),
-
-  deactivate: (key: string) =>
-    apiClient.patch<PromptTemplateRecord>(`/admin/prompt-templates/${key}/deactivate`),
-}
-
-// ==================== Content Items (authoring CMS slice) ====================
-// Backend: ContentItemsController (backend/src/modules/content-items/
-// content-items.controller.ts) over ContentItemsService — the minimal
-// create/list/status-lifecycle slice for the previously-orphaned
-// ContentItem table (model + enums existed with zero service/controller
-// anywhere — see docs/architecture/USAM_KIDS_ENGINE_GAP_MATRIX.md,
-// "Content Ingestion Engine"). ADMIN-only, same guard pattern as
-// content-qa/admin-missions. Status lifecycle is a strict forward walk:
-// DRAFT -> VALIDATING -> VALIDATED -> PUBLISHED, with DEPRECATED/REJECTED
-// reachable as side/terminal states — server enforces allowed transitions,
-// this UI just offers whatever the current status allows.
-export type ContentTypeKey =
-  | 'ACTIVITY'
-  | 'QUESTION'
-  | 'STORY'
-  | 'SCENARIO'
-  | 'HINT'
-  | 'EXPLANATION'
-  | 'PROJECT_BRIEF'
-  | 'PRACTICE_SET'
-
-export type ContentStatusKey = 'DRAFT' | 'VALIDATING' | 'VALIDATED' | 'PUBLISHED' | 'DEPRECATED' | 'REJECTED'
-
-export type DifficultyLevelKey = 'EASY' | 'MEDIUM' | 'HARD' | 'CHALLENGE'
-
-export interface ContentItemRecord {
-  id: string
-  type: ContentTypeKey
-  title: string
-  content: unknown
-  metadata: unknown
-  language: string
-  ageBand: AgeBandKey | null
-  domainId: string | null
-  objectiveId: string | null
-  difficulty: DifficultyLevelKey | null
-  status: ContentStatusKey
-  version: number
-  sourceType: 'SEEDED' | 'AI_GENERATED' | 'HUMAN_AUTHORED'
-  createdBy: string | null
-  validatedBy: string | null
-  validatedAt: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface ContentItemListResponse {
-  items: ContentItemRecord[]
-  total: number
-  take: number
-  skip: number
-}
-
-export const contentItemsApi = {
-  list: (params?: {
-    type?: ContentTypeKey | undefined
-    status?: ContentStatusKey | undefined
-    ageBand?: AgeBandKey | undefined
-    domainId?: string | undefined
-    take?: number | undefined
-    skip?: number | undefined
-  }) => apiClient.get<ContentItemListResponse>('/admin/content-items', { params }),
-
-  findOne: (id: string) => apiClient.get<ContentItemRecord>(`/admin/content-items/${id}`),
-
-  create: (data: {
-    type: ContentTypeKey
-    title: string
-    content: unknown
-    metadata?: unknown
-    language?: string
-    ageBand?: AgeBandKey | undefined
-    domainId?: string
-    objectiveId?: string
-    difficulty?: DifficultyLevelKey | undefined
-  }) => apiClient.post<ContentItemRecord>('/admin/content-items', data),
-
-  updateStatus: (id: string, status: ContentStatusKey) =>
-    apiClient.patch<ContentItemRecord>(`/admin/content-items/${id}/status`, { status }),
-}
-
-// ==================== Translations (localization QA) ====================
-// Backend: TranslationController (backend/src/modules/learning/translation.controller.ts),
-// real seeded rows across CHARACTER/DOMAIN/ACTIVITY/DIGITAL_LITERACY_CONCEPT/
-// SYSTEM (112 rows live). Returns the full per-field TranslatedEntity map
-// when `language` is omitted, or a single resolved value when passed.
-export const translationsApi = {
-  getEntity: (entityType: string, entityId: string, language?: string) =>
-    apiClient.get(
-      `/translations/${entityType}/${entityId}${language ? `?language=${language}` : ''}`,
+/**
+ * English Coach — real backend (`english-coach.controller.ts`), had ZERO
+ * frontend callers before this pass. Surfaced as a dedicated conversation-
+ * practice + grammar-check page, linked from the English domain path.
+ */
+export const englishCoachApi = {
+  conversation: (body: { topic?: string; difficulty?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; userMessage: string }) =>
+    apiClient.post<{ response: string; cefrLevel: string; suggestedVocabulary?: string[] }>(
+      '/english-coach/conversation',
+      body,
+    ),
+  grammar: (body: { text: string; explainMistakes: boolean }) =>
+    apiClient.post<{ originalText: string; correctedText: string; feedback: string; mistakeCount: number }>(
+      '/english-coach/grammar',
+      body,
     ),
 }
 
-// ==================== Question Engine (gap matrix: QuestionTemplate) ====================
-// Curriculum-linked reusable question definitions (MCQ/FILL_BLANK/DRAG_DROP).
-// Admin-only browse/generate UI — the "generate" endpoint composes a real
-// missions Activity from a template so generated questions flow through the
-// existing delivery/mastery pipeline, not a parallel system.
-export interface QuestionTemplateRecord {
-  id: string
-  objectiveId: string
-  type: 'MCQ' | 'FILL_BLANK' | 'DRAG_DROP' | string
-  stem: string
-  options: string[] | null
-  correctAnswer: string
-  distractors: string[]
-  difficulty: string
-  isActive: boolean
-}
-
-export const questionsApi = {
-  listTemplates: (params?: { objectiveId?: string; type?: string }) => {
-    const qs = new URLSearchParams()
-    if (params?.objectiveId) qs.set('objectiveId', params.objectiveId)
-    if (params?.type) qs.set('type', params.type)
-    const suffix = qs.toString() ? `?${qs.toString()}` : ''
-    return apiClient.get<QuestionTemplateRecord[]>(`/questions/templates${suffix}`)
-  },
-
-  getTemplate: (id: string) => apiClient.get<QuestionTemplateRecord>(`/questions/templates/${id}`),
-
-  generateActivity: (data: {
-    templateId: string
-    distractorCount?: number
-    missionId?: string
-    order?: number
-  }) => apiClient.post('/questions/generate', data),
-}
-
-// ==================== Analytics Engine (admin, gap matrix) ====================
-// Backend: AnalyticsController/AnalyticsService (backend/src/modules/analytics),
-// real aggregation over the `learning_events` table (no derived counters,
-// no separate storage). Staff/ADMIN-only, matches AdminFeatureFlagsPage's
-// established pattern for this class of admin-only read-only dashboards.
-export interface AnalyticsEventTypeCount {
-  type: string
-  count: number
-}
-export interface AnalyticsDailyActivity {
-  date: string
-  activeLearners: number
-  totalEvents: number
-}
-export interface AnalyticsOverview {
-  rangeDays: number
-  totalEvents: number
-  activeLearners: number
-  eventsByType: AnalyticsEventTypeCount[]
-  dailyActivity: AnalyticsDailyActivity[]
-}
-
-export const analyticsApi = {
-  getOverview: (days = 30) =>
-    apiClient.get<AnalyticsOverview>('/admin/analytics/overview', { params: { days } }),
-}
-
-// Audit Engine — staff-only read side over AdminAuditLog. Real call sites:
-// guardian time-limit changes, community moderation review, learner
-// age-band changes. See backend/src/modules/audit/audit-log.service.ts.
-export interface AuditLogEntry {
-  id: string
-  actorUserId: string
-  actorRole: string
-  action: string
-  targetType: string
-  targetId: string
-  before: unknown
-  after: unknown
-  metadata: unknown
-  createdAt: string
-}
-
-export const auditApi = {
-  getLogs: (params?: { action?: string; targetType?: string; take?: number }) =>
-    apiClient.get<AuditLogEntry[]>('/audit/logs', { params }),
-}
-
-// Intervention Engine — staff (ADMIN/MODERATOR) surface over
-// InterventionRecommendation, created reactively by InterventionService
-// when a real struggle pattern (3 consecutive wrong on same competency,
-// or 5+ attempts with confidence still <0.3) is detected right after an
-// activity submission. See backend/src/modules/interventions/.
-export interface InterventionRecommendation {
-  id: string
-  learnerId: string
-  competencyId: string
-  triggerType: 'CONSECUTIVE_WRONG_SAME_COMPETENCY' | 'LOW_MASTERY_REPEATED_ATTEMPTS'
-  triggerDetail: string
-  recommendedAction: string
-  status: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED'
-  createdAt: string
-  acknowledgedAt: string | null
-  resolvedAt: string | null
-  learner?: { id: string; displayName?: string }
-  competency?: { id: string; name?: string }
-}
-
-export const interventionsApi = {
-  listOpen: (take?: number) =>
-    apiClient.get<InterventionRecommendation[]>('/admin/interventions', {
-      params: take ? { take } : undefined,
-    }),
-  acknowledge: (id: string) =>
-    apiClient.patch<InterventionRecommendation>(`/admin/interventions/${id}/acknowledge`),
-  resolve: (id: string) =>
-    apiClient.patch<InterventionRecommendation>(`/admin/interventions/${id}/resolve`),
-}
-
-// Misconception Engine v1 — admin overview surface over MisconceptionPattern
-// rows, created reactively by MisconceptionService.recordWrongAnswer() right
-// after a wrong-answer evaluation. Shows the most frequent wrong-answer
-// patterns platform-wide so a curriculum admin can see what learners
-// actually get wrong. See backend/src/modules/misconceptions/.
-export interface MisconceptionPattern {
-  id: string
-  questionTemplateId: string | null
-  activityId: string | null
-  wrongAnswerValue: string
-  frequencyCount: number
-  description: string | null
-  isLabeled: boolean
-  isConfirmedRecurring: boolean
-  firstSeenAt: string
-  lastSeenAt: string
-  questionTemplate?: { id: string; stem?: string }
-  activity?: { id: string; title?: string }
-}
-
-export const misconceptionsApi = {
-  listTop: (take?: number) =>
-    apiClient.get<MisconceptionPattern[]>('/admin/misconceptions', {
-      params: take ? { take } : undefined,
-    }),
-}
-
-// Assessment Quality Engine — admin surface over AssessmentQualityFlag,
-// a rule-based scan (NO_CORRECT_ANSWER, CORRECT_ANSWER_NOT_IN_OPTIONS,
-// TOO_FEW_OPTIONS, DUPLICATE_OPTIONS, ALL_OPTIONS_CORRECT) of SELECT/
-// MATCH/SEQUENCE activities' question-item structure, triggerable on
-// demand from this admin page (no cron yet). See
-// backend/src/modules/assessment-quality/admin-assessment-quality.controller.ts.
-export type AssessmentQualityFlagType =
-  | 'NO_CORRECT_ANSWER'
-  | 'CORRECT_ANSWER_NOT_IN_OPTIONS'
-  | 'TOO_FEW_OPTIONS'
-  | 'DUPLICATE_OPTIONS'
-  | 'ALL_OPTIONS_CORRECT'
-
-export interface AssessmentQualityFlag {
-  id: string
-  activityId: string
-  flagType: AssessmentQualityFlagType
-  detail: string
-  detectedAt: string
-  resolvedAt: string | null
-}
-
-export interface AssessmentQualityScanResult {
-  scannedAt: string
-  activitiesScanned: number
-  flagsFound: number
-  flagsCreated: number
-  flagsAlreadyOpen: number
-  flagsAutoResolved: number
-  candidates: { activityId: string; flagType: AssessmentQualityFlagType; detail: string }[]
-}
-
-export const assessmentQualityApi = {
-  listFlags: () => apiClient.get<AssessmentQualityFlag[]>('/admin/assessment-quality/flags'),
-  scan: () => apiClient.post<AssessmentQualityScanResult>('/admin/assessment-quality/scan'),
-}
-
-// Content QA Engine — admin surface over ContentQAFlag, distinct from
-// Assessment Quality (question-item structure) and Rubrics (human grading).
-export type ContentQAFlagType =
-  | 'MISSING_DESCRIPTION'
-  | 'CONTENT_TOO_SHORT'
-  | 'NO_AGE_BAND_SIGNAL'
-  | 'ZERO_AGE_VARIANT_COVERAGE'
-
-export interface ContentQAFlag {
-  id: string
-  entityType: 'ACTIVITY' | 'MISSION'
-  entityId: string
-  flagType: ContentQAFlagType
-  severity: 'LOW' | 'MEDIUM' | 'HIGH'
-  detail: string
-  detectedAt: string
-}
-
-export interface ContentQAScanResult {
-  scannedAt: string
-  activitiesScanned: number
-  missionsScanned: number
-  flagsFound: number
-  flagsCreated: number
-  flagsAlreadyOpen: number
-  candidates: { entityType: string; entityId: string; flagType: ContentQAFlagType; detail: string }[]
-}
-
-export const contentQaApi = {
-  listFlags: () => apiClient.get<ContentQAFlag[]>('/admin/content-qa/flags'),
-  scan: () => apiClient.post<ContentQAScanResult>('/admin/content-qa/scan'),
-}
-
-// AI Memory Governance — admin visibility over ConversationMessage /
-// CharacterInteraction retention (volumes + past-retention backlog).
-export interface PurposeTagCount {
-  purposeTag: string
-  total: number
-  pastRetention: number
-}
-
-export interface MemoryGovernanceStats {
-  conversationMessages: PurposeTagCount[]
-  characterInteractions: PurposeTagCount[]
-  totals: {
-    conversationMessages: number
-    conversationMessagesPastRetention: number
-    characterInteractions: number
-    characterInteractionsPastRetention: number
+// ==================== Guardian (parent) ====================
+export interface ChildDashboard {
+  progression: { level: number; totalXP: number; coins: number }
+  streak: { current: number; longest: number }
+  mastery: {
+    total: number
+    proficient: number
+    developing: number
+    emerging: number
+    byDomain: Record<string, unknown>
   }
-  generatedAt: string
+  recentActivity: Array<{ type: string; success: boolean; date: string }>
+  projects: { showcased: number }
+}
+export const parentsApi = {
+  children: () => apiClient.get('/parents/children'),
+  familySummary: () => apiClient.get('/parents/family-summary'),
+  dashboard: (learnerId: string) => apiClient.get<ChildDashboard>(`/parents/children/${learnerId}/dashboard`),
+  progress: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/progress`),
+  activity: (learnerId: string, days = 7) =>
+    apiClient.get(`/parents/children/${learnerId}/activity`, { params: { days } }),
+  reflections: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/reflections`),
+  safety: (learnerId: string) => apiClient.get(`/parents/children/${learnerId}/safety`),
+  setTimeLimits: (learnerId: string, body: { dailyMinutes?: number; weeklyMinutes?: number; bedtimeHour?: number }) =>
+    apiClient.post(`/parents/children/${learnerId}/time-limits`, body),
 }
 
-export const memoryGovernanceApi = {
-  getStats: () => apiClient.get<MemoryGovernanceStats>('/admin/memory-governance/stats'),
+export type ConsentPurpose =
+  | 'ESSENTIAL_SERVICE'
+  | 'PERSONALIZATION'
+  | 'AI_PROCESSING'
+  | 'VOICE_PROCESSING'
+  | 'COMMUNITY'
+  | 'ANALYTICS'
+export interface EffectiveConsent {
+  purpose: ConsentPurpose
+  granted: boolean
+  policyVersion: string | null
+  updatedAt: string | null
 }
+/** Current policy version guardians are consenting to. Bump this when the
+ * privacy policy text changes; the backend records exactly which version
+ * was agreed to (ConsentRecord.policyVersion) for compliance evidence. */
+export const CURRENT_POLICY_VERSION = '2026-10-02'
 
-// AI Evaluation Harness — admin read-only history over AIEvalRun/AIEvalResult,
-// populated by backend/scripts/run-ai-eval.ts (run manually/via cron, not
-// triggered from this UI). See backend/src/modules/ai/admin-ai-eval.controller.ts.
-export interface AIEvalRunSummary {
-  id: string
-  startedAt: string
-  finishedAt: string | null
-  datasetVersion: string | null
-  totalCases: number
-  passedCases: number
-  passRate: number
-  averageScore: number | null
-  status: string
-  notes: string | null
-  resultCount: number
-}
-
-export interface AIEvalResultDetail {
-  id: string
-  caseId: string
-  passed: boolean
-  score: number | null
-  responseText: string | null
-  errorMessage: string | null
-  rubricBreakdown?: unknown
-}
-
-export interface AIEvalRunDetail extends Omit<AIEvalRunSummary, 'resultCount'> {
-  results: AIEvalResultDetail[]
-}
-
-export const aiEvalApi = {
-  listRuns: (limit?: number) =>
-    apiClient.get<{ runs: AIEvalRunSummary[] }>('/admin/ai-eval/runs', {
-      params: limit ? { limit } : undefined,
-    }),
-  getRun: (id: string) => apiClient.get<AIEvalRunDetail>(`/admin/ai-eval/runs/${id}`),
-}
-
-// Safety Escalation Queue — staff (MODERATOR/ADMIN) surface over
-// SafetyEscalation, the persisted record created whenever
-// CharacterSafetyService.evaluateSafety() resolves to
-// 'escalation_required'. See backend/src/modules/ai/safety-escalation.controller.ts.
-export type SafetyEscalationStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED'
-
-export interface SafetyEscalationEntry {
-  id: string
-  learnerId: string
-  triggerReason: string
-  safetyState: string
-  status: SafetyEscalationStatus
-  assignedTo: string | null
-  resolvedAt: string | null
-  createdAt: string
-  learner?: {
-    id: string
-    displayName: string | null
-    firstName: string | null
-    ageBand: string
-  }
-}
-
-export const safetyEscalationApi = {
-  list: (status?: SafetyEscalationStatus) =>
-    apiClient.get<SafetyEscalationEntry[]>('/safety-escalations', {
-      params: status ? { status } : undefined,
-    }),
-  getOne: (id: string) => apiClient.get<SafetyEscalationEntry>(`/safety-escalations/${id}`),
-  assign: (id: string, assignedTo?: string) =>
-    apiClient.patch<SafetyEscalationEntry>(`/safety-escalations/${id}/assign`, {
-      assignedTo,
-    }),
-  resolve: (id: string, resolvedBy?: string) =>
-    apiClient.patch<SafetyEscalationEntry>(`/safety-escalations/${id}/resolve`, {
-      resolvedBy,
-    }),
-}
-
-
-// ==================== Credentials (Open Badges 3.0) ====================
-// Surfaces the backend Credentials engine — real verifiable achievement
-// credentials the learner has earned (was backend-only; traceability #36).
-export const credentialsApi = {
-  // The authenticated learner's earned credentials (non-revoked).
-  getMine: () => apiClient.get('/credentials/me'),
-  // Public verification document by stable UID (no auth needed).
-  verify: (uid: string) => apiClient.get(`/credentials/${uid}`),
-}
-
-// ==================== Simulations (branching decision scenarios) ====================
-// Surfaces the backend Simulation engine — interactive branching scenarios
-// (entrepreneurship, financial literacy, digital safety, science, civic).
-// Was backend-only with no frontend route (traceability #38).
-export const simulationsApi = {
-  list: (params?: { ageBand?: string; category?: string }) =>
-    apiClient.get('/simulations', { params }),
-  getScenario: (slug: string) => apiClient.get(`/simulations/${slug}`),
-  getNode: (scenarioId: string, nodeKey: string) =>
-    apiClient.get(`/simulations/${scenarioId}/nodes/${nodeKey}`),
-}
-
-// ==================== Legal / Consent (COPPA/GDPR — guardian-only) ====================
-// Surfaces the backend Legal Compliance engine — parental consent capture,
-// per-purpose consent status, GDPR data export + deletion. Safety-critical;
-// was backend-only with no frontend (traceability #43).
 export const legalApi = {
-  getConsent: (learnerId: string) => apiClient.get(`/legal/consent/${learnerId}`),
-  captureConsent: (data: {
-    learnerId: string
-    purpose: string
-    granted: boolean
-    policyVersion?: string
-    jurisdiction?: string
-    verificationMethod?: string
-  }) => apiClient.post('/legal/consent', data),
+  consent: (body: { learnerId: string; purpose: ConsentPurpose; granted: boolean; policyVersion: string }) =>
+    apiClient.post('/legal/consent', body),
+  getConsent: (learnerId: string) => apiClient.get<EffectiveConsent[]>(`/legal/consent/${learnerId}`),
   exportData: (learnerId: string) => apiClient.get(`/legal/export/${learnerId}`),
-  deleteData: (learnerId: string, reason?: string) =>
-    apiClient.post(`/legal/delete/${learnerId}`, { reason }),
+  requestDelete: (learnerId: string) => apiClient.post(`/legal/delete/${learnerId}`),
 }
 
-// ==================== Entitlements (plans / pricing) ====================
-// Surfaces the backend Entitlements engine (GET /entitlements/plans,
-// GET /entitlements/me, POST /entitlements/subscribe). Plans are seeded from
-// plans-local/47_PRICING_PACKAGING.md; `features` is the flag/limit payload
-// the backend gates read via hasFeature()/getLimit(). The `me` endpoint keys
-// off the logged-in user (a guardian sees their own effective plan).
-export interface PlanRecord {
-  id: string
-  code: string
-  name: string
-  description?: string | null
-  priceCents: number
-  currency: string
-  interval: 'MONTH' | 'YEAR' | 'ONE_TIME'
-  features: Record<string, unknown>
-  isActive: boolean
+export const entitlementsMgmtApi = {
+  subscribe: (planCode: string) => apiClient.post('/entitlements/subscribe', { planCode }),
+  cancel: (subscriptionId: string) => apiClient.post(`/entitlements/cancel/${subscriptionId}`),
 }
 
-export interface MyEntitlements {
-  plan: PlanRecord | null
-  features: Record<string, unknown>
+// ==================== Moderator ====================
+export const moderationApi = {
+  escalations: () => apiClient.get('/safety-escalations'),
+  escalation: (id: string) => apiClient.get(`/safety-escalations/${id}`),
+  assign: (id: string) => apiClient.patch(`/safety-escalations/${id}/assign`),
+  /** body must match backend/src/modules/ai/dto/safety-escalation.dto.ts ResolveSafetyEscalationDto exactly. */
+  resolve: (
+    id: string,
+    body: {
+      resolutionType: 'RESOLVED_INTERNALLY' | 'REFERRED_TO_GUARDIAN' | 'REFERRED_TO_HUMAN_SUPPORT' | 'FALSE_POSITIVE'
+      resolutionNote: string
+    },
+  ) => apiClient.patch(`/safety-escalations/${id}/resolve`, body),
+  stats: () => apiClient.get('/safety-escalations/stats/summary'),
+  quarantined: () => apiClient.get('/community/moderation/quarantined'),
+  /** decision must be 'APPROVED' | 'REJECTED' — matches QuarantinedContent.status exactly. */
+  review: (id: string, body: { decision: 'APPROVED' | 'REJECTED'; notes?: string }) =>
+    apiClient.post(`/community/moderation/review/${id}`, body),
+  interventions: () => apiClient.get('/admin/interventions'),
+  ackIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/acknowledge`),
+  resolveIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/resolve`),
 }
 
-export const entitlementsApi = {
-  listPlans: () => apiClient.get<PlanRecord[]>('/entitlements/plans'),
-  getMine: () => apiClient.get<MyEntitlements>('/entitlements/me'),
-  subscribe: (planCode: string) =>
-    apiClient.post('/entitlements/subscribe', { planCode }),
-  cancel: (subscriptionId: string) =>
-    apiClient.post(`/entitlements/cancel/${subscriptionId}`),
-}
-
-// ==================== Coding Coach (AI coding help) ====================
-// Surfaces the backend Coding Coach engine (POST /coding-coach/{debug,explain,
-// review,challenge}) — a real AI coding-help service that had no frontend
-// (orphan-engine sweep G-8 → G-9). AI-backed (Bedrock), so callers must handle
-// failure gracefully: when the model is unavailable these requests error and
-// the UI degrades to a "coach is resting" state rather than breaking the
-// mission. Request/response shapes mirror coding-coach.service.ts.
-export interface CoachDebugResponse {
-  diagnosis?: string
-  suggestedFix?: string
-  explanation?: string
-  learningPoints?: string[]
-}
-
-export interface CoachExplainResponse {
-  code?: string
-  explanation?: string
-  keyConceptsintroduced?: string[]
-  analogies?: string[]
-}
-
-export const codingCoachApi = {
-  debug: (data: { code: string; language: string; error?: string; expectedBehavior?: string }) =>
-    apiClient.post<CoachDebugResponse>('/coding-coach/debug', data),
-  explain: (data: { code: string; language: string }) =>
-    apiClient.post<CoachExplainResponse>('/coding-coach/explain', data),
+// ==================== Admin ====================
+export const adminApi = {
+  analyticsOverview: () => apiClient.get('/admin/analytics/overview'),
+  analyticsDaily: () => apiClient.get('/admin/analytics/daily-activity'),
+  contentItems: () => apiClient.get('/admin/content-items'),
+  createContentItem: (body: Record<string, unknown>) => apiClient.post('/admin/content-items', body),
+  setContentStatus: (id: string, status: string) => apiClient.patch(`/admin/content-items/${id}/status`, { status }),
+  missions: () => apiClient.get('/admin/missions'),
+  createMission: (body: Record<string, unknown>) => apiClient.post('/admin/missions', body),
+  updateMission: (id: string, body: Record<string, unknown>) => apiClient.patch(`/admin/missions/${id}`, body),
+  deleteMission: (id: string) => apiClient.delete(`/admin/missions/${id}`),
+  promptTemplates: () => apiClient.get('/admin/prompt-templates'),
+  safetyPolicies: () => apiClient.get('/admin/safety-policies'),
+  aiEvalRuns: () => apiClient.get('/admin/ai-eval/runs'),
+  misconceptions: () => apiClient.get('/admin/misconceptions'),
+  contentQaFlags: () => apiClient.get('/admin/content-qa/flags'),
+  contentQaScan: () => apiClient.post('/admin/content-qa/scan'),
+  featureFlags: () => apiClient.get('/feature-flags'),
+  setFeatureFlag: (key: string, enabled: boolean) => apiClient.patch(`/feature-flags/${key}`, { enabled }),
+  experiments: () => apiClient.get('/experiments'),
+  auditLogs: () => apiClient.get('/audit/logs'),
+  memoryGovernanceStats: () => apiClient.get('/admin/memory-governance/stats'),
+  // Difficulty calibration (admin-only; scan + list open flags).
+  difficultyCalibrationFlags: (take?: number) =>
+    apiClient.get('/admin/difficulty-calibration/flags', { params: { take } }),
+  difficultyCalibrationScan: () => apiClient.post('/admin/difficulty-calibration/scan'),
+  // Assessment quality (admin+moderator; scan + list open flags).
+  assessmentQualityFlags: () => apiClient.get('/admin/assessment-quality/flags'),
+  assessmentQualityScan: () => apiClient.post('/admin/assessment-quality/scan'),
+  // Content provenance (licenses/sources registry + compliance check).
+  provenanceLicenses: () => apiClient.get('/admin/content-provenance/licenses'),
+  upsertProvenanceLicense: (body: Record<string, unknown>) =>
+    apiClient.post('/admin/content-provenance/licenses', body),
+  provenanceSources: () => apiClient.get('/admin/content-provenance/sources'),
+  createProvenanceSource: (body: Record<string, unknown>) => apiClient.post('/admin/content-provenance/sources', body),
+  // Curriculum mapping (free-text -> ranked LearningObjective suggestions).
+  suggestCurriculumMapping: (body: { title: string; description?: string; take?: number }) =>
+    apiClient.post('/admin/curriculum-mapping/suggest', body),
+  /**
+   * Question-template authoring — real backend (`questions.controller.ts`,
+   * routes under `/questions/*`), had ZERO frontend callers in this tree
+   * (surfaced building the legacy URL redirect map — legacy
+   * `/admin/question-templates`). Grouped under adminApi for organization
+   * even though the backend route itself only requires auth, not an ADMIN
+   * role check — template authoring is an admin workflow by product intent.
+   */
+  questionTemplates: (params?: { objectiveId?: string; type?: string }) =>
+    apiClient.get('/questions/templates', { params }),
+  generateFromTemplate: (body: { templateId: string; distractorCount?: number; missionId?: string; order?: number }) =>
+    apiClient.post('/questions/generate', body),
 }

@@ -4,13 +4,15 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
+// Mirrors frontend/eslint.config.js (the legacy baseline) — same deps, same
+// project shape (Vite + React + TS), so the same flat-config setup applies.
 export default [
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['dist', 'node_modules', 'qa-screenshots'] },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: { ...globals.browser, ...globals.node },
       parser: tsParser,
     },
     plugins: {

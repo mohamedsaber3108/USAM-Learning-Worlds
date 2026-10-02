@@ -1,293 +1,89 @@
 /** @type {import('tailwindcss').Config} */
+// USAM design tokens — WHITE / GREEN / BLACK (see
+// docs/frontend/FINAL_USAM_DESIGN_SYSTEM.md). Green is the ONE dominant brand
+// hue on a white canvas with near-black ink. No per-feature rainbow. Semantic
+// colors (success/warning/error) are functional only. Depth = surface contrast
+// + hairline borders + whisper shadows, not heavy drop shadows.
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        // PRIMARY — USAM deep teal. Taken from the brand palette (the dark
-        // pine/teal swatch). This is the ONE dominant brand color across nav,
-        // primary buttons, and focus states. Reads premium, calm and
-        // trustworthy — an academic "graduate" tone rather than a toy-bright
-        // primary, while the lighter 400/500 steps keep enough life for an
-        // 8-14 audience.
-        primary: {
-          50: '#eef5f3',
-          100: '#d4e7e2',
-          200: '#a9cfc6',
-          300: '#75b0a3',
-          400: '#458d7e',
-          500: '#2b7061',
-          600: '#1c5a4d',
-          700: '#12403a',
-          800: '#0d3330',
-          900: '#0a2926',
+        // The single dominant brand hue. green-800/900 anchor on the legacy
+        // deep-teal (brand-adjacent, credible academic green).
+        brand: {
+          50: '#eef6f0',
+          100: '#d6ebdd',
+          200: '#aed7bd',
+          300: '#7cbd96',
+          400: '#4a9e6f',
+          500: '#1f7a4d',
+          600: '#166141',
+          700: '#12513a',
+          800: '#0d3a2c',
+          900: '#0a2b22',
         },
-        // ACCENT — Warm amber/terracotta. The single warm counterpoint to the
-        // cool teal brand. Used SPARINGLY: streaks, CTAs, one highlight per
-        // view. Chosen to sit harmoniously against deep teal (complementary
-        // warm) instead of the previous coral.
-        accent: {
-          50: '#fdf3ec',
-          100: '#fae1cf',
-          200: '#f4c09f',
-          300: '#ec9c6c',
-          400: '#e37f45',
-          500: '#d96a2c',
-          600: '#c05622',
-          700: '#9c431e',
-          800: '#7c371d',
-          900: '#652f1b',
-        },
-        // SECONDARY — Refined honey gold. Reserved for XP / rewards, used
-        // tastefully. Slightly muted so it reads as "achievement", not a
-        // caution color, against the teal brand.
-        secondary: {
-          50: '#fdf8ec',
-          100: '#f9edca',
-          200: '#f2d98f',
-          300: '#ebc258',
-          400: '#e3ab30',
-          500: '#cf9316',
-          600: '#b17812',
-          700: '#8d5b13',
-          800: '#744917',
-          900: '#623d16',
-        },
-        // SUCCESS — Emerald. Correctness / mastery feedback only.
-        success: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
-        },
-        warning: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
-        },
-        error: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
-        },
-        // Neutral surface tones — WARM off-white family (design-reference
-        // synthesis: MindMarket cream #f5f1e4, Wispr #ffffeb, Subframe #fafafa
-        // all reject clinical cool gray for a paper-warm canvas that makes a
-        // kids' product feel inviting, not clinical). Nudged warm (a hair
-        // toward cream/amber) so white cards sit on a soft sunlit page.
-        surface: {
-          50: '#fbfaf7',
-          100: '#f5f2ec',
-          200: '#e9e4da',
-          300: '#d8d2c5',
-        },
-        // INK — true near-black, mirrors the black in the logo/wordmark. Used
-        // for the highest-contrast headings and the brand mark itself.
+        // Near-black ink (headings + brand mark) and text ramp.
         ink: {
-          DEFAULT: '#0b0f0e',
-          soft: '#1a201e',
+          900: '#0b0f0e',
+          800: '#141917',
+          700: '#1a201e',
+          600: '#3a423f',
+          500: '#5b635f',
+          400: '#828a86',
         },
-        // MIST — soft blue-gray from the palette, for quiet decorative fills
-        // (illustration backdrops, subtle section dividers).
-        mist: {
-          100: '#e6ecec',
-          200: '#c6d3d2',
-          300: '#a9bcbb',
+        canvas: {
+          white: '#ffffff',
+          off: '#fbfbf9',
         },
-        // ------------------------------------------------------------------
-        // PLAYFUL SUPPORTING PALETTE (redesign uplift). Additive only — the
-        // teal `primary` stays the dominant brand color; these are for the
-        // marketing/landing surfaces, character world cards, and category
-        // accents so an 8-14 kids' product reads lively instead of clinical.
-        // Each maps to a "learning world" hue and pairs cleanly with teal.
-        // ------------------------------------------------------------------
-        // Sky — English / language world, hero accents.
-        sky: {
-          50: '#eff8ff', 100: '#dbeefe', 200: '#bfe1fe', 300: '#93cdfd',
-          400: '#60b0fa', 500: '#3b90f6', 600: '#2472eb', 700: '#1d5bd8',
-          800: '#1e4baf', 900: '#1e428a',
-        },
-        // Grape — creativity / stories world.
-        grape: {
-          50: '#f6f3ff', 100: '#ede8ff', 200: '#dcd3ff', 300: '#c3b0ff',
-          400: '#a684fc', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
-          800: '#5b21b6', 900: '#4c1d95',
-        },
-        // Coral — playful CTA warmth for kid surfaces (distinct from the
-        // restrained brand `accent` amber).
-        coral: {
-          50: '#fff1f2', 100: '#ffe0e2', 200: '#ffc7cb', 300: '#ffa0a7',
-          400: '#fb6a76', 500: '#f23b4b', 600: '#df1f34', 700: '#bb1528',
-          800: '#9b1526', 900: '#801726',
-        },
-        // Bubble — fun pink for cosmetics / celebration surfaces.
-        bubble: {
-          50: '#fdf2fa', 100: '#fce7f6', 200: '#fbcfee', 300: '#faa7dd',
-          400: '#f56fc3', 500: '#ec44a6', 600: '#db2489', 700: '#bf146e',
-          800: '#9d155b', 900: '#83164e',
-        },
-      },
-      backgroundImage: {
-        // Reusable brand + world gradients so surfaces get depth without
-        // hand-rolling gradient stops per page.
-        'brand-hero': 'linear-gradient(135deg, #12403a 0%, #1c5a4d 45%, #2b7061 100%)',
-        'brand-soft': 'linear-gradient(180deg, #eef5f3 0%, #ffffff 60%)',
-        'sunrise': 'linear-gradient(135deg, #d96a2c 0%, #cf9316 100%)',
-        'aurora': 'linear-gradient(135deg, #2b7061 0%, #3b90f6 55%, #8b5cf6 100%)',
-        // Subtle dot grid for playful section backdrops (used at low opacity).
-        'dot-grid': 'radial-gradient(circle, rgba(28,90,77,0.10) 1.2px, transparent 1.2px)',
-        // INDIGO ALIAS — a number of feature/parent pages were authored with
-        // Tailwind's default `indigo-*` accent before the teal rebrand. Rather
-        // than hand-edit every call site, alias the whole `indigo` scale onto
-        // the USAM teal `primary` scale so those pages inherit the brand color
-        // automatically and stay consistent. New code should use `primary-*`.
-        indigo: {
-          50: '#eef5f3',
-          100: '#d4e7e2',
-          200: '#a9cfc6',
-          300: '#75b0a3',
-          400: '#458d7e',
-          500: '#2b7061',
-          600: '#1c5a4d',
-          700: '#12403a',
-          800: '#0d3330',
-          900: '#0a2926',
-        },
+        line: '#e7e9e6',
+        // Functional semantic colors only.
+        success: { 100: '#d1fae5', 500: '#10b981', 700: '#047857' },
+        warning: { 100: '#fef3c7', 500: '#f59e0b', 700: '#b45309' },
+        error: { 100: '#fee2e2', 500: '#ef4444', 700: '#b91c1c' },
       },
       fontFamily: {
-        // DISPLAY / HEADINGS — Nunito, a warm rounded sans that reads
-        // friendly-but-credible for an 8-14 kids' product (design-reference
-        // synthesis: Duolingo/Aaply/Playful all use rounded geometric
-        // display faces). Weights 600-900. Falls back to Manrope/system.
-        display: ['"Nunito"', '"Manrope"', 'sans-serif'],
-        // `heading` alias for legacy pages authored with font-heading.
-        heading: ['"Nunito"', '"Manrope"', 'sans-serif'],
-        // Body/UI: clean, readable, not babyish at 14 y/o.
-        sans: ['"Inter"', 'sans-serif'],
+        display: ['Nunito', 'Manrope', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        arabic: ['"IBM Plex Sans Arabic"', 'Tajawal', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
-        // Friendlier, rounder card corners (design-language synthesis:
-        // Duolingo/Playful/Aaply all use generous card radii for a warm,
-        // approachable kid-appropriate feel). Bumped from 14px so every
-        // .card / .stat-card surface across the app reads softer at once.
-        card: '20px',
-        control: '14px',
-        // Softer, friendlier radii for hero/marketing surfaces and big
-        // playful cards (kid-appropriate roundness without going bubbly).
-        blob: '28px',
+        control: '12px',
+        card: '18px',
         pill: '9999px',
       },
-      backgroundSize: {
-        'dot-grid': '22px 22px',
-      },
       boxShadow: {
-        // FLATTER, lighter shadows (design-reference synthesis: Apple, Linear,
-        // MindMarket, Wispr, Subframe, Increase, Caldera, Slush ALL build depth
-        // from surface-color contrast + hairline borders, NOT heavy drop
-        // shadows). Everyday cards now use a whisper-light warm shadow so they
-        // read crisp and flat; real elevation is reserved for hero/lift only.
-        soft: '0 1px 2px rgba(30,20,5,0.04), 0 1px 3px rgba(30,20,5,0.03)',
-        'soft-md': '0 1px 3px rgba(30,20,5,0.05), 0 4px 10px rgba(30,20,5,0.05)',
-        'soft-lg': '0 2px 6px rgba(30,20,5,0.06), 0 10px 24px rgba(30,20,5,0.07)',
-        'soft-hover': '0 2px 8px rgba(30,20,5,0.07), 0 8px 20px rgba(30,20,5,0.08)',
-        // Tinted glows for correct/incorrect resolution states — same hue as
-        // the success/error tokens above, not a generic black shadow. Used
-        // sparingly on the single activity card that just resolved.
-        'glow-success': '0 0 0 1px rgba(16,185,129,0.22), 0 10px 28px -6px rgba(16,185,129,0.35)',
-        'glow-error': '0 0 0 1px rgba(239,68,68,0.20), 0 10px 28px -6px rgba(239,68,68,0.28)',
-        'glow-primary': '0 0 0 1px rgba(28,90,77,0.20), 0 8px 22px -6px rgba(28,90,77,0.30)',
-        // Deep marketing/hero elevation — larger, softer teal-tinted drop for
-        // the flagship cards on the landing + world-select surfaces.
-        'hero': '0 24px 60px -20px rgba(10,41,38,0.35), 0 8px 24px -12px rgba(10,41,38,0.20)',
-        'lift': '0 12px 32px -12px rgba(10,41,38,0.22)',
-        // `pop` alias — legacy pages used `shadow-pop`; map it to the soft-md
-        // elevation so those surfaces get real depth instead of no shadow.
-        'pop': '0 2px 8px rgba(10,41,38,0.07), 0 8px 24px rgba(10,41,38,0.08)',
+        // Whisper shadows; real elevation reserved for hero/modal.
+        soft: '0 1px 2px rgba(11,15,14,0.04), 0 1px 3px rgba(11,15,14,0.03)',
+        card: '0 1px 3px rgba(11,15,14,0.05), 0 4px 12px rgba(11,15,14,0.05)',
+        lift: '0 8px 24px -10px rgba(11,15,14,0.18)',
+        focus: '0 0 0 3px rgba(31,122,77,0.35)',
+      },
+      transitionTimingFunction: {
+        'out-expo': 'cubic-bezier(0.16,1,0.3,1)',
+      },
+      transitionDuration: {
+        xfast: '120ms',
+        fast: '180ms',
+        base: '240ms',
+        slow: '360ms',
       },
       keyframes: {
         'fade-in-up': {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        // Single subtle highlight sweep across a progress fill — the
-        // "reward" cue for XP/streak bars. One pass, no looping rainbow,
-        // no color shift — just a soft lighter band of the SAME hue
-        // moving once across the bar when its value changes.
-        'shimmer-sweep': {
-          '0%': { transform: 'translateX(-120%)' },
-          '100%': { transform: 'translateX(220%)' },
-        },
-        // Tiny lateral wobble for the "not quite" resolution — a single
-        // decaying oscillation (spring-like), not a cartoon shake loop.
-        'wobble-once': {
-          '0%, 100%': { transform: 'translateX(0)' },
-          '20%': { transform: 'translateX(-4px)' },
-          '40%': { transform: 'translateX(3px)' },
-          '60%': { transform: 'translateX(-2px)' },
-          '80%': { transform: 'translateX(1px)' },
-        },
-        // Gentle vertical float — hero logo / empty-state art. Slow, small
-        // amplitude so it feels alive without being distracting.
-        'float-soft': {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-6px)' },
-        },
-        // Slow ambient scale/opacity pulse for decorative brand glows behind
-        // hero content — one calm breathing loop, not a flashing highlight.
+        // Slow ambient breathing glow behind hero character figures
+        // (CharacterStage pedestal). Low amplitude, decorative only.
         'pulse-soft': {
           '0%, 100%': { opacity: '0.5', transform: 'scale(1)' },
           '50%': { opacity: '0.8', transform: 'scale(1.05)' },
         },
-        // Slow decorative drift for background blobs on marketing surfaces.
-        'drift': {
-          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
-          '33%': { transform: 'translate(12px, -10px) scale(1.04)' },
-          '66%': { transform: 'translate(-10px, 8px) scale(0.98)' },
-        },
-        // Gentle continuous vertical float, larger amplitude than float-soft
-        // for hero character mascots.
-        'bob': {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
-        // One-time pop-in for cards entering the viewport.
-        'pop-in': {
-          '0%': { opacity: '0', transform: 'scale(0.94) translateY(8px)' },
-          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
-        },
       },
       animation: {
-        'fade-in-up': 'fade-in-up 0.4s cubic-bezier(0.16,1,0.3,1) both',
-        'shimmer-sweep': 'shimmer-sweep 1.1s ease-out',
-        'wobble-once': 'wobble-once 0.4s cubic-bezier(0.36,0.07,0.19,0.97) both',
-        'float-soft': 'float-soft 5s ease-in-out infinite',
+        'fade-in-up': 'fade-in-up 0.24s cubic-bezier(0.16,1,0.3,1) both',
         'pulse-soft': 'pulse-soft 6s ease-in-out infinite',
-        'drift': 'drift 14s ease-in-out infinite',
-        'bob': 'bob 4s ease-in-out infinite',
-        'pop-in': 'pop-in 0.45s cubic-bezier(0.16,1,0.3,1) both',
       },
     },
   },
