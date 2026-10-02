@@ -34,6 +34,7 @@ export const en = {
       'English, Coding, AI literacy, Creativity and Critical thinking — one connected journey, guided by friendly companions.',
     heroCtaPrimary: 'Start learning',
     heroCtaSecondary: 'See how it works',
+    heroAzouzSpeech: "Hi, I'm Azouz! I'll be with you every step of your learning adventure.",
     // Ecosystem domains
     ecosystemTitle: 'One connected learning world',
     ecosystemSubtitle: 'Five ways to grow, all in one place — not five separate apps.',
@@ -66,6 +67,16 @@ export const en = {
     companionsTitle: 'Friendly guides, not a chatbot',
     companionsSubtitle:
       'Companions like Luma, Codey and Nova guide, encourage, and celebrate — learning stays in the driver’s seat.',
+    companionLumaName: 'Luma',
+    companionLumaRole: 'English coach',
+    companionCodeyName: 'Codey',
+    companionCodeyRole: 'Coding mentor',
+    companionNovaName: 'Nova',
+    companionNovaRole: 'AI mentor',
+    companionMiraName: 'Mira',
+    companionMiraRole: 'Creative mentor',
+    companionAdamName: 'Adam',
+    companionAdamRole: 'Entrepreneurship mentor',
     // Parent value
     parentTitle: 'Built for families',
     parentSubtitle: 'Parents see real learning — not vanity stats.',

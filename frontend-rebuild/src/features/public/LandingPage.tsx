@@ -13,10 +13,10 @@ import {
   Award,
   TrendingUp,
   ShieldCheck,
-  Users,
   FolderCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 import { PublicNav } from './PublicNav'
 import { PublicFooter } from './PublicFooter'
 
@@ -26,6 +26,17 @@ import { PublicFooter } from './PublicFooter'
  * distinct child + parent value; companions as guides; trust explicit; one
  * clear start). WHITE/GREEN/BLACK, no legacy contamination, EN/AR + RTL,
  * responsive, purposeful motion (reduced-motion respected via global CSS).
+ *
+ * REVISED (2026-10-02, ledger 88 task 6): the hero and "Companions" section
+ * previously had ZERO character presence — a badge+headline hero and a
+ * lucide `Users` icon standing in for "there are companions." The research
+ * addendum (docs/research/FINAL_FRONTEND_REFERENCE_STUDY.md section D) found
+ * this fails every reference on child-facing companion UX: a mascot must be a
+ * present, state-driven figure, not a decorative icon. Fixed by bringing in
+ * `CharacterStage` (ported from the legacy `frontend/` tree's bespoke SVG
+ * system — real asset, not new design work) so Azouz leads the hero with a
+ * real speech line, and the five locked-domain mentors (Luma/Codey/Nova/
+ * Mira/Adam) actually appear as characters in the companions section.
  */
 
 const DOMAINS = [
@@ -51,6 +62,18 @@ const PARENT = [
   { icon: ShieldCheck, titleKey: 'public.parentSafety', descKey: 'public.parentSafetyDesc' },
 ]
 
+// The 5 companions matching the backend's real seeded roster + the 4 locked
+// primary domains (seed-character-universe.ts): Azouz (GUIDE, main
+// companion), Luma (ENGLISH_COACH), Codey (CODING_MENTOR), Nova (AI_MENTOR),
+// Adam (ENTREPRENEURSHIP_MENTOR). Mira (CREATIVE_MENTOR) covers Creativity.
+const COMPANIONS = [
+  { id: 'luma', nameKey: 'public.companionLumaName', roleKey: 'public.companionLumaRole', tint: '#3b90f6' },
+  { id: 'codey', nameKey: 'public.companionCodeyName', roleKey: 'public.companionCodeyRole', tint: '#16A34A' },
+  { id: 'nova', nameKey: 'public.companionNovaName', roleKey: 'public.companionNovaRole', tint: '#4338CA' },
+  { id: 'mira', nameKey: 'public.companionMiraName', roleKey: 'public.companionMiraRole', tint: '#DB2777' },
+  { id: 'adam', nameKey: 'public.companionAdamName', roleKey: 'public.companionAdamRole', tint: '#B91C1C' },
+]
+
 export function LandingPage() {
   const { t } = useTranslation()
 
@@ -59,26 +82,37 @@ export function LandingPage() {
       <PublicNav />
 
       <main>
-        {/* HERO */}
+        {/* HERO — Azouz leads, present and speaking, not a text-only banner. */}
         <section className="relative overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-50/60 to-transparent" />
-          <div className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:py-28">
-            <span className="inline-block rounded-pill bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
-              {t('public.heroKicker')}
-            </span>
-            <h1 className="mt-5 animate-fade-in-up font-display text-4xl font-extrabold leading-[1.1] sm:text-5xl">
-              {t('public.heroTitle')}
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-600">{t('public.heroSubtitle')}</p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link to="/signup">
-                <Button size="lg">{t('public.heroCtaPrimary')}</Button>
-              </Link>
-              <Link to="/how-it-works">
-                <Button size="lg" variant="secondary">
-                  {t('public.heroCtaSecondary')}
-                </Button>
-              </Link>
+          <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:py-24 lg:grid-cols-2 lg:items-center">
+            <div className="text-center lg:text-start">
+              <span className="inline-block rounded-pill bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
+                {t('public.heroKicker')}
+              </span>
+              <h1 className="mt-5 animate-fade-in-up font-display text-4xl font-extrabold leading-[1.1] sm:text-5xl">
+                {t('public.heroTitle')}
+              </h1>
+              <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-600 lg:mx-0">{t('public.heroSubtitle')}</p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                <Link to="/signup">
+                  <Button size="lg">{t('public.heroCtaPrimary')}</Button>
+                </Link>
+                <Link to="/how-it-works">
+                  <Button size="lg" variant="secondary">
+                    {t('public.heroCtaSecondary')}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <CharacterStage
+                characterId="azouz"
+                size={240}
+                state="speaking"
+                bubbleSide="top"
+                speech={t('public.heroAzouzSpeech')}
+              />
             </div>
           </div>
         </section>
@@ -133,13 +167,24 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* COMPANIONS */}
-        <section className="mx-auto max-w-4xl px-4 py-16 text-center">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700">
-            <Users className="h-6 w-6" aria-hidden />
-          </span>
-          <h2 className="mt-4 font-display text-3xl font-bold">{t('public.companionsTitle')}</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-ink-600">{t('public.companionsSubtitle')}</p>
+        {/* COMPANIONS — each mentor shown as an actual present character, not
+            an icon standing in for "there are companions" (research addendum
+            section D: sidekick-style personas with real presence, not an
+            authority-figure icon). */}
+        <section className="bg-canvas-off py-16">
+          <div className="mx-auto max-w-6xl px-4 text-center">
+            <h2 className="font-display text-3xl font-bold">{t('public.companionsTitle')}</h2>
+            <p className="mx-auto mt-2 max-w-2xl text-ink-600">{t('public.companionsSubtitle')}</p>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+              {COMPANIONS.map((c) => (
+                <div key={c.id} className="flex flex-col items-center rounded-card border border-line bg-white p-5 shadow-soft">
+                  <CharacterStage characterId={c.id} size={96} tint={c.tint} />
+                  <h3 className="mt-4 font-display font-bold text-ink-900">{t(c.nameKey)}</h3>
+                  <p className="mt-1 text-sm text-ink-500">{t(c.roleKey)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* PARENT VALUE */}

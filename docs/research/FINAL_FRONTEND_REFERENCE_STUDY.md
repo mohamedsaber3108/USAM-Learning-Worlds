@@ -42,3 +42,74 @@
 6. **Accessibility + a11y and motion-with-purpose** are landing-grade concerns from the first page, reduced-motion respected.
 
 Content was rephrased for compliance with licensing restrictions.
+
+
+---
+
+# ADDENDUM — Freshness audit + gap-fill (2026-10-02)
+
+> Audit of the sections above against the current rebuild's actual needs.
+> Original research (above) covers EdTech landing, onboarding, and role-based
+> dashboards/admin at a general level — still valid, no retraction needed. This
+> addendum fills categories the reconciliation pass (ledger 88, 2026-10-02)
+> showed were under-researched relative to what's actually being built:
+> character/companion presence (Landing's biggest flagged gap), parent
+> progress-monitoring dashboards specifically, moderation-queue UX (now that
+> `/mod/escalations` and `/mod/community` have real, fixed API wiring), and
+> project/credential evidence UX (now that `/app/projects/:id` and
+> `/app/credentials` are real surfaces). Sources dated 2025-2026, paraphrased
+> per licensing (no >30 consecutive words from any one source).
+
+## D. Character / AI companion presence (fills the gap behind Landing's biggest flaw)
+
+| Ref | What works | Pattern to learn | Fit for USAM | Do NOT copy |
+| --- | --- | --- | --- | --- |
+| [dev.to — Duolingo-style mascot UX](https://dev.to/uianimation/building-duolingo-style-ai-mascot-animations-with-rive-2446) | A companion mascot is a state-driven character, not a decorative animation: idle/listening/thinking/talking/encouraging-or-correcting are the real states a UI must express | Treat the mascot as a state machine the product drives, not a static logo | USAM already has this exact state set modeled in the legacy `CharacterFace` component (idle/listening/thinking/speaking/encouraging/celebrating/error) — reuse the *concept*, not necessarily the old file | Treating the character as a one-off hero image with no state behavior |
+| [uianimation/medium — why apps need mascots](https://uianimation.medium.com/why-apps-games-need-mascots-micro-interactions-and-ai-companions-and-how-rive-makes-it-74005b7ddd2a) | A mascot can turn onboarding into something memorable; a companion gives the product personality and guides users in real time | The companion should be present at the moments that matter (onboarding, home, first mission), not just decorative on the landing hero | Azouz (and the domain mentors) should visibly guide onboarding + home + mission start, not just appear once on `/` | A mascot that only exists as a static landing illustration |
+| [arxiv — Disney-animation-derived child AI design heuristics](https://arxiv.org/pdf/2504.08670v1) | Six developmentally-appropriate heuristics for child-facing AI: emotional expressiveness + visual clarity, audiovisual synchrony, sidekick-style personas, support for symbolic/imaginative play, predictable scaffolded interaction | Children read emotional expressiveness and a "sidekick" framing (not an authority-figure framing) as safe and legible | USAM's companions (Luma/Codey/Nova/Adam/Azouz) should read as sidekicks who help, not as teachers who grade | An AI companion framed as an evaluator/examiner |
+| [arxiv — principles of safe AI companions for youth](https://arxiv.org/html/2510.11185v1) | Youth AI companions need explicit developmental safeguards; current platforms under-protect against harmful normalization | Safety framing must be visible wherever a child can converse with a companion, not just in a buried privacy page | Any character chat surface (currently a ledger gap — companions can't be chatted with yet) must ship with visible safety framing from day one, not bolted on later | Shipping companion chat before the safety framing is designed |
+
+**Decision**: Landing's current "Companions" section (a lucide `Users` icon in a
+circle + two lines of copy) fails every reference above — it has zero
+character presence despite USAM owning a 15-character roster concept. This is
+now the primary evidence behind the Landing rebuild in ledger 88/task 6: the
+hero and companions section must show actual character presence (illustration,
+name, personality), not an icon standing in for "there are companions."
+
+## E. Parent / guardian progress-monitoring dashboards
+
+| Ref | What works | Pattern to learn | Fit for USAM | Do NOT copy |
+| --- | --- | --- | --- | --- |
+| [rocket.new — parental controls dashboard](https://www.rocket.new/blog/how-to-build-parental-controls-dashboard-into-mobile-app) | A parental dashboard's core feature set is: screen-time limits, content filters, activity reports, override-request flows — managed from a linked parent account | Structure `/parent/child/:id` around those four pillars, not a generic analytics grid | USAM's `parents` module already has time-limits + activity + safety endpoints — map the UI to this exact pillar structure instead of an ad-hoc stat layout | A dashboard that mixes screen-time controls into the same visual grammar as achievement stats |
+| [uxpin — progress tracker design](https://www.uxpin.com/studio/blog/design-progress-trackers/) | Good progress trackers set clear expectations and avoid ambiguous states | Mastery/progress for a parent audience should read in plain language (not raw backend enums), consistent with the design system's "child-language rule" extended to parent copy too | `/parent/child/:id` progress section should use the same `masteryLabel` mapping layer already used learner-side, not a parallel parent-only vocabulary | Showing parents a different, inconsistent progress vocabulary than the learner sees |
+
+## F. Moderation queue UX (now directly relevant — `/mod/escalations`, `/mod/community` have real, fixed wiring this pass)
+
+| Ref | What works | Pattern to learn | Fit for USAM | Do NOT copy |
+| --- | --- | --- | --- | --- |
+| [moderationapi.com — review queue design](https://docs.moderationapi.com/review-queues/using-queues) | A good queue shows volume-over-time, resolved vs pending visually, and lets a reviewer approve/reject/escalate with a clear per-item decision trail | Give `/mod/escalations` and `/mod/community` a lightweight at-a-glance summary (open vs resolved count) above the raw list — the backend's `stats/summary` endpoint already supports this | `EscalationsPage` already calls `moderationApi.stats` in principle (per ledger, confirm wiring) — surface it as a small summary strip, not just a flat list | Building a dense analytics chart when a 2-3 number summary is enough |
+| [arxiv — modqueue diversity of moderator objectives](https://arxiv.org/pdf/2409.16840) | Moderators value more than throughput — fairness, accuracy, and resistance to workflow-disrupting features all matter; no single objective dominates | A resolve action should never be a single irreversible click without context — a real decision dialog (resolution type + required note) is correct, not over-engineering | This directly validates the B2 fix shipped this pass (a real resolve dialog with required note) — keep that pattern, don't simplify it back to one-click | A one-click "resolve" with no record of why |
+| [appmaster.io — moderation queue design at scale](http://www.appmaster.io/blog/content-moderation-queue-design) | Consistent statuses, evidence capture, reviewer notes, and restore/appeal flows keep a queue usable as it grows | Every quarantined item needs visible evidence (the flagged content/reason) before a decision, which `CommunityModerationPage` already shows — keep this, extend with reviewer notes on reject (backend supports `notes` on review) | Add an optional notes field to the reject action in `CommunityModerationPage` (backend `dto.notes` is already accepted, currently unused frontend-side) | Hiding the flagged content and asking the moderator to decide blind |
+
+## G. Credentials / evidence / portfolio UX for learners
+
+| Ref | What works | Pattern to learn | Fit for USAM | Do NOT copy |
+| --- | --- | --- | --- | --- |
+| [Open Badges 3.0 standard overview](https://www.pok.tech/en/digital-credentials/open-badge-3-0) | A verifiable credential bundles issuer, criteria, evidence, and a public verification link | USAM's `/verify/:uid` public page + `credentials.me`/`credentials.verify` already match this model — keep it, make sure the credential card shows criteria/evidence, not just a badge image | Backend `CredentialDefinition`/`Credential` models already carry this; ensure `CredentialsPage` surfaces the *evidence* behind each credential, not just a visual badge | A badge with no visible evidence or criteria (defeats the "evidence-based" product promise) |
+| [verifyed.io — student digital badges](https://www.verifyed.io/blog/student-digital-badges) | Digital badges work best as proof tied to a specific completed body of work, shareable and checkable by a third party | A learner's portfolio (`/app/portfolio`) should link each credential back to the project/mission evidence that earned it | `PortfolioPage` and `CredentialsPage` are currently separate, disconnected surfaces — consider a visible cross-link (ledger item for task 9) | A credential wall disconnected from the actual project work |
+
+## Updated decisions feeding implementation (supersedes nothing above, adds to it)
+
+7. **Character presence is a hard requirement for Landing's hero and
+   companions section**, not an optional illustration — this is the direct,
+   evidence-backed reason the current Landing is being rebuilt in task 6.
+8. **Moderation surfaces keep the "real decision dialog" pattern** (resolution
+   type + required note) already shipped this pass; extend reject-with-notes
+   on community moderation using the backend's existing `notes` field.
+9. **Parent dashboard structure = screen-time / content-safety / activity /
+   override**, not a generic analytics-card grid — re-audit `/parent/child/:id`
+   against this pillar structure in task 10.
+10. **Credentials must show evidence/criteria, not just a badge graphic** —
+    carry into the Guardian/Learner credential work in tasks 9-10.
+
+Content was rephrased for compliance with licensing restrictions.

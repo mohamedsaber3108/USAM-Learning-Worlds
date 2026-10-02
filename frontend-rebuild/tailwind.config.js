@@ -74,9 +74,16 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // Slow ambient breathing glow behind hero character figures
+        // (CharacterStage pedestal). Low amplitude, decorative only.
+        'pulse-soft': {
+          '0%, 100%': { opacity: '0.5', transform: 'scale(1)' },
+          '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.24s cubic-bezier(0.16,1,0.3,1) both',
+        'pulse-soft': 'pulse-soft 6s ease-in-out infinite',
       },
     },
   },
