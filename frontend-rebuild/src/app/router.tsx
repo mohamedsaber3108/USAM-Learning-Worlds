@@ -2,7 +2,8 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/lib/auth/authStore'
-import { RequireRole, roleHome } from './guards'
+import { RequireRole } from './guards'
+import { roleHome } from './roleHome'
 import { AppShell } from '@/components/layout/AppShell'
 import { LoadingState } from '@/components/common/States'
 import { LandingPage } from '@/features/public/LandingPage'
@@ -25,6 +26,7 @@ import { PortfolioPage } from '@/features/learner/PortfolioPage'
 import { CreativityPage } from '@/features/learner/CreativityPage'
 import { CompanionsPage } from '@/features/learner/CompanionsPage'
 import { CompanionChatPage } from '@/features/learner/CompanionChatPage'
+import { EnglishCoachPage } from '@/features/learner/EnglishCoachPage'
 import { CommunityPage } from '@/features/learner/CommunityPage'
 import { CredentialsPage } from '@/features/learner/CredentialsPage'
 import { RewardsPage } from '@/features/learner/RewardsPage'
@@ -128,6 +130,7 @@ export function AppRouter() {
         <Route path="/app/create" element={<CreativityPage />} />
         <Route path="/app/companions" element={<CompanionsPage />} />
         <Route path="/app/companions/:id" element={<CompanionChatPage />} />
+        <Route path="/app/english-coach" element={<EnglishCoachPage />} />
         <Route path="/app/community" element={<CommunityPage />} />
         <Route path="/app/credentials" element={<CredentialsPage />} />
         <Route path="/app/rewards" element={<RewardsPage />} />

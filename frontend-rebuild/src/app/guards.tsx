@@ -14,18 +14,3 @@ export function RequireRole({ allow, children }: { allow: Role[]; children: Reac
   if (!allow.includes(user.role)) return <RestrictedState />
   return <>{children}</>
 }
-
-/** Home destination for the current role after login. */
-export function roleHome(role: Role): string {
-  switch (role) {
-    case 'GUARDIAN':
-      return '/parent'
-    case 'MODERATOR':
-      return '/mod'
-    case 'ADMIN':
-      return '/admin'
-    case 'LEARNER':
-    default:
-      return '/app'
-  }
-}

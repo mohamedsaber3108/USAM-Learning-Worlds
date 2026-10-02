@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/lib/auth/authStore'
-import { roleHome } from '@/app/guards'
+import { roleHome } from '@/app/roleHome'
 import { Button, Card, Input } from '@/components/ui'
 import { AuthShell } from '@/features/public/PublicPage'
 

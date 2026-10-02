@@ -58,6 +58,53 @@ bump and was intentionally **not applied** per the no-`--force` policy. This
 needs a dedicated PR to upgrade the Vite build pipeline and verify the entire
 frontend build/dev server still works before merging.
 
+## Frontend Rebuild (`frontend-rebuild/`) — 2026-10-02 pre-cutover audit
+
+Full audit (`npm audit`, includes devDependencies): **7 vulnerabilities (5
+moderate, 1 high, 1 critical)**.
+
+Production-only audit (`npm audit --omit=dev` — what actually ships in the
+built bundle served to users): **2 vulnerabilities (both moderate)**.
+
+### Full-audit findings NOT present in the production bundle (dev-tooling only)
+
+| Package | Severity | Advisory | Why it does not ship |
+|---|---|---|---|
+| `vitest` | **CRITICAL** (9.8) | [GHSA-5xrq-8626-4rwp](https://github.com/advisories/GHSA-5xrq-8626-4rwp) — arbitrary file read/execute via Vitest UI server | Test runner, devDependency only. Vitest UI server is never started in this project (no `vitest --ui` script) and is not part of the built `dist/` artifact. |
+| `vite` | **HIGH** (7.5) | [GHSA-fx2h-pf6j-xcff](https://github.com/advisories/GHSA-fx2h-pf6j-xcff) — `server.fs.deny` bypass on Windows | Dev server only (`vite dev`); the production artifact is static files produced by `vite build` and served by nginx, not the Vite dev server. Not reachable in production. |
+| `@vitest/mocker`, `vite-node`, `esbuild`, `vite` (3 more moderate advisories) | moderate | path traversal / dev-server request forwarding | Same reasoning — all are transitive to `vite`/`vitest` dev tooling, never bundled into `dist/`. |
+
+**Fix path exists for all of the above** (`vitest@5.0.3`, `vite@8.3.2`) but
+both are major/breaking bumps (`isSemVerMajor: true`) to the build toolchain.
+Per the no-blind-`--force` policy, and because none of these are reachable in
+the shipped artifact, this is **deferred** to a dedicated toolchain-upgrade PR
+rather than rushed before cutover.
+
+### Production-relevant findings (ship in the actual bundle)
+
+| Package | Severity | Advisory | Reachability analysis | Decision |
+|---|---|---|---|---|
+| `react-router` (transitive) / `react-router-dom` (direct, `^6.26.2`) | moderate | [GHSA-wrjc-x8rr-h8h6](https://github.com/advisories/GHSA-wrjc-x8rr-h8h6) — open redirect via backslash in `<Link>`/`useNavigate` | Requires an attacker-controlled path string (containing a backslash) to reach `<Link to={...}>` or `navigate(...)`. Audited every `navigate(...)` call and every dynamic `to={...}` in `frontend-rebuild/src/**`: all targets are either string literals (`'/app'`, `'/login'`, etc.) or template literals built from backend-issued ids/slugs (`/app/missions/${missionId}`, `/app/companions/${c.id}`, `/verify/${c.uid}`) — never raw, attacker-suppliable free text (no `searchParams.get('redirect'/'next'/'returnTo')` pattern exists anywhere in the app; confirmed via grep). **Not reachable with the current codebase's routing usage.** | JUSTIFIED — not exploitable as the app is written; re-audit if any future code ever builds a `to=`/`navigate()` target from unsanitized user/query input. |
+| `react-router` / `react-router-dom` | moderate | [GHSA-337j-9hxr-rhxg](https://github.com/advisories/GHSA-337j-9hxr-rhxg) — arbitrary constructor injection via `deserializeErrors()` in SSR hydration | Requires the React Router **data router** (`createBrowserRouter`/`RouterProvider`) with SSR hydration (`hydrateRoot`) and `useLoaderData`/`useActionData`. Confirmed via grep across `frontend-rebuild/src/**`: the app uses plain `<BrowserRouter>` + `<Routes>/<Route>` (declarative mode, `src/app/App.tsx`), client-only rendering via `createRoot` (`src/main.tsx`, not `hydrateRoot`), and zero occurrences of `createBrowserRouter`, `RouterProvider`, `useLoaderData`, `useActionData`, or `deserializeErrors` anywhere in the tree. **Not reachable — the vulnerable code path (SSR hydration + data router) does not exist in this app's architecture.** | JUSTIFIED — not exploitable; this app has no SSR and no data router. |
+
+No non-breaking fix exists for either: the latest `6.x` releases of both
+packages (`react-router@6.30.6` / `react-router-dom@6.30.6` — already
+installed, confirmed via `npm ls`) are the newest in that major line: npm's
+own `fixAvailable` only points at `react-router-dom@7.18.4`
+(`isSemVerMajor: true`). A v6→v7 upgrade is a real migration (API surface
+changes) and is correctly treated as **deferred, non-blocking** follow-up
+work rather than rushed into the cutover window — tracked for a dedicated PR
+after production is stable.
+
+**Net result for the P0/P1 production-readiness gate** ("a production-relevant
+CRITICAL/HIGH vulnerability must be resolved or explicitly justified before
+cutover"): **zero CRITICAL/HIGH findings ship in the production bundle.** The
+only prod-relevant findings are 2 MODERATE react-router advisories, both
+justified above as not reachable given this app's actual routing usage and
+architecture (no SSR, no data router, no unsanitized redirect targets).
+
+---
+
 ## Actions taken in this PR
 
 - `backend/`: ran `npm audit fix` (safe, non-breaking) — reduced backend

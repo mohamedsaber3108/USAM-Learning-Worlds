@@ -1,20 +1,17 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 import { cn } from '@/lib/utils/cn'
+import { ToastContext, type ToastTone } from './toastContext'
 
-/** Toast system — context provider + useToast() hook. role=status, auto-dismiss,
- * reduced-motion safe (entrance animation collapses under the global rule). */
+/** Toast system — context provider. role=status, auto-dismiss,
+ * reduced-motion safe (entrance animation collapses under the global rule).
+ * useToast() lives in ./toastContext (fast-refresh: this file exports only
+ * the ToastProvider component). */
 
-type ToastTone = 'success' | 'error' | 'info'
 interface Toast {
   id: number
   tone: ToastTone
   message: string
 }
-
-interface ToastCtx {
-  show: (message: string, tone?: ToastTone) => void
-}
-const Ctx = createContext<ToastCtx | null>(null)
 
 const toneClass: Record<ToastTone, string> = {
   success: 'border-success-500 bg-success-100 text-success-700',
@@ -31,7 +28,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <Ctx.Provider value={{ show }}>
+    <ToastContext.Provider value={{ show }}>
       {children}
       <div className="fixed bottom-4 end-4 z-[60] flex flex-col gap-2" aria-live="polite">
         {toasts.map((t) => (
@@ -44,12 +41,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           </div>
         ))}
       </div>
-    </Ctx.Provider>
+    </ToastContext.Provider>
   )
-}
-
-export function useToast(): ToastCtx {
-  const ctx = useContext(Ctx)
-  if (!ctx) return { show: () => {} } // no-op if provider absent (safe default)
-  return ctx
 }

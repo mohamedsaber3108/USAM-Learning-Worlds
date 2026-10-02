@@ -67,6 +67,7 @@ const LEARNER_PAGES = [
   ['stories', '/app/stories'],
   ['simulations', '/app/simulations'],
   ['voice', '/app/voice'],
+  ['english-coach', '/app/english-coach'],
 ]
 
 // Optional role captures if creds are provided.

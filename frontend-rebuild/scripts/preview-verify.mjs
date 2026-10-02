@@ -16,9 +16,11 @@
  * account must not fail the whole run, but IS reported as "skipped" so it's
  * never silently mistaken for "passed".
  *
- * Also exercises the dynamic child routes added in the ledger-88 batch-2 pass
- * (companion chat, simulation player) by clicking a real catalog card rather
- * than guessing an id/slug — these can't be listed as static paths.
+ * Also exercises dynamic routes whose segment is backend-seed data (not a
+ * fixed slug) by clicking real catalog-card links rather than guessing an
+ * id/slug: companion chat, simulation player, domain path, mission detail
+ * (a 2-hop chain: Learn -> Domain -> Mission), project detail, and (Guardian
+ * role only) child detail.
  *
  * Runs on the SERVER (where /preview + backend are reachable). This dev
  * workspace has no network path to prod, so the script is authored here and
@@ -39,7 +41,11 @@
  * roles with creds baked into the usage above) and every PROVIDED role
  * passes; 1 otherwise. A role with no creds is reported "SKIPPED (no creds)"
  * and does not fail the run, but is called out in the summary so it is never
- * mistaken for verified. Prints a per-route table + a summary.
+ * mistaken for verified. An empty catalog on a dynamic-route check (nothing
+ * to click) is reported "SKIP" distinctly from "FAIL" for the same reason —
+ * it is a content gap to investigate, not proof the harness or route is
+ * broken, and it does not fail the run on its own. Prints a per-route table
+ * + a summary.
  */
 import { chromium } from 'playwright'
 
@@ -68,6 +74,7 @@ const LEARNER_ROUTES = [
   '/app/stories',
   '/app/simulations',
   '/app/voice',
+  '/app/english-coach',
 ]
 
 // Guardian/Moderator/Admin — each OPTIONAL, gated on its own env creds.
@@ -96,12 +103,33 @@ const ROLE_SETS = [
   },
 ]
 
-// Dynamic child routes: list page -> first real catalog-card link clicked,
-// rather than a guessed id/slug (ids are backend-seed data, not stable paths).
+// Dynamic child routes (learner): list page -> first real catalog-card link
+// clicked, rather than a guessed id/slug (ids are backend-seed data, not
+// stable paths).
 const DYNAMIC_CHILD_ROUTES = [
   { from: '/app/companions', linkPrefix: '/app/companions/', label: '/app/companions/:id (companion chat)' },
   { from: '/app/simulations', linkPrefix: '/app/simulations/', label: '/app/simulations/:slug (sim player)' },
+  { from: '/app/learn', linkPrefix: '/app/learn/', label: '/app/learn/:slug (domain path)' },
+  { from: '/app/projects', linkPrefix: '/app/projects/', label: '/app/projects/:id (project detail)' },
 ]
+
+// Two-hop dynamic chain: Learn -> a domain path -> its mission detail. Mission
+// ids are only discoverable from inside a domain path page (the "start/
+// continue" link on a competency row), so this can't be a single-hop click
+// from a top-level catalog like the others above.
+const MISSION_CHAIN = {
+  from: '/app/learn',
+  hopLinkPrefix: '/app/learn/',
+  targetLinkPrefix: '/app/missions/',
+  label: '/app/missions/:id (mission detail, via Learn -> Domain)',
+}
+
+// Guardian-only dynamic child route: Parent home -> a real child card.
+const CHILD_DETAIL_ROUTE = {
+  from: '/parent',
+  linkPrefix: '/parent/child/',
+  label: '/parent/child/:id (child detail)',
+}
 
 // Console messages we tolerate (known third-party noise, not app defects).
 const IGNORE_CONSOLE = [
@@ -240,6 +268,78 @@ async function checkDynamicChildRoute(page, { from, linkPrefix, label }) {
   return { route: label, ok, skipped, consoleErrors, netFailures, note }
 }
 
+/**
+ * Two-hop variant: visits `from`, clicks the first link matching
+ * `hopLinkPrefix` (e.g. a domain card), then on THAT page clicks the first
+ * link matching `targetLinkPrefix` (e.g. a mission's start/continue link),
+ * and checks the final page. Either hop having no matching link is a
+ * distinct SKIP (empty catalog or a domain path with no missions yet to
+ * click), not a navigation failure.
+ */
+async function checkDynamicChainRoute(page, { from, hopLinkPrefix, targetLinkPrefix, label }) {
+  const consoleErrors = []
+  const netFailures = []
+  const onConsole = (msg) => {
+    if (msg.type() === 'error' && !ignored(msg.text(), IGNORE_CONSOLE)) {
+      consoleErrors.push(msg.text().slice(0, 300))
+    }
+  }
+  const onResponse = (res) => {
+    const status = res.status()
+    const url = res.url()
+    if (status >= 400 && !ignored(url, IGNORE_NETWORK)) {
+      netFailures.push(`${status} ${url.replace(BASE, '')}`)
+    }
+  }
+  page.on('console', onConsole)
+  page.on('response', onResponse)
+
+  const findLink = (prefix) =>
+    page.evaluate((p) => {
+      const a = Array.from(document.querySelectorAll('a[href]')).find((el) => el.getAttribute('href')?.includes(p))
+      return a ? a.getAttribute('href') : null
+    }, prefix)
+
+  let ok = true
+  let note = ''
+  try {
+    await page.goto(`${BASE}${from}`, { waitUntil: 'networkidle', timeout: 30000 })
+    const hopHref = await findLink(hopLinkPrefix)
+    if (!hopHref) {
+      ok = false
+      note = 'SKIPPED (no catalog items for first hop — empty list, not a nav failure)'
+    } else {
+      await page.goto(`${BASE}${hopHref}`, { waitUntil: 'networkidle', timeout: 30000 })
+      const targetHref = await findLink(targetLinkPrefix)
+      if (!targetHref) {
+        ok = false
+        note = 'SKIPPED (no second-hop link found — e.g. domain path has no missions yet)'
+      } else {
+        await page.goto(`${BASE}${targetHref}`, { waitUntil: 'networkidle', timeout: 30000 })
+        const hasContent = await page.evaluate(() => {
+          const h = document.querySelector('h1, [role="alert"], [role="status"]')
+          return Boolean(h && (h.textContent || '').trim().length > 0)
+        })
+        if (!hasContent) {
+          ok = false
+          note = 'no visible content'
+        }
+      }
+    }
+  } catch (e) {
+    ok = false
+    note = `nav failed: ${String(e).slice(0, 120)}`
+  }
+
+  page.off('console', onConsole)
+  page.off('response', onResponse)
+
+  const skipped = note.startsWith('SKIPPED')
+  if (!skipped && consoleErrors.length) ok = false
+  if (!skipped && netFailures.length) ok = false
+  return { route: label, ok, skipped, consoleErrors, netFailures, note }
+}
+
 async function checkRtl(page) {
   await page.goto(`${BASE}/`, { waitUntil: 'networkidle', timeout: 30000 })
   // Toggle to Arabic via the language button (ع), then read <html dir>.
@@ -275,6 +375,7 @@ async function main() {
     if (loggedIn) {
       for (const r of LEARNER_ROUTES) results.push(await checkRoute(page, r))
       for (const dr of DYNAMIC_CHILD_ROUTES) dynamicResults.push(await checkDynamicChildRoute(page, dr))
+      dynamicResults.push(await checkDynamicChainRoute(page, MISSION_CHAIN))
     }
     await ctx.close()
   }
@@ -293,6 +394,7 @@ async function main() {
     roleStatus.push({ key: set.key, ran: true, loggedIn: ok })
     if (ok) {
       for (const r of set.routes) results.push(await checkRoute(page, `${r}`))
+      if (set.key === 'GUARDIAN') dynamicResults.push(await checkDynamicChildRoute(page, CHILD_DETAIL_ROUTE))
     }
     await ctx.close()
   }
