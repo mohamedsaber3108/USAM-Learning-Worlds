@@ -3,6 +3,28 @@
 > The launch reconciliation. Compares backend capability ↔ frontend routes ↔
 > role journeys ↔ API coverage ↔ tests ↔ production. Produced BEFORE requesting
 > the production switch (task 13). Raw counts, then per-area verdict.
+>
+> **SUPERSEDED 2026-10-02 (post-reconciliation pass).** The counts and verdicts
+> below predate a 5-batch reconciliation pass this same day that found real
+> contract bugs, closed real missing-surface gaps, and corrected two claims in
+> this document that no longer hold:
+> 1. **"memory-governance withheld pending a RolesGuard fix"** (residual item
+>    #4 below) is WRONG — `memory-governance.controller.ts` was never broken;
+>    it uses the same manual-role-check pattern as `FeatureFlagController`
+>    (confirmed by direct code read, 2026-10-02). It is shipped and live in
+>    `AdminPlatformPage.tsx`'s MemoryGovernanceSection (ledger 88 batch 2).
+> 2. **"47/47 pages rebuilt" / "Complete" per-role verdicts** below reflect
+>    *structural* completeness (real routes, no placeholders) as of this
+>    document's original authoring — NOT contract-correctness or full backend-
+>    capability coverage. `plans-local/88_NEW_FRONTEND_PAGE_REBUILD_LEDGER.md`
+>    (2026-10-02 RESET) is the current source of truth for completeness: it
+>    found 4 real contract bugs (now fixed) and closed ~25 real missing-surface
+>    gaps across 5 batches (companion chat, Coding/English Coach, generic AI
+>    hint, Legal Center + AI disclosure, Leaderboard, Insights, question-
+>    template browser, and more). As of the end of batch 5, ledger 88 confirms
+>    **zero `NOT_STARTED` P0/P1 rows remain**. Treat THIS document's per-role
+>    "Complete" verdicts as historical context, not current ground truth —
+>    read ledger 88 for the current state before relying on anything below.
 
 ## Completeness proof — raw counts (no bare percentages)
 

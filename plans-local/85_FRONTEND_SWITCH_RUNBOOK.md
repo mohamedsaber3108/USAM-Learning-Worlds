@@ -53,13 +53,31 @@ Only after Phase 2 passes. The live `scripts/deploy.sh` builds `frontend/`, so
 the cutover replaces the `frontend/` app source with the rebuilt app, in a
 single reviewable commit (legacy remains in git history → revertable).
 
+> **UPDATED 2026-10-02** — the `git mv` list below was re-verified file-by-file
+> against the actual current `frontend-rebuild/` tree (not from memory) during
+> the final pre-cutover reconciliation pass. The original list in this runbook
+> was missing `public/` (logo+favicon), `.env.production`/`.env.example`
+> (same-origin `/api` config, already correct for root deploy — no change
+> needed at cutover), `eslint.config.js` (added this pass; `frontend/` already
+> has an equivalent), and the two preview scripts (`preview-verify.mjs`,
+> `preview-screenshots.mjs`) added this pass. The list below is complete.
+> Also confirmed: `deploy.sh`'s `npm ls react react-dom react-router-dom
+> @tanstack/react-query` check (step 3) ALREADY matches the rebuild's real
+> deps — the "update this check" TODO in the original runbook text below is
+> already done; no `deploy.sh` edit is needed at cutover.
+
 Recommended mechanics (run in a clean working tree, on the branch):
 
 ```bash
 # from repo root, on fix/p0-p1-remediation
 git rm -r frontend/src frontend/index.html frontend/package.json \
-          frontend/tailwind.config.js frontend/postcss.config.js \
-          frontend/tsconfig*.json frontend/vite.config.ts
+          frontend/package-lock.json frontend/tailwind.config.js \
+          frontend/postcss.config.js frontend/tsconfig.json \
+          frontend/tsconfig.node.json frontend/vite.config.ts \
+          frontend/vitest.config.ts frontend/playwright.config.ts \
+          frontend/eslint.config.js frontend/public frontend/.env \
+          frontend/scripts/check-home-bundle.mjs frontend/README.md \
+          frontend/e2e
 
 # move the rebuilt app into the frontend/ path the pipeline builds
 git mv frontend-rebuild/src frontend/src
@@ -70,20 +88,37 @@ git mv frontend-rebuild/tailwind.config.js frontend/tailwind.config.js
 git mv frontend-rebuild/postcss.config.js frontend/postcss.config.js
 git mv frontend-rebuild/tsconfig.json frontend/tsconfig.json
 git mv frontend-rebuild/vite.config.ts frontend/vite.config.ts
+git mv frontend-rebuild/eslint.config.js frontend/eslint.config.js
+git mv frontend-rebuild/public frontend/public
+git mv frontend-rebuild/.env.production frontend/.env.production
+git mv frontend-rebuild/.env.example frontend/.env.example
+git mv frontend-rebuild/README.md frontend/README.md
 git mv frontend-rebuild/scripts/check-home-bundle.mjs frontend/scripts/check-home-bundle.mjs
-# keep frontend/.env (git-tracked, skip-worktree, VITE_API_URL=/api) as-is
+git mv frontend-rebuild/scripts/preview-verify.mjs frontend/scripts/preview-verify.mjs
+git mv frontend-rebuild/scripts/preview-screenshots.mjs frontend/scripts/preview-screenshots.mjs
+# frontend-rebuild/.gitignore has no legacy-tree equivalent worth preserving
+# separately — frontend/.gitignore already covers node_modules/dist/.env*;
+# no action needed.
 
 git commit -m "chore(frontend): switch production to the rebuilt frontend (Decision A cutover)"
 git push
 ```
 
-Note the rebuild's `build` script is `tsc -b && vite build` and it has its own
-`check:home-bundle`; confirm `frontend/package.json` (now the rebuild's) keeps a
-`build` + `check:home-bundle` script so `deploy.sh` steps 4/6 still pass. The
-deploy script's Radix `npm ls` verification (step 3) references the OLD deps —
-update that check in deploy.sh to the rebuild's dependency set (react-router/
-react-query/zustand/i18next) OR relax it, in the same cutover commit, so step 3
-doesn't false-fail.
+`frontend/package.json` (now the rebuild's) already has `build`,
+`check:home-bundle`, `lint`, and `test` scripts under those exact names —
+re-verified 2026-10-02 — so `deploy.sh` and `.github/workflows/ci.yml`'s
+`frontend` job both work unmodified after this commit. The CI
+`frontend-canonical-guard` job (greps `deploy.sh` for the literal string
+`cd "$REPO/frontend"`) also keeps passing — this cutover changes `frontend/`'s
+*contents*, not the path `deploy.sh` builds, so the grep still matches.
+
+`frontend-rebuild/` has no `tsconfig.node.json`, `vitest.config.ts`, or
+`playwright.config.ts` equivalents — the rebuild's `vite.config.ts` already
+contains the vitest `test` block inline (see its header comment: `/// <reference
+types="vitest/config" />`) and there is no Playwright/E2E suite in the rebuild
+yet (tracked separately, not a cutover blocker — CI's `frontend` job never
+calls `npm run e2e`). These legacy files are correctly `git rm`'d with no
+rebuild replacement.
 
 ## Phase 4 — DEPLOY + LIVE VERIFY
 
@@ -161,9 +196,10 @@ rebuilt `frontend-rebuild/src/app/router.tsx`.
 | `/projects`, `/projects/:id`, `/portfolio` | `/app/projects`, `/app/projects/:id`, `/app/portfolio` | MOVED |
 | `/plans` | `/pricing` (public) + `/parent/plan` (manage) | SPLIT by role |
 | `/community` | `/app/community` | MOVED |
-| `/achievements`, `/leaderboard`, `/balanced`, `/shop` | `/app/rewards` | MERGED |
+| `/achievements`, `/balanced`, `/shop` | `/app/rewards` | MERGED |
+| `/leaderboard` | `/app/leaderboard` | MOVED (real page added ledger-88 batch 5, linked from Rewards — was briefly a gap, now closed) |
 | `/progress` | `/app/progress` | MOVED |
-| `/insights` | (folded into `/app/progress`) | MERGED |
+| `/insights` | `/app/insights` | MOVED (real page added ledger-88 batch 5, linked from Progress — was briefly a gap, now closed) |
 | `/voice-chat` | `/app/voice` | MOVED/renamed |
 | `/english`, `/english/coach`, `/coding` | `/app/learn/:slug` (domain path) | MERGED |
 | `/characters`, `/characters/:id/chat` | `/app/companions` | MERGED |
@@ -190,22 +226,27 @@ rebuilt `frontend-rebuild/src/app/router.tsx`.
 ### Admin (many granular pages → 6 task-oriented areas)
 | Legacy path | Final area | Change |
 | --- | --- | --- |
-| `/admin/missions`, `/admin/content-items`, `/admin/question-templates`, `/admin/prompt-templates` | `/admin/content` | CONSOLIDATED |
+| `/admin/missions`, `/admin/content-items`, `/admin/prompt-templates` | `/admin/content` / `/admin/curriculum` / `/admin/ai` | CONSOLIDATED (missions→curriculum, content-items→content, prompt-templates→ai) |
+| `/admin/question-templates` | `/admin/question-templates` | MOVED (real page added ledger-88 batch 5 — read-side only; was briefly a gap, now closed) | |
 | `/admin/content-qa`, `/admin/assessment-quality`, `/admin/misconceptions` | `/admin/curriculum` | CONSOLIDATED |
 | `/admin/ai-eval`, `/admin/safety-policies` | `/admin/ai` | CONSOLIDATED |
 | `/admin/analytics` | `/admin/analytics` | same area |
 | `/admin/feature-flags`, `/admin/experiments`, `/admin/audit-log` | `/admin/platform` | CONSOLIDATED |
-| `/admin/memory-governance` | (WITHHELD — backend authz gap) | NOT EXPOSED |
+| `/admin/memory-governance` | `/admin/platform` (MemoryGovernanceSection) | MERGED — the "withheld, authz gap" note below this table was WRONG (see superseding note at the top of this file); it's shipped, confirmed |
 | (none) | `/admin` overview | NEW |
 
-### Cutover redirect decision
+### Cutover redirect decision — SUPERSEDED, already implemented
 
-- **Catch-all** now renders an honest 404 (no silent bounce to `/dashboard`).
-  Legacy deep links therefore 404 rather than misdirect — safer, but visible.
-- **Recommended minimum redirects** (add in the router as `<Route ... element={<Navigate .../>}>`
-  in the cutover commit if the owner wants zero broken bookmarks): `/dashboard`→`/app`,
-  `/parents`→`/parent`, `/register`→`/signup`, `/voice-chat`→`/app/voice`,
-  `/plans`→`/pricing`. All other legacy paths are internal-navigation targets
-  (reached via in-app links, not typically bookmarked) and can fall through to 404.
-- This is an OWNER decision (redirect vs. clean break); the rebuild ships with a
-  clean break (honest 404) by default per the "no silent bounce" directive.
+> The "owner decision" framing below is now moot: ledger-88 batch 5
+> (2026-10-02) implemented the FULL legacy→final redirect map as real routes
+> in `frontend-rebuild/src/app/router.tsx` (~60 `<Navigate>`/`ParamRedirect`
+> routes), not just the 5 "minimum" ones originally suggested here. Full
+> rationale per route: `docs/ops/LEGACY_URL_REDIRECT_MAP.md`. The catch-all
+> still renders an honest 404 for the small set of legacy paths with no real
+> equivalent (e.g. `/worlds/:id` — no id→slug mapping exists client-side).
+> These redirects move to `frontend/src/app/router.tsx` automatically as part
+> of the `git mv frontend-rebuild/src frontend/src` step above — no separate
+> action needed.
+
+~~Catch-all now renders an honest 404... Recommended minimum redirects...~~
+(historical — see note above; fully superseded by the real implementation)
