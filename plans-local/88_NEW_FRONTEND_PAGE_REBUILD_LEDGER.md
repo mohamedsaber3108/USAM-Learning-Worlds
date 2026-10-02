@@ -95,18 +95,18 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 
 | Route | Role | Backend | File | Real API | Known gaps | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `/app` Home | LEARNER | gamification, adaptive, mastery | `features/learner/HomePage.tsx` | progression/streak/achievements/recommendations ✓ | Missing: daily-goals widget, mission-history teaser | CONNECTING |
+| `/app` Home | LEARNER | gamification, adaptive, mastery, daily-goals | `features/learner/HomePage.tsx` | progression/streak/achievements/recommendations/daily-goal ✓ | FIXED 2026-10-02: added daily-goal progress card. Still missing: mission-history teaser | CONNECTING |
 | `/app/learn` | LEARNER | `worlds.list` | `features/learner/LearnPage.tsx` | `GET /worlds` ✓ | — | CONNECTING |
 | `/app/learn/:slug` | LEARNER | `learning.getDomainPath` | `features/learner/DomainPathPage.tsx` | `GET /learning/domains/:slug/path` ✓ | — | CONNECTING |
 | `/app/missions/:id` | LEARNER | `missions.getById/start` | `features/learner/MissionDetailPage.tsx` | ✓ | — | CONNECTING |
-| `/app/runs/:runId` | LEARNER | missions run loop + coding-sandbox | `features/learner/MissionPlayerPage.tsx` + `activities/*` | submit/complete/coding-sandbox ✓ | **Missing: post-mission reflection step** (`reflection.prompts`/`respond` defined, never called) | REBUILDING |
-| `/app/practice` | LEARNER | `mastery.getReviewDue` | `features/learner/PracticePage.tsx` | `GET /mastery/review-due` ✓ | **No flashcards surface at all** (`flashcardsApi` defined, zero route/UI) | REBUILDING |
+| `/app/runs/:runId` | LEARNER | missions run loop + coding-sandbox + reflection | `features/learner/MissionPlayerPage.tsx` + `activities/*` | submit/complete/coding-sandbox/reflection ✓ | FIXED 2026-10-02: added post-mission ReflectionStep (face-rating + note, skippable) | TESTING |
+| `/app/practice` | LEARNER | `mastery.getReviewDue`, `flashcards.*` | `features/learner/PracticePage.tsx` | `GET /mastery/review-due` + flashcards due/review ✓ | FIXED 2026-10-02: added a real Flashcards tab (flip-card study flow, FSRS-scheduled) | TESTING |
 | `/app/progress` | LEARNER | `mastery.overview/byDomain` | `features/learner/ProgressPage.tsx` | ✓ | Missing: `mastery.goals`, mission-history (`GET /missions/history/me`) | CONNECTING |
 | `/app/projects` | LEARNER | `projects.mine` | `features/learner/ProjectsPage.tsx` | `GET /projects/my` ✓ | Fixed D2 (dead status field) this pass | CONNECTING |
 | `/app/projects/:id` | LEARNER | `projects.getById` + milestones + curriculum-context | `features/learner/ProjectDetailPage.tsx` | ✓ (fixed D1 this pass — 3 real queries) | Missing: rubric viewer, collaborators, research notes UI | REBUILDING |
 | `/app/portfolio` | LEARNER | `projects.portfolio` | `features/learner/PortfolioPage.tsx` | `GET /projects/portfolio/:learnerId` ✓ | — | CONNECTING |
 | `/app/create` | LEARNER | `creativity.prompts/submissions` | `features/learner/CreativityPage.tsx` | ✓ (prompts, submit, mine) | Missing: public gallery (`creativity.gallery`), `prompts/:slug` detail, visibility toggle | REBUILDING |
-| `/app/companions` | LEARNER | `characters.list` | `features/learner/CompanionsPage.tsx` | `GET /characters` ✓ | **Companion gallery exists but you cannot chat** — character chat/conversations entirely unwired despite rich backend support | REBUILDING |
+| `/app/companions` + `/app/companions/:id` | LEARNER | `characters.unlocked`, conversations CRUD | `features/learner/CompanionsPage.tsx` + new `CompanionChatPage.tsx` | `GET /characters/unlocked`, conversations create/get/sendMessage ✓ | FIXED 2026-10-02: real chat added (was gallery-only, no way to talk). Also fixed a response-shape bug (bare-array assumption vs real `{characters:[...]}` wrapper + nonexistent fields). Entitlement-honest (aiTutor gate shown as a real upgrade state, not a silent 403) | TESTING |
 | `/app/community` | LEARNER | `community.feed/report` | `features/learner/CommunityPage.tsx` | ✓ | Missing: `trending`, `search`, `stats` | REBUILDING |
 | `/app/credentials` | LEARNER | `credentials.mine` | `features/learner/CredentialsPage.tsx` | `GET /credentials/me` ✓ | — | CONNECTING |
 | `/app/rewards` | LEARNER | gamification | `features/learner/RewardsPage.tsx` | progression/achievements/streak ✓ | **Missing: cosmetic shop + streak-freeze shop** (unlock/equip/leaderboard all defined, unused) | REBUILDING |
@@ -116,9 +116,9 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | `/app/stories` + `/:id` | LEARNER | `learning.stories` | `features/learner/StoriesPage.tsx` | ✓ | — | CONNECTING |
 | `/app/simulations` | LEARNER | `simulation.list` | `features/learner/SimulationsPage.tsx` | `GET /simulations` ✓ | **No detail/play view** — `:slug` + decision-node endpoints unused, catalog-only | REBUILDING |
 | `/app/voice` | LEARNER | `voice.turn` (BLOCKED_EXTERNAL) | `features/learner/VoicePage.tsx` | n/a — honest gated state | Correct as-is (provider creds pending) | FINAL (gated) |
-| **MISSING** `/app/practice/flashcards` or equivalent | LEARNER | `flashcards.getDue/review` | — | `flashcardsApi` defined, 0 callers | No route exists at all | NOT_STARTED |
+| ~~`/app/practice/flashcards`~~ | LEARNER | `flashcards.getDue/review` | now a tab in `PracticePage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | **MISSING** mission history view | LEARNER | `missions.history/me` | — | not in endpoints.ts | No surface | NOT_STARTED |
-| **MISSING** daily goals widget | LEARNER | `daily-goals.getProgress` | — | defined, 0 callers | No surface | NOT_STARTED |
+| ~~daily goals widget~~ | LEARNER | `daily-goals.getProgress` | now in `HomePage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 
 ### SPECIALIZED DOMAIN / CONTENT CATALOGS
 
@@ -127,7 +127,7 @@ Columns: Route · Role · Backend capability · Current file · Real API (verifi
 | **MISSING** Cross-curricular (AI-literacy/entrepreneurship/financial/digital/career/communication/coding-concepts) | LEARNER | `cross-curricular.*` | — | `crossCurricularApi` defined, 0 callers | No routes in router.tsx at all | NOT_STARTED |
 | **MISSING** Problem-solving / computational-thinking / critical-thinking catalogs | LEARNER | `problem-solving.*` | — | `thinkingApi` defined, 0 callers | No routes | NOT_STARTED |
 | **MISSING** Visual-language cards | LEARNER | `visual-language.*` | — | `visualLanguageApi` defined, 0 callers | No routes | NOT_STARTED |
-| **MISSING** Character AI chat/conversations | LEARNER | `ai.character` (chat/conversations CRUD) | `CompanionsPage.tsx` (list only) | 0 callers for chat endpoints | Companion gallery is a dead end — can't talk to a companion | NOT_STARTED |
+| ~~Character AI chat/conversations~~ | LEARNER | `ai.character` (chat/conversations CRUD) | `CompanionsPage.tsx` + `CompanionChatPage.tsx` | ✓ | **DONE 2026-10-02** | TESTING |
 | **MISSING** Coding Coach | LEARNER | `ai.coding-coach` | — | 0 callers | No inline coding help surfaced in mission player | NOT_STARTED |
 | **MISSING** English Coach | LEARNER | `ai.english-coach` | — | 0 callers | No inline English help | NOT_STARTED |
 | **MISSING** Generic AI feedback/hint/explain/analyze | LEARNER | `ai.controller` | — | 0 callers | No inline AI tutoring anywhere | NOT_STARTED |
