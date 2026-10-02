@@ -12,11 +12,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { ConceptService } from './services/concept.service';
 import { LearningPathService } from './services/learning-path.service';
 import { ContentAdaptationService } from './services/content-adaptation.service';
 import { LearningEventService } from './services/learning-event.service';
-import { AgeBand, PrerequisiteType, ScaffoldLevel } from '@prisma/client';
+import { AgeBand, PrerequisiteType, Role, ScaffoldLevel } from '@prisma/client';
 
 @Controller('learning')
 @UseGuards(JwtAuthGuard)
@@ -58,7 +60,18 @@ export class LearningController {
     return this.conceptService.getUnlockStatus(id, learnerId);
   }
 
+  /**
+   * SECURITY FIX (reconciliation audit, 2026-10-02): curriculum-graph
+   * mutation. Previously guarded by class-level JwtAuthGuard only — ANY
+   * authenticated learner could rewrite the Concept prerequisite graph.
+   * This is a curriculum-authoring action with no learner-facing use case
+   * (same class of operation as admin-missions.controller.ts's
+   * create/update/delete, which is correctly ADMIN-gated). Added
+   * RolesGuard + @Roles(ADMIN) to match that established pattern.
+   */
   @Post('concepts/:id/prerequisites')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async addPrerequisite(
     @Param('id') id: string,
     @Body() body: { prerequisiteId: string; type?: PrerequisiteType }
@@ -67,6 +80,8 @@ export class LearningController {
   }
 
   @Delete('concepts/:id/prerequisites/:prereqId')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async removePrerequisite(@Param('id') id: string, @Param('prereqId') prereqId: string) {
     return this.conceptService.removePrerequisite(id, prereqId);
   }
@@ -94,7 +109,11 @@ export class LearningController {
     return this.conceptService.getCompetencyShortestUnlockPath(id, learnerId);
   }
 
+  /** SECURITY FIX — same curriculum-authoring gap as the Concept-level
+   * prerequisite routes above; same ADMIN-only fix. */
   @Post('competencies/:id/prerequisites')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async addCompetencyPrerequisite(
     @Param('id') id: string,
     @Body() body: { prerequisiteId: string; type?: PrerequisiteType }
@@ -103,6 +122,8 @@ export class LearningController {
   }
 
   @Delete('competencies/:id/prerequisites/:prereqId')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async removeCompetencyPrerequisite(
     @Param('id') id: string,
     @Param('prereqId') prereqId: string
@@ -208,7 +229,11 @@ export class LearningController {
     return this.contentAdaptationService.getAllAgeConfigs();
   }
 
+  /** SECURITY FIX — authoring a per-age content variant is a curriculum-
+   * authoring action, not a learner capability; same ADMIN-only fix. */
   @Post('age-variants')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async createAgeVariant(
     @Body()
     body: {

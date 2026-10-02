@@ -8,6 +8,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 import {
   TranslationService,
   CreateTranslationDto,
@@ -99,10 +102,19 @@ export class TranslationController {
   }
 
   /**
+   * SECURITY FIX (reconciliation audit, 2026-10-02): write/approve routes
+   * below were previously guarded by class-level JwtAuthGuard only — any
+   * authenticated learner could upsert or batch-upsert arbitrary entity
+   * translations, or mark a translation human-approved. Content
+   * authoring/QA actions, same ADMIN-only pattern as every other
+   * authoring controller (admin-missions, admin-content-items, etc.).
+   *
    * POST /translations — upsert a single translation.
    * Body matches CreateTranslationDto: { entityType, entityId, field, language, value }
    */
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async upsertTranslation(@Body() dto: CreateTranslationDto) {
     return this.translationService.upsertTranslation(dto);
   }
@@ -112,6 +124,8 @@ export class TranslationController {
    * Body: CreateTranslationDto[]
    */
   @Post('batch')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async batchUpsertTranslations(@Body() translations: CreateTranslationDto[]) {
     return this.translationService.batchCreateTranslations(translations);
   }
@@ -122,6 +136,8 @@ export class TranslationController {
    * Body: { isHumanApproved: boolean, approvedBy?: string }
    */
   @Post(':entityType/:entityId/:field/approve')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   async setApproval(
     @Param('entityType') entityType: string,
     @Param('entityId') entityId: string,
