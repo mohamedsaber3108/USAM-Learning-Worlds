@@ -373,9 +373,28 @@ export const parentsApi = {
     apiClient.post(`/parents/children/${learnerId}/time-limits`, body),
 }
 
+export type ConsentPurpose =
+  | 'ESSENTIAL_SERVICE'
+  | 'PERSONALIZATION'
+  | 'AI_PROCESSING'
+  | 'VOICE_PROCESSING'
+  | 'COMMUNITY'
+  | 'ANALYTICS'
+export interface EffectiveConsent {
+  purpose: ConsentPurpose
+  granted: boolean
+  policyVersion: string | null
+  updatedAt: string | null
+}
+/** Current policy version guardians are consenting to. Bump this when the
+ * privacy policy text changes; the backend records exactly which version
+ * was agreed to (ConsentRecord.policyVersion) for compliance evidence. */
+export const CURRENT_POLICY_VERSION = '2026-10-02'
+
 export const legalApi = {
-  consent: (body: Record<string, unknown>) => apiClient.post('/legal/consent', body),
-  getConsent: (learnerId: string) => apiClient.get(`/legal/consent/${learnerId}`),
+  consent: (body: { learnerId: string; purpose: ConsentPurpose; granted: boolean; policyVersion: string }) =>
+    apiClient.post('/legal/consent', body),
+  getConsent: (learnerId: string) => apiClient.get<EffectiveConsent[]>(`/legal/consent/${learnerId}`),
   exportData: (learnerId: string) => apiClient.get(`/legal/export/${learnerId}`),
   requestDelete: (learnerId: string) => apiClient.post(`/legal/delete/${learnerId}`),
 }
