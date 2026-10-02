@@ -23,6 +23,7 @@ import { ProjectDetailPage } from '@/features/learner/ProjectDetailPage'
 import { PortfolioPage } from '@/features/learner/PortfolioPage'
 import { CreativityPage } from '@/features/learner/CreativityPage'
 import { CompanionsPage } from '@/features/learner/CompanionsPage'
+import { CompanionChatPage } from '@/features/learner/CompanionChatPage'
 import { CommunityPage } from '@/features/learner/CommunityPage'
 import { CredentialsPage } from '@/features/learner/CredentialsPage'
 import { RewardsPage } from '@/features/learner/RewardsPage'
@@ -123,6 +124,7 @@ export function AppRouter() {
         <Route path="/app/portfolio" element={<PortfolioPage />} />
         <Route path="/app/create" element={<CreativityPage />} />
         <Route path="/app/companions" element={<CompanionsPage />} />
+        <Route path="/app/companions/:id" element={<CompanionChatPage />} />
         <Route path="/app/community" element={<CommunityPage />} />
         <Route path="/app/credentials" element={<CredentialsPage />} />
         <Route path="/app/rewards" element={<RewardsPage />} />

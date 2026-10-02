@@ -26,7 +26,10 @@ export const authApi = {
 /** Public plan catalog (no auth). */
 export const entitlementsApi = {
   listPlans: () => apiClient.get('/entitlements/plans'),
-  getMine: () => apiClient.get('/entitlements/me'),
+  getMine: () =>
+    apiClient.get<{ plan: { code: string; name: string } | null; features: Record<string, unknown> }>(
+      '/entitlements/me',
+    ),
 }
 
 // ==================== Learning ====================
@@ -137,8 +140,77 @@ export const rubricsApi = {
 }
 
 // ==================== Characters / companions ====================
+// NOTE: every GET below returns a wrapped `{ characters: [...] }` /
+// `{ character: {...} }` / `{ conversation: {...} }` object, NOT a bare
+// array/object — matches backend/src/modules/ai/character.controller.ts
+// exactly (confirmed by reading every handler's return statement).
 export const charactersApi = {
-  list: () => apiClient.get('/characters'),
+  list: (role?: string) => apiClient.get<{ characters: unknown[] }>('/characters', { params: { role } }),
+  unlocked: () => apiClient.get<{ characters: unknown[] }>('/characters/unlocked'),
+  orchestrate: (params?: { domainSlug?: string; missionId?: string }) =>
+    apiClient.get<{
+      character: { id: string; name: string; role: string; avatarUrl: string | null }
+      reason: string
+      domainSlug: string | null
+      isFallback: boolean
+    }>('/characters/orchestrate', { params }),
+  getById: (id: string) =>
+    apiClient.get<{ id: string; name: string; role: string; personality: unknown; avatarUrl: string | null }>(
+      `/characters/${id}`,
+    ),
+  getState: (id: string) =>
+    apiClient.get<{
+      state: {
+        characterId: string
+        characterName: string
+        characterRole: string
+        relationshipLevel: number
+        interactionCount: number
+        lastInteraction: string | null
+      }
+    }>(`/characters/${id}/state`),
+}
+
+// ==================== Character conversations (chat) ====================
+export interface ConversationMessage {
+  id: string
+  conversationId: string
+  role: 'LEARNER' | 'CHARACTER' | 'SYSTEM'
+  content: string
+  metadata?: { mood?: string; suggestedActions?: string[] } | null
+  createdAt: string
+}
+export interface ConversationRecord {
+  id: string
+  learnerId: string
+  characterId: string
+  type: 'LEARNING_SUPPORT' | 'ENGLISH_PRACTICE' | 'CODING_HELP' | 'PROJECT_GUIDANCE' | 'CASUAL' | 'ROLEPLAY' | 'DEBATE' | 'INTERVIEW'
+  status: 'ACTIVE' | 'PAUSED' | 'ENDED' | 'BLOCKED'
+  startedAt: string
+  messages?: ConversationMessage[]
+  character?: { id: string; name: string; role: string; avatarUrl: string | null }
+}
+
+export const conversationsApi = {
+  create: (characterId: string, body: { type: ConversationRecord['type']; sessionId?: string; initialMessage?: string }) =>
+    apiClient.post<{ conversation: ConversationRecord }>(`/characters/${characterId}/conversations`, body),
+  get: (conversationId: string) =>
+    apiClient.get<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}`),
+  sendMessage: (conversationId: string, body: { content: string; metadata?: Record<string, unknown> }) =>
+    apiClient.post<{ learnerMessage: ConversationMessage; characterMessage: ConversationMessage }>(
+      `/characters/conversations/${conversationId}/messages`,
+      body,
+    ),
+  getMessages: (conversationId: string, params?: { limit?: number; offset?: number }) =>
+    apiClient.get<{ messages: ConversationMessage[] }>(`/characters/conversations/${conversationId}/messages`, { params }),
+  list: (params?: { status?: ConversationRecord['status']; characterId?: string; limit?: number }) =>
+    apiClient.get<{ conversations: ConversationRecord[] }>('/characters/conversations', { params }),
+  pause: (conversationId: string) =>
+    apiClient.patch<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}/pause`),
+  resume: (conversationId: string) =>
+    apiClient.patch<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}/resume`),
+  end: (conversationId: string) =>
+    apiClient.patch<{ conversation: ConversationRecord }>(`/characters/conversations/${conversationId}/end`),
 }
 
 // ==================== Creativity ====================
