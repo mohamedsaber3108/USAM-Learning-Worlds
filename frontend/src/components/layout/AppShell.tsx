@@ -18,6 +18,7 @@ import {
   MessageSquareWarning,
   LifeBuoy,
   LayoutDashboard,
+  LayoutGrid,
   FileText,
   GraduationCap,
   Bot,
@@ -38,7 +39,18 @@ interface NavItem {
   icon: LucideIcon
 }
 
-// Role-variant navigation with icons (IA: learner 5 anchors; role consoles).
+// Role-variant navigation with icons (IA: learner 5 core anchors + "More" hub
+// for the rest; role consoles).
+//
+// FIX (2026-10-02, owner report "where are all the remaining pages!!!"):
+// router.tsx has ~12 real, built, backend-connected learner pages
+// (Explore, Companions, Creativity, Community, Credentials, Leaderboard,
+// Stories, Simulations, Voice, English Coach, Portfolio) that previously had
+// NO nav entry anywhere — reachable only by typing the exact URL. That's a
+// navigation/IA gap, not a missing-content bug: the content is real and
+// live. Rather than cramming 12 items into the top bar (breaks the
+// deliberate 5-anchor mobile tab bar), added one more anchor, "More", that
+// opens a real hub page (MorePage) linking every one of them.
 const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   LEARNER: [
     { to: '/app', key: 'nav.home', icon: Home },
@@ -46,6 +58,7 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { to: '/app/practice', key: 'nav.practice', icon: RotateCcw },
     { to: '/app/projects', key: 'nav.projects', icon: FolderKanban },
     { to: '/app/progress', key: 'nav.progress', icon: TrendingUp },
+    { to: '/app/more', key: 'nav.more', icon: LayoutGrid },
   ],
   GUARDIAN: [
     { to: '/parent', key: 'parent.children', icon: Users },

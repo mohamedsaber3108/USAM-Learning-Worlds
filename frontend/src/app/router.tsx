@@ -13,6 +13,7 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { HomePage } from '@/features/learner/HomePage'
+import { MorePage } from '@/features/learner/MorePage'
 import { LearnPage } from '@/features/learner/LearnPage'
 import { WorldDetailPage } from '@/features/learner/WorldDetailPage'
 import { ExplorePage } from '@/features/learner/ExplorePage'
@@ -144,6 +145,7 @@ export function AppRouter() {
         <Route path="/app/runs/:runId" element={<MissionPlayerPage />} />
         <Route path="/app/practice" element={<PracticePage />} />
         <Route path="/app/progress" element={<ProgressPage />} />
+        <Route path="/app/more" element={<MorePage />} />
         <Route path="/app/projects" element={<ProjectsPage />} />
         <Route path="/app/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/app/portfolio" element={<PortfolioPage />} />
