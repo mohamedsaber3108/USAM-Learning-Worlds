@@ -136,6 +136,65 @@ tracked in §5).
   regression test more robust, not just passing), `eslint` 0 warnings.
   Live-verification: pending owner deploy (§5).
 
+### 2.4 English strand/path controller — RESOLVED (false positive, no gap)
+
+- **PROOF 1**: `english.controller.ts`'s own doc comment states `GET
+  /english/path` is "a back-compat shim... delegates with slug 'english'" to
+  the exact same `DomainPathService` behind the generic
+  `GET /learning/domains/:slug/path` that `DomainPathPage.tsx` already calls.
+  Confirmed by reading `domain-path.service.ts:42-45,97-100`: it already
+  decorates every English competency with `cefrLevel`/`strandType` pulled
+  from the real `EnglishStrand` model (null for non-English domains, by
+  design — the projection stays generic across all domains).
+- **PROOF 2 (the real, smaller gap)**: `frontend/src/lib/api/learning-types.ts`'s
+  `DomainPathCompetency` interface never declared `cefrLevel`/`strandType`,
+  so TypeScript's structural typing silently dropped fields the backend was
+  always sending. `DomainPathPage.tsx` never rendered them. Fixed: added both
+  fields to the type, and render `cefrLevel` as a pill next to each English
+  competency's name in `DomainPathPage.tsx` (null-safe — only shows for
+  domains that actually have strand data, i.e. English).
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-BAaQbK2W.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending owner deploy (§5).
+- `GET /english/strands`, `/english/strands/:slug` (a raw strand browser,
+  distinct from the path projection) remain unwired — confirmed no page
+  needs a standalone strand list (the path view is the real product surface
+  for this content); classified **NOT_REQUIRED**, not missing.
+
+### 2.5 Media Engine (`media.controller.ts`, `MediaAsset` model) — OBSOLETE
+
+- **PROOF 1**: Read the full seed file (`seed-media-assets.ts`, 12 real
+  CC0/public-domain illustration assets from Wikimedia Commons). Every asset
+  is tagged with a `domainSlug` from the RETIRED 12-school-subject domain set
+  (`science`, `mathematics`, `social-studies`, `technology`, `arts`) — the
+  exact same pre-pivot domain naming bug already found and fixed twice this
+  project (stories: commit `70a80df`'s `STORY_DOMAIN_SLUG` remap; flashcards:
+  same commit's domain remap to `english/coding/ai-literacy/entrepreneurship`).
+  Confirmed via `seed-worlds.ts` that the only 4 real domain slugs in the
+  current product are `english`, `coding`, `ai-literacy`, `entrepreneurship`.
+- **PROOF 2 (why this one is OBSOLETE, not a 3rd instance of the same fix)**:
+  Unlike stories/flashcards, this seed function (`seedMediaAssets`) is **not
+  called from any seed orchestration script** (`prisma/seed.ts` has zero
+  reference; `package.json` has no `seed:media` script) — confirmed via
+  grep, zero matches. No mission/activity seed content anywhere references
+  any of these 12 asset slugs (`solar-system-diagram`, `water-cycle-diagram`,
+  etc. — grep for the slugs outside the seed file itself: zero matches). No
+  product doc (00-99) names a "Media Gallery" or asset-browser as a required
+  learner/admin surface. This is pre-pivot content for a product shape (12
+  school subjects) that no longer exists, sitting disconnected from
+  everything — not live, seeded, or referenced content that got orphaned by
+  a frontend rebuild.
+- **DISPOSITION**: `OBSOLETE`. Building a UI for it would mean inventing a
+  feature with no real requirement and remapping 12 assets to domains they
+  were never designed for (unlike stories/flashcards, which had clean,
+  obvious 1:1 remaps — "water cycle" doesn't map cleanly to English/Coding/
+  AI-Literacy/Entrepreneurship). Correct action is leaving the dead code as
+  isolated technical debt (not currently causing harm — it's never invoked)
+  rather than fabricating a page for it. Not deleting the controller/service/
+  seed file this pass (out of scope — deletion review belongs with whoever
+  owns the Phase-20-era content-engine backlog, per directive §42's
+  zero-garbage rule balanced against not making unreviewed deletions).
+
 ## 3. Investigated and classified NOT_REQUIRED / INTERNAL_ONLY (not fixed, with reasoning)
 
 A sub-agent cross-reference pass (backend controllers ↔ `endpoints.ts` ↔
@@ -151,49 +210,64 @@ these are **not** silently dropped, they are explicitly classified:
 | `adaptive.controller.ts`'s 10 non-`recommendations` routes (`engagement`, `cognitive-load`, `zpd`, `next-activity`, etc.) | INTERNAL_ONLY | These are internal signals the adaptive engine itself consumes to compute the one real learner-facing output, `GET /adaptive/recommendations` (which IS wired, powers Home's "next step"). No evidence any of these were ever intended as standalone learner/staff UI. |
 | `learner-model.controller.ts` | INTERNAL_ONLY | Backing model for personalization; no UI requirement found in any prior doc (00-48, 63-99) naming a "Learner Model" page/view. |
 | `translation.controller.ts` admin engine | PARTIAL, already tracked | Ledger 88 already lists "translations admin" as deferred depth, not fabricated as done. Confirmed still accurate; not re-promised here. |
-| `media.controller.ts` (`GET /media`, `/media/:slug`) | MISSING_FRONTEND, low-confidence, deferred | Real backend routes exist; no prior doc identifies what learner/admin surface should consume generic "media" (ambiguous content type, not clearly mapped to any of the 20 product domains in `13_PRODUCT_DOMAINS`). Flagging rather than guessing a UI for it. |
-| `english.controller.ts` (`/english/path`, `/strands`) | PARTIAL, needs owner clarification | A content-library controller distinct from `english-coach.controller.ts` (which IS wired, powers `EnglishCoachPage`). Whether this strand/path library duplicates or supplements `DomainPathPage`'s English content needs a backend-service-level comparison this session did not have time to do with full confidence — **flagging as open, not claiming done**. |
+
+| `english.controller.ts` (`/english/path`, `/strands`) | RESOLVED this session — see §2.4 | Was flagged open in the previous pass; investigated and resolved below. |
 | `voiceApi.turn` / `VoicePage` | BLOCKED_EXTERNAL (unchanged) | Confirmed still correctly gated-honest (`VoicePage.tsx` shows a real "provider-gated" state, not a fake voice UI). Matches the standing decision in ledger 88/99. No voice provider credentials exist in this environment to change this. |
+| `media.controller.ts` (`GET /media`, `/media/:slug`) | RESOLVED this session — OBSOLETE, see §2.5 | Was flagged low-confidence/deferred in the previous pass; investigated and resolved below. |
 | ~30 other "zero-caller" wrapper functions (admin content-provenance writes, prompt-template edit, mission UPDATE form, analytics events-by-type/retention/stickiness, etc.) | PARTIAL, already tracked | All of these are already explicitly listed in ledger 88's "Still deferred (lower priority, tracked not forgotten)" row with the same honest reasoning repeated here: real content-authoring workflows, additive depth inside an already-functional admin area, not missing required routes. Re-confirmed accurate, not newly discovered, not fixed this pass (scope decision: this pass prioritized LEARNER + cross-role-reachability gaps, which have the highest user-facing impact, over ADMIN content-authoring depth). |
 
-## 4. Verification evidence (this session's changes)
+## 4. Verification evidence
 
-Build gates run from `M:\USAM-main\frontend` after all 5 file changes:
+**Round 1** (gaps 2.1-2.3, commit `b331509`, deployed + independently live-
+verified — bundle hashes matched, real code markers for all 3 fixes found by
+downloading and grepping the actual production JS):
 
 | Gate | Result |
 | --- | --- |
-| `npx tsc --noEmit` | PASS (clean) |
-| `npm run build` (tsc -b && vite build) | PASS — new bundle `index-B-TMUu5t.js` / `index-DSZWGX51.css` |
-| `npm run check:home-bundle` (perf gate) | PASS — "no coding runtime in the entry chunk" |
-| `npx vitest run` | PASS — 2 files, 7/7 tests |
-| `npm run lint` (eslint --max-warnings 0) | PASS — 0 warnings |
+| `npx tsc --noEmit` | PASS |
+| `npm run build` | PASS — bundle `index-mZL8Yu0K.js` / `index-DSZWGX51.css` |
+| `npm run check:home-bundle` | PASS |
+| `npx vitest run` | PASS — 7/7 |
+| `npm run lint` | PASS — 0 warnings |
+| Live deploy | `b331509` confirmed live on kids.usamif.com, deploy-meta matches, bundle hash matches, 3 fix markers found in downloaded production bundle |
 
-Files changed this session:
-- `frontend/src/features/admin/AdminCurriculumPage.tsx` (question-templates link)
-- `frontend/src/features/learner/ProjectDetailPage.tsx` (rubric viewer section)
-- `frontend/src/lib/api/endpoints.ts` (community trending/search/stats wrappers)
-- `frontend/src/features/learner/CommunityPage.tsx` (stats + search + trending UI)
-- `frontend/src/test/community-page.test.tsx` (robustified regression test)
+Files: `AdminCurriculumPage.tsx`, `ProjectDetailPage.tsx` (rubric), `endpoints.ts`
+(community wrappers), `CommunityPage.tsx`, `community-page.test.tsx`.
+
+**Round 2** (gap 2.4, CEFR/strandType fix — not yet committed/deployed as of
+this edit):
+
+| Gate | Result |
+| --- | --- |
+| `npx tsc --noEmit` | PASS |
+| `npm run build` | PASS — bundle `index-BAaQbK2W.js` (unchanged CSS hash) |
+| `npm run check:home-bundle` | PASS |
+| `npx vitest run` | PASS — 7/7 |
+| `npm run lint` | PASS — 0 warnings |
+| Live deploy | Pending — see §5 |
+
+Files: `frontend/src/lib/api/learning-types.ts` (typed `cefrLevel`/
+`strandType` onto `DomainPathCompetency`), `frontend/src/features/learner/
+DomainPathPage.tsx` (render the CEFR pill).
 
 ## 5. Deployment status (honest — per directive §38, code-only ≠ done)
 
-As of this document: **committed locally, not yet pushed, not yet deployed,
-not yet live-verified.** Per standing project constraint, this environment has
-no SSH access to the production server — deployment requires the owner to run
-an exact command block, which will be provided after commit+push. Live
-verification (independent `curl`/bundle-hash check from this machine, as done
-for the previous `/app/more` deploy) will follow once the owner confirms the
-deploy ran.
+Round 1 (gaps 2.1-2.3): **DEPLOYED + LIVE-VERIFIED** (commit `b331509`,
+2026-10-06, independently confirmed from this machine by downloading the
+production bundle and finding real code markers for all 3 fixes).
+
+Round 2 (gap 2.4): **committed locally, not yet pushed, not yet deployed,
+not yet live-verified** as of this edit. Per standing project constraint,
+this environment has no SSH access to the production server — deployment
+requires the owner to run an exact command block. Will be provided after
+commit+push, same pattern as every prior batch this session.
 
 ## 6. Honest residual (per directive §40 — "I don't know" is not an acceptable final answer, but IS acceptable as a tracked open item)
 
-- The `english.controller.ts` vs `domain-path.controller.ts` content-library
-  overlap (§3) needs a dedicated follow-up to resolve with confidence.
-- `media.controller.ts`'s intended product surface is unclear from available
-  docs — needs an owner decision on what "Media" means in-product before any
-  UI is built (building a guessed UI for an ambiguous backend concept would
-  violate the "no fabricated capabilities" rule already established in this
-  project's prior sessions).
+- §2.4 and §2.5 (English strand/path overlap, Media Engine) were open
+  questions at the end of the previous session's pass — both investigated
+  and resolved this session (one real small gap fixed, one correctly
+  classified OBSOLETE with evidence).
 - Full visual/RTL/responsive/a11y QA (ledger 88 step 9) still requires a real
   browser against the live site — not newly re-opened by this session, just
   not newly closed either; unchanged from doc 99's residual list.

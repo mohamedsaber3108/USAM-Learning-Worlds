@@ -7,6 +7,14 @@ export interface DomainPathCompetency {
   name: string
   missionId?: string | null
   masteryState: MasteryState
+  // FIX (reconciliation audit, 2026-10-06): domain-path.service.ts decorates
+  // every competency with cefrLevel/strandType for English specifically
+  // (sourced from the real EnglishStrand model; null for non-English
+  // domains, by design — the projection stays generic). The backend always
+  // sent this; the frontend type never declared it, so it was silently
+  // dropped on every DomainPathPage render.
+  cefrLevel?: string | null
+  strandType?: string | null
 }
 export interface DomainPathSkill {
   id: string

@@ -129,7 +129,12 @@ export function DomainPathPage() {
                             <Lock className="h-5 w-5 shrink-0 text-ink-400" aria-hidden />
                           )}
                           <span className="min-w-0">
-                            <span className="block truncate font-medium text-ink-900">{comp.name}</span>
+                            <span className="flex items-center gap-2">
+                              <span className="truncate font-medium text-ink-900">{comp.name}</span>
+                              {comp.cefrLevel && (
+                                <StatusPill tone="neutral">{comp.cefrLevel}</StatusPill>
+                              )}
+                            </span>
                             <StatusPill tone={masteryTone(comp.masteryState)}>{masteryLabel(comp.masteryState)}</StatusPill>
                           </span>
                         </span>
