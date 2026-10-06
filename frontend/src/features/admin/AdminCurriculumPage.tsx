@@ -81,15 +81,24 @@ interface Mission {
   description?: string
 }
 
-/** Mission admin — list + real create/delete (the backend has always
- * supported this; the UI was read-only). Update is deferred to a future pass
- * (needs a full mission-authoring form, out of scope for this gap-closing
- * batch — not fabricated, just not yet built). */
+/**
+ * Mission admin — list + real create/delete/UPDATE.
+ *
+ * FIX (reconciliation audit, round 3, 2026-10-06): `adminApi.updateMission`
+ * (`PATCH /admin/missions/:id`, admin-missions.controller.ts) is real and
+ * ADMIN-gated, with a frontend wrapper that had zero callers — this section
+ * could create and delete missions but never edit one, so a typo in a
+ * title/description had no fix path short of delete+recreate. Reused the
+ * same dialog for both create and edit (pre-filled when editing), matching
+ * the one-dialog-two-modes pattern already used elsewhere in this admin
+ * area rather than building a second, near-duplicate dialog.
+ */
 function MissionsSection() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const toast = useToast()
   const [open, setOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [type, setType] = useState('')
@@ -100,16 +109,34 @@ function MissionsSection() {
     queryFn: async () => (await adminApi.missions()).data as Mission[],
   })
 
-  async function create() {
+  function openCreate() {
+    setEditingId(null)
+    setTitle('')
+    setDescription('')
+    setType('')
+    setOpen(true)
+  }
+
+  function openEdit(m: Mission) {
+    setEditingId(m.id)
+    setTitle(m.title)
+    setDescription(m.description ?? '')
+    setType(m.type ?? '')
+    setOpen(true)
+  }
+
+  async function save() {
     if (!title.trim()) return
     setSaving(true)
     try {
-      await adminApi.createMission({ title: title.trim(), description: description.trim(), type: type.trim() || undefined })
+      const body = { title: title.trim(), description: description.trim(), type: type.trim() || undefined }
+      if (editingId) {
+        await adminApi.updateMission(editingId, body)
+      } else {
+        await adminApi.createMission(body)
+      }
       await qc.invalidateQueries({ queryKey: ['admin-missions'] })
       setOpen(false)
-      setTitle('')
-      setDescription('')
-      setType('')
     } catch {
       toast.show(t('states.error'), 'error')
     } finally {
@@ -126,7 +153,7 @@ function MissionsSection() {
     <section>
       <div className="mb-3 flex items-center justify-between">
         <SectionHeader title={t('admin.missions')} />
-        <Button size="sm" onClick={() => setOpen(true)}>
+        <Button size="sm" onClick={openCreate}>
           {t('admin.createContent')}
         </Button>
       </div>
@@ -144,9 +171,14 @@ function MissionsSection() {
                 <span className="block truncate font-medium text-ink-900">{m.title}</span>
                 {m.type && <span className="text-xs text-ink-400">{m.type}</span>}
               </span>
-              <Button size="sm" variant="ghost" onClick={() => void remove(m.id)}>
-                {t('common.cancel')}
-              </Button>
+              <span className="flex shrink-0 items-center gap-1">
+                <Button size="sm" variant="secondary" onClick={() => openEdit(m)}>
+                  {t('admin.edit')}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => void remove(m.id)}>
+                  {t('common.cancel')}
+                </Button>
+              </span>
             </Card>
           ))}
         </div>
@@ -161,7 +193,7 @@ function MissionsSection() {
             <Button variant="secondary" onClick={() => setOpen(false)} disabled={saving}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={() => void create()} disabled={saving || !title.trim()} loading={saving}>
+            <Button onClick={() => void save()} disabled={saving || !title.trim()} loading={saving}>
               {t('common.save')}
             </Button>
           </>

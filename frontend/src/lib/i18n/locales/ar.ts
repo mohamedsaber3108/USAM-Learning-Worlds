@@ -482,6 +482,7 @@ export const ar: TranslationSchema = {
     analytics: 'التحليلات',
     platform: 'المنصّة',
     createContent: 'عنصر محتوى جديد',
+    edit: 'تعديل',
     publish: 'نشر',
     archive: 'أرشفة',
     contentAdvanceToValidating: 'إرسال للتحقق',

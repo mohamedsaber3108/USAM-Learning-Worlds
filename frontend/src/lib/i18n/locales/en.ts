@@ -491,6 +491,7 @@ export const en = {
     analytics: 'Analytics',
     platform: 'Platform',
     createContent: 'New content item',
+    edit: 'Edit',
     publish: 'Publish',
     archive: 'Archive',
     contentAdvanceToValidating: 'Send for validation',

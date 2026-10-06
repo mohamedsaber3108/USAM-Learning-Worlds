@@ -195,6 +195,37 @@ tracked in §5).
   owns the Phase-20-era content-engine backlog, per directive §42's
   zero-garbage rule balanced against not making unreviewed deletions).
 
+### 2.6 Content item authoring (create) — real backend, zero UI caller
+
+- **PROOF 1**: `POST /admin/content-items` (`content-items.controller.ts
+  create`, ADMIN-gated) is real. `adminApi.createContentItem` existed in
+  `endpoints.ts` with zero callers (confirmed in round 1's audit, deferred
+  at the time as "a real content-authoring workflow... out of scope for
+  this gap-closing batch"). `AdminContentPage.tsx` was list-and-advance-
+  status-only.
+- **PROOF 2**: added a `NewContentItemDialog` to `AdminContentPage.tsx`
+  (title, type enum select matching the real `ContentType` enum, optional
+  ageBand/difficulty, and a raw JSON textarea for the `content` field —
+  honest about it being free-form JSON since the backend's `ContentItem.content`
+  column has no fixed per-type shape in the schema, so a fabricated
+  structured editor would imply a validation contract that doesn't exist).
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean, `vitest` 7/7,
+  `eslint` 0 warnings. Live-verification: pending owner deploy.
+
+### 2.7 Mission UPDATE (edit) — real backend, zero UI caller
+
+- **PROOF 1**: `PATCH /admin/missions/:id` (`admin-missions.controller.ts`)
+  is real. `adminApi.updateMission` existed with zero callers.
+  `MissionsSection` (inside `AdminCurriculumPage.tsx`) could create and
+  delete missions but had no edit path — a typo required delete+recreate.
+- **PROOF 2**: reused the existing create dialog for both modes (pre-filled
+  when editing an existing mission, matching the "one dialog, two modes"
+  pattern already used elsewhere in this admin area rather than building a
+  near-duplicate second dialog). Added a real `admin.edit` i18n key (EN+AR)
+  instead of deriving the label from an unrelated string comparison.
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean, `vitest` 7/7,
+  `eslint` 0 warnings. Live-verification: pending owner deploy.
+
 ## 3. Investigated and classified NOT_REQUIRED / INTERNAL_ONLY (not fixed, with reasoning)
 
 A sub-agent cross-reference pass (backend controllers ↔ `endpoints.ts` ↔
@@ -214,7 +245,7 @@ these are **not** silently dropped, they are explicitly classified:
 | `english.controller.ts` (`/english/path`, `/strands`) | RESOLVED this session — see §2.4 | Was flagged open in the previous pass; investigated and resolved below. |
 | `voiceApi.turn` / `VoicePage` | BLOCKED_EXTERNAL (unchanged) | Confirmed still correctly gated-honest (`VoicePage.tsx` shows a real "provider-gated" state, not a fake voice UI). Matches the standing decision in ledger 88/99. No voice provider credentials exist in this environment to change this. |
 | `media.controller.ts` (`GET /media`, `/media/:slug`) | RESOLVED this session — OBSOLETE, see §2.5 | Was flagged low-confidence/deferred in the previous pass; investigated and resolved below. |
-| ~30 other "zero-caller" wrapper functions (admin content-provenance writes, prompt-template edit, mission UPDATE form, analytics events-by-type/retention/stickiness, etc.) | PARTIAL, already tracked | All of these are already explicitly listed in ledger 88's "Still deferred (lower priority, tracked not forgotten)" row with the same honest reasoning repeated here: real content-authoring workflows, additive depth inside an already-functional admin area, not missing required routes. Re-confirmed accurate, not newly discovered, not fixed this pass (scope decision: this pass prioritized LEARNER + cross-role-reachability gaps, which have the highest user-facing impact, over ADMIN content-authoring depth). |
+| ~28 other "zero-caller" wrapper functions (admin content-provenance writes, prompt-template edit, analytics events-by-type/retention/stickiness, etc.) | PARTIAL, already tracked | Still accurate: real content-authoring/analytics-depth workflows, additive inside already-functional admin areas, not missing required routes. Two items previously in this bucket — content-item CREATE and mission UPDATE — were promoted and closed this session; see §2.6/§2.7. |
 
 ## 4. Verification evidence
 
@@ -250,17 +281,34 @@ Files: `frontend/src/lib/api/learning-types.ts` (typed `cefrLevel`/
 `strandType` onto `DomainPathCompetency`), `frontend/src/features/learner/
 DomainPathPage.tsx` (render the CEFR pill).
 
+**Round 3** (gaps 2.6-2.7, content-item create + mission edit — not yet
+committed/deployed as of this edit):
+
+| Gate | Result |
+| --- | --- |
+| `npx tsc --noEmit` | PASS |
+| `npm run build` | PASS — bundle `index-DRMr6l7r.js` (CSS hash unchanged) |
+| `npm run check:home-bundle` | PASS |
+| `npx vitest run` | PASS — 7/7 |
+| `npm run lint` | PASS — 0 warnings |
+| Live deploy | Pending — see §5 |
+
+Files: `frontend/src/features/admin/AdminContentPage.tsx` (new-content-item
+dialog), `frontend/src/features/admin/AdminCurriculumPage.tsx` (mission
+edit), `frontend/src/lib/i18n/locales/{en,ar}.ts` (`admin.edit` key).
+
 ## 5. Deployment status (honest — per directive §38, code-only ≠ done)
 
 Round 1 (gaps 2.1-2.3): **DEPLOYED + LIVE-VERIFIED** (commit `b331509`,
 2026-10-06, independently confirmed from this machine by downloading the
 production bundle and finding real code markers for all 3 fixes).
 
-Round 2 (gap 2.4): **committed locally, not yet pushed, not yet deployed,
-not yet live-verified** as of this edit. Per standing project constraint,
-this environment has no SSH access to the production server — deployment
-requires the owner to run an exact command block. Will be provided after
-commit+push, same pattern as every prior batch this session.
+Round 2 (gap 2.4): **DEPLOYED + LIVE-VERIFIED** (commit `94c50fb`,
+2026-10-06, independently confirmed from this machine — downloaded the
+production bundle and found the real `cefrLevel` property access).
+
+Round 3 (gaps 2.6-2.7): **committed locally, not yet pushed, not yet
+deployed, not yet live-verified** as of this edit.
 
 ## 6. Honest residual (per directive §40 — "I don't know" is not an acceptable final answer, but IS acceptable as a tracked open item)
 
