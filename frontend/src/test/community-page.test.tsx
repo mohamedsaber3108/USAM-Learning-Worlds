@@ -39,19 +39,34 @@ describe('CommunityPage — real wrapped-response contract (regression)', () => 
   })
 
   it('renders project titles from the real { projects, total } shape without throwing', async () => {
-    vi.mocked(apiClient.get).mockResolvedValueOnce({
-      data: {
-        projects: [
-          {
-            id: 'p1',
-            title: 'My Robot Pet',
-            description: 'A friendly robot simulator',
-            skills: ['coding'],
-            learner: { id: 'l1', displayName: 'Kid One' },
+    // FIX (2026-10-02, round 2): CommunityPage now also fires /trending and
+    // /stats queries on mount (real gap-closing, see component header).
+    // Dispatch the mock by URL path rather than relying on call order, so
+    // this stays robust regardless of which query's effect fires first.
+    vi.mocked(apiClient.get).mockImplementation((url: string) => {
+      if (url === '/community/feed') {
+        return Promise.resolve({
+          data: {
+            projects: [
+              {
+                id: 'p1',
+                title: 'My Robot Pet',
+                description: 'A friendly robot simulator',
+                skills: ['coding'],
+                learner: { id: 'l1', displayName: 'Kid One' },
+              },
+            ],
+            total: 1,
           },
-        ],
-        total: 1,
-      },
+        })
+      }
+      if (url === '/community/stats') {
+        return Promise.resolve({ data: { totalProjects: 1, totalLearners: 1, recentProjects: 0 } })
+      }
+      if (url === '/community/trending') {
+        return Promise.resolve({ data: [] })
+      }
+      return Promise.resolve({ data: null })
     })
 
     wrap(<CommunityPage />)
@@ -61,7 +76,10 @@ describe('CommunityPage — real wrapped-response contract (regression)', () => 
   })
 
   it('renders an honest empty state when there are zero showcased projects', async () => {
-    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: { projects: [], total: 0 } })
+    vi.mocked(apiClient.get).mockImplementation((url: string) => {
+      if (url === '/community/feed') return Promise.resolve({ data: { projects: [], total: 0 } })
+      return Promise.resolve({ data: null })
+    })
 
     wrap(<CommunityPage />)
 

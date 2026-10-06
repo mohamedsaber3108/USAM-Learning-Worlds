@@ -451,7 +451,10 @@ export type ReportEntityType = 'PROJECT' | 'COMMENT' | 'MESSAGE' | 'PROFILE'
 export type ReportReason = 'INAPPROPRIATE' | 'SPAM' | 'HARASSMENT' | 'COPYRIGHT' | 'SAFETY' | 'OTHER'
 export const communityApi = {
   feed: () => apiClient.get<{ projects: CommunityFeedItem[]; total: number }>('/community/feed'),
-  trending: () => apiClient.get('/community/trending'),
+  trending: (limit?: number) => apiClient.get<CommunityFeedItem[]>('/community/trending', { params: { limit } }),
+  search: (q: string, params?: { type?: string; limit?: number }) =>
+    apiClient.get<{ results: CommunityFeedItem[]; total: number }>('/community/search', { params: { q, ...params } }),
+  stats: () => apiClient.get<{ totalProjects: number; totalLearners: number; recentProjects: number }>('/community/stats'),
   report: (body: { entityType: ReportEntityType; entityId: string; reason: ReportReason; description?: string }) =>
     apiClient.post('/community/report', body),
 }

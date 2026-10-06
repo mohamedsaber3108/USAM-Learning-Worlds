@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, Circle } from 'lucide-react'
+import { CheckCircle2, Circle, ClipboardList } from 'lucide-react'
 import { projectsApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, StatusPill, Button, useToast } from '@/components/ui'
@@ -13,6 +13,24 @@ interface Milestone {
   title: string
   description?: string
   status: string
+}
+
+interface RubricCriterionLevels {
+  beginning?: string
+  developing?: string
+  proficient?: string
+  exemplary?: string
+}
+interface RubricCriterion {
+  id: string
+  name: string
+  description: string
+  levels: RubricCriterionLevels
+}
+interface Rubric {
+  id: string
+  title: string
+  criteria: RubricCriterion[]
 }
 
 /**
@@ -67,6 +85,19 @@ export function ProjectDetailPage() {
     queryKey: ['project-milestones', id],
     queryFn: async () => (await projectsApi.getMilestones(id)).data as Milestone[],
     enabled: Boolean(id),
+  })
+  // Rubric — real GET /projects/:id/rubric (rubrics.controller.ts
+  // ProjectRubricController). FIX (reconciliation audit, 2026-10-02): this
+  // backend engine (8 real Rubric rows / 30 RubricCriterion rows, seeded and
+  // confirmed live) had a wrapper in endpoints.ts (`projectsApi.getRubric`)
+  // with zero caller anywhere — a learner could never see what a project
+  // would be graded on. `enabled` on the query itself since not every
+  // project has a rubric attached (polymorphic link, honestly empty if none).
+  const { data: rubric } = useQuery({
+    queryKey: ['project-rubric', id],
+    queryFn: async () => (await projectsApi.getRubric(id)).data as Rubric | null,
+    enabled: Boolean(id),
+    retry: false,
   })
   // Companion presence (owner directive): projects previously had zero
   // companion presence — a project reviewer/mentor should be present here,
@@ -184,6 +215,42 @@ export function ProjectDetailPage() {
           <EmptyState />
         )}
       </section>
+
+      {rubric && rubric.criteria.length > 0 && (
+        <section>
+          <SectionHeader title={rubric.title} />
+          <div className="space-y-3">
+            {rubric.criteria.map((c) => (
+              <Card key={c.id}>
+                <div className="flex items-start gap-2">
+                  <ClipboardList className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="font-medium text-ink-900">{c.name}</p>
+                    <p className="mt-0.5 text-sm text-ink-500">{c.description}</p>
+                  </div>
+                </div>
+                {(c.levels.beginning || c.levels.developing || c.levels.proficient || c.levels.exemplary) && (
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {([
+                      ['beginning', c.levels.beginning],
+                      ['developing', c.levels.developing],
+                      ['proficient', c.levels.proficient],
+                      ['exemplary', c.levels.exemplary],
+                    ] as const).map(([band, text]) =>
+                      text ? (
+                        <div key={band} className="rounded-control border border-line bg-canvas-off p-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">{band}</p>
+                          <p className="mt-1 text-xs text-ink-700">{text}</p>
+                        </div>
+                      ) : null,
+                    )}
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {data.state !== 'SHOWCASED' && data.state !== 'COMPLETED' && (
         <Card className="flex flex-wrap items-center justify-between gap-3">

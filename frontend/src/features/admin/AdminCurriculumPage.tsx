@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { FileQuestion } from 'lucide-react'
 import { adminApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { PageHeader, SectionHeader, Card, Button, Input, Textarea, Dialog, useToast } from '@/components/ui'
@@ -15,12 +17,31 @@ import { AdminListSection } from './AdminListSection'
  *   - Difficulty calibration (authored-vs-empirical mismatch scan+flags)
  *   - Assessment quality (scan+flags)
  * (Ledger 88 task 12, 2026-10-02.)
+ *
+ * FIX (reconciliation audit, 2026-10-02): `AdminQuestionTemplatesPage`
+ * (`/admin/question-templates`) was a real route with a real backend-wired
+ * page, but had zero nav entry or in-app link anywhere — only reachable by
+ * typing the exact URL (same orphan-route pattern found and fixed once
+ * already for the learner "More" hub). Question templates are
+ * assessment-authoring content, so the link lives here next to the other
+ * curriculum/QA tools rather than adding a 7th top-level admin nav icon.
  */
 export function AdminCurriculumPage() {
   const { t } = useTranslation()
   return (
     <div className="space-y-8">
-      <PageHeader title={t('admin.curriculum')} />
+      <PageHeader
+        title={t('admin.curriculum')}
+        action={
+          <Link
+            to="/admin/question-templates"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline"
+          >
+            <FileQuestion className="h-4 w-4" aria-hidden />
+            Question templates
+          </Link>
+        }
+      />
       <MissionsSection />
       <AdminListSection
         title="Misconceptions"
