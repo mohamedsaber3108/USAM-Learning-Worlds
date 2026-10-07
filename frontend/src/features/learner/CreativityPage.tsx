@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Sparkles } from 'lucide-react'
-import { creativityApi } from '@/lib/api/endpoints'
+import { creativityApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, Button, Dialog, Textarea, useToast } from '@/components/ui'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 interface Prompt {
   id: string
@@ -38,6 +39,17 @@ export function CreativityPage() {
     queryFn: async () => (await creativityApi.mySubmissions()).data as Submission[],
     retry: false,
   })
+  // Companion presence (reverse-engineering/experience directive, 2026-10-07,
+  // §19/§10): Creativity (Mira's domain, per the character roster) had zero
+  // companion presence despite being one of the five named learner-journey
+  // surfaces in §10. Real GET /characters/orchestrate, no mission/domain
+  // context available here (creativity prompts aren't domain-scoped), so
+  // this resolves via the backend's own sensible fallback.
+  const companion = useQuery({
+    queryKey: ['creativity-companion'],
+    queryFn: async () => (await charactersApi.orchestrate()).data,
+    retry: false,
+  })
 
   async function submit() {
     if (!active || !content.trim()) return
@@ -60,7 +72,10 @@ export function CreativityPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title={t('learner.creativityStudio')} />
+      <div className="flex items-center gap-3">
+        {companion.data?.character && <CharacterStage characterId={companion.data.character.name} size={56} />}
+        <PageHeader title={t('learner.creativityStudio')} />
+      </div>
 
       <section>
         <SectionHeader title={t('learner.create')} />

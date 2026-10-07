@@ -337,6 +337,35 @@ bigger ask (a genuine Domain → Track → Skill-group → Skill → Mission
 hierarchy browser, IXL-depth discoverability) is a larger design+build effort
 tracked as the next P0-6 increment, not claimed done here.
 
+### 2.12 Companion presence, systemic pass 2: Progress, Creativity, Stories
+
+Per the 2026-10-07 directive's explicit instruction to "continue
+systemically" (§10) rather than stop after the Mission Brief/World Detail
+patch, and its explicit roadmap naming Progress (P0-8), Creativity (P1-12),
+and Stories (P1-17) as areas to audit.
+
+- **Progress** (`ProgressPage.tsx`): directive §10 names "Progress"
+  explicitly in the required companion-integration list; the earlier
+  no-CharacterStage grep confirmed it was the one P0 learning surface still
+  missing it. Added unscoped `orchestrate()` (Progress is cross-domain by
+  nature, matching Home's own unscoped call).
+- **Creativity** (`CreativityPage.tsx`): named in both §10 and §27; Mira is
+  the creativity-domain companion per the existing character roster, but
+  the page had never called `orchestrate()` at all. Added it (unscoped —
+  creativity prompts aren't domain-tagged on the backend, so no scope
+  parameter would resolve to anything real).
+- **Stories** (`StoriesPage.tsx`): directive §17 explicitly says "Stories
+  should not exist as an isolated forgotten page" — it had zero companion
+  presence. Scoped to `domainSlug: 'english'`, consistent with this
+  project's own prior `STORY_DOMAIN_SLUG` decision (stories are framed as
+  an English/Wordhaven reading-comprehension mechanic, confirmed in an
+  earlier session's seed-fix work, not an arbitrary choice made here).
+
+All three follow the identical, already-proven pattern (null-safe,
+`charactersApi.orchestrate()`, `CharacterStage` next to `PageHeader`) used
+on every other learner surface this session — no new component, no
+fabricated dialogue.
+
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
 A 61-section directive arrived requesting a complete ground-up rebuild:
@@ -486,8 +515,12 @@ the downloaded production bundle).
 Round 5 (product crawler, §2.10 below): tool-only, no production frontend
 change — see §5 for what was run and found.
 
-Round 6 (§2.11 below, Learn/curriculum-depth signal): **committed locally,
-not yet pushed/deployed** as of this edit.
+Round 6 (§2.11, Learn/curriculum-depth signal): **PUSHED** (commit
+`b5e61fc`) — deploy block given to owner, not yet confirmed deployed as of
+this edit.
+
+Round 7 (§2.12 below, companion presence on Progress/Creativity/Stories):
+**committed locally, not yet pushed/deployed** as of this edit.
 
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
@@ -507,8 +540,8 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
 | P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
 | P0-7 | Mission Detail + Mission Player | LIVE_VERIFIED (companion presence only) | Mission Detail gained companion presence this session (DEPLOYED+LIVE_VERIFIED). Mission Player already had it from a prior session. The directive's bigger ask (richer context/objective/voice-seam/evidence display) NOT yet built. |
-| P0-8 | Practice/mastery/progress | LIVE_VERIFIED (companion presence only) | Already had companion presence; `ProgressPage.tsx` does not yet (confirmed in the no-CharacterStage grep) — real gap, not yet closed. |
-| P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | NOT_STARTED (as full verticals) | Individual gaps closed this session (project rubric §2.2, CEFR §2.4) are real but partial. No full-vertical rebuild attempted yet. |
+| P0-8 | Practice/mastery/progress | BUILDING | Practice already had companion presence; `ProgressPage.tsx` gained it this round (§2.12) — not yet deployed. |
+| P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-18..25 | Voice/Guardian/Moderator/Admin/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | PARTIAL (admin only) | Admin gained 2 real capabilities this session (§2.6-2.7). Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime, but provider-independent architecture work (per the new directive's §9) has NOT yet started. Guardian/Moderator untouched this session. |
 
 This table will be updated every batch going forward, not just appended to.

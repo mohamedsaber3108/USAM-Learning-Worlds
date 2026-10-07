@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Compass } from 'lucide-react'
-import { masteryApi, missionsApi } from '@/lib/api/endpoints'
+import { masteryApi, missionsApi, charactersApi } from '@/lib/api/endpoints'
 import type { MasteryRecord, DomainMastery } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, SectionHeader, StatusPill, Progress } from '@/components/ui'
 import { masteryLabel, type MasteryState } from '@/lib/labels/masteryLabels'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 const RUN_STATUS_TONE = { COMPLETED: 'success', IN_PROGRESS: 'brand', ABANDONED: 'neutral' } as const
 const RUN_STATUS_KEY = {
@@ -42,6 +43,15 @@ export function ProgressPage() {
     queryFn: async () => (await missionsApi.getHistory()).data,
     retry: false,
   })
+  // Companion presence (reverse-engineering/experience directive, 2026-10-07,
+  // §10: "audit the full learner journey... Progress" is explicitly named).
+  // Real GET /characters/orchestrate, no domain scope (Progress is
+  // cross-domain by nature) — matches HomePage's own unscoped call.
+  const companion = useQuery({
+    queryKey: ['progress-companion'],
+    queryFn: async () => (await charactersApi.orchestrate()).data,
+    retry: false,
+  })
 
   if (overview.isLoading) return <LoadingState />
   if (overview.isError) return <ErrorState onRetry={() => void overview.refetch()} />
@@ -51,15 +61,18 @@ export function ProgressPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title={t('learner.progressTitle')}
-        action={
-          <Link to="/app/insights" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
-            <Compass className="h-4 w-4" aria-hidden />
-            {t('learner.insightsTitle')}
-          </Link>
-        }
-      />
+      <div className="flex items-center gap-3">
+        {companion.data?.character && <CharacterStage characterId={companion.data.character.name} size={56} />}
+        <PageHeader
+          title={t('learner.progressTitle')}
+          action={
+            <Link to="/app/insights" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
+              <Compass className="h-4 w-4" aria-hidden />
+              {t('learner.insightsTitle')}
+            </Link>
+          }
+        />
+      </div>
 
       {byDomain.data && byDomain.data.length > 0 && (
         <section>

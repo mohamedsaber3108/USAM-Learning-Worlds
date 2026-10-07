@@ -2,9 +2,10 @@ import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { BookOpen } from 'lucide-react'
-import { storiesApi } from '@/lib/api/endpoints'
+import { storiesApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader } from '@/components/ui'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 interface Story {
   id: string
@@ -13,17 +14,35 @@ interface Story {
   body?: string
 }
 
+/**
+ * FIX (reverse-engineering/experience directive, 2026-10-07, §10/§17):
+ * Stories is explicitly named in the directive's required companion-
+ * integration list and was flagged ("do not let Stories exist as an
+ * isolated forgotten page") — it had zero companion presence. English's
+ * domain mentor fits naturally (stories are a reading-comprehension
+ * mechanic framed under the English/Wordhaven world per this project's own
+ * prior STORY_DOMAIN_SLUG decision), so this scopes orchestrate() to
+ * domainSlug: 'english' rather than leaving it unscoped.
+ */
 export function StoriesPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['stories'],
     queryFn: async () => (await storiesApi.list()).data as Story[],
   })
+  const companion = useQuery({
+    queryKey: ['stories-companion'],
+    queryFn: async () => (await charactersApi.orchestrate({ domainSlug: 'english' })).data,
+    retry: false,
+  })
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState onRetry={() => void refetch()} />
   return (
     <div className="space-y-6">
-      <PageHeader title={t('learner.stories')} />
+      <div className="flex items-center gap-3">
+        {companion.data?.character && <CharacterStage characterId={companion.data.character.name} size={56} />}
+        <PageHeader title={t('learner.stories')} />
+      </div>
       {!data || data.length === 0 ? (
         <EmptyState />
       ) : (
