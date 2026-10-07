@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { RotateCcw } from 'lucide-react'
@@ -8,6 +9,7 @@ import { LoadingState, EmptyState, ErrorState } from '@/components/common/States
 import { Card, PageHeader, StatusPill, Button, Tabs } from '@/components/ui'
 import { REVIEW_FRAMING, masteryLabel } from '@/lib/labels/masteryLabels'
 import { CharacterStage } from '@/features/characters/CharacterStage'
+import { cn } from '@/lib/utils/cn'
 
 /**
  * Practice / review — "keep it strong". Two real tabs:
@@ -63,18 +65,36 @@ function ReviewDueTab() {
 
   return (
     <div className="space-y-2">
-      {due.map((r) => (
-        <Card key={r.id} className="flex items-center justify-between">
-          <span className="inline-flex min-w-0 items-center gap-3">
-            <RotateCcw className="h-5 w-5 shrink-0 text-brand-500" aria-hidden />
-            <span className="min-w-0">
-              <span className="block truncate font-medium text-ink-900">{r.competency?.name ?? r.competencyId}</span>
-              {r.competency?.skill?.name && <span className="block text-xs text-ink-400">{r.competency.skill.name}</span>}
+      {due.map((r) => {
+        const slug = r.competency?.skill?.domain?.slug
+        const content = (
+          <Card className={cn('flex items-center justify-between', slug && 'transition-transform duration-fast hover:-translate-y-0.5')}>
+            <span className="inline-flex min-w-0 items-center gap-3">
+              <RotateCcw className="h-5 w-5 shrink-0 text-brand-500" aria-hidden />
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-ink-900">{r.competency?.name ?? r.competencyId}</span>
+                {r.competency?.skill?.name && <span className="block text-xs text-ink-400">{r.competency.skill.name}</span>}
+              </span>
             </span>
-          </span>
-          <StatusPill tone="brand">{masteryLabel(r.state)}</StatusPill>
-        </Card>
-      ))}
+            <StatusPill tone="brand">{masteryLabel(r.state)}</StatusPill>
+          </Card>
+        )
+        // FIX (reverse-engineering/experience directive, 2026-10-07, §15/§33:
+        // "review" must lead somewhere — a review-due item previously had no
+        // action at all, just an informational row. Real GET /mastery/
+        // review-due already includes competency.skill.domain.slug (same
+        // shape as getOverview — confirmed by reading mastery.service.ts),
+        // so each item can now link straight into that domain's real path
+        // (DomainPathPage already picks the right next mission for a
+        // started-but-not-mastered competency), closing the dead end.
+        return slug ? (
+          <Link key={r.id} to={`/app/learn/${slug}`}>
+            {content}
+          </Link>
+        ) : (
+          <div key={r.id}>{content}</div>
+        )
+      })}
     </div>
   )
 }

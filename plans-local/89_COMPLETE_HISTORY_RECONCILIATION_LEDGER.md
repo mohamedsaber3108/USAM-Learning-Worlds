@@ -737,6 +737,27 @@ retry after finishing round 12's implementation succeeded — both pending
 commits pushed in order immediately, LOCAL HEAD verified == ORIGIN HEAD at
 each step.
 
+### 2.19 Review-due dead-end fix (P0-8, Practice)
+
+Per the directive's roadmap P0-8 (Practice/mastery/progress continuation).
+
+- **PROOF 1**: `PracticePage.tsx`'s review-due tab rendered each
+  `MasteryRecord` as a plain informational row with zero action — a
+  learner told "review this" had no way to actually act on it. Confirmed
+  `GET /mastery/review-due` returns the same `competency.skill.domain`
+  shape as `getOverview` (read `mastery.service.ts` directly — both query
+  the same `MasteryRecord` model with the same `include`), so
+  `competency.skill.domain.slug` is real, present data.
+- **PROOF 2**: wrapped each review-due card in a `Link` to
+  `/app/learn/:slug` (falls back to a plain non-clickable card if a record
+  somehow lacks domain data, never a broken link). `DomainPathPage`
+  already has its own real next-action logic for a started-but-not-
+  mastered competency, so this reuses existing, proven navigation rather
+  than inventing a new "resume review" flow.
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-BakJHVdM.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending owner deploy.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /
@@ -755,7 +776,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
 | P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
 | P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail: companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED), real completion outcome score/XP/level-up + next-step link (§2.17, PUSHED), real per-competency mastery-impact display (§2.18, COMMITTED_LOCAL). Remaining: voice-seam, a real world-unlock event at completion (backend doesn't currently report this as a diff). |
-| P0-8 | Practice/mastery/progress | BUILDING | Practice already had companion presence; `ProgressPage.tsx` gained it this round (§2.12) — not yet deployed. |
+| P0-8 | Practice/mastery/progress | BUILDING | Practice: companion presence (deployed), review-due items now link to real action instead of being a dead end (§2.19, COMMITTED_LOCAL). Progress: companion presence (§2.12, PUSHED). |
 | P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
 | P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
