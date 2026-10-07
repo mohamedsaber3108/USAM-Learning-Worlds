@@ -249,6 +249,50 @@ tracked in §5).
   `index-C6eDDljY.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
   warnings. Live-verification: pending owner deploy.
 
+### 2.10 Product crawler/screenshot harness — built and run against production
+
+Per the 2026-10-07 follow-up directive §6 ("build a real product crawler...
+do not use mocked APIs... automate as much as the available environment
+supports") and §1 ("verify companion presence using a real route, not a
+placeholder").
+
+- **Built**: `frontend/scripts/product-crawler.mjs` (new). Extends the
+  existing `live-verify.mjs` pattern (same auth flow, same real-production-
+  only policy) with what that script does not do: (a) a DOM-level assertion
+  that a real `CharacterStage`/`CharacterFace` SVG actually rendered on a
+  given route — not just "page has some content" — and (b) full-page
+  screenshot capture at mobile (390×844) and desktop (1280×800) viewports,
+  in both EN and AR, stored under `frontend/qa-screenshots/product-crawl/`
+  (already gitignored, confirmed before writing anything there).
+- **Real IDs resolved from the live API**, not invented: logged in as the
+  existing proof learner account, called `GET /worlds` and
+  `GET /worlds/:id` directly against production, got a real unlocked world
+  (`Wordhaven`, id `510ccb09-da71-43e0-9831-2d046bd2d6fb`) and a real
+  `AVAILABLE` mission (`english-mission-everyday-words`) to drive the crawl
+  — this is the "real World ID/route" the directive required instead of
+  the placeholder `/app/worlds/placeholder` used in an earlier message.
+- **Run against production, twice**: first run found a real bug *in the
+  crawler itself* (`page.locator('button').first()` matched AppShell's
+  header search icon, not the mission brief's Start button — the script
+  silently navigated to `/app/search` instead of starting the mission).
+  Diagnosed with a standalone debug script against the live site (confirmed
+  via `page.url()` after the click), fixed by scoping the locator to
+  `main button` (excludes header/nav chrome), re-ran clean.
+- **Final result, 17/17 PASS**, confirming on real production routes:
+  companion presence on Home, Practice, World Detail (`/app/worlds/510ccb09-
+  da71-43e0-9831-2d046bd2d6fb`), Mission Brief
+  (`/app/missions/english-mission-everyday-words`), and the real Mission
+  Player reached via an actual `POST /missions/:id/start` — each checked in
+  both EN and AR, both viewports. This is the exact companion-presence
+  verification requested, done on real reachable production routes.
+- **Visual QA finding** (from reviewing the captured screenshots, not just
+  the pass/fail signal): the companion render on World Detail and Mission
+  Player is small relative to the page — present and functionally correct,
+  but visually underweighted compared to how it reads on Home/Practice/
+  Mission Brief. Logged as a real finding for a future visual-polish batch,
+  not silently fixed in this one (scope: this batch is verification
+  infrastructure + confirmation, not a new visual change).
+
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
 A 61-section directive arrived requesting a complete ground-up rebuild:
@@ -390,8 +434,37 @@ production bundle and found the real `cefrLevel` property access).
 Round 3 (gaps 2.6-2.7): **DEPLOYED + LIVE-VERIFIED** (commit `1d5565a`,
 2026-10-06).
 
-Round 4 (gap 2.8): **committed locally, not yet pushed, not yet deployed,
-not yet live-verified** as of this edit.
+Round 4 (gap 2.8): **DEPLOYED + LIVE-VERIFIED** (commit `9997b63`,
+2026-10-07, independently confirmed — bundle hash matched, and the real
+`mission-brief-companion`/`world-companion` query-key strings were found in
+the downloaded production bundle).
+
+Round 5 (product crawler, §2.10 below): tool-only, no production frontend
+change — see §5 for what was run and found.
+
+## 7. Master vertical tracker (2026-10-06 directive §18)
+
+Per-vertical status using the directive's required vocabulary (NOT_STARTED /
+AUDITING / RESEARCHED / DESIGNING / BUILDING / LOCAL_VERIFIED / DEPLOYED /
+LIVE_VERIFIED / FINAL / BLOCKED_EXTERNAL). `FINAL` is never used from code
+existence alone — it requires the full chain (code→API→data→flow→browser→
+visual→deployed) actually having been walked, which this ledger has not yet
+done for any full vertical (only targeted gaps within verticals so far).
+
+| # | Vertical | Status | Evidence this session |
+| --- | --- | --- | --- |
+| P0-1 | Full capability/route audit | AUDITING (substantial, ongoing) | §2.1-2.8 this doc, plus the sub-agent cross-reference in rounds 1-2 and docs 83/84/88/99 from prior sessions. Not claimed FINAL — admin-authoring depth and a few analytics drill-ins remain genuinely unaudited in full detail. |
+| P0-2 | Learner IA/navigation | DESIGNING | `/app/more` hub (prior session) + this session's companion-presence pass are real but partial IA work. §2.9 explicitly defers the world-map re-evaluation the new directive authorizes — not yet started. |
+| P0-3 | Design-system gaps | NOT_STARTED (this session) | No dedicated design-system audit run yet this session; existing DS primitives (`components/ui/*`) reused as-is in every batch so far. |
+| P0-4 | Onboarding | AUDITING | Read in full this session (§ companion-presence audit); already has real companion presence (step 0) from a prior session. Not yet re-evaluated against the new directive's richer flow (diagnostic interaction, goals) — no backend support currently exists for a diagnostic quiz, confirmed in a prior session's audit, so that specific sub-item is correctly not fabricated. |
+| P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
+| P0-6 | Learn/Worlds/curriculum discovery | AUDITING | `LearnPage.tsx`, `WorldDetailPage.tsx`, `DomainPathPage.tsx` all read in full this session. World Detail gained companion presence (DEPLOYED+LIVE_VERIFIED for that specific gap). The directive's bigger ask — IXL-style curriculum depth/hierarchy — is NOT yet designed or built. **Next planned batch.** |
+| P0-7 | Mission Detail + Mission Player | LIVE_VERIFIED (companion presence only) | Mission Detail gained companion presence this session (DEPLOYED+LIVE_VERIFIED). Mission Player already had it from a prior session. The directive's bigger ask (richer context/objective/voice-seam/evidence display) NOT yet built. |
+| P0-8 | Practice/mastery/progress | LIVE_VERIFIED (companion presence only) | Already had companion presence; `ProgressPage.tsx` does not yet (confirmed in the no-CharacterStage grep) — real gap, not yet closed. |
+| P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | NOT_STARTED (as full verticals) | Individual gaps closed this session (project rubric §2.2, CEFR §2.4) are real but partial. No full-vertical rebuild attempted yet. |
+| P2-18..25 | Voice/Guardian/Moderator/Admin/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | PARTIAL (admin only) | Admin gained 2 real capabilities this session (§2.6-2.7). Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime, but provider-independent architecture work (per the new directive's §9) has NOT yet started. Guardian/Moderator untouched this session. |
+
+This table will be updated every batch going forward, not just appended to.
 
 ## 6. Honest residual (per directive §40 — "I don't know" is not an acceptable final answer, but IS acceptable as a tracked open item)
 
