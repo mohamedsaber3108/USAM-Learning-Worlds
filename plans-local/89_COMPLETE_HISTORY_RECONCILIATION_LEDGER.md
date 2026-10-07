@@ -422,6 +422,43 @@ learner surfaces.
 - `EscalationsPage.tsx` also read in full and re-verified: already
   correctly contract-matched (a prior session's real 400-bug fix holds up).
 
+### 2.15 Admin prompt-template authoring (P2-21)
+
+Per directive §45: "Admin must operate the learning product. Not just
+inspect lists." Audited all 6 `admin-*.controller.ts` files for the
+list-only pattern already found twice this session (content-items,
+missions). Found the clearest case: `admin-prompt-template.controller.ts`'s
+own doc comment explicitly states admins previously had no way to fix a
+bad AI prompt "without a raw psql/ts-node script" — `GET/PUT/PATCH
+/admin/prompt-templates/:key` are real, ADMIN-gated, versioned (every edit
+bumps version + requires a changelog note, never destructive), but
+`AdminAiSafetyPage.tsx` only ever called the list endpoint.
+
+- **PROOF 1**: read `admin-prompt-template.controller.ts` in full — real
+  edit semantics confirmed (delegates to `PromptTemplateService.
+  upsertTemplate`, which the controller's own comment says "bumps version,
+  appends changelog, never deletes history").
+- **PROOF 2**: added `getPromptTemplate`/`updatePromptTemplate`/
+  `deactivatePromptTemplate` wrappers to `endpoints.ts`, and a new
+  `PromptTemplatesSection` in `AdminAiSafetyPage.tsx` with a real edit
+  dialog that requires both content and a changelog note before saving
+  (matches the backend's actual required-field contract, not faked
+  client-side), plus a deactivate action (re-enable intentionally not
+  exposed as a separate action — the real backend behavior is that a new
+  PUT with content re-activates it, so a "re-enable" button would need to
+  either resend old content or be a lie; left honestly absent).
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-CUhaVZee.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending push + owner deploy.
+
+Did NOT act on `admin-safety-policy.controller.ts` (confirmed via its own
+doc comment to be deliberately read-only — "this controller does not
+create/edit policy versions... same history-viewer scope as admin-ai-eval")
+or `admin-ai-eval.controller.ts` (same deliberate read-only scope) — adding
+write UI for either would mean building against a backend contract that
+explicitly doesn't support it, which is exactly the "don't fabricate
+capabilities" rule this project has enforced all session.
+
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
 A 61-section directive arrived requesting a complete ground-up rebuild:
@@ -582,8 +619,15 @@ confirmed deployed as of this edit.
 Round 8 (§2.13, Mission Player objective display): **PUSHED** (commit
 `06762d1`) — deploy block given to owner, not yet confirmed deployed.
 
-Round 9 (§2.14 below, Guardian audit + Moderator learner-context drill-in):
-**committed locally, not yet pushed/deployed** as of this edit.
+Round 9 (§2.14, Guardian audit + Moderator learner-context drill-in):
+**DEPLOYED + LIVE-VERIFIED** (commit `f650934`, 2026-10-07 — owner ran the
+deploy chain through all 4 pending batches sequentially; independently
+re-confirmed by downloading the final bundle, finding every real code
+marker from rounds 6-9, AND re-running the full product-crawler against
+the newly deployed site: 17/17 PASS, no regressions).
+
+Round 10 (§2.15 below, Admin prompt-template authoring): **committed
+locally, not yet pushed/deployed** as of this edit.
 
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
@@ -607,7 +651,8 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
 | P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
-| P2-18,21-25 | Voice/Admin/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | PARTIAL (admin only) | Admin gained 2 real capabilities this session (§2.6-2.7). Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime; provider-independent architecture work (§9) NOT yet started. |
+| P2-21 | Admin/CMS | BUILDING | Gained content-item create (§2.6), mission edit (§2.7), prompt-template authoring (§2.15) — 3 real capabilities this session. Not yet deployed for round 10. Safety-policy/AI-eval confirmed deliberately read-only by backend design, correctly not built as write UIs. |
+| P2-18,22-25 | Voice/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | NOT_STARTED | Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime; provider-independent architecture work (§9) NOT yet started. Others untouched this session. |
 
 This table will be updated every batch going forward, not just appended to.
 

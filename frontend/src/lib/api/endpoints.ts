@@ -678,6 +678,10 @@ export const adminApi = {
   updateMission: (id: string, body: Record<string, unknown>) => apiClient.patch(`/admin/missions/${id}`, body),
   deleteMission: (id: string) => apiClient.delete(`/admin/missions/${id}`),
   promptTemplates: () => apiClient.get('/admin/prompt-templates'),
+  getPromptTemplate: (key: string) => apiClient.get(`/admin/prompt-templates/${key}`),
+  updatePromptTemplate: (key: string, body: { content: string; changelog: string }) =>
+    apiClient.put(`/admin/prompt-templates/${key}`, body),
+  deactivatePromptTemplate: (key: string) => apiClient.patch(`/admin/prompt-templates/${key}/deactivate`),
   safetyPolicies: () => apiClient.get('/admin/safety-policies'),
   aiEvalRuns: () => apiClient.get('/admin/ai-eval/runs'),
   misconceptions: () => apiClient.get('/admin/misconceptions'),
