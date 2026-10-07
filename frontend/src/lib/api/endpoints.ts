@@ -660,6 +660,8 @@ export const moderationApi = {
   review: (id: string, body: { decision: 'APPROVED' | 'REJECTED'; notes?: string }) =>
     apiClient.post(`/community/moderation/review/${id}`, body),
   interventions: () => apiClient.get('/admin/interventions'),
+  interventionsForLearner: (learnerId: string, status?: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED') =>
+    apiClient.get(`/admin/interventions/learner/${learnerId}`, { params: { status } }),
   ackIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/acknowledge`),
   resolveIntervention: (id: string) => apiClient.patch(`/admin/interventions/${id}/resolve`),
 }

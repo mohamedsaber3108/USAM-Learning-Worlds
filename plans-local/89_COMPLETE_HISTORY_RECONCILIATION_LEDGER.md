@@ -394,6 +394,34 @@ This is a first, bounded increment on P0-7 — the directive's bigger ask
 (evidence/mastery/reward display inline in the player, a real voice-
 integration seam) is tracked as the next P0-7 step, not claimed done here.
 
+### 2.14 Guardian audit (clean) + Moderator learner-context drill-in (P2-19/20)
+
+Per the directive's roadmap, after P0/P1 learner work, audited Guardian
+(P2-19) and Moderator (P2-20) for the same pattern found repeatedly in
+learner surfaces.
+
+- **Guardian — audited, found genuinely clean.** Read `ParentHomePage.tsx`,
+  `ChildDetailPage.tsx` (all 6 tabs) in full, then did a direct 1:1
+  comparison: every `@Get`/`@Post` route in `parents.controller.ts` (8
+  routes) has exactly one frontend wrapper in `parentsApi`, and every
+  wrapper has exactly one real caller. **No gap found.** This is a real
+  negative result worth recording, not a skipped audit — a prior session's
+  ledger-88 task 10 work here holds up under independent re-verification.
+- **Moderator — found and closed one real gap.** `GET
+  /admin/interventions/learner/:learnerId` (`admin-interventions.
+  controller.ts`, correctly `@Roles(ADMIN, MODERATOR)`-gated) had zero
+  frontend wrapper. This matters specifically because directive §44 defines
+  the moderator flow as "Queue → Case → **Context** → Decision → Resolution"
+  — without this, a moderator reviewing one intervention had no way to see
+  whether that learner has a pattern (directly relevant to the escalate-vs-
+  resolve judgment call). Added `moderationApi.interventionsForLearner()`
+  and an inline expand-per-card drill-in on `InterventionsPage.tsx` (not a
+  separate route/page — a full navigation for a context lookup would slow
+  the queue down, contradicting the directive's own "optimize for speed"
+  standard for this role).
+- `EscalationsPage.tsx` also read in full and re-verified: already
+  correctly contract-matched (a prior session's real 400-bug fix holds up).
+
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
 A 61-section directive arrived requesting a complete ground-up rebuild:
@@ -551,8 +579,11 @@ Round 7 (§2.12, companion presence on Progress/Creativity/Stories):
 **PUSHED** (commit `a271e82`) — deploy block given to owner, not yet
 confirmed deployed as of this edit.
 
-Round 8 (§2.13 below, Mission Player objective display): **committed
-locally, not yet pushed/deployed** as of this edit.
+Round 8 (§2.13, Mission Player objective display): **PUSHED** (commit
+`06762d1`) — deploy block given to owner, not yet confirmed deployed.
+
+Round 9 (§2.14 below, Guardian audit + Moderator learner-context drill-in):
+**committed locally, not yet pushed/deployed** as of this edit.
 
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
@@ -574,7 +605,9 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail gained companion presence (LIVE_VERIFIED). Mission Player already had companion presence; gained real per-activity objective display this round (§2.13), not yet deployed. Bigger ask (evidence/mastery/reward inline, voice-seam) NOT yet built. |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice already had companion presence; `ProgressPage.tsx` gained it this round (§2.12) — not yet deployed. |
 | P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
-| P2-18..25 | Voice/Guardian/Moderator/Admin/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | PARTIAL (admin only) | Admin gained 2 real capabilities this session (§2.6-2.7). Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime, but provider-independent architecture work (per the new directive's §9) has NOT yet started. Guardian/Moderator untouched this session. |
+| P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
+| P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
+| P2-18,21-25 | Voice/Admin/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | PARTIAL (admin only) | Admin gained 2 real capabilities this session (§2.6-2.7). Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime; provider-independent architecture work (§9) NOT yet started. |
 
 This table will be updated every batch going forward, not just appended to.
 
