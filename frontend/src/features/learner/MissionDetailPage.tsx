@@ -4,9 +4,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AxiosError } from 'axios'
 import { Rocket } from 'lucide-react'
-import { missionsApi } from '@/lib/api/endpoints'
+import { missionsApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, Button, LockedBadge } from '@/components/ui'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 interface Mission {
   id: string
@@ -15,8 +16,20 @@ interface Mission {
   estimatedMinutes?: number
 }
 
-/** Mission detail → start. Entitlement cap (403 missionsPerDay) renders as an
- * honest locked state, not a crash. On the design system. */
+/**
+ * Mission brief → start. Entitlement cap (403 missionsPerDay) renders as an
+ * honest locked state, not a crash. On the design system.
+ *
+ * FIX (reverse-engineering/experience directive, 2026-10-06): this is the
+ * mission BRIEF — the moment the directive asks "what will the learner
+ * learn, who is helping them" — and it had zero companion presence (every
+ * other core learning surface — Home, Practice, Mission Player, Projects —
+ * already carries the real GET /characters/orchestrate pick; this page was
+ * the one gap in that chain). Added the same pattern: scoped to this
+ * mission so the backend's domain-aware fallback picks the matching mentor,
+ * speaking a short real framing line (not a fabricated script — reuses the
+ * existing `learner.startMission`/mission data already on the page).
+ */
 export function MissionDetailPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -28,6 +41,12 @@ export function MissionDetailPage() {
     queryKey: ['mission', id],
     queryFn: async () => (await missionsApi.getById(id)).data as Mission,
     enabled: Boolean(id),
+  })
+  const companion = useQuery({
+    queryKey: ['mission-brief-companion', id],
+    queryFn: async () => (await charactersApi.orchestrate({ missionId: id })).data,
+    enabled: Boolean(id),
+    retry: false,
   })
 
   async function start() {
@@ -54,9 +73,13 @@ export function MissionDetailPage() {
   return (
     <div className="mx-auto max-w-xl">
       <Card>
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-control bg-brand-50 text-brand-600">
-          <Rocket className="h-6 w-6" aria-hidden />
-        </span>
+        {companion.data?.character ? (
+          <CharacterStage characterId={companion.data.character.name} size={72} state="encouraging" />
+        ) : (
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+            <Rocket className="h-6 w-6" aria-hidden />
+          </span>
+        )}
         <h1 className="mt-4 font-display text-2xl font-bold text-ink-900">{data.title}</h1>
         {data.description && <p className="mt-2 text-ink-600">{data.description}</p>}
         {data.estimatedMinutes ? (

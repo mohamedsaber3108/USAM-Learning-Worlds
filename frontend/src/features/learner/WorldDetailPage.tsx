@@ -2,9 +2,10 @@ import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Circle, Lock, ArrowRight } from 'lucide-react'
-import { worldsApi, type WorldDetail, type WorldMission } from '@/lib/api/endpoints'
+import { worldsApi, charactersApi, type WorldDetail, type WorldMission } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, StatusPill } from '@/components/ui'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 const MISSION_STATUS_KEY: Record<WorldMission['status'], string> = {
   COMPLETED: 'learner.missionStatusCompleted',
@@ -38,6 +39,18 @@ export function WorldDetailPage() {
     queryFn: async () => (await worldsApi.getById(id)).data as WorldDetail,
     enabled: Boolean(id),
   })
+  // Companion presence (reverse-engineering/experience directive, 2026-10-06):
+  // the world/mission-sequence view — "where am I, who is helping me" per
+  // the directive's journey map — had zero companion presence, the one gap
+  // in an otherwise-consistent chain (Home/Practice/Mission Brief/Mission
+  // Player/Projects all already carry this). Scoped by domainSlug so the
+  // backend's domain-aware fallback picks the matching mentor for the world.
+  const companion = useQuery({
+    queryKey: ['world-companion', data?.domain?.slug],
+    queryFn: async () => (await charactersApi.orchestrate({ domainSlug: data?.domain?.slug })).data,
+    enabled: Boolean(data?.domain?.slug),
+    retry: false,
+  })
 
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState onRetry={() => void refetch()} />
@@ -45,17 +58,20 @@ export function WorldDetailPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={data.name}
-        subtitle={data.description ?? undefined}
-        action={
-          !data.isUnlocked ? (
-            <StatusPill tone="neutral">
-              <Lock className="h-3.5 w-3.5" aria-hidden /> {t('learner.worldLocked')}
-            </StatusPill>
-          ) : undefined
-        }
-      />
+      <div className="flex items-center gap-3">
+        {companion.data?.character && <CharacterStage characterId={companion.data.character.name} size={56} />}
+        <PageHeader
+          title={data.name}
+          subtitle={data.description ?? undefined}
+          action={
+            !data.isUnlocked ? (
+              <StatusPill tone="neutral">
+                <Lock className="h-3.5 w-3.5" aria-hidden /> {t('learner.worldLocked')}
+              </StatusPill>
+            ) : undefined
+          }
+        />
+      </div>
 
       <section>
         <h2 className="font-display text-lg font-bold text-ink-900">{t('learner.worldMissions')}</h2>

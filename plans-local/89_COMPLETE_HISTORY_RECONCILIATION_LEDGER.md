@@ -226,6 +226,71 @@ tracked in §5).
 - **PROOF 3**: `tsc --noEmit` clean, `vite build` clean, `vitest` 7/7,
   `eslint` 0 warnings. Live-verification: pending owner deploy.
 
+### 2.8 Companion presence gap: Mission Brief + World Detail
+
+- **PROOF 1 (requirement)**: a 61-section "full product rebuild" directive
+  (2026-10-06) requires characters to be integrated platform-wide (§19),
+  explicitly listing "Mission start" among the required integration points.
+  Separately, every other core learning surface already carries this real
+  pattern via `charactersApi.orchestrate()` (confirmed by grep:
+  `HomePage.tsx`, `PracticePage.tsx`, `MissionPlayerPage.tsx`,
+  `ProjectDetailPage.tsx`, `CompanionsPage.tsx`, `CompanionChatPage.tsx`,
+  `EnglishCoachPage.tsx` all already call it) — `MissionDetailPage.tsx`
+  (the mission brief, shown before `MissionPlayerPage`) and
+  `WorldDetailPage.tsx` (the per-world mission sequence) were the two real
+  gaps in that otherwise-consistent chain.
+- **PROOF 2**: added the same real pattern to both — `MissionDetailPage.tsx`
+  calls `orchestrate({ missionId })` (matching `MissionPlayerPage`'s own
+  scoping), `WorldDetailPage.tsx` calls `orchestrate({ domainSlug })`
+  (matching `PracticePage`'s pattern of scoping to context). Both null-safe
+  (fall back to the pre-existing icon/plain header when no companion
+  resolves), no fabricated dialogue.
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-C6eDDljY.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending owner deploy.
+
+### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
+
+A 61-section directive arrived requesting a complete ground-up rebuild:
+new information architecture, world-as-map navigation, voice integrated
+platform-wide, AI embedded throughout every domain, a rebuilt design
+system, rebuilt onboarding/missions/English/coding/projects/portfolio/
+gamification, mobile-first + Arabic-first passes, browser-crawl-based
+audit, and screenshot-based visual QA — all continuously deployed.
+
+Recorded here, not silently absorbed, because several parts of it conflict
+with standing, owner-approved decisions already on record in this project:
+
+1. **World-as-map navigation (§11)** was already built once (`90/91/92`:
+   `WorldJourneyMap`, `DomainPortal`) and the owner explicitly chose a
+   *different* rebuild over it (`85_FRONTEND_SWITCH_RUNBOOK.md`, "Decision A
+   cutover", commit `550f154`) — see §0 of this ledger. Rebuilding map
+   navigation again would reverse that decision silently. Flagging instead
+   of acting on it unilaterally.
+2. **Platform-wide voice (§21-22)** requires a real speech provider.
+   `VoicePage.tsx` is `BLOCKED_EXTERNAL` by standing decision (ledger 88/99)
+   — no provider credentials exist in this environment. Cannot be
+   implemented, only designed-for, until that changes.
+3. **Browser-crawl audit (§2) and screenshot-based visual QA (§56-57)**
+   require a browser-automation tool this agent does not have. Playwright
+   scripts can be written and run via shell (as prior sessions already did
+   — `forensic-screenshot.mjs`, `live-verify.mjs`), but that is not the same
+   capability as interactive crawling.
+4. **A full design-system/IA/navigation rebuild** is a multi-week effort.
+   Claiming it complete in one continuous pass without the verification
+   rigor this ledger has used throughout (triple-proof per item) would
+   repeat the exact "fabricated completeness" failure mode this project's
+   own history has flagged and corrected multiple times (see docs 88/99's
+   own self-correction notes).
+
+**Disposition**: continuing this ledger's established method — real,
+bounded, evidence-based batches, each triple-verified and independently
+live-confirmed — applied to this directive's achievable, non-conflicting
+priorities. §19 (character integration) is the first batch (§2.8 above)
+because `CharacterStage` already exists, the pattern is proven, and the
+remaining gaps were small and real. Not treating this as license to redo
+the whole product in one unverified sweep.
+
 ## 3. Investigated and classified NOT_REQUIRED / INTERNAL_ONLY (not fixed, with reasoning)
 
 A sub-agent cross-reference pass (backend controllers ↔ `endpoints.ts` ↔
@@ -297,6 +362,21 @@ Files: `frontend/src/features/admin/AdminContentPage.tsx` (new-content-item
 dialog), `frontend/src/features/admin/AdminCurriculumPage.tsx` (mission
 edit), `frontend/src/lib/i18n/locales/{en,ar}.ts` (`admin.edit` key).
 
+**Round 4** (gap 2.8, companion presence on Mission Brief + World Detail —
+not yet committed/deployed as of this edit):
+
+| Gate | Result |
+| --- | --- |
+| `npx tsc --noEmit` | PASS |
+| `npm run build` | PASS — bundle `index-C6eDDljY.js` |
+| `npm run check:home-bundle` | PASS |
+| `npx vitest run` | PASS — 7/7 |
+| `npm run lint` | PASS — 0 warnings |
+| Live deploy | Pending — see §5 |
+
+Files: `frontend/src/features/learner/MissionDetailPage.tsx`,
+`frontend/src/features/learner/WorldDetailPage.tsx`.
+
 ## 5. Deployment status (honest — per directive §38, code-only ≠ done)
 
 Round 1 (gaps 2.1-2.3): **DEPLOYED + LIVE-VERIFIED** (commit `b331509`,
@@ -307,8 +387,11 @@ Round 2 (gap 2.4): **DEPLOYED + LIVE-VERIFIED** (commit `94c50fb`,
 2026-10-06, independently confirmed from this machine — downloaded the
 production bundle and found the real `cefrLevel` property access).
 
-Round 3 (gaps 2.6-2.7): **committed locally, not yet pushed, not yet
-deployed, not yet live-verified** as of this edit.
+Round 3 (gaps 2.6-2.7): **DEPLOYED + LIVE-VERIFIED** (commit `1d5565a`,
+2026-10-06).
+
+Round 4 (gap 2.8): **committed locally, not yet pushed, not yet deployed,
+not yet live-verified** as of this edit.
 
 ## 6. Honest residual (per directive §40 — "I don't know" is not an acceptable final answer, but IS acceptable as a tracked open item)
 
