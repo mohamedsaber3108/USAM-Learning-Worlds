@@ -53,6 +53,14 @@ export interface MissionRun {
     title: string
     description?: string
     activities: ActivitySummary[]
+    // FIX (reverse-engineering/experience directive, 2026-10-07, §15:
+    // mission completion must show "what to do next... what was
+    // unlocked"): real field, confirmed present on GET
+    // /missions/runs/:runId's mission.worldId (missions.service.ts
+    // getMission/getMissionRun both select the full Mission row) — lets
+    // the completion screen link back to the real World Detail page
+    // (the next-mission picker already built there) instead of a dead end.
+    worldId?: string | null
   }
   attempts: Array<{
     id: string

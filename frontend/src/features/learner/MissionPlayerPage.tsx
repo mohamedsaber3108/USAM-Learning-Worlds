@@ -6,7 +6,7 @@ import { CheckCircle2, XCircle } from 'lucide-react'
 import { missionsApi, reflectionApi, charactersApi } from '@/lib/api/endpoints'
 import type { MissionRun, ActivitySummary, SubmitActivityResult } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, Button, Textarea } from '@/components/ui'
+import { Card, Button, Textarea, StatusPill } from '@/components/ui'
 import { cn } from '@/lib/utils/cn'
 import { ActivityView } from './activities/ActivityView'
 import { CharacterStage } from '@/features/characters/CharacterStage'
@@ -110,6 +110,57 @@ interface GradeView {
   feedback?: string | null
 }
 
+interface CompletionOutcome {
+  finalScore: number
+  passed: boolean
+  requiredActivities: number
+  activitiesAttempted: number
+  xp:
+    | { awarded: false; alreadyAwarded?: boolean; error?: boolean }
+    | { awarded: true; amount: number; leveledUp: boolean; newLevel: number }
+}
+
+/**
+ * Mission completion summary — real outcome from POST
+ * /missions/runs/:runId/complete (missions.service.ts completeMission),
+ * shown before reflection.
+ *
+ * FIX (reverse-engineering/experience directive, 2026-10-07, §15): the
+ * backend already computes a rich real outcome on completion (final score,
+ * pass/fail against the mastery threshold, how many required activities
+ * were attempted, and the real XP award with level-up detection) — none of
+ * it was ever shown; the player discarded the response and jumped straight
+ * to reflection. A child finishing a mission saw no evidence their work
+ * counted. This screen shows exactly what's real, nothing fabricated: no
+ * "evidence created" claim beyond what completeMission computes, no fake
+ * "unlocked" badge unless this was a genuine level-up.
+ */
+function CompletionSummary({ outcome, onContinue }: { outcome: CompletionOutcome; onContinue: () => void }) {
+  const { t } = useTranslation()
+  return (
+    <Card className={cn('border-2 text-center', outcome.passed ? 'border-success-500 bg-success-100' : 'border-warning-500 bg-warning-100')}>
+      <p className="font-display text-2xl font-extrabold text-ink-900">
+        {outcome.passed ? t('learner.missionComplete') : t('learner.missionNotPassed')}
+      </p>
+      <p className="mt-1 text-sm text-ink-600">
+        {t('learner.missionScore', { score: outcome.finalScore })} ·{' '}
+        {t('learner.missionActivitiesDone', { done: outcome.activitiesAttempted, total: outcome.requiredActivities })}
+      </p>
+      {outcome.xp.awarded && (
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <StatusPill tone="success">+{outcome.xp.amount} XP</StatusPill>
+          {outcome.xp.leveledUp && (
+            <StatusPill tone="brand">{t('learner.levelUp', { level: outcome.xp.newLevel })}</StatusPill>
+          )}
+        </div>
+      )}
+      <Button className="mt-5" onClick={onContinue}>
+        {t('common.next')}
+      </Button>
+    </Card>
+  )
+}
+
 /** Mission player — walks activities, submits, completes. Design system + real
  * backend shapes (run.mission.activities; submit → evaluation.correct/feedback;
  * coding via lazy sandbox panel). */
@@ -122,6 +173,7 @@ export function MissionPlayerPage() {
   const [result, setResult] = useState<GradeView | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [outcome, setOutcome] = useState<CompletionOutcome | null>(null)
   const [showReflection, setShowReflection] = useState(false)
 
   const { data: run, isLoading, isError, refetch } = useQuery({
@@ -167,14 +219,27 @@ export function MissionPlayerPage() {
     if (isLast) {
       setCompleting(true)
       try {
-        await missionsApi.complete(runId)
-        setShowReflection(true)
+        const res = await missionsApi.complete(runId)
+        setOutcome(res.data.outcome)
       } finally {
         setCompleting(false)
       }
     } else {
       setIndex((i) => i + 1)
     }
+  }
+
+  if (outcome && !showReflection) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4">
+        {companion.data?.character && (
+          <div className="flex justify-center">
+            <CharacterStage characterId={companion.data.character.name} size={88} state={outcome.passed ? 'celebrating' : 'encouraging'} />
+          </div>
+        )}
+        <CompletionSummary outcome={outcome} onContinue={() => setShowReflection(true)} />
+      </div>
+    )
   }
 
   if (showReflection) {
@@ -185,7 +250,12 @@ export function MissionPlayerPage() {
             <CharacterStage characterId={companion.data.character.name} size={88} state="encouraging" />
           </div>
         )}
-        <ReflectionStep missionRunId={runId} onDone={() => navigate('/app/progress', { replace: true })} />
+        <ReflectionStep
+          missionRunId={runId}
+          onDone={() =>
+            navigate(run.mission.worldId ? `/app/worlds/${run.mission.worldId}` : '/app/progress', { replace: true })
+          }
+        />
       </div>
     )
   }

@@ -83,7 +83,28 @@ export const missionsApi = {
   /** body: { activityId, response: {...} } */
   submit: (runId: string, body: { activityId: string; response: Record<string, unknown> }) =>
     apiClient.post(`/missions/runs/${runId}/submit`, body),
-  complete: (runId: string) => apiClient.post(`/missions/runs/${runId}/complete`),
+  // FIX (reverse-engineering/experience directive, 2026-10-07, §15: mission
+  // completion should show "evidence created, mastery impact, XP/reward,
+  // what to do next"): POST /missions/runs/:runId/complete already returns
+  // a real computed outcome (missions.service.ts completeMission) —
+  // finalScore, pass/fail, required-vs-attempted counts, and the real XP
+  // award (amount/leveledUp/newLevel from progression.service.ts awardXP)
+  // — but the wrapper was untyped and MissionPlayerPage discarded the
+  // response entirely. Typed here so it can actually be shown.
+  complete: (runId: string) =>
+    apiClient.post<{
+      success: boolean
+      message: string
+      outcome: {
+        finalScore: number
+        passed: boolean
+        requiredActivities: number
+        activitiesAttempted: number
+        xp:
+          | { awarded: false; alreadyAwarded?: boolean; error?: boolean }
+          | { awarded: true; amount: number; leveledUp: boolean; newLevel: number }
+      }
+    }>(`/missions/runs/${runId}/complete`),
   getHistory: () => apiClient.get<MissionHistoryRun[]>('/missions/history/me'),
 }
 
