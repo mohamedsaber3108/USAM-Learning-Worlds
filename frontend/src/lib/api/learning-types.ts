@@ -32,6 +32,14 @@ export interface ActivitySummary {
   title: string
   description?: string
   content: Record<string, unknown>
+  // FIX (reverse-engineering/experience directive, 2026-10-07, §12/§15:
+  // "Mission Player should clearly show mission purpose, what the learner
+  // will learn"): GET /missions/runs/:runId already nests the real
+  // LearningObjective (name + description) on every activity — confirmed
+  // via a direct authenticated API call against production — but the
+  // frontend type never declared it, so MissionPlayerPage had no way to
+  // show WHY an activity exists, only its question text.
+  objective?: { id: string; name: string; description?: string | null } | null
 }
 
 // GET /missions/runs/:runId returns { ...run, mission: { ...mission, activities } }.

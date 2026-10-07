@@ -208,6 +208,15 @@ export function MissionPlayerPage() {
         <h1 className="font-display text-xl font-bold text-ink-900">{run.mission.title}</h1>
       </div>
 
+      {/* FIX (reverse-engineering/experience directive, 2026-10-07, §12/§15):
+          per-activity learning objective — real data (run.mission.activities[i].
+          objective), previously fetched but never shown. Answers "what will
+          I learn right now" at the exact moment it matters, not buried in a
+          separate curriculum page. */}
+      {activity?.objective && (
+        <p className="text-sm font-medium text-brand-600">{activity.objective.name}</p>
+      )}
+
       {activity ? (
         activity.type === 'CODE' ? (
           <Suspense fallback={<LoadingState />}>

@@ -366,6 +366,34 @@ All three follow the identical, already-proven pattern (null-safe,
 on every other learner surface this session — no new component, no
 fabricated dialogue.
 
+### 2.13 Mission Player objective display (first real step on P0-7)
+
+Per the directive's priority order, P0-7 (Mission Detail + Mission Player)
+is next after P0-6. §12/§15 specifically ask Mission Player to "clearly
+show mission purpose, what the learner will learn" per activity, not just
+per mission.
+
+- **PROOF 1**: pulled the real `MissionRun` shape directly from production
+  (`GET /missions/runs/:runId` against a real run created by actually
+  starting `english-mission-everyday-words`) — confirmed
+  `run.mission.activities[i].objective.{name, description}` is real,
+  present data (sourced from the real `LearningObjective` model, e.g.
+  "Recognise & match everyday words"), not something that needs a new
+  backend field.
+- **PROOF 2**: `ActivitySummary`'s frontend type never declared `objective`
+  — same silently-dropped-field pattern found repeatedly this session
+  (cefrLevel §2.4, missionCount §2.11). Typed it, and render it as a short
+  line above each activity in `MissionPlayerPage.tsx` — answers "what will
+  I learn right now" at the exact moment it matters, not buried in a
+  separate curriculum page.
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-Bl_XaHYW.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending push + owner deploy.
+
+This is a first, bounded increment on P0-7 — the directive's bigger ask
+(evidence/mastery/reward display inline in the player, a real voice-
+integration seam) is tracked as the next P0-7 step, not claimed done here.
+
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
 A 61-section directive arrived requesting a complete ground-up rebuild:
@@ -519,8 +547,12 @@ Round 6 (§2.11, Learn/curriculum-depth signal): **PUSHED** (commit
 `b5e61fc`) — deploy block given to owner, not yet confirmed deployed as of
 this edit.
 
-Round 7 (§2.12 below, companion presence on Progress/Creativity/Stories):
-**committed locally, not yet pushed/deployed** as of this edit.
+Round 7 (§2.12, companion presence on Progress/Creativity/Stories):
+**PUSHED** (commit `a271e82`) — deploy block given to owner, not yet
+confirmed deployed as of this edit.
+
+Round 8 (§2.13 below, Mission Player objective display): **committed
+locally, not yet pushed/deployed** as of this edit.
 
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
@@ -539,7 +571,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-4 | Onboarding | AUDITING | Read in full this session (§ companion-presence audit); already has real companion presence (step 0) from a prior session. Not yet re-evaluated against the new directive's richer flow (diagnostic interaction, goals) — no backend support currently exists for a diagnostic quiz, confirmed in a prior session's audit, so that specific sub-item is correctly not fabricated. |
 | P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
 | P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
-| P0-7 | Mission Detail + Mission Player | LIVE_VERIFIED (companion presence only) | Mission Detail gained companion presence this session (DEPLOYED+LIVE_VERIFIED). Mission Player already had it from a prior session. The directive's bigger ask (richer context/objective/voice-seam/evidence display) NOT yet built. |
+| P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail gained companion presence (LIVE_VERIFIED). Mission Player already had companion presence; gained real per-activity objective display this round (§2.13), not yet deployed. Bigger ask (evidence/mastery/reward inline, voice-seam) NOT yet built. |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice already had companion presence; `ProgressPage.tsx` gained it this round (§2.12) — not yet deployed. |
 | P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-18..25 | Voice/Guardian/Moderator/Admin/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | PARTIAL (admin only) | Admin gained 2 real capabilities this session (§2.6-2.7). Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime, but provider-independent architecture work (per the new directive's §9) has NOT yet started. Guardian/Moderator untouched this session. |
