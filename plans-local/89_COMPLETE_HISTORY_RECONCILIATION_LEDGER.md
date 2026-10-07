@@ -293,6 +293,50 @@ placeholder").
   not silently fixed in this one (scope: this batch is verification
   infrastructure + confirmation, not a new visual change).
 
+### 2.11 Learn/Worlds curriculum-depth signal (first real step on P0-6)
+
+Per the 2026-10-07 directive's explicit priority order, P0-6 (Learn/Worlds/
+curriculum discovery) is next. Before designing a new IA, pulled the real
+backend data directly (authenticated calls against production, not
+assumptions) to know what depth actually exists:
+
+- `GET /learning/domains/english/path`: **9 real skill strands**
+  (Vocabulary, Grammar, Reading, Listening, Writing, Pronunciation,
+  Speaking, Dictation, Shadowing), each CEFR-tagged (A1/A2), each 1:1 with
+  a real mission.
+- `GET /learning/domains/coding/path`: 3 skill groups with uneven depth
+  (Programming Fundamentals: 4 competencies, Computational Thinking: 1,
+  Problem Solving & Debugging: 2) — confirms Coding's content is real but
+  thinner than English's, consistent with prior sessions' own audits.
+- `GET /worlds`: each world already returns a real `missionCount` (Wordhaven
+  11, Circuit City 8, Mindspring 9, Launch Bay 1) that the frontend type
+  never declared — the exact "backend has the depth signal, frontend hides
+  it" pattern this ledger has found repeatedly (cefrLevel §2.4, rubric
+  §2.2).
+
+**This batch (bounded, not the full IA rebuild)**: surfaced the depth that
+already exists, as real data, on the two pages that most need it per the
+directive's §12 ("the learner should be able to see what exists... what is
+next... what they can practice"):
+- `LearnPage.tsx`: typed `missionCount` onto the `World` interface and
+  render it per world card ("11 missions" etc.) — previously every world
+  card showed zero signal of how much curriculum was inside it.
+- `DomainPathPage.tsx`: added a per-skill-group mastered-count summary
+  (e.g. "0/1", "2/4") next to each skill's heading, computed from the
+  mastery states already being fetched (no new API call) — previously a
+  learner/parent had to count rows by eye to see progress depth.
+- i18n: added `learner.worldMissionCount` (EN+AR), following this
+  codebase's existing established pattern for count strings (plain
+  interpolation, e.g. `reviewNudge`'s `'skill(s)'`) rather than introducing
+  an unproven i18next `_plural` suffix convention nothing else in the
+  project uses — checked via grep before adding it, found no precedent, so
+  matched the existing pattern instead of a new one.
+
+This is explicitly a FIRST STEP, not the full P0-6 rebuild — the directive's
+bigger ask (a genuine Domain → Track → Skill-group → Skill → Mission
+hierarchy browser, IXL-depth discoverability) is a larger design+build effort
+tracked as the next P0-6 increment, not claimed done here.
+
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
 A 61-section directive arrived requesting a complete ground-up rebuild:
@@ -442,6 +486,9 @@ the downloaded production bundle).
 Round 5 (product crawler, §2.10 below): tool-only, no production frontend
 change — see §5 for what was run and found.
 
+Round 6 (§2.11 below, Learn/curriculum-depth signal): **committed locally,
+not yet pushed/deployed** as of this edit.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /
@@ -458,7 +505,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-3 | Design-system gaps | NOT_STARTED (this session) | No dedicated design-system audit run yet this session; existing DS primitives (`components/ui/*`) reused as-is in every batch so far. |
 | P0-4 | Onboarding | AUDITING | Read in full this session (§ companion-presence audit); already has real companion presence (step 0) from a prior session. Not yet re-evaluated against the new directive's richer flow (diagnostic interaction, goals) — no backend support currently exists for a diagnostic quiz, confirmed in a prior session's audit, so that specific sub-item is correctly not fabricated. |
 | P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
-| P0-6 | Learn/Worlds/curriculum discovery | AUDITING | `LearnPage.tsx`, `WorldDetailPage.tsx`, `DomainPathPage.tsx` all read in full this session. World Detail gained companion presence (DEPLOYED+LIVE_VERIFIED for that specific gap). The directive's bigger ask — IXL-style curriculum depth/hierarchy — is NOT yet designed or built. **Next planned batch.** |
+| P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
 | P0-7 | Mission Detail + Mission Player | LIVE_VERIFIED (companion presence only) | Mission Detail gained companion presence this session (DEPLOYED+LIVE_VERIFIED). Mission Player already had it from a prior session. The directive's bigger ask (richer context/objective/voice-seam/evidence display) NOT yet built. |
 | P0-8 | Practice/mastery/progress | LIVE_VERIFIED (companion presence only) | Already had companion presence; `ProgressPage.tsx` does not yet (confirmed in the no-CharacterStage grep) — real gap, not yet closed. |
 | P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | NOT_STARTED (as full verticals) | Individual gaps closed this session (project rubric §2.2, CEFR §2.4) are real but partial. No full-vertical rebuild attempted yet. |

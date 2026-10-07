@@ -325,6 +325,7 @@ export const en = {
     exploreCatCriticalThinking: 'Critical Thinking',
     exploreCatVisualLanguage: 'Picture Words',
     worldLocked: 'Locked for now',
+    worldMissionCount: '{{count}} mission(s)',
     worldMissions: 'Missions in this world',
     missionLockedHint: 'Finish the mission before this one to unlock it.',
     codingChallengeDifficulty: 'Difficulty',

@@ -111,9 +111,24 @@ export function DomainPathPage() {
 
         {hasPath ? (
           <div className="mt-4 space-y-6">
-            {skills.map((skill) => (
+            {skills.map((skill) => {
+              const masteredCount = skill.competencies.filter(
+                (c) => c.masteryState === 'MASTERED' || c.masteryState === 'PROFICIENT',
+              ).length
+              return (
               <div key={skill.id}>
-                <h3 className="mb-2 font-display font-bold text-ink-800">{skill.name}</h3>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <h3 className="font-display font-bold text-ink-800">{skill.name}</h3>
+                  {/* FIX (reverse-engineering/experience directive, 2026-10-07):
+                      the real per-skill mastery breakdown was already computed
+                      client-side (each competency's masteryState) but never
+                      summarized — a learner/parent had to count rows by eye to
+                      see depth/progress, exactly the "curriculum depth is
+                      hidden" gap the directive calls out (§12). */}
+                  <span className="shrink-0 text-xs font-medium text-ink-400">
+                    {masteredCount}/{skill.competencies.length}
+                  </span>
+                </div>
                 <div className="space-y-2">
                   {skill.competencies.map((comp) => {
                     const done = comp.masteryState === 'MASTERED' || comp.masteryState === 'PROFICIENT'
@@ -150,7 +165,8 @@ export function DomainPathPage() {
                   })}
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <EmptyState title={t('learner.pathBeingBuilt')} />

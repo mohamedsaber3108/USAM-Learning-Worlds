@@ -12,6 +12,14 @@ interface World {
   description?: string
   domain?: { slug: string; name: string }
   isUnlocked?: boolean
+  // FIX (reverse-engineering/experience directive, 2026-10-07): the real
+  // GET /worlds response already includes missionCount (confirmed via a
+  // direct authenticated API call against production — Wordhaven: 11,
+  // Circuit City: 8, Mindspring: 9, Launch Bay: 1) but the frontend type
+  // never declared it, so it was silently dropped and the Learn hub gave
+  // zero signal of how much is actually inside each world — exactly the
+  // "curriculum depth is hidden" gap the directive calls out (§12).
+  missionCount?: number
 }
 
 // Per-domain icon (slug-keyed); default for anything else.
@@ -57,6 +65,11 @@ export function LearnPage() {
               </span>
               <h2 className="mt-4 font-display text-lg font-bold text-ink-900">{world.domain?.name ?? world.name}</h2>
               {world.description && <p className="mt-1 text-sm text-ink-500">{world.description}</p>}
+              {typeof world.missionCount === 'number' && (
+                <p className="mt-1.5 text-xs font-medium text-ink-400">
+                  {t('learner.worldMissionCount', { count: world.missionCount })}
+                </p>
+              )}
               <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-600">
                 {world.isUnlocked === false ? t('learner.worldLocked') : t('learner.startMission')}{' '}
                 <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
