@@ -758,6 +758,28 @@ Per the directive's roadmap P0-8 (Practice/mastery/progress continuation).
   `index-BakJHVdM.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
   warnings. Live-verification: pending owner deploy.
 
+### 2.20 Project Research Notes (P1-13, Projects)
+
+Per the directive's §29, which explicitly names "Research" as a required
+pillar in the project flow (Discover → Brief → Plan → **Research** →
+Collaborate → ...). This was already identified as a real gap in round 1's
+reconciliation audit (`projectsApi.listResearchNotes`/`addResearchNote`/
+`removeResearchNote` existed with zero callers) but deferred at the time.
+
+- **PROOF 1**: read `projects.service.ts`'s `addResearchNote`/
+  `listResearchNotes`/`deleteResearchNote` in full. Real, ownership-checked
+  (`hasProjectAccess`), backed by a real `ResearchNote` Prisma model with
+  `content`/`sourceTitle`/`sourceUrl` fields — not a placeholder.
+- **PROOF 2**: added a "Research notes" section to `ProjectDetailPage.tsx`
+  between Milestones and the Rubric section (a research note is evidence
+  gathered toward a milestone, not a milestone itself — kept as its own
+  section rather than folded in). Real add dialog (content + optional
+  source title/link) and real delete action per note, both calling the
+  actual endpoints with the actual DTO shape.
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-CQ30R_jh.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending owner deploy.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /
@@ -777,7 +799,8 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
 | P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail: companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED), real completion outcome score/XP/level-up + next-step link (§2.17, PUSHED), real per-competency mastery-impact display (§2.18, COMMITTED_LOCAL). Remaining: voice-seam, a real world-unlock event at completion (backend doesn't currently report this as a diff). |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice: companion presence (deployed), review-due items now link to real action instead of being a dead end (§2.19, COMMITTED_LOCAL). Progress: companion presence (§2.12, PUSHED). |
-| P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
+| P1-13 | Projects | BUILDING | Rubric viewer (§2.2, LIVE_VERIFIED), Research notes (§2.20, COMMITTED_LOCAL) — both real pillars named in the directive's §29 flow, now closed. Collaboration (addCollaborator/listCollaborators/removeCollaborator) still has zero frontend caller — identified, not yet built. |
+| P1-9..12,14..17 | English/Coding/AI/Creativity/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
 | P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
 | P2-21 | Admin/CMS | BUILDING | Gained content-item create (§2.6), mission edit (§2.7), prompt-template authoring (§2.15, LIVE_VERIFIED), analytics retention/stickiness (§2.16, not yet deployed) — 4 real capabilities this session. Safety-policy/AI-eval confirmed deliberately read-only by backend design, correctly not built as write UIs. |
