@@ -670,6 +670,9 @@ export const moderationApi = {
 export const adminApi = {
   analyticsOverview: () => apiClient.get('/admin/analytics/overview'),
   analyticsDaily: () => apiClient.get('/admin/analytics/daily-activity'),
+  analyticsRetentionCohorts: (cohortWeeks?: number, weeksTracked?: number) =>
+    apiClient.get('/admin/analytics/retention-cohorts', { params: { cohortWeeks, weeksTracked } }),
+  analyticsStickiness: (days?: number) => apiClient.get('/admin/analytics/stickiness', { params: { days } }),
   contentItems: () => apiClient.get('/admin/content-items'),
   createContentItem: (body: Record<string, unknown>) => apiClient.post('/admin/content-items', body),
   setContentStatus: (id: string, status: string) => apiClient.patch(`/admin/content-items/${id}/status`, { status }),

@@ -459,6 +459,32 @@ write UI for either would mean building against a backend contract that
 explicitly doesn't support it, which is exactly the "don't fabricate
 capabilities" rule this project has enforced all session.
 
+### 2.16 Admin analytics drill-ins: retention cohorts + stickiness (P2-21 cont.)
+
+Closing out the remaining documented analytics gap from ledger 88/99.
+`events-by-type` was already closed in a prior session (nested inside the
+`overview` endpoint's real response, confirmed by reading
+`AdminAnalyticsPage.tsx`'s existing code). `retention-cohorts` and
+`stickiness` were the two still genuinely missing.
+
+- **PROOF 1**: read `analytics.service.ts` in full. `getRetentionCohorts()`
+  computes real weekly-cohort retention (ISO-week-of-first-event cohorting,
+  then % retained per subsequent week) over the actual `LearningEvent`
+  table — the file's own doc comment confirms this was previously flagged
+  "product/retention analytics genuinely does not exist at all" before
+  being built. `getStickiness()` computes real DAU/MAU per day over the
+  trailing window. Both ADMIN-gated, both read-only, neither a placeholder.
+- **PROOF 2**: added `analyticsRetentionCohorts`/`analyticsStickiness`
+  wrappers to `endpoints.ts`, and two new sections to
+  `AdminAnalyticsPage.tsx`: a DAU/MAU bar chart (matching the existing
+  daily-activity chart's visual pattern) and a retention-cohort table
+  (cohort week × weeks-since-first-event grid, each cell a real %), both
+  typed against the exact real response shapes from the service file, not
+  guessed.
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-E_kFyWbc.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending push + owner deploy.
+
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
 A 61-section directive arrived requesting a complete ground-up rebuild:
@@ -626,8 +652,13 @@ re-confirmed by downloading the final bundle, finding every real code
 marker from rounds 6-9, AND re-running the full product-crawler against
 the newly deployed site: 17/17 PASS, no regressions).
 
-Round 10 (§2.15 below, Admin prompt-template authoring): **committed
-locally, not yet pushed/deployed** as of this edit.
+Round 10 (§2.15, Admin prompt-template authoring): **DEPLOYED +
+LIVE-VERIFIED** (commit `5cb4ad4`, 2026-10-07, independently confirmed via
+downloaded-bundle marker check for `admin/prompt-templates` and
+`deactivate`).
+
+Round 11 (§2.16 below, Admin analytics drill-ins): **committed locally,
+not yet pushed/deployed** as of this edit.
 
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
@@ -651,7 +682,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
 | P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
-| P2-21 | Admin/CMS | BUILDING | Gained content-item create (§2.6), mission edit (§2.7), prompt-template authoring (§2.15) — 3 real capabilities this session. Not yet deployed for round 10. Safety-policy/AI-eval confirmed deliberately read-only by backend design, correctly not built as write UIs. |
+| P2-21 | Admin/CMS | BUILDING | Gained content-item create (§2.6), mission edit (§2.7), prompt-template authoring (§2.15, LIVE_VERIFIED), analytics retention/stickiness (§2.16, not yet deployed) — 4 real capabilities this session. Safety-policy/AI-eval confirmed deliberately read-only by backend design, correctly not built as write UIs. |
 | P2-18,22-25 | Voice/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | NOT_STARTED | Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime; provider-independent architecture work (§9) NOT yet started. Others untouched this session. |
 
 This table will be updated every batch going forward, not just appended to.
