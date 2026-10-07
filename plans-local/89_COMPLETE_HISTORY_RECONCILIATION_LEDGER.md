@@ -513,15 +513,38 @@ completion/evidence/mastery/reward loop as the next P0-7 increment.
 - **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
   `index-CoGCrBoL.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
   warnings. Live-verification: pending owner deploy (pushed as `1c6d8d7`).
-- **Honestly NOT done this batch** (named in the directive, not yet real):
-  "evidence created" and "mastery impact" display — `completeMission`
-  doesn't return per-competency mastery deltas directly (that's a separate
-  `MasteryService.recordEvidence()` call per activity-submit, not
-  aggregated at completion time); showing real evidence/mastery-state
-  change on this screen would need either a new aggregating endpoint or a
-  second real query to `GET /mastery/overview` scoped to this mission's
-  competencies. Flagged as the next concrete P0-7 increment, not
-  fabricated here.
+- Mastery-impact display (flagged as the next increment in this section)
+  was closed the same session — see §2.18.
+
+### 2.18 Mission completion mastery-impact display (P0-7 continued)
+
+- **PROOF 1**: `completeMission` has no dedicated per-mission mastery-delta
+  endpoint, confirmed by reading `mastery.controller.ts` in full (only
+  `overview`/`by-domain`/`review-due`/`goals`/`evidence`, no mission-scoped
+  route). But `GET /mastery/overview` returns every real `MasteryRecord`
+  (with `competencyId`), and each activity on the already-fetched
+  `MissionRun` carries its real `objective.competencyId` (confirmed via the
+  same production API pull used in §2.13/§2.17) — so the mission's own
+  touched competencies can be computed client-side with zero new endpoint.
+- **PROOF 2**: typed `objective.competencyId`/`objective.competency` onto
+  `ActivitySummary` (`learning-types.ts`). In `MissionPlayerPage.tsx`,
+  added a `masteryOverview` query (fetched only once `outcome` exists —
+  not on every render) and filtered it to `missionCompetencyIds` built from
+  the run's own activities. Passed the filtered `masteryImpact` list into
+  `CompletionSummary`, which renders each affected competency's name and
+  real `masteryLabel(state)` pill — reusing the exact label helper every
+  other mastery surface in the app already uses, not a new one.
+- **PROOF 3**: `tsc --noEmit` clean, `vite build` clean (bundle
+  `index-CSg0uP12.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+  warnings. Live-verification: pending owner deploy.
+- This closes the P0-7 "evidence/mastery/reward" ask from the follow-up
+  directive as fully as the current backend contract supports without
+  inventing a new endpoint. The one remaining named item, "what was
+  unlocked" beyond the next-world link already shipped in §2.17, would
+  need the backend to report a world-unlock *event* at completion time (it
+  doesn't currently — `WorldsService`'s unlock check is computed on
+  `GET /worlds`, not returned as a diff from `completeMission`) — flagged,
+  not fabricated.
 
 ### 2.9 Scope response to the 2026-10-06 "full product rebuild" directive
 
@@ -731,7 +754,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-4 | Onboarding | AUDITING | Read in full this session (§ companion-presence audit); already has real companion presence (step 0) from a prior session. Not yet re-evaluated against the new directive's richer flow (diagnostic interaction, goals) — no backend support currently exists for a diagnostic quiz, confirmed in a prior session's audit, so that specific sub-item is correctly not fabricated. |
 | P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
 | P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
-| P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail gained companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED) + real completion outcome score/XP/level-up + real next-step link (§2.17, PUSHED not yet deployed). Remaining: per-competency mastery/evidence display on completion (identified, not yet built), voice-seam. |
+| P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail: companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED), real completion outcome score/XP/level-up + next-step link (§2.17, PUSHED), real per-competency mastery-impact display (§2.18, COMMITTED_LOCAL). Remaining: voice-seam, a real world-unlock event at completion (backend doesn't currently report this as a diff). |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice already had companion presence; `ProgressPage.tsx` gained it this round (§2.12) — not yet deployed. |
 | P1-9..17 | English/Coding/AI/Creativity/Projects/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (project rubric §2.2, CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |

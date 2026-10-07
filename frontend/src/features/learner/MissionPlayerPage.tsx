@@ -3,14 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, XCircle } from 'lucide-react'
-import { missionsApi, reflectionApi, charactersApi } from '@/lib/api/endpoints'
-import type { MissionRun, ActivitySummary, SubmitActivityResult } from '@/lib/api/learning-types'
+import { missionsApi, reflectionApi, charactersApi, masteryApi } from '@/lib/api/endpoints'
+import type { MissionRun, ActivitySummary, SubmitActivityResult, MasteryRecord } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, Button, Textarea, StatusPill } from '@/components/ui'
 import { cn } from '@/lib/utils/cn'
 import { ActivityView } from './activities/ActivityView'
 import { CharacterStage } from '@/features/characters/CharacterStage'
 import type { CharacterState } from '@/features/characters/CharacterFace'
+import { masteryLabel } from '@/lib/labels/masteryLabels'
 
 const FACES = ['😣', '😕', '😐', '🙂', '😄'] as const
 const RATING_KEYS = [
@@ -135,7 +136,15 @@ interface CompletionOutcome {
  * "evidence created" claim beyond what completeMission computes, no fake
  * "unlocked" badge unless this was a genuine level-up.
  */
-function CompletionSummary({ outcome, onContinue }: { outcome: CompletionOutcome; onContinue: () => void }) {
+function CompletionSummary({
+  outcome,
+  masteryImpact,
+  onContinue,
+}: {
+  outcome: CompletionOutcome
+  masteryImpact: MasteryRecord[]
+  onContinue: () => void
+}) {
   const { t } = useTranslation()
   return (
     <Card className={cn('border-2 text-center', outcome.passed ? 'border-success-500 bg-success-100' : 'border-warning-500 bg-warning-100')}>
@@ -152,6 +161,26 @@ function CompletionSummary({ outcome, onContinue }: { outcome: CompletionOutcome
           {outcome.xp.leveledUp && (
             <StatusPill tone="brand">{t('learner.levelUp', { level: outcome.xp.newLevel })}</StatusPill>
           )}
+        </div>
+      )}
+      {/* FIX (reverse-engineering/experience directive, 2026-10-07, §15:
+          "evidence created, mastery impact" — flagged as not-yet-done in
+          the previous batch (commit 1c6d8d7). completeMission has no
+          dedicated per-mission mastery-delta endpoint, but each activity's
+          objective.competency IS already known client-side (run.mission.
+          activities[i].objective.competencyId) and GET /mastery/overview
+          returns every real MasteryRecord — filtering the overview to just
+          this mission's touched competencies is real data, not fabricated,
+          with no new backend endpoint needed. */}
+      {masteryImpact.length > 0 && (
+        <div className="mt-4 space-y-1.5 border-t border-line pt-4 text-start">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">{t('learner.masteryBy')}</p>
+          {masteryImpact.map((m) => (
+            <div key={m.id} className="flex items-center justify-between">
+              <span className="min-w-0 truncate text-sm text-ink-700">{m.competency?.name ?? m.competencyId}</span>
+              <StatusPill tone="brand">{masteryLabel(m.state)}</StatusPill>
+            </div>
+          ))}
         </div>
       )}
       <Button className="mt-5" onClick={onContinue}>
@@ -192,12 +221,26 @@ export function MissionPlayerPage() {
     retry: false,
   })
   const companionState: CharacterState = result ? (result.correct ? 'celebrating' : 'encouraging') : 'idle'
+  // Mastery impact on completion — real GET /mastery/overview, filtered
+  // client-side to this mission's own competencies (see CompletionSummary's
+  // doc comment above for why this is real data, not a new endpoint).
+  // Only fetched once the mission is actually complete.
+  const masteryOverview = useQuery({
+    queryKey: ['mastery-overview', 'mission-complete', runId],
+    queryFn: async () => (await masteryApi.getOverview()).data as MasteryRecord[],
+    enabled: Boolean(outcome),
+    retry: false,
+  })
 
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState onRetry={() => void refetch()} />
   if (!run) return <EmptyState />
 
   const activities = run.mission?.activities ?? []
+  const missionCompetencyIds = new Set(
+    activities.map((a) => a.objective?.competencyId).filter((id): id is string => Boolean(id)),
+  )
+  const masteryImpact = (masteryOverview.data ?? []).filter((m) => missionCompetencyIds.has(m.competencyId))
   const activity: ActivitySummary | undefined = activities[index]
   const isLast = index >= activities.length - 1
 
@@ -237,7 +280,7 @@ export function MissionPlayerPage() {
             <CharacterStage characterId={companion.data.character.name} size={88} state={outcome.passed ? 'celebrating' : 'encouraging'} />
           </div>
         )}
-        <CompletionSummary outcome={outcome} onContinue={() => setShowReflection(true)} />
+        <CompletionSummary outcome={outcome} masteryImpact={masteryImpact} onContinue={() => setShowReflection(true)} />
       </div>
     )
   }
