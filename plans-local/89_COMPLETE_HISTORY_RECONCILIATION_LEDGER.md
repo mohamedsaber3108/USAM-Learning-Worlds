@@ -805,6 +805,21 @@ product/safety decision, not a missing line of code. Recording honestly
 rather than either silently skipping it or building an unreviewed
 peer-discovery feature.
 
+### 2.22 Companion presence, systemic pass 3: DomainPathPage
+
+Re-ran the no-`CharacterStage` grep after rounds 2.8/2.12 — one real P0
+learning surface remained: `DomainPathPage.tsx` (the per-domain skill path
+— English/Coding/AI-Literacy/Creativity). It already imported
+`DOMAIN_COMPANION` (a real name map — Luma/Codey/Nova/Mira) and rendered
+the name as a text label, but never rendered an actual `CharacterStage`
+figure, per the file's own doc comment distinguishing "pages that know the
+domain up front use this static map" from "pages that don't use
+`orchestrate()`". Added `CharacterStage` next to the existing name label in
+the domain header card — reuses the exact name this page already resolves,
+no new query. `tsc --noEmit` clean, `vite build` clean (bundle
+`index-DiRMTDuG.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+warnings.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /

@@ -9,6 +9,7 @@ import { LoadingState, EmptyState, ErrorState } from '@/components/common/States
 import { Card, Button, StatusPill } from '@/components/ui'
 import { masteryLabel, type MasteryState } from '@/lib/labels/masteryLabels'
 import { DOMAIN_COMPANION } from '@/lib/labels/domainCompanions'
+import { CharacterStage } from '@/features/characters/CharacterStage'
 
 function masteryTone(state: MasteryState): 'success' | 'brand' | 'neutral' {
   if (state === 'MASTERED' || state === 'PROFICIENT') return 'success'
@@ -56,10 +57,21 @@ export function DomainPathPage() {
 
   return (
     <div className="space-y-6">
-      {/* Companion-framed header + next action */}
+      {/* Companion-framed header + next action.
+          FIX (reverse-engineering/experience directive, 2026-10-07, §19):
+          this page already knew WHICH companion leads the domain
+          (DOMAIN_COMPANION gives the real name — Luma/Codey/Nova/Mira) but
+          never actually rendered CharacterStage, the one core learning
+          surface in that gap after this session's other companion-presence
+          work. Real figure, not a name label. */}
       <Card className="bg-brand-700 text-white">
-        {companion && <p className="text-xs font-semibold uppercase tracking-wide text-white/80">{companion}</p>}
-        <h1 className="mt-1 font-display text-3xl font-extrabold">{path?.domain?.name ?? slug}</h1>
+        <div className="flex items-center gap-3">
+          {companion && <CharacterStage characterId={companion} size={56} />}
+          <div>
+            {companion && <p className="text-xs font-semibold uppercase tracking-wide text-white/80">{companion}</p>}
+            <h1 className="font-display text-3xl font-extrabold">{path?.domain?.name ?? slug}</h1>
+          </div>
+        </div>
         {nextAction?.missionId && (
           <Link
             to={`/app/missions/${nextAction.missionId}`}
