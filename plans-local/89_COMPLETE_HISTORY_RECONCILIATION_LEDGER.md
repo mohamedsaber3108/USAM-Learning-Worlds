@@ -780,6 +780,31 @@ reconciliation audit (`projectsApi.listResearchNotes`/`addResearchNote`/
   `index-CQ30R_jh.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
   warnings. Live-verification: pending owner deploy.
 
+### 2.21 Project Collaboration — flagged, NOT built (safety-sensitive gap)
+
+Per the directive's §29 ("Collaborate where safe/real"). `addCollaborator`/
+`listCollaborators`/`removeCollaborator` are real backend endpoints
+(`projects.service.ts`, confirmed read in full) with zero frontend caller.
+
+**Deliberately not building a UI for this.** `addCollaborator` requires a
+real `learnerId`, and there is no safe lookup mechanism anywhere in this
+backend — `search.controller.ts` (read in full) only searches missions/
+activities/concepts, not learners. The only way to build an "add
+collaborator" UI would be either (a) a raw learner-ID paste field, which no
+child can realistically use, or (b) inventing a new "search for other
+learners by name" feature from scratch. Option (b) is a safety-sensitive
+decision this session should not make unilaterally — it means one child
+discovering/adding another child, which is a different category of risk
+than the existing `COMMUNITY` consent purpose (which governs *sharing*
+showcased work, not *peer discovery*). No consent flow, moderation review,
+or guardian-visibility design exists for learner-to-learner discovery
+anywhere in this codebase's prior work.
+
+**Disposition**: `BLOCKED_EXTERNAL` in the sense that it needs an owner
+product/safety decision, not a missing line of code. Recording honestly
+rather than either silently skipping it or building an unreviewed
+peer-discovery feature.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /
@@ -799,7 +824,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
 | P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail: companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED), real completion outcome score/XP/level-up + next-step link (§2.17, PUSHED), real per-competency mastery-impact display (§2.18, COMMITTED_LOCAL). Remaining: voice-seam, a real world-unlock event at completion (backend doesn't currently report this as a diff). |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice: companion presence (deployed), review-due items now link to real action instead of being a dead end (§2.19, COMMITTED_LOCAL). Progress: companion presence (§2.12, PUSHED). |
-| P1-13 | Projects | BUILDING | Rubric viewer (§2.2, LIVE_VERIFIED), Research notes (§2.20, COMMITTED_LOCAL) — both real pillars named in the directive's §29 flow, now closed. Collaboration (addCollaborator/listCollaborators/removeCollaborator) still has zero frontend caller — identified, not yet built. |
+| P1-13 | Projects | BUILDING | Rubric viewer (§2.2, LIVE_VERIFIED), Research notes (§2.20, PUSHED) — both real pillars named in the directive's §29 flow, now closed. Collaboration explicitly flagged BLOCKED_EXTERNAL — needs an owner safety decision on peer-discovery, not a missing line of code (§2.21). |
 | P1-9..12,14..17 | English/Coding/AI/Creativity/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
 | P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
