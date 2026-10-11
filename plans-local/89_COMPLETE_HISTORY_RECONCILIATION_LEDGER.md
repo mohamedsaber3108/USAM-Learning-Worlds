@@ -835,6 +835,45 @@ not guessed. `tsc --noEmit` clean, `vite build` clean (bundle
 `index-BFoYTOZh.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
 warnings. Live-verification: pending owner deploy.
 
+### 2.24 Locked-world messaging: real unlockCondition (Prodigy-level directive, achievable slice)
+
+The 80-section "Prodigy-level full frontend experience rebuild" directive's
+locked-state ask ("explain WHY locked, WHAT to complete") cannot be
+delivered as original illustration/animation work, but the honest-copy
+version of it is a real, closeable gap: confirmed via a direct
+authenticated API call against production that `World.unlockCondition`
+(human-readable string, e.g. "Unlocks after completing at least 1 mission
+in Wordhaven or Circuit City.") and `unlockSignal` exist on both
+`GET /worlds` and `GET /worlds/:id` (`worlds.service.ts`), but the frontend
+never typed or rendered either field — confirmed via grep, zero references
+anywhere in `worldsApi` callers. Locked world cards and the World Detail
+header only ever showed a bare lock icon/label with no explanation.
+
+**Fix**: typed `unlockCondition?: string | null` on the `WorldDetail`
+interface (`frontend/src/lib/api/endpoints.ts`) and on the local `World`
+interface in `LearnPage.tsx`; rendered the real string under the locked
+badge in both `LearnPage.tsx` (Learn hub world cards) and
+`WorldDetailPage.tsx` (world header). No i18n key added — the field is a
+real backend-authored sentence rendered as-is, not a translated UI label
+(matches how other free-text backend fields, e.g. `world.description`, are
+already handled in both files). `unlockSignal` (a discriminator, not
+human-readable) intentionally left untyped/unused — no UI need for it once
+the human-readable string is shown.
+
+**PROOF 1 (code)**: `git diff` shows the two interface additions + two
+JSX blocks, no other changes.
+
+**PROOF 2 (verification gate, this round)**: `tsc --noEmit` clean; `vite
+build` clean (new entry bundle `index-CW1mXORX.js`, css
+`index-CiqbWrdH.css` unchanged); `check:home-bundle` OK (no coding runtime
+in entry chunk); `vitest run` 7/7 passed; `eslint --max-warnings 0` 0
+warnings.
+
+**PROOF 3 (live)**: pending owner deploy — will independently re-verify via
+`curl.exe` bundle download grepping for `unlockCondition` once deployed.
+
+**Disposition**: `COMMITTED_LOCALLY` pending push/deploy.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /
@@ -851,7 +890,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-3 | Design-system gaps | NOT_STARTED (this session) | No dedicated design-system audit run yet this session; existing DS primitives (`components/ui/*`) reused as-is in every batch so far. |
 | P0-4 | Onboarding | AUDITING | Read in full this session (§ companion-presence audit); already has real companion presence (step 0) from a prior session. Not yet re-evaluated against the new directive's richer flow (diagnostic interaction, goals) — no backend support currently exists for a diagnostic quiz, confirmed in a prior session's audit, so that specific sub-item is correctly not fabricated. |
 | P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
-| P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
+| P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). Locked worlds now explain the real unlock condition on both Learn and World Detail (§2.24, COMMITTED_LOCALLY). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
 | P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail: companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED), real completion outcome score/XP/level-up + next-step link (§2.17, PUSHED), real per-competency mastery-impact display (§2.18, COMMITTED_LOCAL). Remaining: voice-seam, a real world-unlock event at completion (backend doesn't currently report this as a diff). |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice: companion presence (deployed), review-due items now link to real action instead of being a dead end (§2.19, COMMITTED_LOCAL). Progress: companion presence (§2.12, PUSHED). |
 | P1-13 | Projects | BUILDING | Rubric viewer (§2.2, LIVE_VERIFIED), Research notes (§2.20, PUSHED) — both real pillars named in the directive's §29 flow, now closed. Collaboration explicitly flagged BLOCKED_EXTERNAL — needs an owner safety decision on peer-discovery, not a missing line of code (§2.21). |

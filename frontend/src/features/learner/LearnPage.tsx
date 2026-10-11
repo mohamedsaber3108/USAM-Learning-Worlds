@@ -20,6 +20,11 @@ interface World {
   // zero signal of how much is actually inside each world — exactly the
   // "curriculum depth is hidden" gap the directive calls out (§12).
   missionCount?: number
+  // FIX (locked-state requirement, 2026-10-07/11): same real
+  // unlockCondition string as WorldDetail — confirmed present on GET
+  // /worlds too, not just /worlds/:id. A locked world card previously gave
+  // zero explanation of what would unlock it.
+  unlockCondition?: string | null
 }
 
 // Per-domain icon (slug-keyed); default for anything else.
@@ -74,6 +79,9 @@ export function LearnPage() {
                 {world.isUnlocked === false ? t('learner.worldLocked') : t('learner.startMission')}{' '}
                 <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
               </span>
+              {world.isUnlocked === false && world.unlockCondition && (
+                <p className="mt-1 text-xs text-ink-400">{world.unlockCondition}</p>
+              )}
             </Card>
           )
           // World Detail (real sequential per-world mission order with

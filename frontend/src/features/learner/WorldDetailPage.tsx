@@ -72,6 +72,9 @@ export function WorldDetailPage() {
           }
         />
       </div>
+      {!data.isUnlocked && data.unlockCondition && (
+        <p className="text-sm text-ink-500">{data.unlockCondition}</p>
+      )}
 
       <section>
         <h2 className="font-display text-lg font-bold text-ink-900">{t('learner.worldMissions')}</h2>

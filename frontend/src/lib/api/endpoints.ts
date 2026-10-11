@@ -52,6 +52,14 @@ export interface WorldDetail {
   description?: string | null
   domain: { id: string; name: string; slug: string }
   isUnlocked: boolean
+  // FIX (reverse-engineering/experience directive, 2026-10-07/11, locked-
+  // state requirement: "explain WHY locked, WHAT to complete"): every real
+  // World row already carries a seeded, human-readable unlockCondition
+  // string (e.g. "Unlocks after completing at least 1 mission in Wordhaven
+  // or Circuit City.") — confirmed via a direct authenticated API call
+  // against production — but the frontend type never declared it, so a
+  // locked world only ever showed a bare lock icon with zero explanation.
+  unlockCondition?: string | null
   missions: WorldMission[]
 }
 export const worldsApi = {
