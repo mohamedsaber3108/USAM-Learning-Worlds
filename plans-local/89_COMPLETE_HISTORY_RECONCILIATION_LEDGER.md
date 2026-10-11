@@ -869,10 +869,18 @@ build` clean (new entry bundle `index-CW1mXORX.js`, css
 in entry chunk); `vitest run` 7/7 passed; `eslint --max-warnings 0` 0
 warnings.
 
-**PROOF 3 (live)**: pending owner deploy — will independently re-verify via
-`curl.exe` bundle download grepping for `unlockCondition` once deployed.
+**PROOF 3 (live)**: Deployed as `1b01330` (owner-run deploy chain,
+2026-10-11 16:46 UTC) — full verification script passed (source match,
+deployed-artifact match, live-bundle match `index-D2CBCQS0.js`, 19/19
+post-deploy route/auth checks, cache hygiene). Independently re-verified by
+downloading the live bundle via `curl.exe` and regex-counting
+`unlockCondition` occurrences directly in the minified JS: 4 matches found,
+including the literal real conditional
+`r.isUnlocked===!1&&r.unlockCondition&&e.jsx("p",...,children:r.unlockCondition)`
+— confirms the exact `LearnPage.tsx` locked-card logic shipped, not just a
+string coincidence.
 
-**Disposition**: `COMMITTED_LOCALLY` pending push/deploy.
+**Disposition**: `LIVE_VERIFIED`.
 
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
@@ -890,7 +898,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-3 | Design-system gaps | NOT_STARTED (this session) | No dedicated design-system audit run yet this session; existing DS primitives (`components/ui/*`) reused as-is in every batch so far. |
 | P0-4 | Onboarding | AUDITING | Read in full this session (§ companion-presence audit); already has real companion presence (step 0) from a prior session. Not yet re-evaluated against the new directive's richer flow (diagnostic interaction, goals) — no backend support currently exists for a diagnostic quiz, confirmed in a prior session's audit, so that specific sub-item is correctly not fabricated. |
 | P0-5 | Learner Home | LIVE_VERIFIED (companion presence only) | Already had companion presence before this session; not the subject of new work this round. |
-| P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). Locked worlds now explain the real unlock condition on both Learn and World Detail (§2.24, COMMITTED_LOCALLY). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
+| P0-6 | Learn/Worlds/curriculum discovery | BUILDING | `LearnPage.tsx`/`WorldDetailPage.tsx`/`DomainPathPage.tsx` all read in full. World Detail gained companion presence (LIVE_VERIFIED). Real curriculum depth pulled from the live API (English 9 strands, Coding 3 groups) and partially surfaced (mission counts on Learn, per-skill mastery counts on DomainPath — §2.11). Locked worlds now explain the real unlock condition on both Learn and World Detail (§2.24, LIVE_VERIFIED). The directive's bigger ask — a full Domain→Track→Skill-group→Skill→Mission hierarchy browser — NOT yet built; this is a real first increment, not the finished vertical. |
 | P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail: companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED), real completion outcome score/XP/level-up + next-step link (§2.17, PUSHED), real per-competency mastery-impact display (§2.18, COMMITTED_LOCAL). Remaining: voice-seam, a real world-unlock event at completion (backend doesn't currently report this as a diff). |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice: companion presence (deployed), review-due items now link to real action instead of being a dead end (§2.19, COMMITTED_LOCAL). Progress: companion presence (§2.12, PUSHED). |
 | P1-13 | Projects | BUILDING | Rubric viewer (§2.2, LIVE_VERIFIED), Research notes (§2.20, PUSHED) — both real pillars named in the directive's §29 flow, now closed. Collaboration explicitly flagged BLOCKED_EXTERNAL — needs an owner safety decision on peer-discovery, not a missing line of code (§2.21). |
