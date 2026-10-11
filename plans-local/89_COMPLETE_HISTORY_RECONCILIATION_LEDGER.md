@@ -820,6 +820,21 @@ no new query. `tsc --noEmit` clean, `vite build` clean (bundle
 `index-DiRMTDuG.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
 warnings.
 
+### 2.23 Admin content-provenance authoring (P2-21 cont.)
+
+Continuing the P2-21 (Admin/CMS) pattern: `POST /admin/content-provenance/
+licenses` and `/sources` (`content-provenance.service.ts` upsertLicense/
+createSource) are real ADMIN-gated writes with frontend wrappers
+(`adminApi.upsertProvenanceLicense`/`createProvenanceSource`) that had zero
+callers since round 1's audit first flagged them. Read the real DTOs
+(`UpsertLicenseDto`/`CreateSourceDto`) directly from the service file and
+added two create dialogs to `ContentProvenanceSection` in
+`AdminCurriculumPage.tsx` — license (SPDX ID + name + optional URL) and
+source (name + optional URL/attribution) — matching the exact real fields,
+not guessed. `tsc --noEmit` clean, `vite build` clean (bundle
+`index-BFoYTOZh.js`), `check:home-bundle` OK, `vitest` 7/7, `eslint` 0
+warnings. Live-verification: pending owner deploy.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /
@@ -843,7 +858,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P1-9..12,14..17 | English/Coding/AI/Creativity/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
 | P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
-| P2-21 | Admin/CMS | BUILDING | Gained content-item create (§2.6), mission edit (§2.7), prompt-template authoring (§2.15, LIVE_VERIFIED), analytics retention/stickiness (§2.16, not yet deployed) — 4 real capabilities this session. Safety-policy/AI-eval confirmed deliberately read-only by backend design, correctly not built as write UIs. |
+| P2-21 | Admin/CMS | BUILDING | Gained content-item create (§2.6), mission edit (§2.7), prompt-template authoring (§2.15, LIVE_VERIFIED), analytics retention/stickiness (§2.16, LIVE_VERIFIED), content-provenance license/source authoring (§2.23, COMMITTED_LOCAL) — 5 real capabilities this session. Safety-policy/AI-eval confirmed deliberately read-only by backend design, correctly not built as write UIs. |
 | P2-18,22-25 | Voice/Search-Notif-Settings/Legal/Responsive-RTL-a11y-perf/Full-E2E | NOT_STARTED | Voice confirmed `BLOCKED_EXTERNAL` for provider-dependent runtime; provider-independent architecture work (§9) NOT yet started. Others untouched this session. |
 
 This table will be updated every batch going forward, not just appended to.

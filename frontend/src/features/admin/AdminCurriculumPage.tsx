@@ -347,9 +347,35 @@ function CurriculumMappingSection() {
   )
 }
 
-/** Content provenance — license + source registry (admin authoring tool for
- * attaching real provenance metadata to externally-sourced content). */
+/**
+ * Content provenance — license + source registry.
+ *
+ * FIX (reconciliation audit, round 17, 2026-10-07): `POST
+ * /admin/content-provenance/licenses` and `/sources`
+ * (content-provenance.service.ts upsertLicense/createSource) are real,
+ * ADMIN-gated writes with frontend wrappers (`adminApi.
+ * upsertProvenanceLicense`/`createProvenanceSource`) that had zero callers
+ * since round 1's audit flagged them — this section was read-only. Added
+ * two real create dialogs matching the actual DTOs
+ * (UpsertLicenseDto/CreateSourceDto) read directly from
+ * content-provenance.service.ts, not guessed.
+ */
 function ContentProvenanceSection() {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const toast = useToast()
+  const [licenseOpen, setLicenseOpen] = useState(false)
+  const [spdxId, setSpdxId] = useState('')
+  const [licenseName, setLicenseName] = useState('')
+  const [licenseUrl, setLicenseUrl] = useState('')
+  const [savingLicense, setSavingLicense] = useState(false)
+
+  const [sourceOpen, setSourceOpen] = useState(false)
+  const [sourceName, setSourceName] = useState('')
+  const [sourceUrl, setSourceUrl] = useState('')
+  const [sourceAttribution, setSourceAttribution] = useState('')
+  const [savingSource, setSavingSource] = useState(false)
+
   const licenses = useQuery({
     queryKey: ['admin-provenance-licenses'],
     queryFn: async () => (await adminApi.provenanceLicenses()).data as Record<string, unknown>[],
@@ -361,12 +387,59 @@ function ContentProvenanceSection() {
     retry: false,
   })
 
+  async function saveLicense() {
+    if (!spdxId.trim() || !licenseName.trim()) return
+    setSavingLicense(true)
+    try {
+      await adminApi.upsertProvenanceLicense({
+        spdxId: spdxId.trim(),
+        name: licenseName.trim(),
+        url: licenseUrl.trim() || undefined,
+      })
+      setLicenseOpen(false)
+      setSpdxId('')
+      setLicenseName('')
+      setLicenseUrl('')
+      await qc.invalidateQueries({ queryKey: ['admin-provenance-licenses'] })
+    } catch {
+      toast.show(t('states.error'), 'error')
+    } finally {
+      setSavingLicense(false)
+    }
+  }
+
+  async function saveSource() {
+    if (!sourceName.trim()) return
+    setSavingSource(true)
+    try {
+      await adminApi.createProvenanceSource({
+        name: sourceName.trim(),
+        url: sourceUrl.trim() || undefined,
+        attribution: sourceAttribution.trim() || undefined,
+      })
+      setSourceOpen(false)
+      setSourceName('')
+      setSourceUrl('')
+      setSourceAttribution('')
+      await qc.invalidateQueries({ queryKey: ['admin-provenance-sources'] })
+    } catch {
+      toast.show(t('states.error'), 'error')
+    } finally {
+      setSavingSource(false)
+    }
+  }
+
   return (
     <section>
       <SectionHeader title="Content Provenance" />
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">Licenses</p>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Licenses</p>
+            <Button size="sm" variant="secondary" onClick={() => setLicenseOpen(true)}>
+              {t('admin.createContent')}
+            </Button>
+          </div>
           {licenses.isLoading ? (
             <LoadingState />
           ) : !licenses.data || licenses.data.length === 0 ? (
@@ -382,7 +455,12 @@ function ContentProvenanceSection() {
           )}
         </div>
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">Sources</p>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Sources</p>
+            <Button size="sm" variant="secondary" onClick={() => setSourceOpen(true)}>
+              {t('admin.createContent')}
+            </Button>
+          </div>
           {sources.isLoading ? (
             <LoadingState />
           ) : !sources.data || sources.data.length === 0 ? (
@@ -398,6 +476,50 @@ function ContentProvenanceSection() {
           )}
         </div>
       </div>
+
+      <Dialog
+        open={licenseOpen}
+        onClose={() => setLicenseOpen(false)}
+        title="New license"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setLicenseOpen(false)} disabled={savingLicense}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={() => void saveLicense()} disabled={savingLicense || !spdxId.trim() || !licenseName.trim()} loading={savingLicense}>
+              {t('common.save')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Input label="SPDX ID" value={spdxId} onChange={(e) => setSpdxId(e.target.value)} placeholder="e.g. CC-BY-4.0" />
+          <Input label="Name" value={licenseName} onChange={(e) => setLicenseName(e.target.value)} placeholder="Creative Commons Attribution 4.0" />
+          <Input label="URL (optional)" value={licenseUrl} onChange={(e) => setLicenseUrl(e.target.value)} placeholder="https://..." />
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={sourceOpen}
+        onClose={() => setSourceOpen(false)}
+        title="New source"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setSourceOpen(false)} disabled={savingSource}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={() => void saveSource()} disabled={savingSource || !sourceName.trim()} loading={savingSource}>
+              {t('common.save')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Input label="Name" value={sourceName} onChange={(e) => setSourceName(e.target.value)} />
+          <Input label="URL (optional)" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://..." />
+          <Input label="Attribution text (optional)" value={sourceAttribution} onChange={(e) => setSourceAttribution(e.target.value)} />
+        </div>
+      </Dialog>
     </section>
   )
 }
