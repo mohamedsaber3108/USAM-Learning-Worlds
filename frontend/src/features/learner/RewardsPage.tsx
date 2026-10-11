@@ -4,12 +4,49 @@ import { useTranslation } from 'react-i18next'
 import { Star, Flame, Coins, Lock, Check, Trophy, Snowflake } from 'lucide-react'
 import { rewardsApi } from '@/lib/api/endpoints'
 import { LoadingState, ErrorState, EmptyState } from '@/components/common/States'
-import { Card, PageHeader, SectionHeader, Button, useToast } from '@/components/ui'
+import { Card, PageHeader, SectionHeader, Button, StatusPill, useToast } from '@/components/ui'
 import { cn } from '@/lib/utils/cn'
 
 interface Progression { level?: number; totalXP?: number; coins?: number }
 interface Streak { current?: number; longest?: number }
-interface Achievement { id: string; name: string; unlocked?: boolean }
+// FIX (2026-10-11, achievements real-shape bug): the real GET
+// /gamification/achievements (achievements.service.ts getAchievementProgress)
+// returns { stats, achievements: { missions, mastery, streak, projects },
+// summary } — four real milestone tracks, each entry carrying
+// title/description/xp/rarity/threshold/progress/unlocked. The frontend
+// type previously declared a flat Achievement[] with fields (id, name)
+// that don't exist anywhere on the real response, so
+// `achievements.data.length` was always `undefined` and the section
+// silently rendered as an empty state for every learner regardless of
+// real progress — confirmed via a direct authenticated API call against
+// production (18 real milestones returned, 0 unlocked for the proof
+// account, zero of which ever reached the UI).
+interface AchievementMilestone {
+  threshold: number
+  title: string
+  description: string
+  xp: number
+  rarity: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
+  unlocked: boolean
+  progress: number
+}
+interface AchievementProgress {
+  achievements: {
+    missions: AchievementMilestone[]
+    mastery: AchievementMilestone[]
+    streak: AchievementMilestone[]
+    projects: AchievementMilestone[]
+  }
+  summary: { unlocked: number; total: number; percentage: number }
+}
+
+const RARITY_TONE: Record<AchievementMilestone['rarity'], 'neutral' | 'brand' | 'success' | 'warning'> = {
+  COMMON: 'neutral',
+  UNCOMMON: 'brand',
+  RARE: 'brand',
+  EPIC: 'warning',
+  LEGENDARY: 'success',
+}
 
 /**
  * Rewards — XP/level/streak/achievements + the cosmetic shop.
@@ -37,7 +74,7 @@ export function RewardsPage() {
   })
   const achievements = useQuery({
     queryKey: ['rewards-achievements'],
-    queryFn: async () => (await rewardsApi.achievements()).data as Achievement[],
+    queryFn: async () => (await rewardsApi.achievements()).data as AchievementProgress,
     retry: false,
   })
   const cosmetics = useQuery({
@@ -130,14 +167,43 @@ export function RewardsPage() {
       )}
 
       <section>
-        <SectionHeader title={t('learner.achievements')} />
-        {achievements.data && achievements.data.length > 0 ? (
+        <SectionHeader
+          title={t('learner.achievements')}
+          subtitle={
+            achievements.data
+              ? t('learner.achievementsSummary', {
+                  unlocked: achievements.data.summary.unlocked,
+                  total: achievements.data.summary.total,
+                })
+              : undefined
+          }
+        />
+        {achievements.data ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {achievements.data.map((a) => (
-              <Card key={a.id} className={a.unlocked ? '' : 'opacity-60'}>
-                <p className="font-medium text-ink-900">{a.name}</p>
-              </Card>
-            ))}
+            {Object.values(achievements.data.achievements)
+              .flat()
+              .map((a) => (
+                <Card key={`${a.title}-${a.threshold}`} className={cn('flex flex-col gap-1', !a.unlocked && 'opacity-70')}>
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-2 font-medium text-ink-900">
+                      {a.unlocked ? (
+                        <Check className="h-4 w-4 shrink-0 text-success-500" aria-hidden />
+                      ) : (
+                        <Lock className="h-4 w-4 shrink-0 text-ink-400" aria-hidden />
+                      )}
+                      {a.title}
+                    </span>
+                    <StatusPill tone={RARITY_TONE[a.rarity]}>{a.rarity}</StatusPill>
+                  </span>
+                  <p className="text-sm text-ink-500">{a.description}</p>
+                  {!a.unlocked && (
+                    <p className="text-xs text-ink-400">
+                      {t('learner.achievementProgress', { progress: a.progress, threshold: a.threshold })}
+                    </p>
+                  )}
+                  <p className="text-xs font-medium text-brand-600">{t('learner.achievementXP', { xp: a.xp })}</p>
+                </Card>
+              ))}
           </div>
         ) : (
           <EmptyState />

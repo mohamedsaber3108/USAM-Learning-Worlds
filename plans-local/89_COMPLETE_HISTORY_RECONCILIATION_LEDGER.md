@@ -882,6 +882,50 @@ string coincidence.
 
 **Disposition**: `LIVE_VERIFIED`.
 
+### 2.25 Achievements real-shape bug (RewardsPage) — real milestones were silently hidden from every learner
+
+Continuing the honest-locked-state audit (§2.24) into a systemic grep for
+other `isUnlocked`/locked-state surfaces turned up a genuine functional
+bug, not just a messaging gap. `GET /gamification/achievements`
+(`achievements.service.ts` `getAchievementProgress`) returns
+`{ stats, achievements: { missions, mastery, streak, projects }, summary }`
+— 18 real milestones total, each with `title`/`description`/`xp`/
+`rarity`/`threshold`/`progress`/`unlocked` — confirmed via a direct
+authenticated API call against production (proof learner account: 18
+milestones returned, 0 unlocked, real descriptions e.g. "Complete 5
+missions", real XP values 50-5000, real rarity tiers COMMON→LEGENDARY).
+
+`RewardsPage.tsx` previously typed this response as a flat `Achievement[]`
+with fields (`id`, `name`) that don't exist anywhere on the real shape.
+Because the actual response is an object (not an array),
+`achievements.data.length` was always `undefined`, so
+`achievements.data.length > 0` was always false and the section rendered
+as an **empty state for every single learner**, regardless of real
+progress — the entire 18-milestone system was built on the backend and
+completely unreachable from the UI.
+
+**Fix**: retyped the response as `AchievementProgress` matching the real
+nested shape; flattened the four tracks (`Object.values(...).flat()`) into
+one grid; each tile now shows the real title, description, rarity (via
+`StatusPill`, matching the existing CEFR-pill pattern from `DomainPathPage`),
+XP reward, and — for still-locked milestones — real `progress`/`threshold`
+("3 / 10" style, not fabricated). Added a summary subtitle ("X of Y
+unlocked") from the real `summary` object. Added 3 i18n keys (EN+AR):
+`achievementsSummary`, `achievementProgress`, `achievementXP`.
+
+**PROOF 1 (code)**: `git diff` — `RewardsPage.tsx` type + render rewrite,
+2 locale files (+3 keys each), no other files touched.
+
+**PROOF 2 (verification gate)**: `tsc --noEmit` clean; `vite build` clean
+(new entry bundle `index-scBTYpmc.js`); `check:home-bundle` OK; `vitest run`
+7/7; `eslint --max-warnings 0` 0 warnings.
+
+**PROOF 3 (live)**: pending owner deploy — will independently re-verify via
+`curl.exe` bundle download grepping for `achievementsSummary`/the real
+milestone-rendering code path once deployed.
+
+**Disposition**: `COMMITTED_LOCALLY` pending push/deploy.
+
 ## 7. Master vertical tracker (2026-10-06 directive §18)
 
 Per-vertical status using the directive's required vocabulary (NOT_STARTED /
@@ -902,7 +946,7 @@ done for any full vertical (only targeted gaps within verticals so far).
 | P0-7 | Mission Detail + Mission Player | BUILDING | Mission Detail: companion presence (LIVE_VERIFIED). Mission Player: real per-activity objective (§2.13, LIVE_VERIFIED), real completion outcome score/XP/level-up + next-step link (§2.17, PUSHED), real per-competency mastery-impact display (§2.18, COMMITTED_LOCAL). Remaining: voice-seam, a real world-unlock event at completion (backend doesn't currently report this as a diff). |
 | P0-8 | Practice/mastery/progress | BUILDING | Practice: companion presence (deployed), review-due items now link to real action instead of being a dead end (§2.19, COMMITTED_LOCAL). Progress: companion presence (§2.12, PUSHED). |
 | P1-13 | Projects | BUILDING | Rubric viewer (§2.2, LIVE_VERIFIED), Research notes (§2.20, PUSHED) — both real pillars named in the directive's §29 flow, now closed. Collaboration explicitly flagged BLOCKED_EXTERNAL — needs an owner safety decision on peer-discovery, not a missing line of code (§2.21). |
-| P1-9..12,14..17 | English/Coding/AI/Creativity/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (CEFR §2.4, Creativity+Stories companion presence §2.12) are real but partial. No full-vertical rebuild attempted yet. |
+| P1-9..12,14..17 | English/Coding/AI/Creativity/Portfolio/Characters/Rewards/Stories | PARTIAL | Individual gaps closed this session (CEFR §2.4, Creativity+Stories companion presence §2.12, Rewards achievements real-shape bug fix §2.25 — a real functional bug, not just a missing feature, found and fixed) are real but partial. No full-vertical rebuild attempted yet. |
 | P2-19 | Guardian | AUDITING (clean) | Full 1:1 route↔wrapper↔caller audit done — zero gaps found (§2.14). Not `FINAL`: visual/RTL/mobile pass not done this session. |
 | P2-20 | Moderator | BUILDING | Learner-context drill-in on Interventions added (§2.14), not yet deployed. Escalations re-verified clean. |
 | P2-21 | Admin/CMS | BUILDING | Gained content-item create (§2.6), mission edit (§2.7), prompt-template authoring (§2.15, LIVE_VERIFIED), analytics retention/stickiness (§2.16, LIVE_VERIFIED), content-provenance license/source authoring (§2.23, COMMITTED_LOCAL) — 5 real capabilities this session. Safety-policy/AI-eval confirmed deliberately read-only by backend design, correctly not built as write UIs. |
