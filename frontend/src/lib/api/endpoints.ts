@@ -621,6 +621,25 @@ export const englishCoachApi = {
       '/english-coach/grammar',
       body,
     ),
+  // FIX (mega-directive Batch 4, English §23 "Pronunciation"):
+  // english-coach.controller.ts POST /pronunciation had zero frontend
+  // caller. Its response has two parts, confirmed by reading
+  // english-coach.service.ts providePronunciationFeedback: a real
+  // AI-generated phonetic breakdown/syllable-stress/common-mistakes/memory
+  // trick (`feedback`), and a `pronunciationScore` that is a backend-
+  // acknowledged hardcoded placeholder (0.85 whenever a transcript is
+  // sent, else null) pending a real STT+phoneme pipeline — the backend's
+  // own comment says it's "kept explicit, not silently presented as
+  // measured". The frontend wrapper intentionally never sends a
+  // `transcript` (no audio capture exists — that's the already-flagged
+  // BLOCKED_EXTERNAL voice gap), so `pronunciationScore` is always `null`
+  // from this integration and is never rendered as if it were a real
+  // score.
+  pronunciation: (body: { word: string }) =>
+    apiClient.post<{ word: string; feedback: string; pronunciationScore: number | null }>(
+      '/english-coach/pronunciation',
+      body,
+    ),
   /**
    * Vocabulary + reading — real backend (english-coach.controller.ts
    * vocabulary/reading routes), had ZERO frontend callers before this pass

@@ -89,13 +89,34 @@ in owner messages — see `design.md` for the standing reasoning.
       UI decisions (e.g. where does "cognitive load" surface to a child
       without raw metrics) that weren't forced to avoid fabricating UI
       around them.
-- [ ] Progress/Mastery — confirm child-language labels (no raw confidence
-      values) per directive §21; audit `masteryLabel` usage coverage.
+- [x] Progress/Mastery audited — clean, no fix needed. `masteryLabel()`
+      already maps every real `MasteryState` to a child-language label
+      (New/Just started/Exploring/Practicing/Getting stronger/Strong/
+      Mastered); no raw enum or confidence decimal is ever rendered.
+      Considered adding a distinct "review needed" indicator per
+      competency row, but the backend already owns that due-date
+      determination server-side and Practice's Review tab is the
+      dedicated surface for it — duplicating the comparison client-side
+      would risk drifting from the backend's own logic for marginal
+      value, so intentionally not added.
+
+## Batch 3 complete
 
 ## Batch 4 — English/Coding/AI Literacy/Creativity/Thinking
 
-- [ ] Per-area audit: real backend capability (controllers/DTOs) vs. real
-      frontend coverage, same method as ledger 89. Not started this batch.
+- [x] English audited: `EnglishCoachPage.tsx` already had 4 real tabs
+      (conversation/grammar/vocabulary/reading), all backed by real
+      `english-coach.controller.ts` endpoints. Found one real gap: `POST
+      /english-coach/pronunciation` had zero frontend caller. Its response
+      has a real part (AI-generated phonetic breakdown/syllable-stress/
+      memory-trick feedback) and a backend-acknowledged fake part
+      (`pronunciationScore` — hardcoded 0.85 placeholder pending a real
+      STT+phoneme pipeline, confirmed via the service's own comment).
+      Added a 5th "Pronunciation" tab that deliberately never sends a
+      `transcript`, so the placeholder score is never produced or
+      rendered — only the genuinely real coaching text is shown, honestly
+      framed as written tips, not a measured score.
+- [ ] Coding/AI Literacy/Creativity/Thinking — not yet audited this batch.
 
 ## Batch 5 — Stories/Simulations/Projects/Portfolio
 

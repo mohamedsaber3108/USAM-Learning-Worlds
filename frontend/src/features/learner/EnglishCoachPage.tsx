@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send, SpellCheck, BookOpenText, Hash } from 'lucide-react'
+import { Send, SpellCheck, BookOpenText, Hash, Mic } from 'lucide-react'
 import { englishCoachApi } from '@/lib/api/endpoints'
 import { Button, Card, PageHeader, Tabs, Textarea, Input, Select } from '@/components/ui'
 import { AiDisclosureNotice } from '@/components/common/AiDisclosureNotice'
@@ -24,7 +24,7 @@ interface ChatTurn {
  */
 export function EnglishCoachPage() {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<'conversation' | 'grammar' | 'vocabulary' | 'reading'>('conversation')
+  const [tab, setTab] = useState<'conversation' | 'grammar' | 'vocabulary' | 'reading' | 'pronunciation'>('conversation')
 
   return (
     <div className="space-y-6">
@@ -35,6 +35,7 @@ export function EnglishCoachPage() {
           { key: 'grammar', label: t('learner.englishCoachTabGrammar') },
           { key: 'vocabulary', label: t('learner.englishCoachTabVocabulary') },
           { key: 'reading', label: t('learner.englishCoachTabReading') },
+          { key: 'pronunciation', label: t('learner.englishCoachTabPronunciation') },
         ]}
         active={tab}
         onChange={setTab}
@@ -43,6 +44,7 @@ export function EnglishCoachPage() {
       {tab === 'grammar' && <GrammarTab />}
       {tab === 'vocabulary' && <VocabularyTab />}
       {tab === 'reading' && <ReadingTab />}
+      {tab === 'pronunciation' && <PronunciationTab />}
     </div>
   )
 }
@@ -292,6 +294,57 @@ function ReadingTab() {
           <p className="mt-3 text-xs text-ink-400">
             {t('learner.englishCoachReadingMeta', { minutes: result.estimatedReadingTime })}
           </p>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+/**
+ * Pronunciation Coach — real POST /english-coach/pronunciation, text-only
+ * (word -> AI-generated phonetic breakdown/syllable stress/common mistakes/
+ * memory trick). Deliberately never sends a `transcript`, so the backend's
+ * hardcoded placeholder `pronunciationScore` is never produced or shown —
+ * see the endpoints.ts wrapper comment for why. This tab only surfaces the
+ * genuinely real coaching text, honestly labeled as a mentor's written
+ * tips, not a measured speech score.
+ */
+function PronunciationTab() {
+  const { t } = useTranslation()
+  const [word, setWord] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<{ word: string; feedback: string } | null>(null)
+
+  async function coach() {
+    if (!word.trim() || loading) return
+    setLoading(true)
+    setResult(null)
+    try {
+      const res = await englishCoachApi.pronunciation({ word: word.trim() })
+      setResult(res.data)
+    } catch {
+      setResult(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="space-y-4">
+      <Input
+        label={t('learner.englishCoachPronunciationWordLabel')}
+        value={word}
+        onChange={(e) => setWord(e.target.value)}
+        placeholder={t('learner.englishCoachPronunciationWordPlaceholder')}
+      />
+      <Button onClick={() => void coach()} disabled={loading || !word.trim()} loading={loading}>
+        <Mic className="h-4 w-4" aria-hidden />
+        {t('learner.englishCoachPronunciationGet')}
+      </Button>
+      {result && (
+        <div className="rounded-control border border-brand-200 bg-brand-50 p-4">
+          <p className="font-display font-bold text-ink-900">{result.word}</p>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-ink-700">{result.feedback}</p>
         </div>
       )}
     </Card>
