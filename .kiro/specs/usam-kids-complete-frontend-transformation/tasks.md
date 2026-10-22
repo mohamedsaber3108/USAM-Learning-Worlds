@@ -31,14 +31,22 @@ detail.
 
 ## Batch 2 — Learn/Worlds/Mission Detail/Mission Player depth
 
+- [x] Mission Brief (`MissionDetailPage.tsx`) real-gap fix: `GET /missions/
+      :id` already returns real `type` (MissionType enum) and real
+      `activities[]` (each with real objective + competency name),
+      confirmed via a direct authenticated API call against production —
+      the frontend's `Mission` type only declared id/title/description/
+      estimatedMinutes and discarded the rest. Added mission-type pill,
+      real activity count, and a real "you'll practice" skill list (unique
+      competency names) before the learner starts. Zero fabricated content
+      — no story/context or pre-completion reward exist on the real
+      `Mission` Prisma model, so those directive §18 asks are NOT shown
+      (would require a new backend contract; not invented).
 - [ ] Re-audit `WorldDetailPage.tsx` mission list against directive §11's
       node vocabulary (current/completed/available/locked/next/optional/
       project/practice/story/simulation/challenge/reward) — confirm which
       of these the backend actually distinguishes today vs. which would
       require a new backend contract (do not fabricate).
-- [ ] Mission Brief (`MissionDetailPage.tsx`) — confirm it already shows
-      scene/title/objective/skills/activities/duration/reward/companion
-      briefing/requirements/START per directive §18; list any real gaps.
 - [ ] Mission Player completion — confirm "no dead end" (directive §19);
       ledger 89 §2.17/§2.18 already closed next-step-link + mastery-impact;
       confirm nothing regressed.

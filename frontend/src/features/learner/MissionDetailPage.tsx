@@ -3,17 +3,39 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AxiosError } from 'axios'
-import { Rocket } from 'lucide-react'
+import { Rocket, ListChecks } from 'lucide-react'
 import { missionsApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, Button, LockedBadge } from '@/components/ui'
+import { Card, Button, LockedBadge, StatusPill } from '@/components/ui'
 import { CharacterStage } from '@/features/characters/CharacterStage'
 
+// FIX (mega-directive Batch 2, "Mission Brief" §18 — learning objective,
+// skills, activities): GET /missions/:id (missions.service.ts getMission)
+// already returns the mission's real `type` (MissionType enum) and a real
+// `activities[]` array (each with its real objective + competency),
+// confirmed via a direct authenticated API call against production — but
+// the frontend's Mission type only ever declared id/title/description/
+// estimatedMinutes, so the Brief told the learner nothing about what the
+// mission actually covers before they started it. No new backend contract
+// needed; this data was already being fetched and discarded.
+interface MissionActivitySummary {
+  id: string
+  objective?: { name: string; competency?: { name: string } | null } | null
+}
 interface Mission {
   id: string
   title: string
   description?: string
   estimatedMinutes?: number
+  type?: 'GUIDED' | 'EXPLORATION' | 'CHALLENGE' | 'PROJECT_BASED'
+  activities?: MissionActivitySummary[]
+}
+
+const MISSION_TYPE_KEY: Record<string, string> = {
+  GUIDED: 'learner.missionTypeGuided',
+  EXPLORATION: 'learner.missionTypeExploration',
+  CHALLENGE: 'learner.missionTypeChallenge',
+  PROJECT_BASED: 'learner.missionTypeProjectBased',
 }
 
 /**
@@ -70,6 +92,11 @@ export function MissionDetailPage() {
   if (isError) return <ErrorState onRetry={() => void refetch()} />
   if (!data) return <EmptyState />
 
+  const activityCount = data.activities?.length ?? 0
+  const skills = Array.from(
+    new Set((data.activities ?? []).map((a) => a.objective?.competency?.name).filter((n): n is string => Boolean(n))),
+  )
+
   return (
     <div className="mx-auto max-w-xl">
       <Card>
@@ -82,9 +109,26 @@ export function MissionDetailPage() {
         )}
         <h1 className="mt-4 font-display text-2xl font-bold text-ink-900">{data.title}</h1>
         {data.description && <p className="mt-2 text-ink-600">{data.description}</p>}
-        {data.estimatedMinutes ? (
-          <p className="mt-2 text-sm text-ink-400">~{data.estimatedMinutes} min</p>
-        ) : null}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {data.type && MISSION_TYPE_KEY[data.type] && (
+            <StatusPill tone="brand">{t(MISSION_TYPE_KEY[data.type])}</StatusPill>
+          )}
+          {data.estimatedMinutes ? <StatusPill tone="neutral">~{data.estimatedMinutes} min</StatusPill> : null}
+          {activityCount > 0 && <StatusPill tone="neutral">{t('learner.missionActivityCount', { count: activityCount })}</StatusPill>}
+        </div>
+        {skills.length > 0 && (
+          <div className="mt-4 rounded-control bg-canvas-off p-3">
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+              <ListChecks className="h-3.5 w-3.5" aria-hidden />
+              {t('learner.missionSkillsLabel')}
+            </p>
+            <ul className="mt-1.5 space-y-0.5">
+              {skills.map((s) => (
+                <li key={s} className="text-sm text-ink-700">{s}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <Button className="mt-6 w-full" size="lg" loading={starting} onClick={start}>
           {t('learner.startMission')}
