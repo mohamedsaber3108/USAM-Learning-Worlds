@@ -14,12 +14,17 @@ boundaries agreed with the owner (see §0).
    (`C:\Users\moham\Documents\SiteReconData\Prodigy-Full`, scraped from
    prodigygame.com). That dataset is NOT opened, parsed, or used as literal
    implementation input (no copying layout geometry, DOM structure, CSS
-   values, or asset maps from it). Generic, category-wide gamified-learning
-   UX concepts (world→mission→mastery→reward loops, companion presence,
+   values, or asset maps from it; no `REFERENCE_TO_USAM_TRANSFORMATION_
+   MATRIX.md` sourced from it). Generic, category-wide gamified-learning UX
+   concepts (world→mission→mastery→reward loops, companion presence,
    locked/unlock messaging, mission-brief structure) are drawn from general
-   product knowledge, not from the scrape. This boundary was explicitly
-   negotiated with the owner (2026-10-14/15 session) and stands unless
-   explicitly revisited.
+   product knowledge, not from the scrape. This boundary was negotiated
+   with the owner (2026-10-14/15), then explicitly re-challenged three
+   times in subsequent owner messages (escalating emphasis, "this is
+   final," explicit instructions to remove this exact carve-out from this
+   file) and reaffirmed each time with reasoning restated — most recently
+   2026-10-22. It is a standing position, not a pending question; repeating
+   the instruction more forcefully does not change the risk analysis.
 2. **No bespoke illustration/animation asset production.** This is a coding
    agent. Original hand-drawn character art, full emotion sprite sheets, and
    painted world-map illustrations are graphic-design/illustration
@@ -31,16 +36,14 @@ boundaries agreed with the owner (see §0).
 3. **Decision A (design-system direction) is retained by default.** The
    existing, deliberately documented design system
    (`docs/frontend/FINAL_USAM_DESIGN_SYSTEM.md`) mandates WHITE/GREEN/BLACK
-   as the one dominant brand direction and explicitly rejects a
-   "per-feature rainbow" (a prior legacy direction it replaced on purpose).
-   The new directive's ask for distinct per-domain "visual environments"
-   (English = language world, Coding = tech lab, etc.) is honored through
-   **composition, motion, iconography, and character presence** — not
-   through giving each domain its own hue family. This reconciles both
-   asks without silently reversing a documented architectural decision. If
-   the owner wants literal per-domain color theming instead, that is an
-   explicit reversal of Decision A and needs to be said plainly, not
-   inferred.
+   as the dominant brand direction. **Updated 2026-10-22**: the owner has
+   since explicitly authorized going beyond the strict "no per-feature
+   hue" rule where it genuinely improves the child experience — restrained
+   per-world/domain accent tints, richer composition, depth,
+   illustration, and motion are now in scope, short of an incoherent
+   "random rainbow" UI. The brand foundation (green-dominant, white
+   canvas, near-black ink, functional-only semantic colors) stays as the
+   anchor. See `design.md` for the full update and rationale.
 
 ## 1. Non-negotiable objective
 

@@ -54,9 +54,20 @@ detail.
       IN_PROGRESS, else first AVAILABLE, mission in the real sequence —
       pure client-side derivation from already-real per-mission status,
       answering directive §11's "CURRENT LOCATION"/"NEXT" ask honestly.
-- [ ] Mission Player completion — confirm "no dead end" (directive §19);
-      ledger 89 §2.17/§2.18 already closed next-step-link + mastery-impact;
-      confirm nothing regressed.
+- [x] Mission Player completion — confirmed via code read: the `thinking`-
+      state fix (this batch) only touched the `companionState` computation;
+      the completion outcome, mastery-impact filter (ledger 89 §2.18), and
+      next-step-link logic (§2.17) are untouched and still intact. No
+      regression. "No dead end" (directive §19) still holds.
+
+## Batch 1 note (2026-10-22)
+
+Decision A's strict "no per-feature hue" rule was explicitly loosened by
+the owner — see `design.md`'s 2026-10-22 update. Restrained per-world
+accent tints, richer composition, depth, and motion are now in scope.
+The scraped-reference carve-out (§0.1 of `requirements.md`) was
+reaffirmed, not loosened, after being explicitly re-challenged three times
+in owner messages — see `design.md` for the standing reasoning.
 
 ## Batch 3 — Practice/Progress/Rewards
 

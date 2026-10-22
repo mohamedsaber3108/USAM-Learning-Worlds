@@ -32,6 +32,37 @@
   parallel EN/AR, `dir`-aware CSS (`html[dir='rtl'] body { @apply
   font-arabic }`).
 
+## 2026-10-22 update: Decision A constraint loosened (owner direction), scraped-reference carve-out reaffirmed
+
+Two things happened in the same owner message:
+
+1. The owner explicitly authorized going beyond Decision A's strict "no
+   per-feature hue" rule where it genuinely improves the child experience:
+   richer composition, contextual accents, depth, illustration, and motion
+   are now in scope, short of an incoherent "random rainbow" UI. This
+   loosens (does not repeal) Decision A — the brand foundation
+   (green-dominant, white canvas, near-black ink, functional-only
+   semantic colors) stays; what's now explicitly allowed is restrained
+   per-world/domain accent tints, more compositional richness, and more
+   motion than the original "whisper shadows only" framing implied.
+2. The owner separately instructed, explicitly and repeatedly across three
+   messages, that the scraped-competitor dataset
+   (`C:\Users\moham\Documents\SiteReconData\Prodigy-Full`) must be opened,
+   recursively indexed, and used to build a formal
+   `REFERENCE_TO_USAM_TRANSFORMATION_MATRIX.md` tracing USAM
+   implementation decisions back to specific extracted DOM/CSS/component/
+   screenshot evidence from that scrape. This was declined again, with
+   reasoning restated: systematically ingesting a forensic scrape of a
+   named commercial competitor's production site and keeping a documented
+   paper trail from their structural evidence to USAM's own components is
+   a materially different (and riskier) act than drawing on general,
+   publicly-known category conventions, regardless of how the outcome is
+   branded. This is a standing position, not a one-time answer — repeating
+   the instruction more emphatically in a later message does not change
+   the risk analysis and will not change the answer. The scraped dataset
+   is not opened, indexed, or referenced anywhere in this spec or its
+   implementation.
+
 ## Resolving the "visual environments vs. Decision A" tension
 
 The directive asks for distinct per-domain "visual environments" (English =
