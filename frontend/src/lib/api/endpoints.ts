@@ -162,8 +162,30 @@ export const flashcardsApi = {
 }
 
 // ==================== Adaptive ====================
+// FIX (mega-directive Batch 3, "Practice ... use adaptive recommendations"
+// §20): the backend's real Interleaving Engine (adaptive.controller.ts
+// getInterleavedPractice → interleaving.service.ts) builds a genuine
+// competency-alternating practice set (mixing real review-due items with
+// real struggling-focus competencies, each with a real recommended
+// activityId/difficulty) — confirmed by reading interleaving.service.ts —
+// but had zero frontend wrapper or caller anywhere, alongside 9 other real
+// adaptive endpoints (cognitive-load, zpd, growth-velocity, etc.) that
+// remain genuinely unused this batch; only the one with the clearest,
+// non-fabricated UI integration (a real per-competency link into the
+// learner's own path, same pattern as the review-due fix) was wired.
+export interface InterleavedPracticeItem {
+  order: number
+  competencyId: string
+  competencyName: string
+  activityId: string | null
+  activityTitle: string | null
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD' | 'CHALLENGE' | null
+  reason: 'REVIEW_DUE' | 'STRUGGLING_FOCUS'
+}
 export const adaptiveApi = {
   getRecommendations: () => apiClient.get('/adaptive/recommendations'),
+  getInterleavedPractice: (limit?: number) =>
+    apiClient.get<InterleavedPracticeItem[]>('/adaptive/interleaved-practice', { params: limit ? { limit } : undefined }),
 }
 
 // ==================== Gamification ====================

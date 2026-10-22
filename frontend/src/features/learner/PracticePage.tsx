@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { RotateCcw } from 'lucide-react'
-import { masteryApi, flashcardsApi, charactersApi, type Flashcard } from '@/lib/api/endpoints'
+import { RotateCcw, Sparkles } from 'lucide-react'
+import { masteryApi, flashcardsApi, charactersApi, adaptiveApi, type Flashcard, type InterleavedPracticeItem } from '@/lib/api/endpoints'
 import type { MasteryRecord } from '@/lib/api/learning-types'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader, StatusPill, Button, Tabs } from '@/components/ui'
@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils/cn'
  */
 export function PracticePage() {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<'review' | 'flashcards'>('review')
+  const [tab, setTab] = useState<'review' | 'flashcards' | 'recommended'>('review')
   const companion = useQuery({
     queryKey: ['practice-companion'],
     queryFn: async () => (await charactersApi.orchestrate()).data,
@@ -42,11 +42,76 @@ export function PracticePage() {
         tabs={[
           { key: 'review', label: t('learner.practiceTabReview') },
           { key: 'flashcards', label: t('learner.practiceTabFlashcards') },
+          { key: 'recommended', label: t('learner.practiceTabRecommended') },
         ]}
         active={tab}
         onChange={setTab}
       />
-      {tab === 'review' ? <ReviewDueTab /> : <FlashcardStudyTab />}
+      {tab === 'review' ? <ReviewDueTab /> : tab === 'flashcards' ? <FlashcardStudyTab /> : <RecommendedPracticeTab />}
+    </div>
+  )
+}
+
+const REASON_KEY: Record<InterleavedPracticeItem['reason'], string> = {
+  REVIEW_DUE: 'learner.practiceReasonReviewDue',
+  STRUGGLING_FOCUS: 'learner.practiceReasonStrugglingFocus',
+}
+
+/**
+ * Recommended — real Interleaving Engine output (GET /adaptive/
+ * interleaved-practice), mixing real review-due competencies with real
+ * struggling-focus ones instead of blocking practice by a single skill.
+ * Each item links into the real learner path for that competency's domain
+ * (same `competencyId -> domainSlug` cross-reference approach as
+ * ReviewDueTab's dead-end fix) rather than being an informational dead end.
+ */
+function RecommendedPracticeTab() {
+  const { t } = useTranslation()
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['adaptive-interleaved-practice'],
+    queryFn: async () => (await adaptiveApi.getInterleavedPractice()).data,
+  })
+  // Cross-reference for domain slug — the interleaving engine returns
+  // competencyId/competencyName only, no domain info, but the real mastery
+  // overview (already fetched elsewhere in the app) carries the same
+  // competency -> domain.slug shape proven in ReviewDueTab.
+  const overview = useQuery({
+    queryKey: ['mastery-overview', 'practice-recommended'],
+    queryFn: async () => (await masteryApi.getOverview()).data as MasteryRecord[],
+    retry: false,
+  })
+  const slugByCompetency = new Map((overview.data ?? []).map((m) => [m.competencyId, m.competency?.skill?.domain?.slug]))
+
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => void refetch()} />
+
+  const items = data ?? []
+  if (items.length === 0) return <EmptyState title={t('learner.practiceRecommendedEmpty')} />
+
+  return (
+    <div className="space-y-2">
+      {items.map((item) => {
+        const slug = slugByCompetency.get(item.competencyId)
+        const content = (
+          <Card className={cn('flex items-center justify-between', slug && 'transition-transform duration-fast hover:-translate-y-0.5')}>
+            <span className="inline-flex min-w-0 items-center gap-3">
+              <Sparkles className="h-5 w-5 shrink-0 text-brand-500" aria-hidden />
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-ink-900">{item.competencyName}</span>
+                {item.activityTitle && <span className="block text-xs text-ink-400">{item.activityTitle}</span>}
+              </span>
+            </span>
+            <StatusPill tone="brand">{t(REASON_KEY[item.reason])}</StatusPill>
+          </Card>
+        )
+        return slug ? (
+          <Link key={`${item.competencyId}-${item.order}`} to={`/app/learn/${slug}`}>
+            {content}
+          </Link>
+        ) : (
+          <div key={`${item.competencyId}-${item.order}`}>{content}</div>
+        )
+      })}
     </div>
   )
 }

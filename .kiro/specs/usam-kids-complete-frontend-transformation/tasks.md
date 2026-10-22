@@ -73,11 +73,24 @@ in owner messages — see `design.md` for the standing reasoning.
 
 - [x] (ledger 89 §2.25) Rewards achievements real-shape bug fixed —
       backend's 18-milestone system was silently unreachable from the UI.
+- [x] Practice — real gap found and closed: the backend's Adaptive module
+      has 10 real engines (`adaptive.controller.ts`) with essentially zero
+      frontend usage (only `getRecommendations` was wired, on HomePage).
+      Added a third Practice tab, "Recommended", backed by the real
+      Interleaving Engine (`GET /adaptive/interleaved-practice`) — a
+      genuine competency-alternating practice set mixing real review-due
+      and struggling-focus competencies. Each item links into the
+      learner's real path (same `competencyId -> domainSlug`
+      cross-reference pattern as the review-due dead-end fix), not a dead
+      end. The other 9 adaptive endpoints (cognitive-load, zpd,
+      growth-velocity, transfer-opportunities, engagement, difficulty,
+      should-level-up, learning-path, next-activity) remain real but
+      unused — flagged, not silently dropped; wiring them needs dedicated
+      UI decisions (e.g. where does "cognitive load" surface to a child
+      without raw metrics) that weren't forced to avoid fabricating UI
+      around them.
 - [ ] Progress/Mastery — confirm child-language labels (no raw confidence
       values) per directive §21; audit `masteryLabel` usage coverage.
-- [ ] Practice — confirm review-due/flashcards/skill-practice/quick-session
-      real coverage vs. directive §20's list; ledger 89 §2.19 already fixed
-      the review-due dead-end.
 
 ## Batch 4 — English/Coding/AI Literacy/Creativity/Thinking
 
