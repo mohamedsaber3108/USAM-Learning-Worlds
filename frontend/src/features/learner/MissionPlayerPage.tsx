@@ -220,7 +220,20 @@ export function MissionPlayerPage() {
     enabled: Boolean(run?.missionId),
     retry: false,
   })
-  const companionState: CharacterState = result ? (result.correct ? 'celebrating' : 'encouraging') : 'idle'
+  // FIX (mega-directive Batch 5, "Mission Player is the core experience" —
+  // interaction quality): the real CharacterFace state machine already has a
+  // dedicated `thinking` state (slow tilt + animated thought dots), built
+  // for exactly this moment, but it was never wired here — the companion sat
+  // in `idle` while an answer was being graded, then jumped straight to
+  // celebrating/encouraging. No new state added; just using the one that
+  // already exists for the real `submitting` moment.
+  const companionState: CharacterState = submitting
+    ? 'thinking'
+    : result
+      ? result.correct
+        ? 'celebrating'
+        : 'encouraging'
+      : 'idle'
   // Mastery impact on completion — real GET /mastery/overview, filtered
   // client-side to this mission's own competencies (see CompletionSummary's
   // doc comment above for why this is real data, not a new endpoint).
