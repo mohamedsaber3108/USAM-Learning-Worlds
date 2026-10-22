@@ -44,6 +44,15 @@ export interface WorldMission {
   order: number
   status: 'COMPLETED' | 'IN_PROGRESS' | 'AVAILABLE' | 'LOCKED'
   locked: boolean
+  // FIX (mega-directive Batch 2, World Detail node vocabulary §11): the
+  // real GET /worlds/:id spreads the full Mission row per mission
+  // (worlds.service.ts getWorld: `{ ...m, status, locked }`), so `type`
+  // (MissionType enum) and `estimatedMinutes` are already present on every
+  // real mission in the list — confirmed via a direct authenticated API
+  // call against production — but were never declared here, so the World
+  // Detail mission list showed title + status only.
+  type?: 'GUIDED' | 'EXPLORATION' | 'CHALLENGE' | 'PROJECT_BASED'
+  estimatedMinutes?: number | null
 }
 export interface WorldDetail {
   id: string

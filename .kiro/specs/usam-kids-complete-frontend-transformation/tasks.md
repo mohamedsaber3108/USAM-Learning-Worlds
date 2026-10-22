@@ -42,11 +42,18 @@ detail.
       — no story/context or pre-completion reward exist on the real
       `Mission` Prisma model, so those directive §18 asks are NOT shown
       (would require a new backend contract; not invented).
-- [ ] Re-audit `WorldDetailPage.tsx` mission list against directive §11's
-      node vocabulary (current/completed/available/locked/next/optional/
-      project/practice/story/simulation/challenge/reward) — confirm which
-      of these the backend actually distinguishes today vs. which would
-      require a new backend contract (do not fabricate).
+- [x] `WorldDetailPage.tsx` node vocabulary (directive §11/§12): confirmed
+      the real backend only distinguishes 4 statuses (COMPLETED/
+      IN_PROGRESS/AVAILABLE/LOCKED) — richer vocabulary (project/practice/
+      story/simulation/challenge/reward node types) is NOT backed by a
+      real field and was not fabricated. What WAS real but undeclared:
+      `type` (MissionType) and `estimatedMinutes` are present on every
+      mission inside `GET /worlds/:id` (full Prisma row spread) but
+      `WorldMission` never typed them — added both as a per-row subtitle.
+      Also added a derived (not fabricated) "Up next" highlight: the first
+      IN_PROGRESS, else first AVAILABLE, mission in the real sequence —
+      pure client-side derivation from already-real per-mission status,
+      answering directive §11's "CURRENT LOCATION"/"NEXT" ask honestly.
 - [ ] Mission Player completion — confirm "no dead end" (directive §19);
       ledger 89 §2.17/§2.18 already closed next-step-link + mastery-impact;
       confirm nothing regressed.

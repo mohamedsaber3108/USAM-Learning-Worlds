@@ -324,6 +324,7 @@ export const en = {
     missionTypeProjectBased: 'Project',
     missionActivityCount: '{{count}} activities',
     missionSkillsLabel: "You'll practice",
+    missionNext: 'Up next',
     explore: 'Explore',
     exploreSubtitle: 'Short, real topics beyond the main path — browse at your own pace.',
     exploreCatAiLiteracy: 'AI Literacy',

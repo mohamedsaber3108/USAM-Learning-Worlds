@@ -315,6 +315,7 @@ export const ar: TranslationSchema = {
     missionTypeProjectBased: 'مشروع',
     missionActivityCount: '{{count}} نشاط',
     missionSkillsLabel: 'ستتدرب على',
+    missionNext: 'التالي',
     explore: 'استكشف',
     exploreSubtitle: 'مواضيع حقيقية وقصيرة غير المسار الأساسي — تصفّح بالسرعة اللي تريحك.',
     exploreCatAiLiteracy: 'الذكاء الاصطناعي',

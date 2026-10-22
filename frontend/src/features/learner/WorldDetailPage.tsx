@@ -14,6 +14,16 @@ const MISSION_STATUS_KEY: Record<WorldMission['status'], string> = {
   LOCKED: 'learner.missionStatusLocked',
 }
 
+// Same real MissionType vocabulary as MissionDetailPage's Mission Brief —
+// see endpoints.ts WorldMission comment for why this field is real but was
+// previously undeclared.
+const MISSION_TYPE_KEY: Record<string, string> = {
+  GUIDED: 'learner.missionTypeGuided',
+  EXPLORATION: 'learner.missionTypeExploration',
+  CHALLENGE: 'learner.missionTypeChallenge',
+  PROJECT_BASED: 'learner.missionTypeProjectBased',
+}
+
 /**
  * World Detail — real GET /worlds/:id (worlds.service.ts getWorld). Named
  * explicitly as a required surface ("World Details") that was previously
@@ -82,34 +92,51 @@ export function WorldDetailPage() {
           <EmptyState />
         ) : (
           <ol className="mt-3 space-y-2">
-            {data.missions.map((m) => {
-              const locked = m.status === 'LOCKED'
-              const done = m.status === 'COMPLETED'
-              const content = (
-                <Card
-                  className={`flex items-center gap-3 ${locked ? 'opacity-60' : 'transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card'}`}
-                >
-                  {done ? (
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-success-500" aria-hidden />
-                  ) : locked ? (
-                    <Lock className="h-5 w-5 shrink-0 text-ink-400" aria-hidden />
-                  ) : (
-                    <Circle className="h-5 w-5 shrink-0 text-brand-400" aria-hidden />
-                  )}
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium text-ink-900">{m.title}</span>
-                    {locked && <span className="block text-xs text-ink-400">{t('learner.missionLockedHint')}</span>}
-                  </span>
-                  <StatusPill tone={MISSION_STATUS_TONE[m.status]}>{t(MISSION_STATUS_KEY[m.status])}</StatusPill>
-                  {!locked && <ArrowRight className="h-4 w-4 shrink-0 text-brand-600 rtl:-scale-x-100" aria-hidden />}
-                </Card>
-              )
-              return (
-                <li key={m.id}>
-                  {locked ? content : <Link to={`/app/missions/${m.id}`}>{content}</Link>}
-                </li>
-              )
-            })}
+            {(() => {
+              // Real "where should I go next" wayfinding (directive §11/§12
+              // "CURRENT LOCATION"/"NEXT"), derived client-side from the
+              // real sequential status the backend already computes — the
+              // first mission that's actually reachable (IN_PROGRESS, or
+              // the first AVAILABLE one) in the real order. No new field,
+              // no fabrication.
+              const nextMission = data.missions.find((m) => m.status === 'IN_PROGRESS') ?? data.missions.find((m) => m.status === 'AVAILABLE')
+              return data.missions.map((m) => {
+                const locked = m.status === 'LOCKED'
+                const done = m.status === 'COMPLETED'
+                const isNext = m.id === nextMission?.id
+                const content = (
+                  <Card
+                    className={`flex items-center gap-3 ${locked ? 'opacity-60' : 'transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card'} ${isNext ? 'ring-2 ring-brand-400' : ''}`}
+                  >
+                    {done ? (
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-success-500" aria-hidden />
+                    ) : locked ? (
+                      <Lock className="h-5 w-5 shrink-0 text-ink-400" aria-hidden />
+                    ) : (
+                      <Circle className="h-5 w-5 shrink-0 text-brand-400" aria-hidden />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-2">
+                        <span className="truncate font-medium text-ink-900">{m.title}</span>
+                        {isNext && <StatusPill tone="brand">{t('learner.missionNext')}</StatusPill>}
+                      </span>
+                      <span className="mt-0.5 flex items-center gap-2 text-xs text-ink-400">
+                        {m.type && MISSION_TYPE_KEY[m.type] && <span>{t(MISSION_TYPE_KEY[m.type])}</span>}
+                        {m.estimatedMinutes ? <span>~{m.estimatedMinutes} min</span> : null}
+                      </span>
+                      {locked && <span className="block text-xs text-ink-400">{t('learner.missionLockedHint')}</span>}
+                    </span>
+                    <StatusPill tone={MISSION_STATUS_TONE[m.status]}>{t(MISSION_STATUS_KEY[m.status])}</StatusPill>
+                    {!locked && <ArrowRight className="h-4 w-4 shrink-0 text-brand-600 rtl:-scale-x-100" aria-hidden />}
+                  </Card>
+                )
+                return (
+                  <li key={m.id}>
+                    {locked ? content : <Link to={`/app/missions/${m.id}`}>{content}</Link>}
+                  </li>
+                )
+              })
+            })()}
           </ol>
         )}
       </section>
