@@ -319,6 +319,7 @@ export const en = {
     streakFreezeAtCap: 'You have the max',
     streakFreezeBought: 'Streak Freeze added!',
     simulationRestart: 'Start over',
+    storyRestart: 'Read again',
     simulationBackToList: 'Back to simulations',
     simulationEnding: 'The end',
     simulationOutcome: 'What happened',

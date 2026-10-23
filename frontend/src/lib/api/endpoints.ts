@@ -374,8 +374,36 @@ export const creativityApi = {
 
 // ==================== Content libraries (consumed inside Learn) ============
 export const storiesApi = {
-  list: () => apiClient.get('/stories'),
-  getById: (id: string) => apiClient.get(`/stories/${id}`),
+  list: () => apiClient.get<StorySummary[]>('/stories'),
+  // FIX (mega-directive, Stories vertical): GET /stories/:id
+  // (stories.controller.ts getStory) returns the full story with every
+  // `page` ordered by pageNumber — each page has `text` and a
+  // `choiceOptions` JSON array ({ label, nextPageNumber } for branching,
+  // or [] for an ending). Confirmed by reading the controller + the
+  // StoryPage model (schema 2016). The frontend reader was typed around a
+  // nonexistent `body` field and rendered nothing of the real paged,
+  // branching narrative. Typed properly so the reader can walk it.
+  getById: (id: string) => apiClient.get<StoryDetail>(`/stories/${id}`),
+}
+export interface StorySummary {
+  id: string
+  title: string
+  summary?: string | null
+  domain?: { name: string; slug: string; icon?: string | null; color?: string | null } | null
+  _count?: { pages: number }
+}
+export interface StoryPage {
+  id: string
+  pageNumber: number
+  text: string
+  choiceOptions: Array<{ label: string; nextPageNumber: number | null }>
+}
+export interface StoryDetail {
+  id: string
+  title: string
+  summary?: string | null
+  domain?: { name: string; slug: string; icon?: string | null; color?: string | null } | null
+  pages: StoryPage[]
 }
 export interface SimulationDecisionNode {
   id: string

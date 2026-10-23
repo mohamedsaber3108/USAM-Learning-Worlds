@@ -310,6 +310,7 @@ export const ar: TranslationSchema = {
     streakFreezeAtCap: 'لديك الحد الأقصى',
     streakFreezeBought: 'تمت إضافة تجميد السلسلة!',
     simulationRestart: 'ابدأ من جديد',
+    storyRestart: 'اقرأ من جديد',
     simulationBackToList: 'رجوع للمحاكاة',
     simulationEnding: 'النهاية',
     simulationOutcome: 'اللي حصل',

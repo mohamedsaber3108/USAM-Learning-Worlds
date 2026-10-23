@@ -1,18 +1,12 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { BookOpen } from 'lucide-react'
-import { storiesApi, charactersApi } from '@/lib/api/endpoints'
+import { BookOpen, RotateCcw } from 'lucide-react'
+import { storiesApi, charactersApi, type StorySummary, type StoryDetail } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui'
+import { Card, PageHeader, Button } from '@/components/ui'
 import { CharacterStage } from '@/features/characters/CharacterStage'
-
-interface Story {
-  id: string
-  title: string
-  summary?: string
-  body?: string
-}
 
 /**
  * FIX (reverse-engineering/experience directive, 2026-10-07, §10/§17):
@@ -28,7 +22,7 @@ export function StoriesPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['stories'],
-    queryFn: async () => (await storiesApi.list()).data as Story[],
+    queryFn: async () => (await storiesApi.list()).data as StorySummary[],
   })
   const companion = useQuery({
     queryKey: ['stories-companion'],
@@ -64,20 +58,84 @@ export function StoriesPage() {
   )
 }
 
+/**
+ * Story reader — walks the real branching paged narrative (GET
+ * /stories/:id → pages[], each with text + choiceOptions). Previously this
+ * read a nonexistent `body` field and rendered nothing of the real content.
+ * Now: show the current page's text; branching pages render their real
+ * choice buttons (each advancing to the chosen nextPageNumber); ending
+ * pages (empty choiceOptions) offer restart. Path is tracked for a progress
+ * breadcrumb. All real data, walked client-side as the backend intends
+ * (the controller ships every page with the story).
+ */
 export function StoryReaderPage() {
+  const { t } = useTranslation()
   const { id = '' } = useParams<{ id: string }>()
+  const [pageNumber, setPageNumber] = useState<number | null>(null)
+  const [visited, setVisited] = useState<number[]>([])
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['story', id],
-    queryFn: async () => (await storiesApi.getById(id)).data as Story,
+    queryFn: async () => (await storiesApi.getById(id)).data as StoryDetail,
     enabled: Boolean(id),
   })
+
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState onRetry={() => void refetch()} />
-  if (!data) return <EmptyState />
+  if (!data || data.pages.length === 0) return <EmptyState />
+
+  const pageByNumber = new Map(data.pages.map((p) => [p.pageNumber, p]))
+  const firstPageNumber = data.pages[0].pageNumber
+  const current = pageByNumber.get(pageNumber ?? firstPageNumber)
+  if (!current) return <EmptyState />
+
+  const choices = Array.isArray(current.choiceOptions) ? current.choiceOptions : []
+  const isEnding = choices.length === 0
+
+  function choose(next: number | null) {
+    if (next == null) return
+    setVisited((v) => [...(v.length === 0 ? [firstPageNumber] : v), next])
+    setPageNumber(next)
+  }
+  function restart() {
+    setPageNumber(null)
+    setVisited([])
+  }
+
   return (
-    <article className="mx-auto max-w-2xl space-y-4">
+    <article className="mx-auto max-w-2xl space-y-5">
       <h1 className="font-display text-2xl font-extrabold text-ink-900">{data.title}</h1>
-      {data.body && <div className="whitespace-pre-wrap leading-relaxed text-ink-700">{data.body}</div>}
+
+      {visited.length > 1 && (
+        <div className="flex items-center gap-1.5" aria-hidden>
+          {visited.map((_, i) => (
+            <span key={i} className="h-1.5 flex-1 rounded-pill bg-brand-300" />
+          ))}
+        </div>
+      )}
+
+      <Card>
+        <div className="whitespace-pre-wrap leading-relaxed text-ink-700">{current.text}</div>
+        {isEnding ? (
+          <Button className="mt-5" variant="secondary" onClick={restart}>
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            {t('learner.storyRestart')}
+          </Button>
+        ) : (
+          <div className="mt-5 space-y-2">
+            {choices.map((choice, i) => (
+              <Button
+                key={i}
+                variant="secondary"
+                className="w-full justify-start text-start"
+                onClick={() => choose(choice.nextPageNumber)}
+              >
+                {choice.label}
+              </Button>
+            ))}
+          </div>
+        )}
+      </Card>
     </article>
   )
 }

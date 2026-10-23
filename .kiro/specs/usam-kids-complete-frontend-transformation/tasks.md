@@ -267,3 +267,44 @@ Adaptive-engine frontend classification (directive §5) — all 11 real
       faked client-side). Stats (total/showcased) + child-language project
       state remain. Portfolio otherwise already matches the real
       `{ learner, projects, stats }` shape (fixed in an earlier batch).
+
+## Batch 10 — Specialized-thinking audit (AI Literacy / Problem-Solving / Computational / Critical Thinking)
+
+- [x] Audited — NO gap found, no change needed. All four concept catalogs
+      (`GET /problem-solving`, `/computational-thinking`,
+      `/critical-thinking`, plus ai-literacy via cross-curricular) are
+      already surfaced in `ExplorePage.tsx` as a real tabbed catalog
+      browser with real list data. The coding-challenge generator (the 4th
+      coding-coach endpoint) is also already wired here.
+      Checked the per-concept `:slug` detail endpoints + the
+      `ProblemSolvingConcept` model (schema 2217): the model has only
+      name/slug/description/category/ageAppropriate, and `getOne` is a
+      bare findUnique — a detail drill-in would show the exact same fields
+      already on the catalog card (name + description), nothing richer. A
+      detail route would be a dead-end duplicate, so intentionally NOT
+      added. This is "audited, found complete," not a skipped task.
+- [x] (prior) Creativity: `CreativityPage.tsx` exists with real
+      prompts/submissions/gallery wiring + companion presence (ledger 89
+      §2.12). English: 5 real tabs incl. Pronunciation (Batch 4). Coding:
+      full real loop + Ask/Review/Explain Codey (Batch 4b).
+
+## Batch 11 — Stories branching reader (real paged narrative) + Simulations audit
+
+- [x] Stories reader rebuilt: `GET /stories/:id` (stories.controller.ts
+      getStory) returns the full story with every `page` ordered by
+      pageNumber, each page having real `text` + a `choiceOptions` JSON
+      array ({ label, nextPageNumber } for branching, [] for an ending) —
+      confirmed by reading the controller + StoryPage model (schema 2016).
+      `StoryReaderPage` was typed around a nonexistent `body` field and
+      rendered NOTHING of the real paged, branching narrative. Rebuilt into
+      a real interactive branching reader: shows the current page text,
+      renders real choice buttons that advance to the chosen
+      nextPageNumber, ending pages offer restart, path breadcrumb tracks
+      progress. Typed storiesApi (StorySummary/StoryDetail/StoryPage).
+      Added storyRestart i18n key (EN+AR). All real data, walked
+      client-side as the controller intends (ships every page with the
+      story). Directive §22 "scene → choice → progress → ending".
+- [x] Simulations audited — NO gap: `SimulationPlayerPage.tsx` already
+      walks the real SimulationScenario decision-tree (nodes keyed by
+      nodeKey, real choiceOptions, endings with outcomeNote, restart, path
+      breadcrumb). Complete.
