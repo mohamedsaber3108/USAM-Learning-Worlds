@@ -203,3 +203,17 @@ Adaptive-engine frontend classification (directive §5) — all 11 real
       a dedicated file; ledger 89's master vertical tracker (§7) is the
       closest existing equivalent and should be promoted/merged into this
       file rather than duplicated.
+
+## Batch 6 — Progress "Working toward" (goals slice)
+
+- [x] Progress "Working toward" section: `GET /mastery/goals`
+      (mastery.service.ts getLearningGoals) returns the learner's real
+      in-progress-but-not-yet-strong competencies (confidence < 0.7,
+      excludes NOT_STARTED, weakest-first), confirmed by reading the
+      service. `masteryApi.getGoals()` existed but had zero callers
+      anywhere. Surfaced as a lead section on `ProgressPage.tsx`,
+      child-language mastery labels only (no confidence decimals), each
+      goal links into its real domain path (proven competencyId →
+      domainSlug resolution). Directly answers the directive's "what am I
+      working toward" question with real data. Section hidden when empty
+      (new learner).

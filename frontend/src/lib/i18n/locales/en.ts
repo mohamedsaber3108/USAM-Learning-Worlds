@@ -206,6 +206,8 @@ export const en = {
     pathBeingBuilt: 'This path is being built.',
     startMission: 'Start',
     progressTitle: 'Your progress',
+    workingToward: 'Working toward',
+    workingTowardSubtitle: 'Skills you’ve started — a little more practice makes them strong.',
     masteryBy: 'What you can do',
     noProgress: 'Start a mission to see your progress grow.',
     submit: 'Submit',

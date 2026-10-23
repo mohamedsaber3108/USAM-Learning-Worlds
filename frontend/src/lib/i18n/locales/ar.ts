@@ -197,6 +197,8 @@ export const ar: TranslationSchema = {
     pathBeingBuilt: 'هذا المسار قيد الإعداد.',
     startMission: 'ابدأ',
     progressTitle: 'تقدّمك',
+    workingToward: 'تعمل على',
+    workingTowardSubtitle: 'مهارات بدأتها — قليل من التدريب يجعلها قوية.',
     masteryBy: 'ما الذي تستطيع فعله',
     noProgress: 'ابدأ مهمة لترى تقدّمك ينمو.',
     submit: 'إرسال',

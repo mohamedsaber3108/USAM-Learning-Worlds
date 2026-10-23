@@ -8,6 +8,7 @@ import { LoadingState, EmptyState, ErrorState } from '@/components/common/States
 import { Card, PageHeader, SectionHeader, StatusPill, Progress } from '@/components/ui'
 import { masteryLabel, type MasteryState } from '@/lib/labels/masteryLabels'
 import { CharacterStage } from '@/features/characters/CharacterStage'
+import { cn } from '@/lib/utils/cn'
 
 const RUN_STATUS_TONE = { COMPLETED: 'success', IN_PROGRESS: 'brand', ABANDONED: 'neutral' } as const
 const RUN_STATUS_KEY = {
@@ -30,6 +31,18 @@ export function ProgressPage() {
   const overview = useQuery({
     queryKey: ['mastery-overview'],
     queryFn: async () => (await masteryApi.getOverview()).data as MasteryRecord[],
+  })
+  // FIX (mega-directive, Progress/Mastery slice — "what am I working
+  // toward"): GET /mastery/goals (mastery.service.ts getLearningGoals)
+  // returns the learner's real in-progress-but-not-yet-strong competencies
+  // (confidence < 0.7, excludes NOT_STARTED, weakest-first), confirmed by
+  // reading the service. `masteryApi.getGoals()` existed but had zero
+  // callers anywhere. Surfaced as a "Working toward" lead section, child-
+  // language labels only (no confidence decimals).
+  const goals = useQuery({
+    queryKey: ['mastery-goals'],
+    queryFn: async () => (await masteryApi.getGoals()).data as MasteryRecord[],
+    retry: false,
   })
   const byDomain = useQuery({
     queryKey: ['mastery-by-domain'],
@@ -73,6 +86,31 @@ export function ProgressPage() {
           }
         />
       </div>
+
+      {goals.data && goals.data.length > 0 && (
+        <section>
+          <SectionHeader title={t('learner.workingToward')} subtitle={t('learner.workingTowardSubtitle')} />
+          <div className="space-y-2">
+            {goals.data.map((g) => {
+              const slug = g.competency?.skill?.domain?.slug
+              const inner = (
+                <Card className={cn('flex items-center justify-between', slug && 'transition-transform duration-fast hover:-translate-y-0.5')}>
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium text-ink-900">{g.competency?.name ?? g.competencyId}</span>
+                    {g.competency?.skill?.name && <span className="block text-xs text-ink-400">{g.competency.skill.name}</span>}
+                  </span>
+                  <StatusPill tone={tone(g.state)}>{masteryLabel(g.state)}</StatusPill>
+                </Card>
+              )
+              return slug ? (
+                <Link key={g.id} to={`/app/learn/${slug}`}>{inner}</Link>
+              ) : (
+                <div key={g.id}>{inner}</div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {byDomain.data && byDomain.data.length > 0 && (
         <section>
