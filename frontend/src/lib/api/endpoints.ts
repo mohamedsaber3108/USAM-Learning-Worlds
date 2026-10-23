@@ -186,6 +186,25 @@ export const adaptiveApi = {
   getRecommendations: () => apiClient.get('/adaptive/recommendations'),
   getInterleavedPractice: (limit?: number) =>
     apiClient.get<InterleavedPracticeItem[]>('/adaptive/interleaved-practice', { params: limit ? { limit } : undefined }),
+  // FIX (mega-directive, "Smart Practice" vertical slice): the real
+  // orchestrated adaptive loop (GET /adaptive/next-activity →
+  // recommendation.service.ts getOrchestratedNextActivity) runs the full
+  // ZPD → target-competency → difficulty → concrete-activity chain and
+  // returns ONE real next step, confirmed by reading the service. Its
+  // `reason` string leaks engine jargon ("ZPD", "optimal difficulty
+  // zone") and is English-only, so it is NOT surfaced to the learner —
+  // only the structured fields (competencyName, difficulty, activityId)
+  // are used, with child-friendly framing built in the UI. Nulls are a
+  // real honest-empty case (new learner / nothing to recommend yet).
+  getNextActivity: () =>
+    apiClient.get<{
+      competencyId: string | null
+      competencyName: string | null
+      difficulty: 'EASY' | 'MEDIUM' | 'HARD' | 'CHALLENGE' | string | null
+      activityId: string | null
+      activityTitle: string | null
+      reason: string
+    }>('/adaptive/next-activity'),
 }
 
 // ==================== Gamification ====================

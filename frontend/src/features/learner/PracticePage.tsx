@@ -38,6 +38,7 @@ export function PracticePage() {
         {companion.data?.character && <CharacterStage characterId={companion.data.character.name} size={56} />}
         <PageHeader title={REVIEW_FRAMING.title} subtitle={REVIEW_FRAMING.subtitle} />
       </div>
+      <SmartPracticeCard />
       <Tabs
         tabs={[
           { key: 'review', label: t('learner.practiceTabReview') },
@@ -55,6 +56,68 @@ export function PracticePage() {
 const REASON_KEY: Record<InterleavedPracticeItem['reason'], string> = {
   REVIEW_DUE: 'learner.practiceReasonReviewDue',
   STRUGGLING_FOCUS: 'learner.practiceReasonStrugglingFocus',
+}
+
+// Difficulty -> child-friendly label (never show the raw enum or any ZPD
+// jargon from the backend's diagnostic `reason` string).
+const DIFFICULTY_KEY: Record<string, string> = {
+  EASY: 'learner.smartPracticeDiffEasy',
+  MEDIUM: 'learner.smartPracticeDiffMedium',
+  HARD: 'learner.smartPracticeDiffHard',
+  CHALLENGE: 'learner.smartPracticeDiffChallenge',
+}
+
+/**
+ * Smart Practice — the real orchestrated adaptive loop (GET
+ * /adaptive/next-activity) surfaced as ONE clear "here's what to practice
+ * next" lead card, not an engine dashboard. Uses only the structured
+ * fields (competency name + difficulty), never the backend's jargon-laden
+ * `reason`. Routes to the learner's real domain path for that competency
+ * (the proven competencyId -> domainSlug resolution, which lands on a
+ * startable mission) rather than inventing a raw-activity launch flow that
+ * doesn't exist. Honest empty state when the engine has nothing to
+ * recommend yet (new learner).
+ */
+function SmartPracticeCard() {
+  const { t } = useTranslation()
+  const next = useQuery({
+    queryKey: ['adaptive-next-activity'],
+    queryFn: async () => (await adaptiveApi.getNextActivity()).data,
+    retry: false,
+  })
+  const overview = useQuery({
+    queryKey: ['mastery-overview', 'smart-practice'],
+    queryFn: async () => (await masteryApi.getOverview()).data as MasteryRecord[],
+    retry: false,
+  })
+
+  if (next.isLoading) return null
+  const rec = next.data
+  // Only surface the card when there's a real, actionable recommendation.
+  if (!rec || !rec.competencyId || !rec.competencyName) return null
+
+  const slug = (overview.data ?? []).find((m) => m.competencyId === rec.competencyId)?.competency?.skill?.domain?.slug
+  const difficultyKey = rec.difficulty ? DIFFICULTY_KEY[rec.difficulty] : undefined
+
+  const inner = (
+    <Card className={cn('border-2 border-brand-200 bg-brand-50', slug && 'transition-transform duration-fast hover:-translate-y-0.5')}>
+      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-600">
+        <Sparkles className="h-4 w-4" aria-hidden />
+        {t('learner.smartPracticeLabel')}
+      </span>
+      <p className="mt-2 font-display text-lg font-bold text-ink-900">{rec.competencyName}</p>
+      <div className="mt-1 flex items-center gap-2">
+        {difficultyKey && <StatusPill tone="brand">{t(difficultyKey)}</StatusPill>}
+      </div>
+      {slug && (
+        <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-600">
+          {t('learner.smartPracticeStart')} <RotateCcw className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
+        </span>
+      )}
+    </Card>
+  )
+
+  return slug ? <Link to={`/app/learn/${slug}`}>{inner}</Link> : inner
 }
 
 /**

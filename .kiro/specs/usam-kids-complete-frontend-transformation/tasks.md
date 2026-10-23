@@ -102,6 +102,33 @@ in owner messages — see `design.md` for the standing reasoning.
 
 ## Batch 3 complete
 
+## Batch 5 — Smart Practice (adaptive vertical slice)
+
+Adaptive-engine frontend classification (directive §5) — all 11 real
+`/adaptive/*` endpoints classified:
+- `next-activity` (orchestrated) → LEARNER_SURFACE — now wired as Smart
+  Practice lead card.
+- `interleaved-practice` → LEARNER_SURFACE — wired (Recommended tab, Batch 3).
+- `recommendations` → LEARNER_SURFACE — already wired (HomePage).
+- `engagement`, `cognitive-load`, `growth-velocity`, `zpd`,
+  `should-level-up` → BACKGROUND_ENGINE / INTERNAL_ONLY — diagnostic
+  signals; the directive explicitly forbids child-facing engine
+  dashboards, and these expose confidence/fatigue/velocity metrics that
+  violate the child-language rule. Not surfaced to learners (candidates
+  for a future Guardian/Admin analytics view only).
+- `transfer-opportunities`, `learning-path`, `difficulty`,
+  `next-activity/:competencyId` → CONTEXTUAL_PRODUCT_ACTION — real but
+  need a specific host surface; not forced.
+
+- [x] Smart Practice lead card on `PracticePage.tsx`, backed by real `GET
+      /adaptive/next-activity` (orchestrated ZPD→competency→difficulty→
+      activity chain). Surfaces only structured fields (competency name +
+      child-framed difficulty label), never the backend's jargon-laden
+      `reason` string. Routes to the learner's real domain path via the
+      proven `competencyId → domainSlug` resolution (lands on a startable
+      mission) — no invented raw-activity launch flow. Honest empty state
+      (card hidden) when the engine has nothing to recommend yet.
+
 ## Batch 4 — English/Coding/AI Literacy/Creativity/Thinking
 
 - [x] English audited: `EnglishCoachPage.tsx` already had 4 real tabs
