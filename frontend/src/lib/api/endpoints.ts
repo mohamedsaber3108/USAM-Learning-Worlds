@@ -261,8 +261,27 @@ export const projectsApi = {
   addResearchNote: (id: string, body: { content: string; sourceTitle?: string; sourceUrl?: string }) =>
     apiClient.post(`/projects/${id}/research-notes`, body),
   removeResearchNote: (noteId: string) => apiClient.delete(`/projects/research-notes/${noteId}`),
-  realWorldChallenges: () => apiClient.get('/projects/real-world-challenges/list'),
-  crossDomain: (limit?: number) => apiClient.get('/projects/cross-domain/list', { params: { limit } }),
+  // FIX (mega-directive, Projects discovery slice §28 "better project
+  // discovery"): both endpoints are real (projects.service.ts
+  // listRealWorldChallenges / listCrossDomainProjects — public projects
+  // only, confirmed by reading the service) but had typed-less wrappers
+  // with zero callers. ProjectsPage only ever showed the learner's OWN
+  // projects, with no discovery surface at all.
+  realWorldChallenges: () =>
+    apiClient.get<Array<{ id: string; title: string; description?: string | null; externalSourceUrl?: string | null; state: string }>>(
+      '/projects/real-world-challenges/list',
+    ),
+  crossDomain: (limit?: number) =>
+    apiClient.get<
+      Array<{
+        id: string
+        title: string
+        description?: string | null
+        state: string
+        domains: Array<{ id: string; name: string; icon?: string | null; color?: string | null }>
+        learner?: { displayName?: string | null } | null
+      }>
+    >('/projects/cross-domain/list', { params: { limit } }),
 }
 
 export const rubricsApi = {

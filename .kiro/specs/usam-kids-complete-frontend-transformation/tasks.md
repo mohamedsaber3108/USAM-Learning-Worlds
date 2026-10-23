@@ -235,3 +235,20 @@ Adaptive-engine frontend classification (directive §5) — all 11 real
       cutoff saw no indication of where they stand. Added a header rank
       card on `LeaderboardPage.tsx`, shown only when a real numeric rank
       exists (respects opt-out and new-learner null).
+
+## Batch 8 — Projects discovery (Projects + Portfolio slice)
+
+- [x] Projects "Discover" tab: `GET /projects/real-world-challenges/list`
+      and `GET /projects/cross-domain/list` (projects.service.ts
+      listRealWorldChallenges / listCrossDomainProjects — public-only,
+      real data) both had typed-less wrappers with zero callers.
+      ProjectsPage only showed the learner's own projects. Split into
+      "My projects" / "Discover" tabs; Discover renders both real public
+      collections (real-world challenges with external links, cross-domain
+      projects with real domain tags). Directive §28 "better project
+      discovery". Honest empty states.
+- Note: a transient tsc failure this batch pointed at
+      `M:\USAM Learning Worlds\src\types\parent.ts` (a pre-existing
+      corrupted file in the DECOY workspace, not our repo) — a shell
+      cwd-drift artifact from the recurring `ؤ`-prefix glitch, not a real
+      error. Re-ran all gates pinned to `M:\USAM-main\frontend`: all clean.

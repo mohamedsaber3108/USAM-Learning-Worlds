@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { FolderKanban, Plus } from 'lucide-react'
+import { FolderKanban, Plus, Globe, Shapes, ExternalLink } from 'lucide-react'
 import { projectsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader, StatusPill, Button, Dialog, Input, Textarea, Select, useToast } from '@/components/ui'
+import { Card, PageHeader, SectionHeader, StatusPill, Button, Dialog, Input, Textarea, Select, Tabs, useToast } from '@/components/ui'
 import { projectStateLabel, projectStateTone } from '@/lib/labels/projectLabels'
 
 /** Prisma `Project.state: ProjectState` is the only status field — there is no
@@ -99,18 +99,13 @@ function NewProjectDialog({ open, onClose }: { open: boolean; onClose: () => voi
   )
 }
 
-/** Learner projects — real GET /projects/my + POST /projects (create). DS. */
+/** Learner projects — real GET /projects/my + POST /projects (create) +
+ * real public-project discovery (real-world challenges + cross-domain). */
 export function ProjectsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const [open, setOpen] = useState(false)
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['projects-mine'],
-    queryFn: async () => (await projectsApi.mine()).data as Project[],
-  })
-
-  if (isLoading) return <LoadingState />
-  if (isError) return <ErrorState onRetry={() => void refetch()} />
+  const [tab, setTab] = useState<'mine' | 'discover'>('mine')
 
   return (
     <div className="space-y-6">
@@ -122,26 +117,15 @@ export function ProjectsPage() {
           </Button>
         }
       />
-      {!data || data.length === 0 ? (
-        <EmptyState hint={t('learner.noProgress')} />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {data.map((p) => (
-            <Link key={p.id} to={`/app/projects/${p.id}`}>
-              <Card className="h-full transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
-                    <FolderKanban className="h-5 w-5" aria-hidden />
-                  </span>
-                  {p.state && <StatusPill tone={projectStateTone(p.state)}>{projectStateLabel(p.state)}</StatusPill>}
-                </div>
-                <h2 className="mt-3 font-display text-lg font-bold text-ink-900">{p.title}</h2>
-                {p.description && <p className="mt-1 text-sm text-ink-500">{p.description}</p>}
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+      <Tabs
+        tabs={[
+          { key: 'mine', label: t('learner.projectsTabMine') },
+          { key: 'discover', label: t('learner.projectsTabDiscover') },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
+      {tab === 'mine' ? <MyProjectsTab /> : <DiscoverProjectsTab />}
       <NewProjectDialog
         open={open}
         onClose={() => {
@@ -149,6 +133,126 @@ export function ProjectsPage() {
           void qc.invalidateQueries({ queryKey: ['projects-mine'] })
         }}
       />
+    </div>
+  )
+}
+
+function MyProjectsTab() {
+  const { t } = useTranslation()
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['projects-mine'],
+    queryFn: async () => (await projectsApi.mine()).data as Project[],
+  })
+
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => void refetch()} />
+  if (!data || data.length === 0) return <EmptyState hint={t('learner.noProgress')} />
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {data.map((p) => (
+        <Link key={p.id} to={`/app/projects/${p.id}`}>
+          <Card className="h-full transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card">
+            <div className="flex items-start justify-between gap-2">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+                <FolderKanban className="h-5 w-5" aria-hidden />
+              </span>
+              {p.state && <StatusPill tone={projectStateTone(p.state)}>{projectStateLabel(p.state)}</StatusPill>}
+            </div>
+            <h2 className="mt-3 font-display text-lg font-bold text-ink-900">{p.title}</h2>
+            {p.description && <p className="mt-1 text-sm text-ink-500">{p.description}</p>}
+          </Card>
+        </Link>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Discover — real public-project discovery (directive §28 "better project
+ * discovery"). Two real collections: real-world challenges (GET
+ * /projects/real-world-challenges/list) and cross-domain/interdisciplinary
+ * projects (GET /projects/cross-domain/list), both public-only on the
+ * backend. Real-world challenges link out to their real externalSourceUrl
+ * when present; cross-domain projects show their real resolved domain tags.
+ * Honest empty states per collection.
+ */
+function DiscoverProjectsTab() {
+  const { t } = useTranslation()
+  const challenges = useQuery({
+    queryKey: ['projects-real-world-challenges'],
+    queryFn: async () => (await projectsApi.realWorldChallenges()).data,
+    retry: false,
+  })
+  const crossDomain = useQuery({
+    queryKey: ['projects-cross-domain'],
+    queryFn: async () => (await projectsApi.crossDomain(20)).data,
+    retry: false,
+  })
+
+  if (challenges.isLoading || crossDomain.isLoading) return <LoadingState />
+
+  const challengeList = challenges.data ?? []
+  const crossList = crossDomain.data ?? []
+  if (challengeList.length === 0 && crossList.length === 0) {
+    return <EmptyState title={t('learner.projectsDiscoverEmpty')} />
+  }
+
+  return (
+    <div className="space-y-8">
+      {challengeList.length > 0 && (
+        <section>
+          <SectionHeader title={t('learner.projectsRealWorld')} subtitle={t('learner.projectsRealWorldSubtitle')} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            {challengeList.map((c) => (
+              <Card key={c.id} className="h-full">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+                  <Globe className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="mt-3 font-display font-bold text-ink-900">{c.title}</h3>
+                {c.description && <p className="mt-1 text-sm text-ink-500">{c.description}</p>}
+                {c.externalSourceUrl && (
+                  <a
+                    href={c.externalSourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:underline"
+                  >
+                    {t('learner.projectsRealWorldLink')} <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                  </a>
+                )}
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {crossList.length > 0 && (
+        <section>
+          <SectionHeader title={t('learner.projectsCrossDomain')} subtitle={t('learner.projectsCrossDomainSubtitle')} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            {crossList.map((p) => (
+              <Card key={p.id} className="h-full">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+                  <Shapes className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="mt-3 font-display font-bold text-ink-900">{p.title}</h3>
+                {p.description && <p className="mt-1 text-sm text-ink-500">{p.description}</p>}
+                {p.domains.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {p.domains.map((d) => (
+                      <StatusPill key={d.id} tone="neutral">{d.name}</StatusPill>
+                    ))}
+                  </div>
+                )}
+                {p.learner?.displayName && (
+                  <p className="mt-2 text-xs text-ink-400">{t('learner.projectsBy', { name: p.learner.displayName })}</p>
+                )}
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
