@@ -308,3 +308,22 @@ Adaptive-engine frontend classification (directive §5) — all 11 real
       walks the real SimulationScenario decision-tree (nodes keyed by
       nodeKey, real choiceOptions, endings with outcomeNote, restart, path
       breadcrumb). Complete.
+
+## Batch 12 — Guardian re-audit (directive §26 "7 questions") + controls gap
+
+- [x] Guardian re-audited against the directive's framing — all 8 real
+      `parents.controller.ts` endpoints are wired AND rendered:
+      dashboard/progress/activity/reflections/safety all consumed by
+      `ChildDetailPage.tsx`, children/family-summary on `ParentHomePage`.
+      These map onto the directive's 7 questions (learning→progress/
+      dashboard, improved→progress, needs-practice→dashboard,
+      built→activity/reflections, evidence→reflections+dashboard evidence
+      feed, next→dashboard, safe→safety). No missing surface.
+- [x] Real partial-coverage gap closed: `SetTimeLimitsDto` supports three
+      optional fields (dailyMinutes 0-480, weeklyMinutes 0-2000,
+      bedtimeHour 0-23) but the Controls tab only exposed dailyMinutes, so
+      the weekly cap + bedtime boundary were silently unreachable for
+      parents. Exposed all three (bounds mirror the DTO's @Min/@Max; blank
+      field omitted from the request → leaves that limit unchanged,
+      matching @IsOptional). Added weeklyMinutes/bedtimeHour/controlsHint
+      i18n keys (EN+AR).

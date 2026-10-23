@@ -205,16 +205,32 @@ function SafetyTab({ learnerId }: { learnerId: string }) {
   )
 }
 
+/**
+ * Controls — real POST /parents/children/:id/time-limits (SetTimeLimitsDto).
+ * FIX (mega-directive, Guardian controls): the DTO supports three real
+ * optional fields — dailyMinutes (0-480), weeklyMinutes (0-2000), and
+ * bedtimeHour (0-23) — but the tab only ever exposed dailyMinutes, so the
+ * weekly cap and bedtime boundary were silently unreachable for parents.
+ * All three now exposed; each is optional (a blank field is omitted from
+ * the request, so it leaves that limit unchanged — matching the backend's
+ * @IsOptional DTO). Bounds mirror the DTO's @Min/@Max exactly.
+ */
 function ControlsTab({ learnerId }: { learnerId: string }) {
   const { t } = useTranslation()
   const toast = useToast()
   const [daily, setDaily] = useState('')
+  const [weekly, setWeekly] = useState('')
+  const [bedtime, setBedtime] = useState('')
   const [saving, setSaving] = useState(false)
 
   async function save() {
     setSaving(true)
     try {
-      await parentsApi.setTimeLimits(learnerId, { dailyMinutes: daily ? Number(daily) : undefined })
+      await parentsApi.setTimeLimits(learnerId, {
+        dailyMinutes: daily ? Number(daily) : undefined,
+        weeklyMinutes: weekly ? Number(weekly) : undefined,
+        bedtimeHour: bedtime ? Number(bedtime) : undefined,
+      })
       toast.show(t('parent.saveControls'), 'success')
     } catch {
       toast.show(t('states.error'), 'error')
@@ -224,15 +240,33 @@ function ControlsTab({ learnerId }: { learnerId: string }) {
   }
 
   return (
-    <Card className="max-w-sm">
+    <Card className="max-w-sm space-y-3">
       <Input
         label={t('parent.dailyMinutes')}
         type="number"
         min={0}
+        max={480}
         value={daily}
         onChange={(e) => setDaily(e.target.value)}
       />
-      <Button className="mt-3" size="sm" loading={saving} onClick={save}>
+      <Input
+        label={t('parent.weeklyMinutes')}
+        type="number"
+        min={0}
+        max={2000}
+        value={weekly}
+        onChange={(e) => setWeekly(e.target.value)}
+      />
+      <Input
+        label={t('parent.bedtimeHour')}
+        type="number"
+        min={0}
+        max={23}
+        value={bedtime}
+        onChange={(e) => setBedtime(e.target.value)}
+      />
+      <p className="text-xs text-ink-400">{t('parent.controlsHint')}</p>
+      <Button size="sm" loading={saving} onClick={save}>
         {t('parent.saveControls')}
       </Button>
     </Card>
