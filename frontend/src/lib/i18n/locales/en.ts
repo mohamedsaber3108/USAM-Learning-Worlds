@@ -382,6 +382,8 @@ export const en = {
     codeyDiagnosis: "Codey's thoughts",
     askCodeyReview: 'Review my code',
     codeyReviewTitle: "Codey's review",
+    explainCode: 'Explain this code',
+    codeyExplanation: "Codey explains",
     englishCoachNudge: 'Practice with Luma',
     englishCoachTitle: 'English Coach',
     englishCoachTabConversation: 'Conversation practice',

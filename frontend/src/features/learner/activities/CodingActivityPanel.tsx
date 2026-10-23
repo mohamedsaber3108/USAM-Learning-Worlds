@@ -52,6 +52,8 @@ export function CodingActivityPanel({
   const [reviewing, setReviewing] = useState(false)
   const [review, setReview] = useState<{ feedback: string; strengths: string[]; improvements: string[] } | null>(null)
   const [lastOutcomes, setLastOutcomes] = useState<Array<{ description?: string; actual?: string; passed: boolean }>>([])
+  const [explaining, setExplaining] = useState(false)
+  const [explanation, setExplanation] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -140,6 +142,28 @@ export function CodingActivityPanel({
   }
 
   /**
+   * "Explain this code" — real POST /coding-coach/explain (mega-directive
+   * Batch 4, Coding §24 "CONCEPT/EXAMPLE/EXPLAIN"). The wrapper existed in
+   * endpoints.ts but had zero caller. Learner-initiated, available any time
+   * (including before the first run) so a child who loaded starter code
+   * they don't yet understand can ask Codey to walk through what it does —
+   * a comprehension aid, distinct from debug (fix a failure) and review
+   * (feedback on their own attempt).
+   */
+  async function explainCode() {
+    if (!spec) return
+    setExplaining(true)
+    try {
+      const res = await codingCoachApi.explain({ code, language: spec.language || 'python' })
+      setExplanation(res.data.explanation)
+    } catch {
+      setExplanation(t('states.error'))
+    } finally {
+      setExplaining(false)
+    }
+  }
+
+  /**
    * "Review my code" — real POST /coding-coach/review. Learner-initiated,
    * available after any run (pass or fail) so a learner can ask for
    * strengths/next-steps even on a working solution, not just a broken
@@ -177,12 +201,28 @@ export function CodingActivityPanel({
       <textarea
         id="code"
         value={code}
-        onChange={(e) => setCode(e.target.value)}
+        onChange={(e) => {
+          setCode(e.target.value)
+          if (explanation) setExplanation(null)
+        }}
         spellCheck={false}
         dir="ltr"
         rows={10}
         className="mt-4 w-full rounded-control border border-line bg-ink-900 p-3 font-mono text-sm text-white"
       />
+
+      <div className="mt-3">
+        {!explanation ? (
+          <Button variant="secondary" onClick={() => void explainCode()} loading={explaining} disabled={!code.trim()}>
+            {t('learner.explainCode')}
+          </Button>
+        ) : (
+          <div className="rounded-control border border-brand-200 bg-brand-50 p-3 text-sm text-ink-700">
+            <p className="font-display font-bold text-brand-700">{t('learner.codeyExplanation')}</p>
+            <p className="mt-1 whitespace-pre-wrap">{explanation}</p>
+          </div>
+        )}
+      </div>
 
       {output !== null && (
         <pre dir="ltr" className="mt-3 max-h-40 overflow-auto rounded-control bg-canvas-off p-3 font-mono text-xs text-ink-800">

@@ -116,7 +116,19 @@ in owner messages — see `design.md` for the standing reasoning.
       `transcript`, so the placeholder score is never produced or
       rendered — only the genuinely real coaching text is shown, honestly
       framed as written tips, not a measured score.
-- [ ] Coding/AI Literacy/Creativity/Thinking — not yet audited this batch.
+- [x] Coding audited: `CodingActivityPanel.tsx` already uses the real
+      client-exec/server-revalidate loop and has real "Ask Codey" (debug)
+      + "Review my code" (review) coaching. Of the 4 real `coding-coach`
+      endpoints (debug/review/explain/challenge), `explain` had a typed
+      wrapper but zero caller — closed it: added an "Explain this code"
+      learner-initiated action (available any time, incl. before first
+      run) so a child can ask Codey to walk through code they don't yet
+      understand. Stale explanation clears on edit. `challenge`
+      (generate-a-challenge) remains unused — a real candidate for a
+      future Skill/World Challenge feature (directive §13), flagged not
+      forced, since it needs a conceptId source + a home surface that
+      doesn't exist yet.
+- [ ] AI Literacy/Creativity/Thinking — not yet audited this batch.
 
 ## Batch 5 — Stories/Simulations/Projects/Portfolio
 

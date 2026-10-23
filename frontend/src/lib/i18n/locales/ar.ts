@@ -373,6 +373,8 @@ export const ar: TranslationSchema = {
     codeyDiagnosis: 'أفكار كودي',
     askCodeyReview: 'راجع كودي',
     codeyReviewTitle: 'مراجعة كودي',
+    explainCode: 'اشرح هذا الكود',
+    codeyExplanation: 'كودي يشرح',
     englishCoachNudge: 'تدرّب مع لوما',
     englishCoachTitle: 'مدرّب الإنجليزية',
     englishCoachTabConversation: 'تدريب المحادثة',
