@@ -448,6 +448,19 @@ export const rewardsApi = {
   progression: () => apiClient.get('/gamification/progression'),
   achievements: () => apiClient.get('/gamification/achievements'),
   leaderboard: () => apiClient.get('/gamification/leaderboard'),
+  // FIX (mega-directive, Rewards/leaderboard slice): GET /gamification/rank
+  // (progression.service.ts getLearnerRank) returns the learner's OWN
+  // leaderboard position — confirmed by reading the service — regardless
+  // of whether they appear in the visible top-N list, with a real
+  // privacy-respecting `optedOut: true` branch and a `rank: null` new-
+  // learner branch. Had zero frontend caller: a learner ranked below the
+  // visible cutoff previously saw no indication of where they stand.
+  myRank: () =>
+    apiClient.get<
+      | { optedOut: true }
+      | { rank: null }
+      | { rank: number; totalXP: number; level: number }
+    >('/gamification/rank'),
   streak: () => apiClient.get('/gamification/streak'),
   cosmetics: () => apiClient.get<{ totalXP: number; items: CosmeticItem[] }>('/gamification/cosmetics'),
   equipCosmetic: (id: string) => apiClient.post(`/gamification/cosmetics/${id}/equip`),

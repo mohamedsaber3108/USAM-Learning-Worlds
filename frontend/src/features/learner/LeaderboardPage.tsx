@@ -32,14 +32,34 @@ export function LeaderboardPage() {
     queryKey: ['leaderboard'],
     queryFn: async () => (await rewardsApi.leaderboard()).data as LeaderboardRow[],
   })
+  // Real own-rank (works even when outside the visible top-N).
+  const myRank = useQuery({
+    queryKey: ['leaderboard-my-rank'],
+    queryFn: async () => (await rewardsApi.myRank()).data,
+    retry: false,
+  })
 
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState onRetry={() => void refetch()} />
 
   const rows = data ?? []
+  const rank = myRank.data
+  const hasRank = rank && 'rank' in rank && typeof rank.rank === 'number'
   return (
     <div className="space-y-6">
       <PageHeader title={t('learner.leaderboard')} subtitle={t('learner.leaderboardSubtitle')} />
+      {hasRank && (
+        <Card className="flex items-center justify-between border-2 border-brand-200 bg-brand-50">
+          <span className="inline-flex items-center gap-3">
+            <Trophy className="h-6 w-6 text-warning-500" aria-hidden />
+            <span>
+              <span className="block text-xs font-semibold uppercase tracking-wide text-brand-600">{t('learner.yourRank')}</span>
+              <span className="block font-display text-2xl font-extrabold text-ink-900">#{(rank as { rank: number }).rank}</span>
+            </span>
+          </span>
+          <StatusPill tone="brand">{(rank as { totalXP: number }).totalXP} XP</StatusPill>
+        </Card>
+      )}
       {rows.length === 0 ? (
         <EmptyState title={t('learner.leaderboardEmpty')} />
       ) : (

@@ -365,6 +365,7 @@ export const ar: TranslationSchema = {
     reflect: 'تأمّل',
     leaderboard: 'لوحة الصدارة',
     leaderboardSubtitle: 'المتعلمون الذين اختاروا إظهار تقدّمهم.',
+    yourRank: 'ترتيبك',
     leaderboardEmpty: 'لم ينضم أحد إلى لوحة الصدارة بعد.',
     insightsTitle: 'رحلتي',
     insightsSubtitle: 'كيف تتعلّم، بأسلوبك الخاص.',

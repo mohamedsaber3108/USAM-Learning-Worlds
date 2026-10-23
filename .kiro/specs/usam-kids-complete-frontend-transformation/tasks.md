@@ -217,3 +217,21 @@ Adaptive-engine frontend classification (directive §5) — all 11 real
       domainSlug resolution). Directly answers the directive's "what am I
       working toward" question with real data. Section hidden when empty
       (new learner).
+
+## Batch 7 — Rewards/quest-loop audit + leaderboard rank
+
+- [n/a] Daily/Weekly Quests: audited — ZERO quest backend exists (no
+      Quest model/controller/service anywhere; grep confirmed). Building
+      a quest feature would require inventing a backend contract and
+      fabricating runtime data, which the directive's own REAL-DATA rule
+      forbids. Correctly NOT built — recorded as a backend-capability gap,
+      not a frontend task.
+- [n/a] Daily Goals: already fully wired (Home progress + Settings
+      editor) — not a gap.
+- [x] Leaderboard "Your rank" card: `GET /gamification/rank`
+      (progression.service.ts getLearnerRank) returns the learner's OWN
+      position even when outside the visible top-N, with real optedOut /
+      null branches. Had zero frontend caller — a learner below the top-N
+      cutoff saw no indication of where they stand. Added a header rank
+      card on `LeaderboardPage.tsx`, shown only when a real numeric rank
+      exists (respects opt-out and new-learner null).

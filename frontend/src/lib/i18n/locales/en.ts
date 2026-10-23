@@ -374,6 +374,7 @@ export const en = {
     reflect: 'Reflect',
     leaderboard: 'Leaderboard',
     leaderboardSubtitle: 'Learners who chose to show their progress.',
+    yourRank: 'Your rank',
     leaderboardEmpty: 'No one has joined the leaderboard yet.',
     insightsTitle: 'My Journey',
     insightsSubtitle: 'How you learn, in your own patterns.',
