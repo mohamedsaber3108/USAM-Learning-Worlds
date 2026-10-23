@@ -327,3 +327,46 @@ Adaptive-engine frontend classification (directive §5) — all 11 real
       field omitted from the request → leaves that limit unchanged,
       matching @IsOptional). Added weeklyMinutes/bedtimeHour/controlsHint
       i18n keys (EN+AR).
+
+## Batch 13 — Moderator re-audit (directive §27 queue→case→decision→audit)
+
+- [x] Moderator audited across all three queues — NO gap, flow complete:
+      - Escalations (`EscalationsPage.tsx`): real assign + resolve with the
+        exact `ResolveSafetyEscalationDto` resolution types
+        (RESOLVED_INTERNALLY / REFERRED_TO_GUARDIAN /
+        REFERRED_TO_HUMAN_SUPPORT / FALSE_POSITIVE) + stats.
+      - Community (`CommunityModerationPage.tsx`): real review action with
+        the correct APPROVED/REJECTED enum (a prior batch fixed a
+        wrong-value bug here).
+      - Interventions (`InterventionsPage.tsx`): real acknowledge + resolve
+        mutations, status history, learner-context drill-in (ledger 89
+        §2.14).
+      This is the directive's queue→case→decision→resolution→audit model
+      fully realized with real actions + correct DTOs. Nothing to add.
+
+## Batch 14 — Admin re-audit (directive §28)
+
+- [x] Admin audited — NO new gap found. 8 admin pages cover the 14+ admin
+      controllers through a reusable `AdminListSection` (read + scan-action)
+      pattern, plus dedicated authoring dialogs added in prior batches
+      (content-item create, mission edit, prompt-template authoring,
+      analytics retention/stickiness drill-ins, content-provenance
+      license/source authoring — ledger 89 §2.6/2.7/2.15/2.16/2.23).
+      Spot-checked the controllers least likely to be covered:
+      - difficulty-calibration (scan + flags): both wired in
+        AdminCurriculumPage (scanFn + listFn).
+      - content-qa (scan + flags): both wired (endpoints 849-850).
+      - memory-governance (stats): wired (AdminPlatformPage).
+      - admin-misconceptions: read-only by backend design (3 GETs, no
+        write) — surfaced via `misconceptions()` wrapper; read-only is a
+        correct disposition, not a gap.
+      Admin uses the shared design system with an operational presentation,
+      per directive §28. Nothing to add this pass.
+
+## Role-surface sweep complete (Guardian / Moderator / Admin)
+
+Guardian (§26), Moderator (§27), Admin (§28) all re-audited against the
+directive's explicit framing. One real gap found+closed (Guardian
+time-limit controls, Batch 12); the rest confirmed already complete with
+real actions, correct DTOs, and honest dispositions for read-only
+surfaces. No fabricated UI, no feature loss.
