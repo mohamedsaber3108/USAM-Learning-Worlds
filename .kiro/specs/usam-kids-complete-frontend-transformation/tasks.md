@@ -252,3 +252,18 @@ Adaptive-engine frontend classification (directive §5) — all 11 real
       corrupted file in the DECOY workspace, not our repo) — a shell
       cwd-drift artifact from the recurring `ؤ`-prefix glitch, not a real
       error. Re-ran all gates pinned to `M:\USAM-main\frontend`: all clean.
+
+## Batch 9 — Portfolio skill-chips data-quality fix
+
+- [x] PortfolioPage was rendering `project.skills` as display chips, but
+      `Project.skills` is a raw `String[]` of skill *IDs* (schema line
+      755) and `GET /projects/portfolio/:id` (projects.service.ts
+      getPortfolio) returns the plain Project row with NO name resolution
+      (findMany, no select/include). So the chips showed opaque UUID-like
+      IDs to the child — same class of bug as surfacing a backend enum,
+      which the design-system child-language rule forbids. Removed the
+      raw-ID chips; the honest fix is to not display them until a real
+      skill-name resolution exists in the response (a backend change, not
+      faked client-side). Stats (total/showcased) + child-language project
+      state remain. Portfolio otherwise already matches the real
+      `{ learner, projects, stats }` shape (fixed in an earlier batch).

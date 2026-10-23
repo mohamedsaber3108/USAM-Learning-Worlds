@@ -13,7 +13,14 @@ interface PortfolioProject {
   title: string
   description?: string | null
   state?: string
-  skills?: string[]
+  // NOTE: Project.skills is a raw String[] of skill *IDs* (schema line
+  // 755), and GET /projects/portfolio/:id returns the plain Project row
+  // with no name resolution (projects.service.ts getPortfolio does a
+  // findMany with no select/include). Rendering these as chips showed
+  // opaque IDs to the child — same class of bug as surfacing a backend
+  // enum, which the design-system child-language rule forbids. Dropped
+  // from display until a real skill-name resolution exists in the
+  // response (would need a backend change, not faked client-side).
 }
 
 /**
@@ -90,15 +97,6 @@ export function PortfolioPage() {
                 </div>
                 <h2 className="mt-3 font-display font-bold text-ink-900">{item.title}</h2>
                 {item.description && <p className="mt-1 text-sm text-ink-500">{item.description}</p>}
-                {item.skills && item.skills.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {item.skills.slice(0, 4).map((s) => (
-                      <span key={s} className="rounded-pill bg-canvas-off px-2 py-0.5 text-xs text-ink-600">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </Card>
             </Link>
           ))}
