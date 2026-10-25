@@ -218,6 +218,8 @@ export const en = {
     missionNotPassed: 'Mission finished — keep practicing!',
     missionScore: 'Score: {{score}}%',
     missionActivitiesDone: '{{done}} of {{total}} activities',
+    missionActivityStep: 'Step {{current}} of {{total}}',
+    backToWorld: 'Back to the world',
     levelUp: 'Level {{level}}!',
     nothingDue: 'All caught up — nothing to review right now.',
     projects: 'Projects',

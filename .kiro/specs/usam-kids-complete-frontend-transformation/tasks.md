@@ -465,3 +465,22 @@ surfaces. No fabricated UI, no feature loss.
       All from real GET /missions/:id data already fetched; zero feature
       loss. New i18n: missionObjectives, missionSkillCount (EN+AR).
       Mission Player rebuild follows as part 2 of this vertical.
+
+
+## Batch B (part 2) — Mission Player composition rebuild + no-dead-end completion
+
+- [x] Mission Player (`MissionPlayerPage.tsx`) composition rebuilt to match
+      the new Mission Detail environment, all real logic preserved:
+      - Gradient mission-header band with the companion staged in its live
+        state (thinking while grading / celebrating / encouraging), real
+        step counter + segmented progress trail (role=progressbar).
+      - Completion moment restaged: gradient celebration header keyed to
+        real pass/fail, real score + activities-done, real XP/level-up
+        (only when awarded), real mastery-impact list (GET /mastery/
+        overview filtered to this mission's competencies — not fabricated).
+      - No dead end: after reflection (done or skipped) an explicit next
+        action is always offered (back to world path / Learn hub).
+      New i18n: missionActivityStep, backToWorld (EN+AR). Zero backend/
+      logic/auth change; no fabricated completion data.
+- Batch B (Mission Detail + Mission Player) is now a complete vertical:
+  commits 85cb1d8 (detail) + this one (player).

@@ -209,6 +209,8 @@ export const ar: TranslationSchema = {
     missionNotPassed: 'انتهت المهمة — استمر في التدرّب!',
     missionScore: 'النتيجة: {{score}}٪',
     missionActivitiesDone: '{{done}} من {{total}} أنشطة',
+    missionActivityStep: 'الخطوة {{current}} من {{total}}',
+    backToWorld: 'العودة إلى العالم',
     levelUp: 'المستوى {{level}}!',
     nothingDue: 'كل شيء على ما يرام — لا شيء للمراجعة الآن.',
     projects: 'المشاريع',

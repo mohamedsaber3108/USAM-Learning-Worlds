@@ -147,46 +147,59 @@ function CompletionSummary({
 }) {
   const { t } = useTranslation()
   return (
-    <Card className={cn('border-2 text-center', outcome.passed ? 'border-success-500 bg-success-100' : 'border-warning-500 bg-warning-100')}>
-      <p className="font-display text-2xl font-extrabold text-ink-900">
-        {outcome.passed ? t('learner.missionComplete') : t('learner.missionNotPassed')}
-      </p>
-      <p className="mt-1 text-sm text-ink-600">
-        {t('learner.missionScore', { score: outcome.finalScore })} ·{' '}
-        {t('learner.missionActivitiesDone', { done: outcome.activitiesAttempted, total: outcome.requiredActivities })}
-      </p>
-      {outcome.xp.awarded && (
-        <div className="mt-4 flex items-center justify-center gap-2">
-          <StatusPill tone="success">+{outcome.xp.amount} XP</StatusPill>
-          {outcome.xp.leveledUp && (
-            <StatusPill tone="brand">{t('learner.levelUp', { level: outcome.xp.newLevel })}</StatusPill>
-          )}
-        </div>
-      )}
-      {/* FIX (reverse-engineering/experience directive, 2026-10-07, §15:
-          "evidence created, mastery impact" — flagged as not-yet-done in
-          the previous batch (commit 1c6d8d7). completeMission has no
-          dedicated per-mission mastery-delta endpoint, but each activity's
-          objective.competency IS already known client-side (run.mission.
-          activities[i].objective.competencyId) and GET /mastery/overview
-          returns every real MasteryRecord — filtering the overview to just
-          this mission's touched competencies is real data, not fabricated,
-          with no new backend endpoint needed. */}
+    <div className="space-y-4">
+      {/* Celebration header — gradient environment keyed to pass/fail,
+          original CSS, no painted art. */}
+      <header
+        className={cn(
+          'relative overflow-hidden rounded-card bg-gradient-to-br p-6 text-center text-white shadow-card',
+          outcome.passed ? 'from-emerald-500 to-emerald-700' : 'from-amber-500 to-amber-700',
+        )}
+      >
+        <span aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-10 -left-8 h-32 w-32 rounded-full bg-black/10 blur-2xl" />
+        <p className="relative font-display text-3xl font-extrabold">
+          {outcome.passed ? t('learner.missionComplete') : t('learner.missionNotPassed')}
+        </p>
+        <p className="relative mt-1 text-sm text-white/85">
+          {t('learner.missionScore', { score: outcome.finalScore })} ·{' '}
+          {t('learner.missionActivitiesDone', { done: outcome.activitiesAttempted, total: outcome.requiredActivities })}
+        </p>
+        {outcome.xp.awarded && (
+          <div className="relative mt-4 flex items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-pill bg-white/20 px-3 py-1 text-sm font-bold">
+              +{outcome.xp.amount} XP
+            </span>
+            {outcome.xp.leveledUp && (
+              <span className="inline-flex items-center gap-1 rounded-pill bg-white/90 px-3 py-1 text-sm font-bold text-ink-900">
+                {t('learner.levelUp', { level: outcome.xp.newLevel })}
+              </span>
+            )}
+          </div>
+        )}
+      </header>
+
+      {/* Mastery impact — real GET /mastery/overview filtered to this
+          mission's own touched competencies (not a fabricated delta). Only
+          shown when real records exist. */}
       {masteryImpact.length > 0 && (
-        <div className="mt-4 space-y-1.5 border-t border-line pt-4 text-start">
+        <section className="rounded-card border border-line bg-white p-5 shadow-soft">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">{t('learner.masteryBy')}</p>
-          {masteryImpact.map((m) => (
-            <div key={m.id} className="flex items-center justify-between">
-              <span className="min-w-0 truncate text-sm text-ink-700">{m.competency?.name ?? m.competencyId}</span>
-              <StatusPill tone="brand">{masteryLabel(m.state)}</StatusPill>
-            </div>
-          ))}
-        </div>
+          <div className="mt-2 space-y-1.5">
+            {masteryImpact.map((m) => (
+              <div key={m.id} className="flex items-center justify-between">
+                <span className="min-w-0 truncate text-sm text-ink-700">{m.competency?.name ?? m.competencyId}</span>
+                <StatusPill tone="brand">{masteryLabel(m.state)}</StatusPill>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
-      <Button className="mt-5" onClick={onContinue}>
+
+      <Button className="w-full" size="lg" onClick={onContinue}>
         {t('common.next')}
       </Button>
-    </Card>
+    </div>
   )
 }
 
@@ -204,6 +217,7 @@ export function MissionPlayerPage() {
   const [completing, setCompleting] = useState(false)
   const [outcome, setOutcome] = useState<CompletionOutcome | null>(null)
   const [showReflection, setShowReflection] = useState(false)
+  const [reflectionDone, setReflectionDone] = useState(false)
 
   const { data: run, isLoading, isError, refetch } = useQuery({
     queryKey: ['run', runId],
@@ -299,6 +313,7 @@ export function MissionPlayerPage() {
   }
 
   if (showReflection) {
+    const nextHref = run.mission.worldId ? `/app/worlds/${run.mission.worldId}` : '/app/learn'
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         {companion.data?.character && (
@@ -308,39 +323,62 @@ export function MissionPlayerPage() {
         )}
         <ReflectionStep
           missionRunId={runId}
-          onDone={() =>
-            navigate(run.mission.worldId ? `/app/worlds/${run.mission.worldId}` : '/app/progress', { replace: true })
-          }
+          onDone={() => setReflectionDone(true)}
         />
+        {/* No dead end: after reflection (done or skipped) a real next
+            action is always offered — back into the world's path (where
+            the next mission's unlock state is now updated) or the Learn
+            hub. Only shown once reflection is resolved so it doesn't
+            compete with the reflection prompt. */}
+        {reflectionDone && (
+          <Button className="w-full" size="lg" onClick={() => navigate(nextHref, { replace: true })}>
+            {run.mission.worldId ? t('learner.backToWorld') : t('nav.learn')}
+          </Button>
+        )}
       </div>
     )
   }
 
+  const activityNumber = Math.min(index + 1, activities.length)
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      {/* Progress dots */}
-      <div className="flex items-center gap-1.5" aria-hidden>
-        {activities.map((a, i) => (
-          <span
-            key={a.id}
-            className={cn('h-1.5 flex-1 rounded-pill', i < index ? 'bg-brand-500' : i === index ? 'bg-brand-300' : 'bg-line')}
-          />
-        ))}
-      </div>
-      <div className="flex items-center gap-3">
-        {companion.data?.character && (
-          <CharacterStage characterId={companion.data.character.name} size={56} state={companionState} animate />
-        )}
-        <h1 className="font-display text-xl font-bold text-ink-900">{run.mission.title}</h1>
-      </div>
+      {/* Mission header environment — gradient band matching Mission Detail,
+          with the companion staged (live state: thinking/celebrating/
+          encouraging), the mission title, and a real step counter + segmented
+          progress bar. Original CSS; no painted art. */}
+      <header className="relative overflow-hidden rounded-card bg-gradient-to-br from-brand-600 to-brand-800 p-5 text-white shadow-card">
+        <span aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative flex items-center gap-3">
+          {companion.data?.character && (
+            <CharacterStage characterId={companion.data.character.name} size={56} state={companionState} animate className="shrink-0" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/80">
+              {t('learner.missionActivityStep', { current: activityNumber, total: activities.length })}
+            </p>
+            <h1 className="truncate font-display text-xl font-extrabold">{run.mission.title}</h1>
+          </div>
+        </div>
+        {/* Segmented progress trail — real per-activity position. */}
+        <div className="relative mt-4 flex items-center gap-1.5" role="progressbar" aria-valuenow={index} aria-valuemin={0} aria-valuemax={activities.length}>
+          {activities.map((a, i) => (
+            <span
+              key={a.id}
+              aria-hidden
+              className={cn('h-1.5 flex-1 rounded-pill', i < index ? 'bg-white' : i === index ? 'bg-white/60' : 'bg-white/20')}
+            />
+          ))}
+        </div>
+      </header>
 
-      {/* FIX (reverse-engineering/experience directive, 2026-10-07, §12/§15):
-          per-activity learning objective — real data (run.mission.activities[i].
-          objective), previously fetched but never shown. Answers "what will
-          I learn right now" at the exact moment it matters, not buried in a
-          separate curriculum page. */}
+      {/* Per-activity learning objective — real data (run.mission.
+          activities[i].objective), answering "what will I learn right now"
+          at the moment it matters. */}
       {activity?.objective && (
-        <p className="text-sm font-medium text-brand-600">{activity.objective.name}</p>
+        <p className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand-400" aria-hidden />
+          {activity.objective.name}
+        </p>
       )}
 
       {activity ? (
