@@ -382,3 +382,27 @@ surfaces. No fabricated UI, no feature loss.
       real `role="progressbar"` + `aria-valuenow` + `aria-label` text
       equivalent (storyProgress / simulationProgress i18n keys, EN+AR).
       Audited the learner feature set for missing `alt` text — none found.
+
+## Batch 16 — Design system: per-domain visual identity (Home + Learn)
+
+- [x] Home audited — already a strong 7-section prioritized composition
+      (companion presence, next-best-action hero, Today, worlds, current
+      project, recent progress, rewards teaser), age-adapted, real-data,
+      with skeletons + self-hiding empty states. NOT the "dashboard
+      skeleton" the directive imagines; a prior rebuild addressed that.
+      Did NOT rewrite it wholesale (would risk regressing verified behavior
+      for cosmetic churn) — instead did a targeted visual enrichment of its
+      weakest part.
+- [x] Created a shared `domainIdentity` map (lib/labels/domainIdentity.ts):
+      per-domain icon + a restrained low-saturation accent chip
+      (sky/emerald/violet/amber/pink/indigo at -50/-700), the concrete
+      implementation of loosened Decision A (one accent tint per domain for
+      wayfinding, never a saturated rainbow; stock Tailwind palette, which
+      the config exposes via theme.extend). Original design keyed to USAM's
+      own real domain slugs.
+- [x] Home "My worlds" cards: replaced the flat identical BookOpen icon
+      with each world's real per-domain icon + accent chip, so worlds read
+      distinctly (the directive's "replace weak generic cards"). Learn hub
+      cards updated to the same shared identity (removed its one-off local
+      DOMAIN_ICON map), so Home and Learn are consistent. Zero feature
+      loss, RTL/a11y intact.

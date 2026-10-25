@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Languages, Code2, Bot, Sparkles, Brain, BookOpen, ArrowRight, Compass, type LucideIcon } from 'lucide-react'
+import { ArrowRight, Compass } from 'lucide-react'
 import { worldsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
 import { Card, PageHeader } from '@/components/ui'
+import { domainIdentity } from '@/lib/labels/domainIdentity'
 
 interface World {
   id: string
@@ -27,16 +28,10 @@ interface World {
   unlockCondition?: string | null
 }
 
-// Per-domain icon (slug-keyed); default for anything else.
-const DOMAIN_ICON: Record<string, LucideIcon> = {
-  english: Languages,
-  coding: Code2,
-  'ai-literacy': Bot,
-  creativity: Sparkles,
-  'critical-thinking': Brain,
-}
-
-/** Learn hub — the learning worlds, each a themed entry to its domain path. */
+/** Learn hub — the learning worlds, each a themed entry to its domain path.
+ * Per-domain icon + accent chip come from the shared `domainIdentity` map
+ * so Home's world cards and this hub read identically (loosened Decision A:
+ * one restrained accent tint per domain for wayfinding). */
 export function LearnPage() {
   const { t } = useTranslation()
   const { data, isLoading, isError, refetch } = useQuery({
@@ -62,10 +57,10 @@ export function LearnPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data.map((world) => {
           const slug = world.domain?.slug
-          const Icon = (slug && DOMAIN_ICON[slug]) || BookOpen
+          const { icon: Icon, chip } = domainIdentity(slug)
           const card = (
             <Card className="group flex h-full flex-col transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-brand-50 text-brand-600">
+              <span className={`inline-flex h-11 w-11 items-center justify-center rounded-control ${chip}`}>
                 <Icon className="h-6 w-6" aria-hidden />
               </span>
               <h2 className="mt-4 font-display text-lg font-bold text-ink-900">{world.domain?.name ?? world.name}</h2>

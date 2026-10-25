@@ -10,7 +10,6 @@ import {
   FolderKanban,
   Trophy,
   Sparkles,
-  BookOpen,
 } from 'lucide-react'
 import {
   masteryApi,
@@ -28,6 +27,7 @@ import { masteryLabel } from '@/lib/labels/masteryLabels'
 import { Card, Button, Progress, StatusPill } from '@/components/ui'
 import { Skeleton } from '@/components/ui'
 import { CharacterStage } from '@/features/characters/CharacterStage'
+import { domainIdentity } from '@/lib/labels/domainIdentity'
 
 interface World {
   id: string
@@ -271,12 +271,20 @@ export function HomePage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {unlockedWorlds.slice(0, roomy ? 3 : 6).map((w) => {
               const slug = w.domain?.slug
+              // Per-domain identity (icon + restrained accent chip) so each
+              // world reads distinctly instead of a row of identical cards.
+              const { icon: DomainIcon, chip } = domainIdentity(slug)
               const inner = (
-                <Card className="flex h-full items-center gap-3 transition-transform duration-fast hover:-translate-y-0.5">
-                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-brand-50 text-brand-600">
-                    <BookOpen className="h-5 w-5" aria-hidden />
+                <Card className="flex h-full items-center gap-3 transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card">
+                  <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control ${chip}`}>
+                    <DomainIcon className="h-5 w-5" aria-hidden />
                   </span>
-                  <h3 className="min-w-0 truncate font-display font-bold text-ink-900">{w.domain?.name ?? w.name}</h3>
+                  <span className="min-w-0">
+                    <h3 className="truncate font-display font-bold text-ink-900">{w.domain?.name ?? w.name}</h3>
+                    {w.name && w.domain?.name && w.name !== w.domain.name && (
+                      <span className="block truncate text-xs text-ink-400">{w.name}</span>
+                    )}
+                  </span>
                 </Card>
               )
               return slug ? (
