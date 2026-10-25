@@ -370,3 +370,15 @@ directive's explicit framing. One real gap found+closed (Guardian
 time-limit controls, Batch 12); the rest confirmed already complete with
 real actions, correct DTOs, and honest dispositions for read-only
 surfaces. No fabricated UI, no feature loss.
+
+## Batch 15 — a11y: live-region announcements on branching readers
+
+- [x] Accessibility gap closed on the two branching surfaces shipped this
+      session. Story reader + Simulation player swap their content in place
+      when the learner picks a choice, but had no live region — a
+      screen-reader user got no signal the story/scenario advanced.
+      Wrapped the page-text/prompt region in `aria-live="polite"` on both;
+      gave the previously `aria-hidden` decorative progress breadcrumb a
+      real `role="progressbar"` + `aria-valuenow` + `aria-label` text
+      equivalent (storyProgress / simulationProgress i18n keys, EN+AR).
+      Audited the learner feature set for missing `alt` text — none found.

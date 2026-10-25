@@ -107,15 +107,23 @@ export function StoryReaderPage() {
       <h1 className="font-display text-2xl font-extrabold text-ink-900">{data.title}</h1>
 
       {visited.length > 1 && (
-        <div className="flex items-center gap-1.5" aria-hidden>
+        <div
+          className="flex items-center gap-1.5"
+          role="progressbar"
+          aria-valuenow={visited.length}
+          aria-label={t('learner.storyProgress', { page: visited.length })}
+        >
           {visited.map((_, i) => (
-            <span key={i} className="h-1.5 flex-1 rounded-pill bg-brand-300" />
+            <span key={i} className="h-1.5 flex-1 rounded-pill bg-brand-300" aria-hidden />
           ))}
         </div>
       )}
 
       <Card>
-        <div className="whitespace-pre-wrap leading-relaxed text-ink-700">{current.text}</div>
+        {/* a11y: announce the new page text when the learner advances —
+            the content swaps in place, so without a live region a
+            screen-reader user gets no signal the story moved on. */}
+        <div className="whitespace-pre-wrap leading-relaxed text-ink-700" aria-live="polite">{current.text}</div>
         {isEnding ? (
           <Button className="mt-5" variant="secondary" onClick={restart}>
             <RotateCcw className="h-4 w-4" aria-hidden />

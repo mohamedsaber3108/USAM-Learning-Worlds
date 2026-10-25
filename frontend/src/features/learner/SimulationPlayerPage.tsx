@@ -66,15 +66,23 @@ export function SimulationPlayerPage() {
 
       {/* Breadcrumb of visited nodes — gives a sense of the path taken. */}
       {history.length > 1 && (
-        <div className="flex items-center gap-1.5" aria-hidden>
+        <div
+          className="flex items-center gap-1.5"
+          role="progressbar"
+          aria-valuenow={history.length}
+          aria-label={t('learner.simulationProgress', { step: history.length })}
+        >
           {history.map((_, i) => (
-            <span key={i} className="h-1.5 flex-1 rounded-pill bg-brand-300" />
+            <span key={i} className="h-1.5 flex-1 rounded-pill bg-brand-300" aria-hidden />
           ))}
         </div>
       )}
 
       <Card>
-        <p className="font-display text-lg font-bold text-ink-900">{node.prompt}</p>
+        {/* a11y: announce the new decision-point when the learner chooses —
+            the prompt swaps in place, so without a live region a
+            screen-reader user gets no signal the scenario advanced. */}
+        <p className="font-display text-lg font-bold text-ink-900" aria-live="polite">{node.prompt}</p>
 
         {node.isEnding ? (
           <>
