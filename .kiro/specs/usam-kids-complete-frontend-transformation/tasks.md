@@ -429,3 +429,20 @@ surfaces. No fabricated UI, no feature loss.
       zero feature loss, locked/empty states intact, RTL/a11y preserved.
       No painted art — pure code environment, per the directive's
       "rich environments without new art" rule.
+
+## Batch A (cont.) — Learn hub rebuilt as atmospheric world discovery
+
+- [x] Learn hub (`LearnPage.tsx`) reconstructed from a flat icon-chip grid
+      into an atmospheric world-discovery experience that carries the same
+      design language as World Detail: each world is now a gradient
+      "portal" card (per-domain accent gradient band + decorative blurred
+      geometry, all original CSS, aria-hidden) with its domain icon on a
+      raised surface, real mission depth, and a clear enter action.
+      Locked worlds are dimmed, non-navigable (no dead link), and show
+      their real unlock explanation + a lock chip. Unlocked worlds show
+      real missionCount + "Enter world". enterWorld i18n key (EN+AR).
+      Real GET /worlds data only; RTL/a11y preserved.
+      Batch A is now coherent across /app/learn + /app/worlds/:id (the
+      two live world surfaces) — one connected discovery flow. (/app/worlds
+      is not a distinct route in this app; the world list lives at
+      /app/learn and individual worlds at /app/worlds/:id.)

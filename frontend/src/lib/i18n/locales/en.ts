@@ -205,6 +205,7 @@ export const en = {
     pathHint: 'Work through these one step at a time.',
     pathBeingBuilt: 'This path is being built.',
     startMission: 'Start',
+    enterWorld: 'Enter world',
     progressTitle: 'Your progress',
     workingToward: 'Working toward',
     workingTowardSubtitle: 'Skills you’ve started — a little more practice makes them strong.',

@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, Compass } from 'lucide-react'
+import { ArrowRight, Compass, Lock } from 'lucide-react'
 import { worldsApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, PageHeader } from '@/components/ui'
+import { PageHeader } from '@/components/ui'
 import { domainIdentity } from '@/lib/labels/domainIdentity'
+import { cn } from '@/lib/utils/cn'
 
 interface World {
   id: string
@@ -54,35 +55,64 @@ export function LearnPage() {
           </Link>
         }
       />
+      {/* World discovery — each world is an atmospheric gradient portal
+          carrying the same per-domain identity + path language as World
+          Detail, so Learn → World reads as one flow. Locked worlds are
+          dimmed with their real unlock explanation; unlocked worlds show
+          real mission depth and an obvious enter action. Original
+          CSS-gradient environments, no painted art. */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data.map((world) => {
           const slug = world.domain?.slug
-          const { icon: Icon, chip } = domainIdentity(slug)
+          const { icon: Icon, gradient } = domainIdentity(slug)
+          const locked = world.isUnlocked === false
           const card = (
-            <Card className="group flex h-full flex-col transition-transform duration-fast hover:-translate-y-0.5 hover:shadow-card">
-              <span className={`inline-flex h-11 w-11 items-center justify-center rounded-control ${chip}`}>
-                <Icon className="h-6 w-6" aria-hidden />
-              </span>
-              <h2 className="mt-4 font-display text-lg font-bold text-ink-900">{world.domain?.name ?? world.name}</h2>
-              {world.description && <p className="mt-1 text-sm text-ink-500">{world.description}</p>}
-              {typeof world.missionCount === 'number' && (
-                <p className="mt-1.5 text-xs font-medium text-ink-400">
-                  {t('learner.worldMissionCount', { count: world.missionCount })}
-                </p>
+            <article
+              className={cn(
+                'group relative flex h-full flex-col overflow-hidden rounded-card border border-line shadow-soft transition-transform duration-fast',
+                locked ? 'opacity-75' : 'hover:-translate-y-0.5 hover:shadow-card',
               )}
-              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-600">
-                {world.isUnlocked === false ? t('learner.worldLocked') : t('learner.startMission')}{' '}
-                <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
-              </span>
-              {world.isUnlocked === false && world.unlockCondition && (
-                <p className="mt-1 text-xs text-ink-400">{world.unlockCondition}</p>
-              )}
-            </Card>
+            >
+              {/* Gradient atmosphere band with the domain icon + geometry. */}
+              <div className={cn('relative h-24 bg-gradient-to-br', gradient)}>
+                <span aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-xl" />
+                <span aria-hidden className="pointer-events-none absolute -bottom-8 left-4 h-20 w-20 rounded-full bg-black/10 blur-xl" />
+                <span className="absolute bottom-3 left-4 inline-flex h-12 w-12 items-center justify-center rounded-control bg-white/90 text-ink-900 shadow-soft">
+                  <Icon className="h-6 w-6" aria-hidden />
+                </span>
+                {locked && (
+                  <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-pill bg-black/25 px-2.5 py-1 text-xs font-medium text-white">
+                    <Lock className="h-3.5 w-3.5" aria-hidden /> {t('learner.worldLocked')}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-1 flex-col p-4">
+                <h2 className="font-display text-lg font-bold text-ink-900">{world.domain?.name ?? world.name}</h2>
+                {world.name && world.domain?.name && world.name !== world.domain.name && (
+                  <p className="text-xs font-medium text-ink-400">{world.name}</p>
+                )}
+                {world.description && <p className="mt-1 text-sm text-ink-500">{world.description}</p>}
+                {typeof world.missionCount === 'number' && !locked && (
+                  <p className="mt-2 text-xs font-medium text-ink-400">
+                    {t('learner.worldMissionCount', { count: world.missionCount })}
+                  </p>
+                )}
+                {locked && world.unlockCondition ? (
+                  <p className="mt-2 text-xs text-ink-400">{world.unlockCondition}</p>
+                ) : (
+                  <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-medium text-brand-600">
+                    {t('learner.enterWorld')} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden />
+                  </span>
+                )}
+              </div>
+            </article>
           )
-          // World Detail (real sequential per-world mission order with
-          // lock status) is the entry point now; DomainPathPage remains
-          // reachable from inside it for the broader skill tree view.
-          return (
+          // World Detail (real sequential per-world mission order with lock
+          // status) is the entry point; DomainPathPage remains reachable
+          // from inside it. Locked worlds are non-navigable (no dead link).
+          return locked ? (
+            <div key={world.id}>{card}</div>
+          ) : (
             <Link key={world.id} to={`/app/worlds/${world.id}`}>
               {card}
             </Link>

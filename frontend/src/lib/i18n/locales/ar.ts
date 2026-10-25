@@ -196,6 +196,7 @@ export const ar: TranslationSchema = {
     pathHint: 'تقدّم خطوة بخطوة.',
     pathBeingBuilt: 'هذا المسار قيد الإعداد.',
     startMission: 'ابدأ',
+    enterWorld: 'ادخل العالم',
     progressTitle: 'تقدّمك',
     workingToward: 'تعمل على',
     workingTowardSubtitle: 'مهارات بدأتها — قليل من التدريب يجعلها قوية.',
