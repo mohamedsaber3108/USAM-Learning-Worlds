@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AxiosError } from 'axios'
-import { Rocket, ListChecks } from 'lucide-react'
+import { Rocket, ListChecks, Target, Clock, Layers } from 'lucide-react'
 import { missionsApi, charactersApi } from '@/lib/api/endpoints'
 import { LoadingState, EmptyState, ErrorState } from '@/components/common/States'
-import { Card, Button, LockedBadge, StatusPill } from '@/components/ui'
+import { Button, LockedBadge, StatusPill } from '@/components/ui'
 import { CharacterStage } from '@/features/characters/CharacterStage'
+import { cn } from '@/lib/utils/cn'
 
 // FIX (mega-directive Batch 2, "Mission Brief" §18 — learning objective,
 // skills, activities): GET /missions/:id (missions.service.ts getMission)
@@ -96,51 +97,102 @@ export function MissionDetailPage() {
   const skills = Array.from(
     new Set((data.activities ?? []).map((a) => a.objective?.competency?.name).filter((n): n is string => Boolean(n))),
   )
+  // Distinct learning objectives named by this mission's real activities.
+  const objectives = Array.from(
+    new Set((data.activities ?? []).map((a) => a.objective?.name).filter((n): n is string => Boolean(n))),
+  )
 
   return (
-    <div className="mx-auto max-w-xl">
-      <Card>
-        {companion.data?.character ? (
-          <CharacterStage characterId={companion.data.character.name} size={72} state="encouraging" />
-        ) : (
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-control bg-brand-50 text-brand-600">
-            <Rocket className="h-6 w-6" aria-hidden />
-          </span>
-        )}
-        <h1 className="mt-4 font-display text-2xl font-bold text-ink-900">{data.title}</h1>
-        {data.description && <p className="mt-2 text-ink-600">{data.description}</p>}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {data.type && MISSION_TYPE_KEY[data.type] && (
-            <StatusPill tone="brand">{t(MISSION_TYPE_KEY[data.type])}</StatusPill>
+    <div className="mx-auto max-w-2xl space-y-5">
+      {/* Mission-brief scene header — original CSS-gradient environment
+          with the companion staged as the mission guide. No painted art. */}
+      <header className="relative overflow-hidden rounded-card bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white shadow-card">
+        <span aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-black/10 blur-2xl" />
+        <div className="relative flex items-start gap-4">
+          {companion.data?.character ? (
+            <CharacterStage characterId={companion.data.character.name} size={72} state="encouraging" className="shrink-0" />
+          ) : (
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-control bg-white/15">
+              <Rocket className="h-7 w-7" aria-hidden />
+            </span>
           )}
-          {data.estimatedMinutes ? <StatusPill tone="neutral">~{data.estimatedMinutes} min</StatusPill> : null}
-          {activityCount > 0 && <StatusPill tone="neutral">{t('learner.missionActivityCount', { count: activityCount })}</StatusPill>}
+          <div className="min-w-0 flex-1">
+            {data.type && MISSION_TYPE_KEY[data.type] && (
+              <span className="inline-block rounded-pill bg-white/20 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide">
+                {t(MISSION_TYPE_KEY[data.type])}
+              </span>
+            )}
+            <h1 className="mt-2 font-display text-2xl font-extrabold">{data.title}</h1>
+            {data.description && <p className="mt-1 max-w-prose text-sm text-white/85">{data.description}</p>}
+          </div>
         </div>
+      </header>
+
+      {/* At-a-glance brief stats — real mission metadata. */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <BriefStat icon={<Layers className="h-4 w-4" aria-hidden />} label={t('learner.missionActivityCount', { count: activityCount })} />
+        {data.estimatedMinutes ? (
+          <BriefStat icon={<Clock className="h-4 w-4" aria-hidden />} label={`~${data.estimatedMinutes} min`} />
+        ) : null}
         {skills.length > 0 && (
-          <div className="mt-4 rounded-control bg-canvas-off p-3">
-            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
-              <ListChecks className="h-3.5 w-3.5" aria-hidden />
-              {t('learner.missionSkillsLabel')}
-            </p>
-            <ul className="mt-1.5 space-y-0.5">
-              {skills.map((s) => (
-                <li key={s} className="text-sm text-ink-700">{s}</li>
-              ))}
-            </ul>
-          </div>
+          <BriefStat icon={<Target className="h-4 w-4" aria-hidden />} label={t('learner.missionSkillCount', { count: skills.length })} />
         )}
+      </div>
 
-        <Button className="mt-6 w-full" size="lg" loading={starting} onClick={start}>
-          {t('learner.startMission')}
-        </Button>
+      {/* Objectives — what you'll learn (real activity objective names). */}
+      {objectives.length > 0 && (
+        <section className="rounded-card border border-line bg-white p-5 shadow-soft">
+          <h2 className="inline-flex items-center gap-1.5 font-display font-bold text-ink-900">
+            <Target className="h-4 w-4 text-brand-500" aria-hidden />
+            {t('learner.missionObjectives')}
+          </h2>
+          <ul className="mt-3 space-y-2">
+            {objectives.map((o) => (
+              <li key={o} className="flex items-start gap-2 text-sm text-ink-700">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" aria-hidden />
+                {o}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
-        {capped && (
-          <div className="mt-4 rounded-control bg-warning-100 p-3 text-sm text-warning-700">
-            <LockedBadge label={t('learner.lockedUpgrade')} />
-            <p className="mt-2">{capped}</p>
+      {/* Skills you'll practice — real competency names. */}
+      {skills.length > 0 && (
+        <section className="rounded-card border border-line bg-white p-5 shadow-soft">
+          <h2 className="inline-flex items-center gap-1.5 font-display font-bold text-ink-900">
+            <ListChecks className="h-4 w-4 text-brand-500" aria-hidden />
+            {t('learner.missionSkillsLabel')}
+          </h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {skills.map((s) => (
+              <StatusPill key={s} tone="neutral">{s}</StatusPill>
+            ))}
           </div>
-        )}
-      </Card>
+        </section>
+      )}
+
+      <Button className={cn('w-full', 'sticky bottom-4')} size="lg" loading={starting} onClick={start}>
+        {t('learner.startMission')}
+      </Button>
+
+      {capped && (
+        <div className="rounded-control bg-warning-100 p-3 text-sm text-warning-700">
+          <LockedBadge label={t('learner.lockedUpgrade')} />
+          <p className="mt-2">{capped}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Small at-a-glance brief stat chip for the mission header row. */
+function BriefStat({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-control border border-line bg-white p-3 text-sm font-medium text-ink-700 shadow-soft">
+      <span className="text-brand-500">{icon}</span>
+      <span className="min-w-0 truncate">{label}</span>
     </div>
   )
 }

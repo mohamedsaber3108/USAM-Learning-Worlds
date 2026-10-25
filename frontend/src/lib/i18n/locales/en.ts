@@ -339,6 +339,8 @@ export const en = {
     missionTypeProjectBased: 'Project',
     missionActivityCount: '{{count}} activities',
     missionSkillsLabel: "You'll practice",
+    missionObjectives: "What you'll learn",
+    missionSkillCount: '{{count}} skill(s)',
     missionNext: 'Up next',
     practiceTabRecommended: 'Recommended',
     practiceReasonReviewDue: 'Review',

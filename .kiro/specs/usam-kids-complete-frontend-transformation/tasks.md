@@ -446,3 +446,22 @@ surfaces. No fabricated UI, no feature loss.
       two live world surfaces) — one connected discovery flow. (/app/worlds
       is not a distinct route in this app; the world list lives at
       /app/learn and individual worlds at /app/worlds/:id.)
+
+
+## Batch B (part 1) — Mission Detail rebuilt as a mission-brief environment
+
+- [x] Mission Detail (`MissionDetailPage.tsx`) reconstructed from a single
+      centered card into a real mission-brief environment:
+      - Gradient scene header (original CSS, decorative blurred geometry,
+        aria-hidden) with the companion staged as mission guide + the real
+        mission type as a pill.
+      - At-a-glance brief stat row: real activity count, duration, skill
+        count.
+      - "What you'll learn" objectives section (distinct real activity
+        objective names) + "You'll practice" skills section (real
+        competency names).
+      - Sticky Start/Resume CTA; entitlement-cap 403 still renders as the
+        honest locked state.
+      All from real GET /missions/:id data already fetched; zero feature
+      loss. New i18n: missionObjectives, missionSkillCount (EN+AR).
+      Mission Player rebuild follows as part 2 of this vertical.

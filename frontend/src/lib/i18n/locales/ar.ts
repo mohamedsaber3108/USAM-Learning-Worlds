@@ -330,6 +330,8 @@ export const ar: TranslationSchema = {
     missionTypeProjectBased: 'مشروع',
     missionActivityCount: '{{count}} نشاط',
     missionSkillsLabel: 'ستتدرب على',
+    missionObjectives: 'ماذا ستتعلم',
+    missionSkillCount: '{{count}} مهارة',
     missionNext: 'التالي',
     practiceTabRecommended: 'موصى به',
     practiceReasonReviewDue: 'مراجعة',
