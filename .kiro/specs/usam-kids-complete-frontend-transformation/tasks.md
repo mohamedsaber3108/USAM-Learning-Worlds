@@ -406,3 +406,26 @@ surfaces. No fabricated UI, no feature loss.
       cards updated to the same shared identity (removed its one-off local
       DOMAIN_ICON map), so Home and Learn are consistent. Zero feature
       loss, RTL/a11y intact.
+
+## Batch A — World Detail rebuilt as a path environment (Learn/Worlds vertical)
+
+- [x] World Detail (`WorldDetailPage.tsx`) reconstructed from a flat
+      vertical card list into a real learning-path environment:
+      - New `WorldPath.tsx` component: missions rendered as connected nodes
+        on a vertical trail (original CSS/SVG geometry — circular status
+        nodes, a connector segment whose completed portions fill with the
+        domain accent), replacing the generic card stack. Presentation-only
+        + test-friendly (translated labels passed in).
+      - Atmospheric world header: original CSS-gradient environment panel
+        (per-domain accent gradient, decorative blurred-geometry atmosphere,
+        all aria-hidden), companion staged inside it, real completed/total
+        progress bar (role=progressbar).
+      - The ONE next action (first IN_PROGRESS else first AVAILABLE) surfaced
+        above the path so it's obvious.
+      - Extended `domainIdentity` with `solid` (node fill) + `gradient`
+        (hero atmosphere) per domain.
+      - worldProgress i18n key (EN+AR).
+      Real backend data throughout (GET /worlds/:id sequential statuses),
+      zero feature loss, locked/empty states intact, RTL/a11y preserved.
+      No painted art — pure code environment, per the directive's
+      "rich environments without new art" rule.

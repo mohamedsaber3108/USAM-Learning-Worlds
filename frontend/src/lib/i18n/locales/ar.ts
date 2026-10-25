@@ -355,6 +355,7 @@ export const ar: TranslationSchema = {
     exploreCatVisualLanguage: 'كلمات بالصور',
     worldLocked: 'مقفل حاليًا',
     worldMissionCount: '{{count}} مهمة',
+    worldProgress: 'أنجزت {{completed}} من {{total}}',
     worldMissions: 'المهمات في هذا العالم',
     missionLockedHint: 'أنهِ المهمة السابقة لفتح هذه.',
     codingChallengeDifficulty: 'مستوى الصعوبة',

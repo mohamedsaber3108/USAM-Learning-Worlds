@@ -23,20 +23,26 @@ export interface DomainIdentity {
   icon: LucideIcon
   /** Soft tinted chip classes for the domain's icon badge. */
   chip: string
+  /** Solid accent fill (for filled path nodes / active markers). */
+  solid: string
+  /** Atmospheric gradient classes for a world/domain hero panel. */
+  gradient: string
 }
 
 const DEFAULT_IDENTITY: DomainIdentity = {
   icon: BookOpen,
   chip: 'bg-brand-50 text-brand-600',
+  solid: 'bg-brand-500',
+  gradient: 'from-brand-600 to-brand-800',
 }
 
 const DOMAIN_IDENTITY: Record<string, DomainIdentity> = {
-  english: { icon: Languages, chip: 'bg-sky-50 text-sky-700' },
-  coding: { icon: Code2, chip: 'bg-emerald-50 text-emerald-700' },
-  'ai-literacy': { icon: Bot, chip: 'bg-violet-50 text-violet-700' },
-  entrepreneurship: { icon: Rocket, chip: 'bg-amber-50 text-amber-700' },
-  creativity: { icon: Sparkles, chip: 'bg-pink-50 text-pink-700' },
-  'critical-thinking': { icon: Brain, chip: 'bg-indigo-50 text-indigo-700' },
+  english: { icon: Languages, chip: 'bg-sky-50 text-sky-700', solid: 'bg-sky-500', gradient: 'from-sky-600 to-sky-900' },
+  coding: { icon: Code2, chip: 'bg-emerald-50 text-emerald-700', solid: 'bg-emerald-500', gradient: 'from-emerald-600 to-emerald-900' },
+  'ai-literacy': { icon: Bot, chip: 'bg-violet-50 text-violet-700', solid: 'bg-violet-500', gradient: 'from-violet-600 to-violet-900' },
+  entrepreneurship: { icon: Rocket, chip: 'bg-amber-50 text-amber-700', solid: 'bg-amber-500', gradient: 'from-amber-600 to-amber-900' },
+  creativity: { icon: Sparkles, chip: 'bg-pink-50 text-pink-700', solid: 'bg-pink-500', gradient: 'from-pink-600 to-pink-900' },
+  'critical-thinking': { icon: Brain, chip: 'bg-indigo-50 text-indigo-700', solid: 'bg-indigo-500', gradient: 'from-indigo-600 to-indigo-900' },
 }
 
 /** Resolve a domain's identity by slug; safe default for unknown slugs. */
